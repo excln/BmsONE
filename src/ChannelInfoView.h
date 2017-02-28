@@ -19,6 +19,7 @@ private:
 	QLabel *labelFormat;
 	QLabel *labelLength;
 	QLineEdit *editAdjustment;
+	QLabel *labelImage;
 
 	Document *document;
 
@@ -35,7 +36,9 @@ private slots:
 
 	void ChannelListSelectChanged(int index);
 
-	void WaveDataUpdated();
+	void WaveSummaryUpdated();
+	void OverallWaveformUpdated();
+	//void WaveDataUpdated();
 
 public slots:
 	void OnCurrentChannelChanged(int index);

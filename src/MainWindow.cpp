@@ -16,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent)
 	setUnifiedTitleAndToolBarOnMac(true);
 	setAcceptDrops(true);
 
+	connect(this, SIGNAL(RequestFileOpen(QString)), this, SLOT(FileOpen(QString)), Qt::QueuedConnection);
+
 	actionFileNew = new QAction(tr("New"), this);
 	actionFileNew->setShortcut(QKeySequence::New);
 	QObject::connect(actionFileNew, SIGNAL(triggered()), this, SLOT(FileNew()));
@@ -284,18 +286,6 @@ void MainWindow::ReplaceDocument(Document *newDocument)
 
 	// begin interaction
 	channelInfoView->Begin();
-
-	/*auto soundChannels = document->GetSoundChannels();
-	if (soundChannels.size() > 0){
-		QDir dir(document->GetFileName());
-		dir.cdUp();
-		QString audioFileName = soundChannels[0];
-		QString audioFilePath = dir.absoluteFilePath(audioFileName);
-		QMediaPlayer *player = new QMediaPlayer(this);
-		player->setMedia(QUrl::fromLocalFile(audioFilePath));
-		player->setVolume(100);
-		player->play();
-	}*/
 }
 
 bool MainWindow::Save()
@@ -379,7 +369,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 	const QMimeData* mimeData = event->mimeData();
 	if (mimeData->hasUrls()){
 		QList<QUrl> urls = mimeData->urls();
-		FileOpen(urls[0].toLocalFile());
+		emit RequestFileOpen(urls[0].toLocalFile());
 		event->setDropAction(Qt::CopyAction);
 		event->accept();
 	}

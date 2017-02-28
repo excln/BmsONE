@@ -34,7 +34,7 @@ namespace Bmson
 		int lane;
 		int location;
 		int length;
-		bool restart;
+		bool cut;
 	};
 
 	struct SoundChannel

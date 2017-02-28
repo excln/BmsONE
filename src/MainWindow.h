@@ -60,6 +60,9 @@ private slots:
 
 	void FilePathChanged();
 
+signals:
+	void RequestFileOpen(QString path);
+
 private:
 	void ReplaceDocument(Document *newDocument);
 	bool Save();

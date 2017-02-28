@@ -11,12 +11,16 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	layout->addRow(tr("Sound File:"), buttonFile = new QPushButton());
 	layout->addRow(tr("Format:"), labelFormat = new QLabel());
 	layout->addRow(tr("Length:"), labelLength = new QLabel());
+	layout->addRow(labelImage = new QLabel());
 	layout->addRow(tr("Timing Adjustment:"), editAdjustment = new QLineEdit());
 	channelList->setMinimumWidth(34);
 	buttonFile->setFocusPolicy(Qt::NoFocus);
 	buttonFile->setMinimumWidth(13);
 	labelFormat->setMinimumWidth(13);
 	labelLength->setMinimumWidth(13);
+	labelImage->setFixedHeight(160 + labelImage->frameWidth()*2);
+	labelImage->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+	labelImage->setScaledContents(true);
 	setLayout(layout);
 	setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
 	setMinimumWidth(40);
@@ -53,6 +57,7 @@ void ChannelInfoView::ReplaceDocument(Document *newDocument)
 		buttonFile->setEnabled(false);
 		labelFormat->setText(QString());
 		labelLength->setText(QString());
+		labelImage->setPixmap(QPixmap());
 		editAdjustment->setText(QString());
 		editAdjustment->setEnabled(false);
 		ichannel = -1;
@@ -75,18 +80,21 @@ void ChannelInfoView::Begin()
 void ChannelInfoView::SetCurrentChannel(int index)
 {
 	if (channel){
-		disconnect(channel, SIGNAL(WaveDataUpdated()), this, SLOT(WaveDataUpdated()));
+		disconnect(channel, SIGNAL(WaveSummaryUpdated()), this, SLOT(WaveSummaryUpdated()));
+		disconnect(channel, SIGNAL(OverallWaveformUpdated()), this, SLOT(OverallWaveformUpdated()));
 	}
 	ichannel = index;
 	channel = ichannel >= 0 ? document->GetSoundChannels()[ichannel] : nullptr;
 	if (channel){
 		buttonFile->setEnabled(true);
 		buttonFile->setText(channel->GetFileName());
-		WaveDataUpdated();
+		WaveSummaryUpdated();
+		OverallWaveformUpdated();
 		editAdjustment->setEnabled(true);
 		editAdjustment->setText(QString::number(channel->GetAdjustment()));
 
-		connect(channel, SIGNAL(WaveDataUpdated()), this, SLOT(WaveDataUpdated()));
+		connect(channel, SIGNAL(WaveSummaryUpdated()), this, SLOT(WaveSummaryUpdated()));
+		connect(channel, SIGNAL(OverallWaveformUpdated()), this, SLOT(OverallWaveformUpdated()));
 	}else{
 		buttonFile->setText(QString());
 		buttonFile->setEnabled(false);
@@ -111,28 +119,41 @@ static QString TextForSamplingRate(int rate)
 	return QString("%1.%2%3%4kHz").arg(rate/1000).arg((rate/100)%10).arg((rate/10)%10).arg(rate%10);
 }
 
-void ChannelInfoView::WaveDataUpdated()
+void ChannelInfoView::WaveSummaryUpdated()
 {
 	if (!channel)
 		return;
-	const WaveData *waveData = channel->GetWaveData();
-	if (waveData){
-		if (waveData->GetRawData()){
+	const WaveSummary *summary = channel->GetWaveSummary();
+	if (summary){
+		if (summary->FrameCount > 0){
 			labelFormat->setText(QString("%1bit/%2ch/%3")
-								 .arg(waveData->GetFormat().sampleSize())
-								 .arg(waveData->GetFormat().channelCount())
-								 .arg(TextForSamplingRate(waveData->GetFormat().sampleRate())));
-			qreal sec = (qreal)waveData->GetFrameCount() / waveData->GetFormat().sampleRate();
+								 .arg(summary->Format.sampleSize())
+								 .arg(summary->Format.channelCount())
+								 .arg(TextForSamplingRate(summary->Format.sampleRate())));
+			qreal sec = (qreal)summary->FrameCount / summary->Format.sampleRate();
 			labelLength->setText(QString("%1 sec").arg(sec));
 		}else{
-			// loading
-			labelFormat->setText(QString(tr("Loading...")));
-			labelFormat->setText(QString(tr("Loading...")));
+			// empty
+			labelFormat->setText(QString());
+			labelLength->setText(QString());
 		}
 	}else{
-		// empty
-		labelFormat->setText(QString());
-		labelLength->setText(QString());
+		// loading
+		labelFormat->setText(QString(tr("Loading...")));
+		labelLength->setText(QString(tr("Loading...")));
+	}
+}
+
+void ChannelInfoView::OverallWaveformUpdated()
+{
+	if (!channel)
+		return;
+	const QImage &image = channel->GetOverallWaveform();
+	if (!image.isNull()){
+		//qDebug() << image.width() << image.height();
+		labelImage->setPixmap(QPixmap::fromImage(image));
+	}else{
+		labelImage->setPixmap(QPixmap());
 	}
 }
 

@@ -162,7 +162,6 @@ private:
 	void dragMoveEventVp(QDragMoveEvent *event);
 	void dragLeaveEventVp(QDragLeaveEvent *event);
 	void dropEventVp(QDropEvent *event);
-	void paintEventVp(QPaintEvent *event);
 	void wheelEventVp(QWheelEvent *event);
 	void OnViewportResize();
 

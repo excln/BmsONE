@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui multimedia
+QT       += core concurrent gui multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -40,3 +40,27 @@ TRANSLATIONS = i18n/ja.ts
 
 RESOURCES += \
     bmsone.qrc
+
+
+
+
+
+
+INCLUDEPATH += $$PWD/
+DEPENDPATH += $$PWD/
+
+win32: LIBS += -L$$PWD/lib/win32_VS2012/ -llibogg_static
+
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/libogg_static.lib
+else:win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/liblibogg_static.a
+
+win32: LIBS += -L$$PWD/lib/win32_VS2012/ -llibvorbis_static
+
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/libvorbis_static.lib
+else:win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/liblibvorbis_static.a
+
+win32: LIBS += -L$$PWD/lib/win32_VS2012/ -llibvorbisfile_static
+
+
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/libvorbisfile_static.lib
+else:win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/liblibvorbisfile_static.a

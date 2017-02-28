@@ -66,7 +66,10 @@ SequenceView::SequenceView(MainWindow *parent)
 	setViewport(nullptr);	// creates new viewport widget
 	setViewportMargins(timeLineWidth + playingWidth, headerHeight, 0, footerHeight);
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-	viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
+	viewport()->setAutoFillBackground(true);
+	QPalette pal;
+	pal.setBrush(QPalette::Background, QColor(91, 91, 91));
+	viewport()->setPalette(pal);
 	timeLine = NewWidget(std::bind(&SequenceView::paintEventTimeLine, this, std::placeholders::_1, std::placeholders::_2));
 	playingPane = NewWidget(std::bind(&SequenceView::paintEventPlayingPane, this, std::placeholders::_1, std::placeholders::_2));
 	headerChannelsArea = NewWidget(std::bind(&SequenceView::paintEventHeaderArea, this, std::placeholders::_1, std::placeholders::_2));
@@ -185,93 +188,6 @@ void SequenceView::SetNoteColor(QLinearGradient &g, int lane, bool active) const
 	g.setColorAt(0.3, cl);
 	g.setColorAt(0.7, cl);
 	g.setColorAt(1, cd);
-}
-
-void SequenceView::paintEventVp(QPaintEvent *event)
-{
-	static const int mx=4, my=8;
-	QRect rect = event->rect();
-	QPainter painter(viewport());
-	painter.setRenderHint(QPainter::Antialiasing, false);
-
-	int scrollX = horizontalScrollBar()->value();
-	int scrollY = verticalScrollBar()->value();
-
-	int left = rect.x() - mx;
-	int right = rect.right() + mx;
-	int top = rect.y() - my;
-	int bottom = rect.bottom() + my;
-	int height = bottom - top;
-
-	qreal tBegin = viewLength - (scrollY + bottom)/zoomY;
-	qreal tEnd = viewLength - (scrollY + top)/zoomY;
-
-	painter.fillRect(event->rect(), QBrush(QColor(51, 51, 51)));
-	{
-		int i=0;
-		for (SoundChannelView *channelView : soundChannels){
-			QRect rectChannel = GetChannelRect(i);
-			QRect rect(rectChannel.x(), top, rectChannel.width(), height);
-
-			painter.fillRect(rect, QColor(0, 0, 0));
-			painter.setPen(QPen(QColor(180, 180, 180)));
-			painter.drawLine(rect.left(), rect.top(), rect.left(), rect.bottom());
-			painter.drawLine(rect.right(), rect.top(), rect.right(), rect.bottom());
-
-			channelView->PaintWaveform(painter, rect, tBegin, tEnd);
-			i++;
-		}
-	}
-	// bars
-	int bar = tBegin / (resolution * 4);
-	int barMax = tEnd / (resolution * 4);
-	painter.setPen(penBar);
-	for (int i=bar; i<=barMax; i++){
-		qreal y = Time2Y(i*(resolution*4)) - 1;
-		painter.drawLine(left, y, right, y);
-	}
-	// beats
-	int beat = tBegin / resolution;
-	int beatMax = tEnd / resolution;
-	painter.setPen(penBeat);
-	for (int i=beat; i<=beatMax; i++){
-		if (i%4 == 0) continue;
-		qreal y = Time2Y(i*resolution) - 1;
-		painter.drawLine(left, y, right, y);
-	}
-	// steps
-	int step = tBegin / (resolution / 4);
-	int stepMax = tEnd / (resolution / 4);
-	painter.setPen(penStep);
-	for (int i=step; i<=stepMax; i++){
-		if (i%4 == 0) continue;
-		qreal y = Time2Y(i*(resolution/4)) - 1;
-		painter.drawLine(left, y, right, y);
-	}
-	// notes
-	{
-		int i=0;
-		for (SoundChannelView *channelView : soundChannels){
-			QRect rectChannel = GetChannelRect(i);
-
-			for (SoundNoteView *nview : channelView->GetNotes()){
-				SoundNote note = nview->GetNote();
-				if (note.location > tEnd){
-					break;
-				}
-				if (note.location + note.length < tBegin){
-					continue;
-				}
-				if (note.lane == 0){
-					QRectF rect(rectChannel.left() + 6, Time2Y(note.location - note.length) - 8, rectChannel.width() - 12, TimeSpan2DY(note.length) + 8);
-					QLinearGradient g(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
-					SetNoteColor(g, note.lane, i==currentChannel);
-					painter.fillRect(rect, QBrush(g));
-				}
-			}
-			i++;
-		}
-	}
 }
 
 void SequenceView::wheelEventVp(QWheelEvent *event)
@@ -796,6 +712,22 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 		qreal y = sview->Time2Y(i*(sview->resolution/4)) - 1;
 		painter.drawLine(left, y, right, y);
 	}
+
+	// waveform(rms)
+	int y = bottom;
+	painter.setPen(QColor(0, 0, 0));
+	channel->DrawRmsGraph(tBegin, sview->zoomY, [&](float l, float r){
+		if (l >= 0.0f){
+			static const float gain = 2.0f;
+			painter.drawLine(width()/2, y, (width()/2)*(1.0 + r*gain), y);
+			painter.drawLine(width()/2, y, (width()/2)*(1.0 - l*gain), y);
+		}
+		if (--y < top){
+			return false;
+		}
+		return true;
+	});
+
 	// notes
 	for (SoundNoteView *nview : notes){
 		SoundNote note = nview->GetNote();

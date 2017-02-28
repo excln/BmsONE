@@ -87,7 +87,7 @@ Bmson::SoundNote Bmson::BmsonIo::LoadSoundNote(QJsonValue json)
 	note.lane = object["x"].toInt(0);
 	note.location = object["y"].toInt(0);
 	note.length = object["l"].toInt(0);
-	note.restart = object["r"].toBool(false);
+	note.cut = object["c"].toBool(true);
 	return note;
 }
 
