@@ -4,11 +4,12 @@
 #include <QtCore>
 #include <QtWidgets>
 #include "Document.h"
+#include "ScrollableForm.h"
 
 
 class MainWindow;
 
-class ChannelInfoView : public QWidget
+class ChannelInfoView : public ScrollableForm
 {
 	Q_OBJECT
 

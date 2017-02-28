@@ -5,11 +5,12 @@
 #include <QtWidgets>
 #include "Document.h"
 #include "QuasiModalEdit.h"
+#include "ScrollableForm.h"
 
 class MainWindow;
 
 
-class InfoView : public QWidget
+class InfoView : public ScrollableForm
 {
 	Q_OBJECT
 

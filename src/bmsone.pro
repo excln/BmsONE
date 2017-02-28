@@ -27,7 +27,8 @@ SOURCES += main.cpp\
     Stabilizer.cpp \
     SoundChannel.cpp \
     WaveData.cpp \
-    WaveStream.cpp
+    WaveStream.cpp \
+    ScrollableForm.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -42,7 +43,8 @@ HEADERS  += MainWindow.h \
     AudioPlayer.h \
     SequenceTools.h \
     Stabilizer.h \
-    SequenceDef.h
+    SequenceDef.h \
+    ScrollableForm.h
 
 FORMS    +=
 

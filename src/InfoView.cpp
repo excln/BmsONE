@@ -3,7 +3,7 @@
 
 
 InfoView::InfoView(MainWindow *mainWindow)
-	: QWidget(mainWindow)
+	: ScrollableForm(mainWindow)
 	, mainWindow(mainWindow)
 	, document(nullptr)
 {
@@ -15,8 +15,7 @@ InfoView::InfoView(MainWindow *mainWindow)
 	layout->addRow(tr("Initial Bpm:"), editInitBpm = new QuasiModalEdit());
 	layout->addRow(tr("Total:"), editTotal = new QuasiModalEdit());
 	layout->addRow(tr("Level:"), editLevel = new QuasiModalEdit());
-	setLayout(layout);
-	setMinimumWidth(34);
+	Initialize(layout);
 
 	connect(editTitle, &QLineEdit::editingFinished, this, &InfoView::TitleEdited);
 	connect(editGenre, &QLineEdit::editingFinished, this, &InfoView::GenreEdited);

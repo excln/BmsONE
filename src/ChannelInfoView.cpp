@@ -2,7 +2,7 @@
 #include "MainWindow.h"
 
 ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
-	: QWidget(mainWindow)
+	: ScrollableForm(mainWindow)
 	, mainWindow(mainWindow)
 	, document(nullptr)
 	, channelSourcePreviewer(nullptr)
@@ -29,9 +29,7 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	b->setText("Preview");
 	b->setToolTip(tr("Preview"));
 
-	setLayout(layout);
-	setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
-	setMinimumWidth(40);
+	Initialize(layout);
 
 	connect(channelList, SIGNAL(currentIndexChanged(int)), this, SLOT(ChannelListSelectChanged(int)));
 }
