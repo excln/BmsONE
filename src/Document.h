@@ -54,8 +54,10 @@ struct BarLine
 	int Location;
 	int Kind;
 
-	BarLine(){}
-	BarLine(int location, int kind) : Location(location), Kind(kind){}
+	bool Ephemeral;
+
+	BarLine() : Ephemeral(false){}
+	BarLine(int location, int kind, bool ephemeral=false) : Location(location), Kind(kind), Ephemeral(ephemeral){}
 };
 
 
@@ -396,6 +398,7 @@ private:
 	QMap<SoundChannel*, int> soundChannelLength;
 
 	// utility
+	int actualLength;
 	int totalLength;
 
 private slots:
@@ -422,6 +425,7 @@ public:
 	const QMap<int, BpmEvent> &GetBpmEvents() const{ return bpmEvents; }
 	const QList<SoundChannel*> &GetSoundChannels() const{ return soundChannels; }
 	int GetTotalLength() const;
+	int GetTotalVisibleLength() const;
 	QList<QPair<int, int>> FindConflictingNotes(SoundNote note) const; // returns [Channel,Location]
 	void InsertNewSoundChannels(const QList<QString> &soundFilePaths, int index=-1);
 	void DestroySoundChannel(int index);
@@ -430,6 +434,7 @@ public:
 	//void GetBpmEventsInRange(int startTick, int span, double &initBpm, QVector<BpmEvent> &bpmEvents) const; // span=0 = untill end
 
 	void ChannelLengthChanged(SoundChannel *channel, int length);
+	void UpdateTotalLength();
 
 signals:
 	void FilePathChanged();

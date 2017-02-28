@@ -24,10 +24,10 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	labelImage->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
 	labelImage->setScaledContents(true);
 
-	auto *b = new QToolButton(labelImage);
-	connect(b, SIGNAL(clicked()), this, SLOT(PreviewSound()));
-	b->setIcon(QIcon(":/images/sound.png"));
-	b->setToolTip(tr("Preview"));
+	buttonPreview = new QToolButton(labelImage);
+	connect(buttonPreview, SIGNAL(clicked()), this, SLOT(PreviewSound()));
+	buttonPreview->setIcon(QIcon(":/images/sound.png"));
+	buttonPreview->setToolTip(tr("Preview"));
 
 	Initialize(layout);
 
@@ -68,6 +68,7 @@ void ChannelInfoView::ReplaceDocument(Document *newDocument)
 		labelFormat->setText(QString());
 		labelLength->setText(QString());
 		labelImage->setPixmap(QPixmap());
+		buttonPreview->setEnabled(false);
 		//editAdjustment->setText(QString());
 		//editAdjustment->setEnabled(false);
 		ichannel = -1;
@@ -103,6 +104,7 @@ void ChannelInfoView::SetCurrentChannel(int index)
 	if (channel){
 		buttonFile->setEnabled(true);
 		buttonFile->setText(channel->GetFileName());
+		buttonPreview->setEnabled(true);
 		WaveSummaryUpdated();
 		OverallWaveformUpdated();
 		//editAdjustment->setEnabled(true);
@@ -117,6 +119,7 @@ void ChannelInfoView::SetCurrentChannel(int index)
 		labelFormat->setText(QString());
 		labelLength->setText(QString());
 		labelImage->clear();
+		buttonPreview->setEnabled(false);
 		//editAdjustment->setText(QString());
 		//editAdjustment->setEnabled(false);
 	}
@@ -190,6 +193,11 @@ void ChannelInfoView::PreviewSound()
 {
 	if (!channel)
 		return;
+	if (channelSourcePreviewer){
+		// release from ChannelInfoView's management and set up auto deletion
+		disconnect(channelSourcePreviewer, SIGNAL(Stopped()), this, SLOT(OnChannelSourcePreviewerStopped()));
+		connect(channelSourcePreviewer, SIGNAL(Stopped()), channelSourcePreviewer, SLOT(deleteLater()));
+	}
 	channelSourcePreviewer =  new SoundChannelSourceFilePreviewer(channel, this);
 	connect(channelSourcePreviewer, SIGNAL(Stopped()), this, SLOT(OnChannelSourcePreviewerStopped()));
 	mainWindow->GetAudioPlayer()->Play(channelSourcePreviewer);

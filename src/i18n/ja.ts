@@ -4,7 +4,7 @@
 <context>
     <name>AudioPlayer</name>
     <message>
-        <location filename="../AudioPlayer.cpp" line="+16"/>
+        <location filename="../AudioPlayer.cpp" line="+15"/>
         <source>Mute</source>
         <translation>ミュート</translation>
     </message>
@@ -14,7 +14,7 @@
         <translation>音量</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Stop</source>
         <translation>停止</translation>
     </message>
@@ -22,7 +22,7 @@
 <context>
     <name>AudioPlayerIndicator</name>
     <message>
-        <location line="+393"/>
+        <location line="+394"/>
         <source>Output Level Meter</source>
         <translation>出力レベルメーター</translation>
     </message>
@@ -31,11 +31,12 @@
     <name>Bmson::BmsonIo</name>
     <message>
         <location filename="../BmsonIo.cpp" line="+11"/>
+        <location line="+186"/>
         <source>Failed to open file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-184"/>
         <location line="+3"/>
         <source>Malformed bmson file.</source>
         <translation>不正な形式のファイルです。</translation>
@@ -76,7 +77,7 @@
         <translation>プレビュー</translation>
     </message>
     <message>
-        <location line="+172"/>
+        <location line="+188"/>
         <source>sound files (*.wav *.ogg);;all files (*.*)</source>
         <translation>音声ファイル (*.wav *.ogg);;すべてのファイル (*.*)</translation>
     </message>
@@ -90,7 +91,7 @@
         <translation>タイミング調整:</translation>
     </message>
     <message>
-        <location line="-34"/>
+        <location line="-47"/>
         <location line="+1"/>
         <source>Loading...</source>
         <translation>読み込み中...</translation>
@@ -165,28 +166,28 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../MainWindow.cpp" line="+28"/>
+        <location filename="../MainWindow.cpp" line="+24"/>
         <source>New</source>
         <translation>新規作成</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location line="+225"/>
+        <location line="+236"/>
         <source>Open</source>
         <translation>開く</translation>
     </message>
     <message>
-        <location line="-221"/>
+        <location line="-226"/>
+        <location line="+459"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-182"/>
         <source>Save As</source>
         <translation>名前をつけて保存</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-268"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
@@ -265,12 +266,11 @@
         <translation>フルスクリーン切り替え</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Add</source>
         <translation>追加</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+8"/>
         <source>Select Previous</source>
         <translation>前を選択</translation>
     </message>
@@ -295,24 +295,47 @@
         <translation>削除</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select File</source>
         <translation>ファイル選択</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+287"/>
+        <location line="+313"/>
         <source>About BmsONE</source>
         <translation>BmsONE について</translation>
     </message>
     <message>
-        <location line="-284"/>
-        <location line="+52"/>
+        <location line="-304"/>
+        <location line="+53"/>
         <source>File</source>
         <translation>ファイル</translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location line="-151"/>
+        <source>Open...</source>
+        <translation>開く...</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Save As...</source>
+        <translation>名前を付けて保存...</translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <source>Add...</source>
+        <translation>追加...</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Select File...</source>
+        <translation>ファイル選択...</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>About BmsONE...</source>
+        <translation>BmsONE について...</translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <source>Edit</source>
         <translation>編集</translation>
     </message>
@@ -323,14 +346,19 @@
     </message>
     <message>
         <location line="+5"/>
-        <location line="+42"/>
+        <location line="+46"/>
         <source>Channel</source>
         <translation>チャンネル</translation>
     </message>
     <message>
-        <location line="-29"/>
+        <location line="-33"/>
         <source>Help</source>
         <translation>ヘルプ</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>About Qt...</source>
+        <translation>Qt について...</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -338,12 +366,12 @@
         <translation>シーケンスツール</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Sound Output</source>
         <translation>音声出力</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+9"/>
         <source>Info</source>
         <translation>情報</translation>
     </message>
@@ -355,12 +383,26 @@
     <message>
         <location line="+13"/>
         <location line="+21"/>
-        <location line="+289"/>
+        <location line="+25"/>
+        <location line="+188"/>
+        <location line="+108"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location line="-244"/>
+        <location line="-304"/>
+        <location line="+182"/>
+        <source>bmson files (*.bmson);;all files (*.*)</source>
+        <translation>音声ファイル (*.wav *.ogg);;すべてのファイル (*.*)</translation>
+    </message>
+    <message>
+        <location line="-173"/>
+        <location line="+188"/>
+        <source>Failed to save file.</source>
+        <translation>ファイルオープンに失敗しました。</translation>
+    </message>
+    <message>
+        <location line="-154"/>
         <source>sound files (*.wav *.ogg);;all files (*.*)</source>
         <translation>音声ファイル (*.wav *.ogg);;すべてのファイル (*.*)</translation>
     </message>
@@ -370,12 +412,12 @@
         <translation>音声ファイル選択</translation>
     </message>
     <message>
-        <location line="+83"/>
+        <location line="+84"/>
         <source>untitled</source>
         <translation>無題</translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+81"/>
         <source>Confirmation</source>
         <translation>確認</translation>
     </message>
@@ -393,7 +435,7 @@
 <context>
     <name>QScrollBar</name>
     <message>
-        <location filename="../main.cpp" line="+25"/>
+        <location filename="../main.cpp" line="+27"/>
         <source>Scroll here</source>
         <translation>ここにスクロール</translation>
     </message>
@@ -461,7 +503,7 @@
 <context>
     <name>SequenceTools</name>
     <message>
-        <location filename="../SequenceTools.cpp" line="+23"/>
+        <location filename="../SequenceTools.cpp" line="+22"/>
         <source>Snap to Grid</source>
         <translation>グリッドにスナップ</translation>
     </message>
@@ -474,7 +516,7 @@
 <context>
     <name>SoundChannelView</name>
     <message>
-        <location filename="../SequenceView.cpp" line="+1189"/>
+        <location filename="../SequenceView.cpp" line="+1237"/>
         <source>Preview Source Sound</source>
         <translation>ソースをプレビュー</translation>
     </message>

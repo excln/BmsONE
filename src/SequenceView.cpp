@@ -49,6 +49,12 @@ SequenceView::SequenceView(MainWindow *parent)
 		lanes.insert(6, LaneDef(6, lmargin+wscratch+wwhite*3+wblack*2, wblack, cblack, ncblack, csmallv));
 		lanes.insert(7, LaneDef(7, lmargin+wscratch+wwhite*3+wblack*3, wwhite, cwhite, ncwhite, csmallv, cbigv));
 
+		timeLineMeasureWidth = 20;
+		timeLineBpmWidth = 34;
+		timeLineWidth = timeLineMeasureWidth + timeLineBpmWidth;
+		headerHeight = 60;
+		footerHeight = 40;
+
 		penBigV = QPen(QBrush(QColor(180, 180, 180)), 1);
 		penBigV.setCosmetic(true);
 		penV = QPen(QBrush(QColor(90, 90, 90)), 1);
@@ -168,7 +174,7 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 		connect(document, &Document::TotalLengthChanged, this, &SequenceView::TotalLengthChanged);
 
 		resolution = document->GetTimeBase();
-		viewLength = ViewLength(document->GetTotalLength());
+		viewLength = document->GetTotalVisibleLength();
 		currentLocation = 0;
 		currentChannel = -1;
 		playing = false;
@@ -283,15 +289,15 @@ QSet<int> SequenceView::CoarseGridsInRange(qreal tBegin, qreal tEnd)
 	return coarseGridLines;
 }
 
-QMap<int, int> SequenceView::BarsInRange(qreal tBegin, qreal tEnd)
+QMap<int, QPair<int, BarLine>> SequenceView::BarsInRange(qreal tBegin, qreal tEnd)
 {
 	const QMap<int, BarLine> &bars = document->GetBarLines();
 	const QMap<int, BarLine>::const_iterator ibar = bars.lowerBound(tBegin);
-	QMap<int, int> barLines;
+	QMap<int, QPair<int, BarLine>> barLines;
 	int num = 0;
 	for (QMap<int, BarLine>::const_iterator i=bars.begin(); i!=bars.end() && i->Location<=(int)tEnd; i++, num++){
 		if (i.key() >= tBegin){
-			barLines.insert(i->Location, num);
+			barLines.insert(i->Location, QPair<int, BarLine>(num, i.value()));
 		}
 	}
 	return barLines;
@@ -340,13 +346,6 @@ void SequenceView::VisibleRangeChanged() const
 			cview->GetChannel()->UpdateVisibleRegions(QList<QPair<int, int>>());
 		}
 	}
-}
-
-int SequenceView::ViewLength(int totalLength) const
-{
-	int totalBars = totalLength / (resolution*4) + 1;
-	int vl = (totalBars + 32) * (resolution*4);
-	return vl;
 }
 
 void SequenceView::wheelEventVp(QWheelEvent *event)
@@ -517,12 +516,15 @@ void SequenceView::SoundChannelMoved(int indexBefore, int indexAfter)
 void SequenceView::TotalLengthChanged(int totalLength)
 {
 	int oldVL = viewLength;
-	viewLength = ViewLength(totalLength);
+	viewLength = document->GetTotalVisibleLength();
 	if (oldVL != viewLength){
 		if (documentReady){
 			qreal t = oldVL - (verticalScrollBar()->value() + viewport()->height())/zoomY;
 			UpdateVerticalScrollBar(t);
 			update();
+			for (auto *cv : soundChannels){
+				cv->update();
+			}
 		}
 	}
 }
@@ -683,27 +685,25 @@ bool SequenceView::paintEventTimeLine(QWidget *timeLine, QPaintEvent *event)
 	static const int mx = 4, my = 4;
 	QPainter painter(timeLine);
 	QRect rect = event->rect();
-	painter.fillRect(rect, QColor(34, 34, 34));
 
 	int scrollY = verticalScrollBar()->value();
 
-	int left = rect.x() - mx;
-	int right = rect.right() + mx;
 	int top = rect.y() - my;
 	int bottom = rect.bottom() + my;
-	int height = bottom - top;
 
 	qreal tBegin = viewLength - (scrollY + bottom)/zoomY;
 	qreal tEnd = viewLength - (scrollY + top)/zoomY;
 
-	QMap<int, int> bars = BarsInRange(tBegin, tEnd);
+	painter.fillRect(QRect(timeLineMeasureWidth, rect.top(), timeLineBpmWidth, rect.height()), QColor(34, 34, 34));
+
+	QMap<int, QPair<int, BarLine>> bars = BarsInRange(tBegin, tEnd);
 	QSet<int> coarseGrids = CoarseGridsInRange(tBegin, tEnd) - bars.keys().toSet();
 	QSet<int> fineGrids = FineGridsInRange(tBegin, tEnd) - bars.keys().toSet() - coarseGrids;
 	{
 		QVector<QLine> lines;
 		for (int t : fineGrids){
 			int y = Time2Y(t) - 1;
-			lines.append(QLine(left, y, right, y));
+			lines.append(QLine(0, y, timeLineWidth, y));
 		}
 		painter.setPen(penStep);
 		painter.drawLines(lines);
@@ -712,36 +712,53 @@ bool SequenceView::paintEventTimeLine(QWidget *timeLine, QPaintEvent *event)
 		QVector<QLine> lines;
 		for (int t : coarseGrids){
 			int y = Time2Y(t) - 1;
-			lines.append(QLine(left, y, right, y));
+			lines.append(QLine(0, y, timeLineWidth, y));
 		}
 		painter.setPen(penBeat);
 		painter.drawLines(lines);
 	}
+	painter.fillRect(QRect(0, rect.top(), timeLineMeasureWidth, rect.height()), palette().window());
 	{
 		QVector<QLine> lines;
 		for (int t : bars.keys()){
 			int y = Time2Y(t) - 1;
-			lines.append(QLine(left, y, right, y));
+			lines.append(QLine(0, y, timeLineWidth, y));
 		}
 		painter.setPen(penBar);
 		painter.drawLines(lines);
 		painter.save();
-		painter.setPen(QColor(0, 255, 0));
-		for (auto i=bars.begin(); i!=bars.end(); i++){
+		for (QMap<int, QPair<int, BarLine>>::iterator i=bars.begin(); i!=bars.end(); i++){
 			int y = Time2Y(i.key()) - 1;
 			QTransform tf;
 			tf.rotate(-90.0);
-			tf.translate(2-y, 2);
+			tf.translate(2-y, 0);
 			painter.setTransform(tf);
-			painter.drawText(0, 0, 60, 24, 0, QString::number(i.value()));
+			painter.setPen(palette().color(i->second.Ephemeral ? QPalette::Disabled : QPalette::Normal, QPalette::ButtonText));
+			painter.drawText(0, 0, 60, timeLineMeasureWidth, Qt::AlignVCenter, QString::number(i->first));
 		}
 		painter.restore();
 	}
+	painter.setPen(palette().dark().color());
+	painter.drawLine(0, rect.top(), 0, rect.bottom()+1);
+	painter.drawLine(timeLineMeasureWidth, rect.top(), timeLineMeasureWidth, rect.bottom()+1);
 
 	if (showCursorNewNote){
 		painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
 		int y = Time2Y(cursorNewNote.location) - 1;
-		painter.drawLine(left, y, right, y);
+		painter.drawLine(timeLineMeasureWidth, y, timeLineWidth, y);
+	}
+
+	// bpm notes
+	painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 1));
+	painter.setBrush(Qt::NoBrush);
+	for (BpmEvent bpmEvent : document->GetBpmEvents()){
+		if (bpmEvent.location < tBegin)
+			continue;
+		if (bpmEvent.location > tEnd)
+			break;
+		int y = Time2Y(bpmEvent.location) - 1;
+		painter.drawLine(timeLineMeasureWidth, y, timeLineWidth-1, y);
+		painter.drawText(timeLineMeasureWidth, y-24, timeLineBpmWidth, 24, Qt::AlignHCenter | Qt::AlignBottom, QString::number(bpmEvent.value));
 	}
 
 	return true;
@@ -779,7 +796,7 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 	// horizontal lines
 	painter.setClipRegion(rgn);
 	{
-		QMap<int, int> bars = BarsInRange(tBegin, tEnd);
+		QMap<int, QPair<int, BarLine>> bars = BarsInRange(tBegin, tEnd);
 		QSet<int> coarseGrids = CoarseGridsInRange(tBegin, tEnd) - bars.keys().toSet();
 		QSet<int> fineGrids = FineGridsInRange(tBegin, tEnd) - bars.keys().toSet() - coarseGrids;
 		{
@@ -1144,7 +1161,7 @@ bool SequenceView::paintEventPlayingHeader(QWidget *widget, QPaintEvent *event)
 	QRect rect(0, 0, widget->width(), widget->height());
 	painter.setBrush(palette().window());
 	painter.setPen(palette().dark().color());
-	painter.drawRect(rect.adjusted(0, 0, -1, 0));
+	painter.drawRect(rect.adjusted(0, 0, -1, -1));
 	return true;
 }
 
@@ -1154,7 +1171,7 @@ bool SequenceView::paintEventPlayingFooter(QWidget *widget, QPaintEvent *event)
 	QRect rect(0, 0, widget->width(), widget->height());
 	painter.setBrush(palette().window());
 	painter.setPen(palette().dark().color());
-	painter.drawRect(rect.adjusted(0, -1, -1, -1));
+	painter.drawRect(rect.adjusted(0, 0, -1, -1));
 	return true;
 }
 
@@ -1513,7 +1530,7 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 	painter.fillRect(rect, current ? QColor(85, 85, 85) : QColor(51, 51, 51));
 	// grids
 	{
-		QMap<int, int> bars = sview->BarsInRange(tBegin, tEnd);
+		QMap<int, QPair<int, BarLine>> bars = sview->BarsInRange(tBegin, tEnd);
 		QSet<int> coarseGrids = sview->CoarseGridsInRange(tBegin, tEnd) - bars.keys().toSet();
 		QSet<int> fineGrids = sview->FineGridsInRange(tBegin, tEnd) - bars.keys().toSet() - coarseGrids;
 		{

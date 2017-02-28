@@ -347,7 +347,6 @@ void AudioPlayerInternal::PlaySource(AudioPlaySource *srcNew)
 	}
 	srcPrev = srcCurrent;
 	if (srcPrev){
-		qDebug() << "migrating current -> prev...";
 		tmpPrevPosition = tmpCurrentPosition;
 		for (int i=0; i<tmpPrevPosition; i++){
 			tmpPrev[i] = tmpCurrent[i];

@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
 	actionFileNew->setShortcut(QKeySequence::New);
 	QObject::connect(actionFileNew, SIGNAL(triggered()), this, SLOT(FileNew()));
 
-	actionFileOpen = new QAction(tr("Open"), this);
+	actionFileOpen = new QAction(tr("Open..."), this);
 	actionFileOpen->setIcon(QIcon(":/images/open.png"));
 	actionFileOpen->setShortcut(QKeySequence::Open);
 	QObject::connect(actionFileOpen, SIGNAL(triggered()), this, SLOT(FileOpen()));
@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
 	actionFileSave->setShortcut(QKeySequence::Save);
 	QObject::connect(actionFileSave, SIGNAL(triggered()), this, SLOT(FileSave()));
 
-	actionFileSaveAs = new QAction(tr("Save As"), this);
+	actionFileSaveAs = new QAction(tr("Save As..."), this);
 	actionFileSaveAs->setShortcut(QKeySequence::SaveAs);
 	QObject::connect(actionFileSaveAs, SIGNAL(triggered()), this, SLOT(FileSaveAs()));
 
@@ -95,7 +95,7 @@ MainWindow::MainWindow(QWidget *parent)
 	actionViewFullScreen->setShortcut(QKeySequence::FullScreen);
 	connect(actionViewFullScreen, SIGNAL(triggered()), this, SLOT(ViewFullScreen()));
 
-	actionChannelNew = new QAction(tr("Add"), this);
+	actionChannelNew = new QAction(tr("Add..."), this);
 	actionChannelNew->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_N);
 	connect(actionChannelNew, SIGNAL(triggered()), this, SLOT(ChannelNew()));
 
@@ -118,10 +118,10 @@ MainWindow::MainWindow(QWidget *parent)
 	actionChannelDestroy = new QAction(tr("Delete"), this);
 	connect(actionChannelDestroy, SIGNAL(triggered()), this, SLOT(ChannelDestroy()));
 
-	actionChannelSelectFile = new QAction(tr("Select File"), this);
+	actionChannelSelectFile = new QAction(tr("Select File..."), this);
 	connect(actionChannelSelectFile, SIGNAL(triggered()), this, SLOT(ChannelSelectFile()));
 
-	actionHelpAbout = new QAction(tr("About BmsONE"), this);
+	actionHelpAbout = new QAction(tr("About BmsONE..."), this);
 	connect(actionHelpAbout, SIGNAL(triggered()), this, SLOT(HelpAbout()));
 
 	auto *menuFile = menuBar()->addMenu(tr("File"));
@@ -175,7 +175,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	auto *menuHelp = menuBar()->addMenu(tr("Help"));
 	menuHelp->addAction(actionHelpAbout);
-	connect(menuHelp->addAction(tr("About Qt")), SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+	connect(menuHelp->addAction(tr("About Qt...")), SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
 	auto *fileTools = new QToolBar(tr("File"));
 	fileTools->setObjectName("File Tools");
@@ -309,6 +309,8 @@ void MainWindow::FileSaveAs()
 							 ";;" "all files (*.*)");
 		QString defaultPath = document->GetFilePath();
 		QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"), defaultPath.isEmpty() ? document->GetProjectDirectory().path() : defaultPath, filters, 0);
+		if (fileName.isEmpty())
+			return;
 		document->SaveAs(fileName);
 	}catch(...){
 		QMessageBox *msgbox = new QMessageBox(

@@ -21,6 +21,7 @@ private:
 	QLabel *labelLength;
 	//QLineEdit *editAdjustment;
 	QLabel *labelImage;
+	QToolButton *buttonPreview;
 
 	Document *document;
 

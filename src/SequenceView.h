@@ -174,11 +174,6 @@ public:
 	};
 
 private:
-	static const int timeLineWidth = 48;
-	static const int headerHeight = 60;
-	static const int footerHeight = 40;
-
-private:
 	MainWindow *mainWindow;
 
 	QWidget *headerCornerEntry;
@@ -199,6 +194,11 @@ private:
 			bool(SequenceView::*enterEventHandler)(QWidget *, QEvent *)=nullptr);
 
 	// general resources
+	int timeLineWidth;
+	int timeLineMeasureWidth;
+	int timeLineBpmWidth;
+	int headerHeight;
+	int footerHeight;
 	QMap<int, LaneDef> lanes;
 	QPen penBigV;
 	QPen penV;
@@ -248,12 +248,11 @@ private:
 	int X2Lane(int x) const;
 	QSet<int> FineGridsInRange(qreal tBegin, qreal tEnd);
 	QSet<int> CoarseGridsInRange(qreal tBegin, qreal tEnd);
-	QMap<int, int> BarsInRange(qreal tBegin, qreal tEnd);
+	QMap<int, QPair<int, BarLine> > BarsInRange(qreal tBegin, qreal tEnd);
 	qreal SnapToFineGrid(qreal time) const;
 	void SetNoteColor(QLinearGradient &g, int lane, bool active) const;
 	void UpdateVerticalScrollBar(qreal newTimeBegin=-1.0);
 	void VisibleRangeChanged() const;
-	int ViewLength(int totalLength) const;
 	SoundNoteView *HitTestPlayingPane(int lane, int y, int time);
 	void SelectSoundChannel(SoundChannelView *cview);
 	//void LeftClickOnExistingNote();

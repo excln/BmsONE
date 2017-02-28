@@ -34,12 +34,11 @@ void Document::Initialize()
 	directory = QDir::root();
 
 	timeBase = 240;
+	actualLength = 0;
 	totalLength = 0;
 	info.Initialize();
-	for (int i=0; i<8; i++){
-		int t = i * timeBase * 4;
-		barLines.insert(t, BarLine(t, 0));
-	}
+	barLines.insert(0, BarLine(0, 0));
+	UpdateTotalLength();
 }
 
 void Document::LoadFile(QString filePath)
@@ -50,6 +49,7 @@ void Document::LoadFile(QString filePath)
 	Bmson::Bms bms;
 	Bmson::BmsonIo::LoadFile(bms, filePath);
 	timeBase = 240;
+	actualLength = 0;
 	totalLength = 0;
 	info.LoadBmson(bms.info);
 	barLines.insert(0, BarLine(0, 0)); // make sure BarLine at 0, even if bms.barLines is empty.
@@ -65,10 +65,7 @@ void Document::LoadFile(QString filePath)
 		soundChannelLength.insert(channel, channel->GetLength());
 		soundChannels.push_back(channel);
 	}
-	for (int length : soundChannelLength){
-		if (length > totalLength)
-			totalLength = length;
-	}
+	UpdateTotalLength();
 	this->filePath = filePath;
 	emit FilePathChanged();
 }
@@ -100,10 +97,12 @@ void Document::Save()
 	Bmson::Bms bms;
 	info.SaveBmson(bms.info);
 	for (BarLine barLine : barLines){
-		Bmson::BarLine bar;
-		bar.location = barLine.Location;
-		bar.kind = barLine.Kind;
-		bms.barLines.append(bar);
+		if (!barLine.Ephemeral || barLine.Location <= actualLength){
+			Bmson::BarLine bar;
+			bar.location = barLine.Location;
+			bar.kind = barLine.Kind;
+			bms.barLines.append(bar);
+		}
 	}
 	for (BpmEvent event : bpmEvents){
 		Bmson::EventNote e;
@@ -128,6 +127,11 @@ void Document::SaveAs(const QString &filePath)
 }
 
 int Document::GetTotalLength() const
+{
+	return totalLength;
+}
+
+int Document::GetTotalVisibleLength() const
 {
 	return totalLength;
 }
@@ -188,12 +192,34 @@ void Document::MoveSoundChannel(int indexBefore, int indexAfter)
 void Document::ChannelLengthChanged(SoundChannel *channel, int length)
 {
 	soundChannelLength.insert(channel, length);
+	UpdateTotalLength();
+}
+
+void Document::UpdateTotalLength()
+{
 	int oldValue = totalLength;
-	totalLength = 0;
+	actualLength = 0;
 	for (int length : soundChannelLength){
-		if (length > totalLength)
-			totalLength = length;
+		if (length > actualLength)
+			actualLength = length;
 	}
+	totalLength = actualLength + 32 * 4 * timeBase;
+
+	// update ephemeral bars
+	for (QMap<int, BarLine>::iterator i=barLines.begin(); i!=barLines.end(); ){
+		if (i->Ephemeral){
+			i = barLines.erase(i);
+			continue;
+		}
+		i++;
+	}
+	if (!barLines.contains(0)){
+		barLines.insert(0, BarLine(0, 0));
+	}
+	for (int t = barLines.lastKey() + 4*timeBase; t<totalLength; t+=4*timeBase){
+		barLines.insert(t, BarLine(t, 0, true));
+	}
+
 	if (oldValue != totalLength){
 		emit TotalLengthChanged(totalLength);
 	}
