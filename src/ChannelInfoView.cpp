@@ -26,7 +26,7 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 
 	auto *b = new QToolButton(labelImage);
 	connect(b, SIGNAL(clicked()), this, SLOT(PreviewSound()));
-	b->setText("Preview");
+	b->setIcon(QIcon(":/images/sound.png"));
 	b->setToolTip(tr("Preview"));
 
 	Initialize(layout);

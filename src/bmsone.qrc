@@ -1,5 +1,12 @@
 <RCC>
     <qresource prefix="/">
         <file>i18n/ja.qm</file>
+        <file>images/open.png</file>
+        <file>images/save.png</file>
+        <file>images/mute.png</file>
+        <file>images/snap.png</file>
+        <file>images/sound.png</file>
+        <file>images/new.png</file>
+        <file>images/stop.png</file>
     </qresource>
 </RCC>

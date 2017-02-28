@@ -19,8 +19,7 @@ SequenceTools::SequenceTools(const QString &objectName, const QString &windowTit
 	setObjectName(objectName);
 	setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 
-	snapToGrid = addAction("Snap to Grid");
-	snapToGrid->setToolTip(tr("Snap to Grid"));
+	snapToGrid = addAction(QIcon(":/images/snap.png"), tr("Snap to Grid"));
 	snapToGrid->setCheckable(true);
 	connect(snapToGrid, SIGNAL(toggled(bool)), this, SLOT(SnapToGrid(bool)));
 

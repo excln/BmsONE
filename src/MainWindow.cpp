@@ -27,14 +27,17 @@ MainWindow::MainWindow(QWidget *parent)
 	setAcceptDrops(true);
 
 	actionFileNew = new QAction(tr("New"), this);
+	actionFileNew->setIcon(QIcon(":/images/new.png"));
 	actionFileNew->setShortcut(QKeySequence::New);
 	QObject::connect(actionFileNew, SIGNAL(triggered()), this, SLOT(FileNew()));
 
 	actionFileOpen = new QAction(tr("Open"), this);
+	actionFileOpen->setIcon(QIcon(":/images/open.png"));
 	actionFileOpen->setShortcut(QKeySequence::Open);
 	QObject::connect(actionFileOpen, SIGNAL(triggered()), this, SLOT(FileOpen()));
 
 	actionFileSave = new QAction(tr("Save"), this);
+	actionFileSave->setIcon(QIcon(":/images/save.png"));
 	actionFileSave->setShortcut(QKeySequence::Save);
 	QObject::connect(actionFileSave, SIGNAL(triggered()), this, SLOT(FileSave()));
 

@@ -12,8 +12,7 @@ AudioPlayer::AudioPlayer(const QString &objectName, const QString &windowTitle, 
 	setObjectName(objectName);
 	setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 
-	actionMute = addAction("Mute");
-	actionMute->setToolTip(tr("Mute"));
+	actionMute = addAction(QIcon(":/images/mute.png"), tr("Mute"));
 	actionMute->setCheckable(true);
 	connect(actionMute, SIGNAL(toggled(bool)), this, SLOT(ToggleMute(bool)));
 	sliderVolume = new QSlider(Qt::Horizontal);
@@ -25,8 +24,7 @@ AudioPlayer::AudioPlayer(const QString &objectName, const QString &windowTitle, 
 	addWidget(sliderVolume);
 	indicator = new AudioPlayerIndicator(this);
 	addWidget(indicator);
-	QAction *actionStop = addAction("Stop");
-	actionStop->setToolTip(tr("Stop"));
+	QAction *actionStop = addAction(QIcon(":/images/stop.png"), tr("Stop"));
 	connect(actionStop, SIGNAL(triggered()), this, SLOT(Stop()));
 
 	output = new AudioPlayerOutput();
