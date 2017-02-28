@@ -21,6 +21,11 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	labelImage->setFixedHeight(160 + labelImage->frameWidth()*2);
 	labelImage->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
 	labelImage->setScaledContents(true);
+
+	auto *b = new QToolButton(labelImage);
+	connect(b, SIGNAL(clicked()), this, SLOT(PreviewSound()));
+	b->setText("Preview");
+
 	setLayout(layout);
 	setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
 	setMinimumWidth(40);
@@ -155,6 +160,13 @@ void ChannelInfoView::OverallWaveformUpdated()
 	}else{
 		labelImage->setPixmap(QPixmap());
 	}
+}
+
+void ChannelInfoView::PreviewSound()
+{
+	if (!channel)
+		return;
+	mainWindow->GetAudioPlayer()->PreviewSoundChannelSource(channel);
 }
 
 void ChannelInfoView::SoundChannelInserted(int index, SoundChannel *channel)

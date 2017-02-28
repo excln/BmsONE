@@ -4,6 +4,8 @@
 #include <QtCore>
 #include <QtWidgets>
 #include "Document.h"
+#include "AudioPlayer.h"
+#include "SequenceTools.h"
 
 class SequenceView;
 class InfoView;
@@ -15,6 +17,8 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 private:
+	AudioPlayer *audioPlayer;
+	SequenceTools *sequenceTools;
 	SequenceView *sequenceView;
 	InfoView *infoView;
 	ChannelInfoView *channelInfoView;
@@ -77,6 +81,8 @@ public:
 	virtual void dragMoveEvent(QDragMoveEvent *event);
 	virtual void dragLeaveEvent(QDragLeaveEvent *event);
 	virtual void dropEvent(QDropEvent *event);
+
+	AudioPlayer *GetAudioPlayer() const{ return audioPlayer; }
 
 };
 

@@ -957,6 +957,7 @@ bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *even
 					selectedNotes.insert(noteHit);
 				}
 				SelectSoundChannel(noteHit->GetChannelView());
+				PreviewSingleNote(noteHit);
 				break;
 			case Qt::RightButton:
 				// delete note
@@ -986,6 +987,7 @@ bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *even
 					const QMap<int, SoundNoteView*> &notes = soundChannels[currentChannel]->GetNotes();
 					if (notes.contains(time)){
 						selectedNotes.insert(notes[time]);
+						PreviewSingleNote(notes[time]);
 					}
 					timeLine->update();
 					playingPane->update();
@@ -1017,6 +1019,13 @@ void SequenceView::SelectSoundChannel(SoundChannelView *cview){
 			}
 		}
 	}
+}
+
+void SequenceView::PreviewSingleNote(SoundNoteView *nview)
+{
+	SoundChannelNotePreviewer *previewer = new SoundChannelNotePreviewer(nview->GetChannelView()->GetChannel(), nview->GetNote().location, this);
+	connect(previewer, SIGNAL(Stopped()), previewer, SLOT(deleteLater())); // toriaezu
+	mainWindow->GetAudioPlayer()->Play(previewer);
 }
 
 bool SequenceView::paintEventHeaderEntity(QWidget *widget, QPaintEvent *event)
@@ -1613,6 +1622,9 @@ void SoundChannelFooter::mouseMoveEvent(QMouseEvent *event)
 void SoundChannelFooter::mousePressEvent(QMouseEvent *event)
 {
 	sview->SelectSoundChannel(cview);
+	if (event->button() == Qt::MidButton){
+		sview->mainWindow->GetAudioPlayer()->PreviewSoundChannelSource(cview->channel);
+	}
 }
 
 void SoundChannelFooter::mouseReleaseEvent(QMouseEvent *event)

@@ -3,8 +3,8 @@
 
 #include <QtCore>
 #include <QtMultimedia>
-#include "ogg/ogg.h"
-#include "vorbis/vorbisfile.h"
+#include <ogg/ogg.h>
+#include <vorbis/vorbisfile.h>
 
 
 
@@ -35,7 +35,7 @@ protected:
 	QAudioFormat format;
 	quint64 bytes;
 	quint64 frames;
-	quint64 current;
+	quint64 current; // in frames
 
 public:
 	AudioStreamSource(QObject *parent=nullptr) : QObject(parent), error(0){}
@@ -93,6 +93,35 @@ public:
 };
 
 
+class S16S44100StreamTransformer : public AudioStreamSource
+{
+	Q_OBJECT
+
+private:
+	static const uint AuxBufferSize = 4096;
+
+public:
+	typedef QAudioBuffer::S16S SampleType;
+
+private:
+	AudioStreamSource *src;
+	char *auxBuffer;
+	QList<SampleType> hindBuffer;
+	int adjust;
+
+	bool IsSourceS16S44100() const;
+
+public:
+	S16S44100StreamTransformer(AudioStreamSource *src);
+	~S16S44100StreamTransformer();
+
+	virtual int Open();
+	virtual quint64 Read(char *buffer, quint64 bufferSize);
+	virtual void SeekRelative(qint64 relativeFrames);
+	virtual void SeekAbsolute(quint64 absoluteFrames);
+
+	quint64 Read(QAudioBuffer::S16S *buffer, quint64 frames);
+};
 
 
 
@@ -172,6 +201,23 @@ public:
 	int GetSamplingRate() const{ return samplingRate; }
 	const SampleType &operator [](int index) const{ return data[index]; }
 	SampleType &operator [](int index){ return data[index]; }
+};
+
+
+
+
+class AudioPlaySource : public QObject
+{
+	Q_OBJECT
+
+public:
+	typedef QAudioBuffer::S16S SampleType;
+
+	AudioPlaySource(QObject *parent=nullptr) : QObject(parent){}
+	~AudioPlaySource(){}
+
+	virtual void AudioPlayRelease()=0;
+	virtual int AudioPlayRead(SampleType *buffer, int bufferSampleCount)=0;
 };
 
 

@@ -40,6 +40,8 @@ private slots:
 	void OverallWaveformUpdated();
 	//void WaveDataUpdated();
 
+	void PreviewSound();
+
 public slots:
 	void OnCurrentChannelChanged(int index);
 

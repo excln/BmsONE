@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = bmsone
 TEMPLATE = app
 
-QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
 
 SOURCES += main.cpp\
         MainWindow.cpp \
@@ -23,7 +23,9 @@ SOURCES += main.cpp\
     InfoView.cpp \
     ChannelInfoView.cpp \
     Wave.cpp \
-    QuasiModalEdit.cpp
+    QuasiModalEdit.cpp \
+    AudioPlayer.cpp \
+    SequenceTools.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -34,7 +36,9 @@ HEADERS  += MainWindow.h \
     InfoView.h \
     ChannelInfoView.h \
     Wave.h \
-    QuasiModalEdit.h
+    QuasiModalEdit.h \
+    AudioPlayer.h \
+    SequenceTools.h
 
 FORMS    +=
 
@@ -48,8 +52,8 @@ RESOURCES += \
 
 
 
-INCLUDEPATH += $$PWD/
-DEPENDPATH += $$PWD/
+win32: INCLUDEPATH += $$PWD/
+win32: DEPENDPATH += $$PWD/
 
 win32: LIBS += -L$$PWD/lib/win32_VS2012/ -llibogg_static
 
@@ -66,3 +70,14 @@ win32: LIBS += -L$$PWD/lib/win32_VS2012/ -llibvorbisfile_static
 
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/libvorbisfile_static.lib
 else:win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/liblibvorbisfile_static.a
+
+
+
+macx: INCLUDEPATH += /usr/local/Cellar/libogg/1.3.2/include /usr/local/Cellar/libvorbis/1.3.5/include
+macx: LIBS += /usr/local/Cellar/libogg/1.3.2/lib/libogg.a \
+     /usr/local/Cellar/libvorbis/1.3.5/lib/libvorbis.a \
+     /usr/local/Cellar/libvorbis/1.3.5/lib/libvorbisfile.a
+macx: PRE_TARGETDEPS += /usr/local/Cellar/libogg/1.3.2/lib/libogg.a \
+     /usr/local/Cellar/libvorbis/1.3.5/lib/libvorbis.a \
+     /usr/local/Cellar/libvorbis/1.3.5/lib/libvorbisfile.a
+

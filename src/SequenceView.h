@@ -283,6 +283,7 @@ private:
 	void SelectSoundChannel(SoundChannelView *cview);
 	//void LeftClickOnExistingNote();
 	//void RightClickOnExistingNote();
+	void PreviewSingleNote(SoundNoteView *nview);
 
 	void mouseMoveEventVp(QMouseEvent *event);
 	void dragEnterEventVp(QDragEnterEvent *event);

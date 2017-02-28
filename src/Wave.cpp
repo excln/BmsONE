@@ -64,6 +64,7 @@ int WaveStreamSource::Open()
 			error = UnsupportedFormat;
 			return error;
 		}
+		format.setByteOrder(QAudioFormat::LittleEndian);
 		format.setChannelCount(channelsCount);
 		format.setCodec("audio/pcm");
 		format.setSampleRate(samplesPerSec);
@@ -145,7 +146,7 @@ int WaveStreamSource::Open()
 
 quint64 WaveStreamSource::Read(char *buffer, quint64 bufferSize)
 {
-	int readSize = din.readRawData(buffer, bufferSize);
+	int readSize = din.readRawData(buffer, std::min(bufferSize, (frames-current) * format.bytesPerFrame()));
 	current += readSize / format.bytesPerFrame();
 	return readSize;
 }
@@ -153,7 +154,7 @@ quint64 WaveStreamSource::Read(char *buffer, quint64 bufferSize)
 void WaveStreamSource::SeekRelative(qint64 relativeFrames)
 {
 	file.seek(file.pos() + relativeFrames * format.bytesPerFrame());
-	current += relativeFrames * format.bytesPerFrame();
+	current += relativeFrames;
 }
 
 void WaveStreamSource::SeekAbsolute(quint64 absoluteFrames)
@@ -228,7 +229,7 @@ int OggStreamSource::Open()
 quint64 OggStreamSource::Read(char *buffer, quint64 bufferSize)
 {
 	int bs;
-	int readSize = ov_read(file, buffer, bufferSize, 0, 2, 1, &bs);
+	int readSize = ov_read(file, buffer, std::min(bufferSize, (frames-current) * format.bytesPerFrame()), 0, 2, 1, &bs);
 	if (readSize < 0){
 		switch (readSize){
 		case OV_HOLE:
@@ -763,6 +764,86 @@ StandardWaveData::~StandardWaveData()
 		delete[] data;
 	}
 }
+
+
+
+
+
+
+
+
+S16S44100StreamTransformer::S16S44100StreamTransformer(AudioStreamSource *src)
+	: src(src)
+	, auxBuffer(new char[AuxBufferSize])
+{
+	src->setParent(this);
+	format.setCodec("audio/pcm");
+	format.setByteOrder(QAudioFormat::LittleEndian);
+	format.setSampleSize(16);
+	format.setSampleType(QAudioFormat::SignedInt);
+	format.setChannelCount(2);
+	format.setSampleRate(44100);
+	std::memset(auxBuffer, 0, AuxBufferSize);
+	bytes = src->GetTotalBytes() * src->GetFormat().bytesForFrames(src->GetFormat().sampleRate()) / format.bytesForFrames(format.sampleRate());
+	frames = src->GetFrameCount() * src->GetFormat().sampleRate() / format.sampleRate();
+	current = 0;
+}
+
+S16S44100StreamTransformer::~S16S44100StreamTransformer()
+{
+	delete[] auxBuffer;
+}
+
+bool S16S44100StreamTransformer::IsSourceS16S44100() const
+{
+	//return src->GetFormat() == format;
+	QAudioFormat fmt = src->GetFormat();
+	return fmt.byteOrder() == format.byteOrder()
+			&& fmt.sampleSize() == format.sampleSize()
+			&& fmt.sampleType() == format.sampleType()
+			&& fmt.channelCount() == format.channelCount()
+			&& fmt.sampleRate() == format.sampleRate();
+}
+
+int S16S44100StreamTransformer::Open()
+{
+	return src->Open();
+}
+
+quint64 S16S44100StreamTransformer::Read(char *buffer, quint64 bufferSize)
+{
+	quint64 framesRead = Read(reinterpret_cast<QAudioBuffer::S16S*>(buffer), bufferSize/sizeof(QAudioBuffer::S16S));
+	return framesRead * sizeof(QAudioBuffer::S16S);
+}
+
+void S16S44100StreamTransformer::SeekRelative(qint64 relativeFrames)
+{
+	current += relativeFrames;
+	src->SeekRelative(relativeFrames * src->GetFormat().sampleRate() / format.sampleRate());
+}
+
+void S16S44100StreamTransformer::SeekAbsolute(quint64 absoluteFrames)
+{
+	current = absoluteFrames;
+	src->SeekAbsolute(absoluteFrames * src->GetFormat().sampleRate() / format.sampleRate());
+}
+
+quint64 S16S44100StreamTransformer::Read(QAudioBuffer::S16S *buffer, quint64 frames)
+{
+	if (IsSourceS16S44100()){
+		quint64 framesRead = src->Read(reinterpret_cast<char*>(buffer), frames * sizeof(QAudioBuffer::S16S)) / sizeof(QAudioBuffer::S16S);
+		current += framesRead;
+		return framesRead;
+	}
+	const int SrcFrameSize = src->GetFormat().bytesPerFrame();
+	return 0;
+}
+
+
+
+
+
+
 
 
 

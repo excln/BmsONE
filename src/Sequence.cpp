@@ -1,4 +1,46 @@
 #include "Document.h"
+#include <cstdlib>
+#include <cmath>
+
+
+
+AudioStreamSource *SoundChannelSourceFileUtil::open(const QString &srcPath, QObject *parent)
+{
+	AudioStreamSource *wave = nullptr;
+	QFileInfo file(srcPath);
+	QString ext = file.suffix().toLower();
+	if (ext == "wav"){
+		if (file.exists()){
+			wave = new WaveStreamSource(srcPath, parent);
+		}else{
+			QString srcPath2 = file.dir().absoluteFilePath(file.completeBaseName().append(".ogg"));
+			QFileInfo file2(srcPath2);
+			if (file2.exists()){
+				file = file2;
+				wave = new OggStreamSource(srcPath2, parent);
+			}else{
+				//
+			}
+		}
+	}else if (ext == "ogg"){
+		if (file.exists()){
+			wave = new OggStreamSource(srcPath, parent);
+		}else{
+			QString srcPath2 = file.dir().absoluteFilePath(file.completeBaseName().append(".wav"));
+			QFileInfo file2(srcPath2);
+			if (file2.exists()){
+				file = file2;
+				wave = new WaveStreamSource(srcPath2, parent);
+			}else{
+				//
+			}
+		}
+	}else{
+		//
+	}
+	return wave;
+}
+
 
 
 static QMap<int, int> MergeRegions(const QMultiMap<int, int> &regs)
@@ -237,36 +279,7 @@ void SoundChannelResourceManager::UpdateWaveData(const QString &srcPath)
 	overallWaveform.fill(0x00000000);
 	rmsCachePackets.clear();
 	file = QFileInfo(srcPath);
-	QString ext = file.suffix().toLower();
-	if (ext == "wav"){
-		if (file.exists()){
-			wave = new WaveStreamSource(srcPath, this);
-		}else{
-			QString srcPath2 = file.dir().absoluteFilePath(file.completeBaseName().append(".ogg"));
-			QFileInfo file2(srcPath2);
-			if (file2.exists()){
-				file = file2;
-				wave = new OggStreamSource(srcPath2, this);
-			}else{
-				//
-			}
-		}
-	}else if (ext == "ogg"){
-		if (file.exists()){
-			wave = new OggStreamSource(srcPath, this);
-		}else{
-			QString srcPath2 = file.dir().absoluteFilePath(file.completeBaseName().append(".wav"));
-			QFileInfo file2(srcPath2);
-			if (file2.exists()){
-				file = file2;
-				wave = new WaveStreamSource(srcPath2, this);
-			}else{
-				//
-			}
-		}
-	}else{
-		//
-	}
+	wave = SoundChannelSourceFileUtil::open(srcPath, this);
 	currentTask = QtConcurrent::run([this](){
 		RunTaskWaveData();
 	});
@@ -275,7 +288,7 @@ void SoundChannelResourceManager::UpdateWaveData(const QString &srcPath)
 void SoundChannelResourceManager::RequireRmsCachePacket(int position)
 {
 	// uncompression may be done before whole compression completes.
-	QtConcurrent::run([=, this](){
+	QtConcurrent::run([=](){
 		RunTaskRmsCachePacket(position);
 	});
 //	currentTask = QtConcurrent::run([this](QFuture<void> currentTask, int position){
@@ -773,6 +786,162 @@ void SoundChannelResourceManager::ConvertAuxBufferToS16S(QAudioBuffer::S16S *buf
 		break;
 	}
 }
+
+
+
+
+
+
+
+SoundChannelSourceFilePreviewer::SoundChannelSourceFilePreviewer(SoundChannel *channel, QObject *parent)
+	: AudioPlaySource(parent)
+	, wave(nullptr)
+{
+	QString srcPath = channel->document->GetAbsolutePath(channel->fileName);
+	AudioStreamSource *native = SoundChannelSourceFileUtil::open(srcPath, this);
+	if (native){
+		wave = new S16S44100StreamTransformer(native);
+		wave->Open();
+	}
+}
+
+SoundChannelSourceFilePreviewer::~SoundChannelSourceFilePreviewer()
+{
+	//qDebug() << "~SoundChannelSourceFilePreviewer";
+}
+
+void SoundChannelSourceFilePreviewer::AudioPlayRelease()
+{
+	//qDebug() << "AudioPlayRelease";
+	if (!wave){
+		return;
+	}
+	delete wave;
+	wave = nullptr;
+	emit Stopped();
+}
+
+int SoundChannelSourceFilePreviewer::AudioPlayRead(AudioPlaySource::SampleType *buffer, int bufferSampleCount)
+{
+	if (!wave){
+		return 0;
+	}
+	return wave->Read(buffer, bufferSampleCount);
+}
+
+
+
+
+
+
+SoundChannelNotePreviewer::SoundChannelNotePreviewer(SoundChannel *channel, int location, QObject *parent)
+	: AudioPlaySource(parent)
+	, SamplesPerSec(channel->waveSummary->Format.sampleRate())
+	, TicksPerBeat(channel->document->GetTimeBase())
+	, wave(nullptr)
+	, cache(channel->cache)
+{
+	auto inote = channel->notes.find(location);
+	if (inote == channel->notes.end())
+		return;
+	note = inote.value();
+	if (++inote == channel->notes.end()){
+		nextNoteLocation = INT_MAX;
+	}else{
+		nextNoteLocation = inote.key();
+	}
+	icache = cache.lowerBound(location);
+	if (icache.key() == location){
+		// exact!
+		currentBpm = icache->currentTempo;
+		currentSamplePos = icache->currentSamplePosition;
+		icache++;
+	}else{
+		if (icache == cache.begin() || icache->prevSamplePosition<0){
+			// only silent slicing notes can come here
+			return;
+		}
+		currentBpm = icache->prevTempo;
+		currentSamplePos = icache->prevSamplePosition - (icache.key() - location)*(60.0 * SamplesPerSec / (icache->prevTempo * TicksPerBeat));
+	}
+	currentTicks = location;
+	QString srcPath = channel->document->GetAbsolutePath(channel->fileName);
+	AudioStreamSource *native = SoundChannelSourceFileUtil::open(srcPath, this);
+	if (!native)
+		return;
+	wave = new S16S44100StreamTransformer(native);
+	wave->Open();
+	wave->SeekAbsolute(currentSamplePos);
+}
+
+SoundChannelNotePreviewer::~SoundChannelNotePreviewer()
+{
+}
+
+
+void SoundChannelNotePreviewer::AudioPlayRelease()
+{
+	if (!wave)
+		return;
+	delete wave;
+	wave = nullptr;
+	emit Stopped();
+}
+
+int SoundChannelNotePreviewer::AudioPlayRead(AudioPlaySource::SampleType *buffer, int bufferSampleCount)
+{
+	if (!wave)
+		return 0;
+	const int samplesRead = wave->Read(buffer, bufferSampleCount);
+	if (samplesRead == 0){
+		return 0;
+	}
+	double samples = samplesRead;
+	while (true){
+		double nextExpectedTicks = currentTicks + (samples/SamplesPerSec)*currentBpm*TicksPerBeat/60.0;
+		if (nextExpectedTicks <= icache.key()){
+			// no BPM events
+			if (nextExpectedTicks >= nextNoteLocation){
+				// sound is cut
+				int endSamples = (nextNoteLocation-currentTicks) * (60.0 * SamplesPerSec / (currentBpm * TicksPerBeat));
+				currentTicks = nextNoteLocation;
+				currentSamplePos += endSamples;
+				return std::min(samplesRead, int((samplesRead - samples) + endSamples)); // use only samples until end
+			}else{
+				currentTicks = nextExpectedTicks;
+				currentSamplePos += samplesRead;
+				return samplesRead;
+			}
+		}else if (icache.key() < nextNoteLocation){
+			// occurs some event(s) (*icache)
+			double samplesAtEvent = (icache.key() - currentTicks) * (60.0 * SamplesPerSec / (currentBpm * TicksPerBeat));
+			if (icache->prevSamplePosition != icache->currentSamplePosition){
+				// cut (restart)
+				// (currently, this cannot happen??)
+				currentTicks = icache.key();
+				currentSamplePos += samplesAtEvent;
+				return std::min(samplesRead, int((samplesRead - samples) + samplesAtEvent));
+			}else{
+				currentTicks = icache.key();
+				currentSamplePos += icache->currentSamplePosition;
+				currentBpm = icache->currentTempo;
+				samples -= samplesAtEvent;
+			}
+		}else{
+			int endSamples = (nextNoteLocation-currentTicks) * (60.0 * SamplesPerSec / (currentBpm * TicksPerBeat));
+			currentTicks = nextNoteLocation;
+			currentSamplePos += endSamples;
+			return std::min(samplesRead, int((samplesRead - samples) + endSamples)); // use only samples until end
+		}
+	}
+}
+
+
+
+
+
+
+
 
 
 

@@ -139,6 +139,12 @@ MainWindow::MainWindow(QWidget *parent)
 	menuChannel->addSeparator();
 	menuChannel->addAction(actionChannelSelectFile);
 
+	sequenceTools = new SequenceTools("Sequence Tools", tr("Sequence Tools"), this);
+	addToolBar(sequenceTools);
+
+	audioPlayer = new AudioPlayer("Sound Output", tr("Sound Output"), this);
+	addToolBar(audioPlayer);
+
 	sequenceView = new SequenceView(this);
 	setCentralWidget(sequenceView);
 	//sequenceView->installEventFilter(this);

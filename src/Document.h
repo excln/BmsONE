@@ -174,10 +174,45 @@ signals:
 };
 
 
+class SoundChannelSourceFileUtil
+{
+public:
+	static AudioStreamSource *open(const QString &srcPath, QObject *parent=nullptr);
+};
+
+
+
+class SoundChannelSourceFilePreviewer : public AudioPlaySource
+{
+	Q_OBJECT
+
+private:
+	S16S44100StreamTransformer *wave;
+
+signals:
+	void Progress(quint64 position);
+	void Stopped();
+
+public:
+	SoundChannelSourceFilePreviewer(SoundChannel *channel, QObject *parent=nullptr);
+	~SoundChannelSourceFilePreviewer();
+
+	virtual void AudioPlayRelease();
+	virtual int AudioPlayRead(SampleType *buffer, int bufferSampleCount);
+};
+
+
+
+
+
+
 
 class SoundChannel : public QObject
 {
 	Q_OBJECT
+
+	friend class SoundChannelSourceFilePreviewer;
+	friend class SoundChannelNotePreviewer;
 
 private:
 	struct CacheEntry{
@@ -249,6 +284,39 @@ signals:
 	void OverallWaveformUpdated();
 	void RmsUpdated();
 };
+
+
+
+
+class SoundChannelNotePreviewer : public AudioPlaySource
+{
+	Q_OBJECT
+
+private:
+	const double SamplesPerSec;
+	const double TicksPerBeat;
+	S16S44100StreamTransformer *wave;
+	QMap<int, SoundChannel::CacheEntry> cache;
+	SoundNote note;
+	int nextNoteLocation;
+	QMap<int, SoundChannel::CacheEntry>::iterator icache;
+	int currentSamplePos;
+	double currentBpm;
+	double currentTicks;
+
+signals:
+	void Progress(int ticksOffset);
+	void Stopped();
+
+public:
+	SoundChannelNotePreviewer(SoundChannel *channel, int location, QObject *parent=nullptr);
+	~SoundChannelNotePreviewer();
+
+	virtual void AudioPlayRelease();
+	virtual int AudioPlayRead(SampleType *buffer, int bufferSampleCount);
+};
+
+
 
 
 
