@@ -25,6 +25,7 @@ private:
 
 	int ichannel;
 	SoundChannel *channel;
+	AudioPlaySource *channelSourcePreviewer;
 
 private:
 	void SetCurrentChannel(int index);
@@ -33,6 +34,7 @@ private slots:
 	void SoundChannelInserted(int index, SoundChannel *channel);
 	void SoundChannelRemoved(int index, SoundChannel *channel);
 	void SoundChannelMoved(int indexBefore, int indexAfter);
+	void AfterSoundChannelsChange();
 
 	void ChannelListSelectChanged(int index);
 

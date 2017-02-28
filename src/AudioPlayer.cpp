@@ -3,86 +3,87 @@
 
 AudioPlayer::AudioPlayer(const QString &objectName, const QString &windowTitle, QWidget *parent)
 	: QToolBar(windowTitle, parent)
+	, audioThread(new QThread())
 	, indicator(nullptr)
 	, io(nullptr)
-	, aout(nullptr)
+	, mute(false)
+	, volume(1.0f)
 {
 	setObjectName(objectName);
 	setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 
+	actionMute = addAction("Mute");
+	actionMute->setCheckable(true);
+	connect(actionMute, SIGNAL(toggled(bool)), this, SLOT(ToggleMute(bool)));
+	sliderVolume = new QSlider(Qt::Horizontal);
+	sliderVolume->setFixedWidth(128);
+	sliderVolume->setRange(0, VolumeMax);
+	sliderVolume->setValue(VolumeMax); // temp.
+	sliderVolume->setToolTip(tr("Volume"));
+	connect(sliderVolume, SIGNAL(valueChanged(int)), this, SLOT(ChangeVolume(int)));
+	addWidget(sliderVolume);
 	indicator = new AudioPlayerIndicator(this);
 	addWidget(indicator);
-	addAction("Stop");
+	QAction *actionStop = addAction("Stop");
+	connect(actionStop, SIGNAL(triggered()), this, SLOT(Stop()));
 
-	QAudioFormat format;
-	format.setCodec("audio/pcm");
-	format.setSampleSize(16);
-	format.setSampleType(QAudioFormat::SignedInt);
-	format.setByteOrder(QAudioFormat::LittleEndian);
-	format.setChannelCount(2);
-	format.setSampleRate(44100);
-
-	QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-	if (!info.isFormatSupported(format)){
-		return;
-	}
+	output = new AudioPlayerOutput();
+	output->moveToThread(audioThread);
 
 	io = new AudioPlayerInternal(this);
 	connect(io, SIGNAL(AudioIndicator(float,float,float,float)), indicator, SLOT(ChangeValue(float,float,float,float)), Qt::QueuedConnection);
+	io->SetMute(false);
+	io->SetVolume(1.0f);
 
-	aout = new QAudioOutput(format, this);
-	connect(aout, SIGNAL(stateChanged(QAudio::State)), this, SLOT(OnStateChanged(QAudio::State)));
-
-	aout->start(io);
+	audioThread->start(QThread::HighPriority);
+	qRegisterMetaType<AudioPlayerInternal*>("AudioPlayerInternal*");
+	QMetaObject::invokeMethod(output, "Start", Q_ARG(AudioPlayerInternal*, io));
 }
 
 AudioPlayer::~AudioPlayer()
 {
+	audioThread->exit();
+	audioThread->wait();
 	io->StopSourcesImmediately();
-	if (aout){
-		aout->stop();
-		delete aout; // make sure to finish completely before `io` is deleted.
-	}
-}
-
-void AudioPlayer::OnStateChanged(QAudio::State newState)
-{
-	switch (newState) {
-	case QAudio::ActiveState:
-		break;
-	case QAudio::SuspendedState:
-		break;
-	case QAudio::IdleState:
-		aout->stop();
-		break;
-	case QAudio::StoppedState:
-		break;
-	default:
-		break;
-	}
-}
-
-void AudioPlayer::OnAudioIndicator(float peakL, float peakR, float rmsL, float rmsR)
-{
-	barPeakL->setValue(peakL * 65535.f);
-	barPeakR->setValue(peakR * 65535.f);
-	barRmsL->setValue(rmsL * 65535.f);
-	barRmsR->setValue(rmsR * 65535.f);
 }
 
 
 void AudioPlayer::Play(AudioPlaySource *src)
 {
-	if (!aout){
+	if (!output->isWorking()){
 		src->AudioPlayRelease();
 		return;
 	}
 	io->PlaySource(src);
 }
 
+void AudioPlayer::ToggleMute(bool value)
+{
+	mute = value;
+	if (!io)
+		return;
+	io->SetMute(mute);
+}
+
+void AudioPlayer::ChangeVolume(int value)
+{
+	volume = value / float(VolumeMax);
+	if (!io)
+		return;
+	io->SetVolume(volume);
+}
+
+void AudioPlayer::Stop()
+{
+	if (!output->isWorking()){
+		return;
+	}
+	io->StopSources();
+}
+
 void AudioPlayer::StopImmediately()
 {
-	if (!aout)
+	if (!output->isWorking())
 		return;
 	io->StopSourcesImmediately();
 }
@@ -96,25 +97,91 @@ void AudioPlayer::PreviewSoundChannelSource(SoundChannel *channel)
 
 
 
+AudioPlayerOutput::AudioPlayerOutput(QObject *parent)
+	: QObject(parent)
+	, aout(nullptr)
+{
+}
+
+AudioPlayerOutput::~AudioPlayerOutput()
+{
+	if (aout){
+		aout->stop();
+		delete aout; // make sure to finish completely before `io` is deleted.
+	}
+}
+
+void AudioPlayerOutput::Start(AudioPlayerInternal *io)
+{
+	QAudioFormat format;
+	format.setCodec("audio/pcm");
+	format.setSampleSize(16);
+	format.setSampleType(QAudioFormat::SignedInt);
+	format.setByteOrder(QAudioFormat::LittleEndian);
+	format.setChannelCount(2);
+	format.setSampleRate(44100);
+
+	QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+	if (!info.isFormatSupported(format)){
+		qDebug() << "AudioPlayer: format is not supported.";
+		return;
+	}
+
+	aout = new QAudioOutput(format, this);
+	connect(aout, SIGNAL(stateChanged(QAudio::State)), this, SLOT(OnStateChanged(QAudio::State)));
+
+	aout->setBufferSize(16384);
+	aout->start(io);
+}
+
+void AudioPlayerOutput::Stop()
+{
+}
+
+void AudioPlayerOutput::OnStateChanged(QAudio::State newState)
+{
+	switch (newState) {
+	case QAudio::ActiveState:
+		break;
+	case QAudio::SuspendedState:
+		break;
+	case QAudio::IdleState:
+		// don't stop
+		//aout->stop();
+		break;
+	case QAudio::StoppedState:
+		break;
+	default:
+		break;
+	}
+}
 
 
+
+
+
+
+const qint64 AudioPlayerInternal::BufferSampleCount = 4096;
 const float AudioPlayerInternal::EnvPrevRelease   = 0.0008f;
 const float AudioPlayerInternal::EnvPrevThreshold = 0.0001f;
 
 AudioPlayerInternal::AudioPlayerInternal(QObject *parent)
 	: QIODevice(parent)
 	, srcCurrent(nullptr)
+	, tmpCurrent(new SampleTypeRead[BufferSampleCount])
 	, srcPrev(nullptr)
+	, tmpPrev(new SampleTypeRead[BufferSampleCount])
 	, tmpCurrentPosition(0)
 	, tmpPrevPosition(0)
 	, envPrev(0.0f)
+	, tmp(new SampleTypeTemp[BufferSampleCount])
 {
-	open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+	open(QIODevice::ReadOnly/* | QIODevice::Unbuffered*/);
 }
 
 AudioPlayerInternal::~AudioPlayerInternal()
 {
-	QMutexLocker locker(&mutexSourcesRef);
+	QMutexLocker locker(&mutex);
 	if (srcCurrent){
 		// disconnect before release (in case of a situation where source emits `destroyed` in `AudioPlayRelease`)
 		disconnect(srcCurrent, SIGNAL(destroyed(QObject*)), this, SLOT(OnSourceDestroyed(QObject*)));
@@ -130,7 +197,7 @@ AudioPlayerInternal::~AudioPlayerInternal()
 
 void AudioPlayerInternal::OnSourceDestroyed(QObject *src)
 {
-	QMutexLocker locker(&mutexSourcesRef);
+	QMutexLocker locker(&mutex);
 	if (src == srcPrev){
 		srcPrev = nullptr;
 		tmpPrevPosition = 0;
@@ -150,17 +217,17 @@ void AudioPlayerInternal::close()
 
 qint64 AudioPlayerInternal::bytesAvailable() const
 {
-	return QIODevice::bytesAvailable() + BufferSampleCount*sizeof(SampleTypePlay);
+	return QIODevice::bytesAvailable() + BufferSampleCount*(qint64)sizeof(SampleTypePlay);
 }
 
 qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 {
 	SampleTypePlay *buf = reinterpret_cast<SampleTypePlay*>(data);
-	const qint64 samplesToRead = std::min(BufferSampleCount, maxSize / sizeof(SampleTypePlay));
+	const qint64 samplesToRead = std::min(BufferSampleCount, maxSize / (qint64)sizeof(SampleTypePlay));
 	if (samplesToRead <= 0){
 		return 0;
 	}
-	auto t0 = QTime::currentTime();
+	//auto t0 = QTime::currentTime();
 	float peakL = 0.0f;
 	float peakR = 0.0f;
 	float rmsL = 0.0f;
@@ -169,8 +236,8 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 		for (qint64 i=0; i<samplesToRead; i++){
 			tmp[i].clear();
 		}
-		QMutexLocker locker(&mutexSourcesRef);
-		if (srcCurrent){
+		QMutexLocker locker(&mutex);
+		if (!mute && srcCurrent){
 			int posOut = 0;
 			while (posOut + tmpCurrentPosition <= samplesToRead){
 				for (int i=0; i<tmpCurrentPosition; i++){
@@ -199,7 +266,7 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 				srcCurrent = nullptr;
 			}
 		}
-		if (srcPrev){
+		if (!mute && srcPrev){
 			int posOut = 0;
 			while (posOut + tmpPrevPosition <= samplesToRead){
 				for (int i=0; i<tmpPrevPosition; i++){
@@ -232,8 +299,8 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 			}
 		}
 		for (int i=0; i<samplesToRead; i++){
-			float l = saturate(0.9f, tmp[i].left);
-			float r = saturate(0.9f, tmp[i].right);
+			float l = saturate(0.9f, tmp[i].left) * volume;
+			float r = saturate(0.9f, tmp[i].right) * volume;
 			float absL = std::fabsf(l);
 			float absR = std::fabsf(r);
 			if (absL > peakL){
@@ -244,13 +311,13 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 			}
 			rmsL += l*l;
 			rmsR += r*r;
-			buf[i].left = tmp[i].left * 32767.f;
-			buf[i].right = tmp[i].right * 32767.f;
+			buf[i].left = l * 32767.f;
+			buf[i].right = r * 32767.f;
 		}
 	}
 	emit AudioIndicator(peakL, peakR, std::sqrtf(rmsL/samplesToRead), std::sqrtf(rmsR/samplesToRead));
 	//qDebug() << QString("%1 samples processed in %2 ms").arg(samplesToRead).arg(t0.msecsTo(QTime::currentTime()));
-	return samplesToRead * sizeof(SampleTypePlay);
+	return samplesToRead * (qint64)sizeof(SampleTypePlay);
 }
 
 float AudioPlayerInternal::saturate(float t, float x)
@@ -274,7 +341,7 @@ float AudioPlayerInternal::sigmoid(float x)
 
 void AudioPlayerInternal::PlaySource(AudioPlaySource *srcNew)
 {
-	QMutexLocker locker(&mutexSourcesRef);
+	QMutexLocker locker(&mutex);
 	if (srcPrev){
 		disconnect(srcPrev, SIGNAL(destroyed(QObject*)), this, SLOT(OnSourceDestroyed(QObject*)));
 		srcPrev->AudioPlayRelease();
@@ -292,7 +359,7 @@ void AudioPlayerInternal::PlaySource(AudioPlaySource *srcNew)
 
 void AudioPlayerInternal::StopSources()
 {
-	QMutexLocker locker(&mutexSourcesRef);
+	QMutexLocker locker(&mutex);
 	if (srcCurrent){
 		if (srcPrev){
 			disconnect(srcPrev, SIGNAL(destroyed(QObject*)), this, SLOT(OnSourceDestroyed(QObject*)));
@@ -311,7 +378,7 @@ void AudioPlayerInternal::StopSources()
 
 void AudioPlayerInternal::StopSourcesImmediately()
 {
-	QMutexLocker locker(&mutexSourcesRef);
+	QMutexLocker locker(&mutex);
 	if (srcCurrent){
 		disconnect(srcCurrent, SIGNAL(destroyed(QObject*)), this, SLOT(OnSourceDestroyed(QObject*)));
 		srcCurrent->AudioPlayRelease();
@@ -327,6 +394,18 @@ void AudioPlayerInternal::StopSourcesImmediately()
 	envPrev = 0.0f;
 }
 
+void AudioPlayerInternal::SetMute(bool mute)
+{
+	QMutexLocker locker(&mutex);
+	this->mute = mute;
+}
+
+void AudioPlayerInternal::SetVolume(float volume)
+{
+	QMutexLocker locker(&mutex);
+	this->volume = volume;
+}
+
 
 
 
@@ -338,6 +417,7 @@ AudioPlayerIndicator::AudioPlayerIndicator(QWidget *parent)
 	: QFrame(parent)
 	, peakL(0.f), peakR(0.f), rmsL(0.f), rmsR(0.f)
 {
+	setToolTip(tr("Output Level Meter"));
 	setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
 	setFixedWidth(128);
 	setFixedHeight(22);
@@ -353,10 +433,10 @@ void AudioPlayerIndicator::paintEvent(QPaintEvent *event)
 	QRect rect(frameWidth(), frameWidth(), width()-frameWidth()*2, height()-frameWidth()*2);
 	QPainter painter(this);
 	painter.fillRect(rect, QColor(0, 0, 0));
-	painter.fillRect(rect.left(), rect.top(), int(rect.width()*peakL), rect.height()/2, QColor(0, 255, 0));
-	painter.fillRect(rect.top(), rect.top() + rect.height()/2, int(rect.width()*peakR), rect.height()-rect.height()/2, QColor(0, 255, 0));
-	painter.fillRect(rect.left(), rect.top(), int(rect.width()*rmsL), rect.height()/2, QColor(255, 255, 0));
-	painter.fillRect(rect.top(), rect.top() + rect.height()/2, int(rect.width()*rmsR), rect.height()-rect.height()/2, QColor(255, 255, 0));
+	painter.fillRect(rect.left(), rect.top(), int(rect.width()*peakL), rect.height()/2, QColor(0, 221, 0));
+	painter.fillRect(rect.top(), rect.top() + rect.height()/2, int(rect.width()*peakR), rect.height()-rect.height()/2, QColor(0, 221, 0));
+	painter.fillRect(rect.left(), rect.top(), int(rect.width()*rmsL), rect.height()/2, QColor(255, 221, 85));
+	painter.fillRect(rect.top(), rect.top() + rect.height()/2, int(rect.width()*rmsR), rect.height()-rect.height()/2, QColor(255, 221, 85));
 }
 
 void AudioPlayerIndicator::ChangeValue(float peakL, float peakR, float rmsL, float rmsR)
@@ -367,6 +447,7 @@ void AudioPlayerIndicator::ChangeValue(float peakL, float peakR, float rmsL, flo
 	this->rmsR = rmsR;
 	update();
 }
+
 
 
 

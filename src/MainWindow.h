@@ -25,6 +25,7 @@ private:
 
 	Document *document;
 
+	int currentChannel;
 
 private:
 	QAction *actionFileNew;
@@ -50,8 +51,17 @@ private:
 	QAction *actionChannelNew;
 	QAction *actionChannelPrev;
 	QAction *actionChannelNext;
+	QAction *actionChannelMoveLeft;
+	QAction *actionChannelMoveRight;
 	QAction *actionChannelDestroy;
 	QAction *actionChannelSelectFile;
+
+private:
+	void ReplaceDocument(Document *newDocument);
+	bool Save();
+	bool EnsureClosingFile();
+	static bool IsBmsFileExtension(const QString &ext);
+	static bool IsSoundFileExtension(const QString &ext);
 
 private slots:
 	void FileNew();
@@ -61,16 +71,21 @@ private slots:
 	void FileSaveAs();
 	void EditUndo();
 	void EditRedo();
+	void ChannelNew();
+	void ChannelPrev();
+	void ChannelNext();
+	void ChannelMoveLeft();
+	void ChannelMoveRight();
+	void ChannelDestroy();
+	void ChannelSelectFile();
+	void ChannelsNew(QList<QString> filePaths);
 
 	void FilePathChanged();
 
-signals:
-	void RequestFileOpen(QString path);
+	void OnCurrentChannelChanged(int ichannel);
 
-private:
-	void ReplaceDocument(Document *newDocument);
-	bool Save();
-	bool EnsureClosingFile();
+signals:
+	void CurrentChannelChanged(int ichannel);
 
 public:
 	explicit MainWindow(QWidget *parent = nullptr);

@@ -16,20 +16,22 @@ private:
 	typedef QAudioBuffer::S16S SampleTypePlay;
 	typedef QAudioBuffer::S16S SampleTypeRead;
 	typedef QAudioBuffer::S32F SampleTypeTemp;
-	static const qint64 BufferSampleCount = 16384;
+	static const qint64 BufferSampleCount;
 	static const float EnvPrevRelease;
 	static const float EnvPrevThreshold;
 
 private:
-	QMutex mutexSourcesRef;
+	QMutex mutex;
 	AudioPlaySource *srcCurrent;
-	SampleTypeRead tmpCurrent[BufferSampleCount];
+	SampleTypeRead *tmpCurrent;
 	int tmpCurrentPosition;
 	AudioPlaySource *srcPrev;
-	SampleTypeRead tmpPrev[BufferSampleCount];
+	SampleTypeRead *tmpPrev;
 	int tmpPrevPosition;
 	float envPrev;
-	SampleTypeTemp tmp[BufferSampleCount];
+	SampleTypeTemp *tmp;
+	bool mute;
+	float volume;
 
 	static float sigmoid(float x);
 	static float saturate(float t, float x);
@@ -44,6 +46,7 @@ public:
 	AudioPlayerInternal(QObject *parent=nullptr);
 	~AudioPlayerInternal();
 
+	virtual bool isSequential() const{ return true; }
 	virtual void close();
 	virtual bool atEnd() const{ return false; }
 	virtual qint64 bytesAvailable() const;
@@ -53,6 +56,8 @@ public:
 	void PlaySource(AudioPlaySource *srcNew);
 	void StopSources();
 	void StopSourcesImmediately();
+	void SetMute(bool mute);
+	void SetVolume(float volume);
 };
 
 
@@ -75,6 +80,28 @@ public slots:
 };
 
 
+class AudioPlayerOutput : public QObject
+{
+	Q_OBJECT
+
+private:
+	QAudioOutput *aout;
+
+private slots:
+	void OnStateChanged(QAudio::State newState);
+
+public:
+	AudioPlayerOutput(QObject *parent=nullptr);
+	~AudioPlayerOutput();
+
+	bool isWorking() const{ return aout != nullptr; }
+
+public slots:
+	void Start(AudioPlayerInternal *io);
+	void Stop();
+};
+
+
 
 class AudioPlayer : public QToolBar
 {
@@ -83,25 +110,29 @@ class AudioPlayer : public QToolBar
 	friend class AudioPlayerInternal;
 
 private:
+	static const int VolumeMax = 127;
+
+private:
+	QThread *audioThread;
+	AudioPlayerOutput *output;
 	AudioPlayerIndicator *indicator;
 	AudioPlayerInternal *io;
-	QAudioOutput *aout;
+	QAction *actionMute;
+	QSlider *sliderVolume;
+	bool mute;
+	float volume;
 
-	QProgressBar *barPeakL;
-	QProgressBar *barPeakR;
-	QProgressBar *barRmsL;
-	QProgressBar *barRmsR;
-
-private slots:
-	void OnStateChanged(QAudio::State newState);
-	void OnAudioIndicator(float peakL, float peakR, float rmsL, float rmsR);
+public slots:
+	void ToggleMute(bool value);
+	void ChangeVolume(int value);
+	void Stop();
+	void StopImmediately();
 
 public:
 	AudioPlayer(const QString &objectName, const QString &windowTitle, QWidget *parent=nullptr);
 	~AudioPlayer();
 
 	void Play(AudioPlaySource *src);
-	void StopImmediately();
 
 
 	// high-level functions

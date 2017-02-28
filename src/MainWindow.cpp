@@ -7,6 +7,7 @@
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, document(nullptr)
+	, currentChannel(-1)
 {
 #ifdef Q_OS_WIN
 	setFont(QFont("Meiryo"));
@@ -15,8 +16,6 @@ MainWindow::MainWindow(QWidget *parent)
 	setDockOptions(QMainWindow::AnimatedDocks);
 	setUnifiedTitleAndToolBarOnMac(true);
 	setAcceptDrops(true);
-
-	connect(this, SIGNAL(RequestFileOpen(QString)), this, SLOT(FileOpen(QString)), Qt::QueuedConnection);
 
 	actionFileNew = new QAction(tr("New"), this);
 	actionFileNew->setShortcut(QKeySequence::New);
@@ -87,16 +86,29 @@ MainWindow::MainWindow(QWidget *parent)
 
 	actionChannelNew = new QAction(tr("Add"), this);
 	actionChannelNew->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_N);
+	connect(actionChannelNew, SIGNAL(triggered()), this, SLOT(ChannelNew()));
 
 	actionChannelPrev = new QAction(tr("Select Previous"), this);
 	actionChannelPrev->setShortcut(QKeySequence::Back);
+	connect(actionChannelPrev, SIGNAL(triggered()), this, SLOT(ChannelPrev()));
 
 	actionChannelNext = new QAction(tr("Select Next"), this);
 	actionChannelNext->setShortcut(QKeySequence::Forward);
+	connect(actionChannelNext, SIGNAL(triggered()), this, SLOT(ChannelNext()));
+
+	actionChannelMoveLeft = new QAction(tr("Move Left"), this);
+	actionChannelMoveLeft->setShortcut(Qt::ControlModifier + Qt::AltModifier + Qt::Key_Left);
+	connect(actionChannelMoveLeft, SIGNAL(triggered()), this, SLOT(ChannelMoveLeft()));
+
+	actionChannelMoveRight = new QAction(tr("Move Right"), this);
+	actionChannelMoveRight->setShortcut(Qt::ControlModifier + Qt::AltModifier + Qt::Key_Right);
+	connect(actionChannelMoveRight, SIGNAL(triggered()), this, SLOT(ChannelMoveRight()));
 
 	actionChannelDestroy = new QAction(tr("Delete"), this);
+	connect(actionChannelDestroy, SIGNAL(triggered()), this, SLOT(ChannelDestroy()));
 
 	actionChannelSelectFile = new QAction(tr("Select File"), this);
+	connect(actionChannelSelectFile, SIGNAL(triggered()), this, SLOT(ChannelSelectFile()));
 
 	auto *menuFile = menuBar()->addMenu(tr("File"));
 	menuFile->addAction(actionFileNew);
@@ -135,6 +147,9 @@ MainWindow::MainWindow(QWidget *parent)
 	menuChannel->addAction(actionChannelPrev);
 	menuChannel->addAction(actionChannelNext);
 	menuChannel->addSeparator();
+	menuChannel->addAction(actionChannelMoveLeft);
+	menuChannel->addAction(actionChannelMoveRight);
+	menuChannel->addSeparator();
 	menuChannel->addAction(actionChannelDestroy);
 	menuChannel->addSeparator();
 	menuChannel->addAction(actionChannelSelectFile);
@@ -162,8 +177,13 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 	// Current Channel Binding
+	connect(channelInfoView, SIGNAL(CurrentChannelChanged(int)), this, SLOT(OnCurrentChannelChanged(int)));
+	connect(sequenceView, SIGNAL(CurrentChannelChanged(int)), this, SLOT(OnCurrentChannelChanged(int)));
+	connect(this, SIGNAL(CurrentChannelChanged(int)), channelInfoView, SLOT(OnCurrentChannelChanged(int)));
+	connect(this, SIGNAL(CurrentChannelChanged(int)), sequenceView, SLOT(OnCurrentChannelChanged(int)));
 	connect(channelInfoView, SIGNAL(CurrentChannelChanged(int)), sequenceView, SLOT(OnCurrentChannelChanged(int)));
 	connect(sequenceView, SIGNAL(CurrentChannelChanged(int)), channelInfoView, SLOT(OnCurrentChannelChanged(int)));
+
 
 
 	auto newDocument = new Document(this);
@@ -260,6 +280,69 @@ void MainWindow::EditRedo()
 	document->GetHistory()->Redo();
 }
 
+void MainWindow::ChannelNew()
+{
+
+}
+
+void MainWindow::ChannelPrev()
+{
+	if (!document || currentChannel < 0)
+		return;
+	if (currentChannel == 0){
+		currentChannel = document->GetSoundChannels().size()-1;
+	}else{
+		currentChannel--;
+	}
+	emit CurrentChannelChanged(currentChannel);
+}
+
+void MainWindow::ChannelNext()
+{
+	if (!document || currentChannel < 0)
+		return;
+	if (currentChannel == document->GetSoundChannels().size()-1){
+		currentChannel = 0;
+	}else{
+		currentChannel++;
+	}
+	emit CurrentChannelChanged(currentChannel);
+}
+
+void MainWindow::ChannelMoveLeft()
+{
+	if (!document || currentChannel < 0)
+		return;
+	document->MoveSoundChannel(currentChannel, currentChannel-1);
+}
+
+void MainWindow::ChannelMoveRight()
+{
+	if (!document || currentChannel < 0)
+		return;
+	document->MoveSoundChannel(currentChannel, currentChannel+1);
+}
+
+void MainWindow::ChannelDestroy()
+{
+	if (!document || currentChannel < 0)
+		return;
+	document->DestroySoundChannel(currentChannel);
+}
+
+void MainWindow::ChannelSelectFile()
+{
+	if (!document || currentChannel < 0)
+		return;
+}
+
+void MainWindow::ChannelsNew(QList<QString> filePaths)
+{
+	if (!document)
+		return;
+	document->InsertNewSoundChannels(filePaths);
+}
+
 void MainWindow::FilePathChanged()
 {
 	QString title = document->GetFilePath();
@@ -271,6 +354,22 @@ void MainWindow::FilePathChanged()
 	}
 	title += " - bmsone";
 	this->setWindowTitle(title);
+}
+
+void MainWindow::OnCurrentChannelChanged(int ichannel)
+{
+	currentChannel = ichannel;
+	if (currentChannel >= 0){
+		actionChannelMoveLeft->setEnabled(true);
+		actionChannelMoveRight->setEnabled(true);
+		actionChannelDestroy->setEnabled(true);
+		actionChannelSelectFile->setEnabled(true);
+	}else{
+		actionChannelMoveLeft->setEnabled(false);
+		actionChannelMoveRight->setEnabled(false);
+		actionChannelDestroy->setEnabled(false);
+		actionChannelSelectFile->setEnabled(false);
+	}
 }
 
 void MainWindow::ReplaceDocument(Document *newDocument)
@@ -289,6 +388,7 @@ void MainWindow::ReplaceDocument(Document *newDocument)
 	sequenceView->ReplaceDocument(document);
 
 	FilePathChanged();
+	OnCurrentChannelChanged(-1);
 
 	// begin interaction
 	channelInfoView->Begin();
@@ -327,6 +427,23 @@ bool MainWindow::EnsureClosingFile()
 		return false;
 	}
 }
+
+bool MainWindow::IsBmsFileExtension(const QString &ext)
+{
+	if (ext == "bmson"){
+		return true;
+	}
+	return false;
+}
+
+bool MainWindow::IsSoundFileExtension(const QString &ext)
+{
+	if (ext == "wav" || ext == "ogg"){
+		return true;
+	}
+	return false;
+}
+
 /*
 bool MainWindow::eventFilter(QObject *object, QEvent *event)
 {
@@ -375,7 +492,25 @@ void MainWindow::dropEvent(QDropEvent *event)
 	const QMimeData* mimeData = event->mimeData();
 	if (mimeData->hasUrls()){
 		QList<QUrl> urls = mimeData->urls();
-		emit RequestFileOpen(urls[0].toLocalFile());
+		QString filePath = urls[0].toLocalFile();
+		QString ext = QFileInfo(filePath).suffix().toLower();
+		if (IsBmsFileExtension(ext)){
+			QMetaObject::invokeMethod(this, "FileOpen", Qt::QueuedConnection, Q_ARG(QString, filePath));
+		}else if (IsSoundFileExtension(ext)){
+			QList<QString> filePaths;
+			for (auto url : urls){
+				filePaths.append(url.toLocalFile());
+			}
+			QMetaObject::invokeMethod(this, "ChannelsNew", Qt::QueuedConnection, Q_ARG(QList<QString>, filePaths));
+		}else{
+			QMessageBox *msgbox = new QMessageBox(
+						QMessageBox::Warning,
+						tr("Error"),
+						tr("Unknown File Type"),
+						QMessageBox::Ok,
+						this);
+			msgbox->show();
+		}
 		event->setDropAction(Qt::CopyAction);
 		event->accept();
 	}

@@ -128,6 +128,43 @@ QList<QPair<int, int> > Document::FindConflictingNotes(SoundNote note) const
 	return noteRefs;
 }
 
+void Document::InsertNewSoundChannels(const QList<QString> &soundFilePaths, int index)
+{
+	for (size_t i=0; i<soundFilePaths.size(); i++){
+		auto *channel = new SoundChannel(this);
+		channel->LoadSound(soundFilePaths[i]);
+		soundChannelLength.insert(channel, channel->GetLength());
+		int ix = index < 0 ? soundChannels.size() : index+i;
+		soundChannels.insert(ix, channel);
+		emit SoundChannelInserted(ix, channel);
+	}
+	emit AfterSoundChannelsChange();
+}
+
+void Document::DestroySoundChannel(int index)
+{
+	if (index < 0 || index >= (int)soundChannels.size())
+		return;
+	auto *channel = soundChannels.takeAt(index);
+	soundChannelLength.remove(channel);
+	emit SoundChannelRemoved(index, channel);
+	delete channel;
+	emit AfterSoundChannelsChange();
+}
+
+void Document::MoveSoundChannel(int indexBefore, int indexAfter)
+{
+	if (indexBefore < 0 || indexBefore >= (int)soundChannels.size())
+		return;
+	indexAfter = std::max(0, std::min(soundChannels.size()-1, indexAfter));
+	if (indexBefore == indexAfter)
+		return;
+	auto *channel = soundChannels.takeAt(indexBefore);
+	soundChannels.insert(indexAfter, channel);
+	emit SoundChannelMoved(indexBefore, indexAfter);
+	emit AfterSoundChannelsChange();
+}
+
 void Document::ChannelLengthChanged(SoundChannel *channel, int length)
 {
 	soundChannelLength.insert(channel, length);

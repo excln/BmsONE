@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     Wave.cpp \
     QuasiModalEdit.cpp \
     AudioPlayer.cpp \
-    SequenceTools.cpp
+    SequenceTools.cpp \
+    Stabilizer.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -38,7 +39,8 @@ HEADERS  += MainWindow.h \
     Wave.h \
     QuasiModalEdit.h \
     AudioPlayer.h \
-    SequenceTools.h
+    SequenceTools.h \
+    Stabilizer.h
 
 FORMS    +=
 

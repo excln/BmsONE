@@ -415,6 +415,9 @@ public:
 	const QList<SoundChannel*> &GetSoundChannels() const{ return soundChannels; }
 	int GetTotalLength() const;
 	QList<QPair<int, int>> FindConflictingNotes(SoundNote note) const; // returns [Channel,Location]
+	void InsertNewSoundChannels(const QList<QString> &soundFilePaths, int index=-1);
+	void DestroySoundChannel(int index);
+	void MoveSoundChannel(int indexBefore, int indexAfter);
 
 	//void GetBpmEventsInRange(int startTick, int span, double &initBpm, QVector<BpmEvent> &bpmEvents) const; // span=0 = untill end
 
@@ -425,6 +428,7 @@ signals:
 	void SoundChannelInserted(int index, SoundChannel *channel);
 	void SoundChannelRemoved(int index, SoundChannel *channel);
 	void SoundChannelMoved(int indexBefore, int indexAfter);
+	void AfterSoundChannelsChange();
 
 	// emitted when BPM(initialBPM/BPM Notes location) or timeBase changed.
 	void TimeMappingChanged();

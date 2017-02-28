@@ -5,6 +5,7 @@
 int main(int argc, char *argv[])
 {
 	qRegisterMetaType<QList<RmsCacheEntry>>("QList<RmsCacheEntry>");
+	qRegisterMetaType<QList<QString>>("QList<QString>");
 
 	QApplication app(argc, argv);
 	QTranslator translator;

@@ -5,6 +5,7 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	: QWidget(mainWindow)
 	, mainWindow(mainWindow)
 	, document(nullptr)
+	, channelSourcePreviewer(nullptr)
 {
 	QFormLayout *layout = new QFormLayout();
 	layout->addRow(channelList = new QComboBox());
@@ -41,7 +42,10 @@ void ChannelInfoView::ReplaceDocument(Document *newDocument)
 {
 	// unload
 	{
-		//...
+		if (channelSourcePreviewer){
+			delete channelSourcePreviewer;
+			channelSourcePreviewer = nullptr;
+		}
 	}
 	document = newDocument;
 	// load
@@ -56,6 +60,7 @@ void ChannelInfoView::ReplaceDocument(Document *newDocument)
 		connect(document, &Document::SoundChannelInserted, this, &ChannelInfoView::SoundChannelInserted);
 		connect(document, &Document::SoundChannelRemoved, this, &ChannelInfoView::SoundChannelRemoved);
 		connect(document, &Document::SoundChannelMoved, this, &ChannelInfoView::SoundChannelMoved);
+		connect(document, &Document::AfterSoundChannelsChange, this, &ChannelInfoView::AfterSoundChannelsChange);
 
 		// channel-dependent widgets
 		buttonFile->setText(QString());
@@ -84,6 +89,10 @@ void ChannelInfoView::Begin()
 
 void ChannelInfoView::SetCurrentChannel(int index)
 {
+	if (channelSourcePreviewer){
+		delete channelSourcePreviewer;
+		channelSourcePreviewer = nullptr;
+	}
 	if (channel){
 		disconnect(channel, SIGNAL(WaveSummaryUpdated()), this, SLOT(WaveSummaryUpdated()));
 		disconnect(channel, SIGNAL(OverallWaveformUpdated()), this, SLOT(OverallWaveformUpdated()));
@@ -105,6 +114,7 @@ void ChannelInfoView::SetCurrentChannel(int index)
 		buttonFile->setEnabled(false);
 		labelFormat->setText(QString());
 		labelLength->setText(QString());
+		labelImage->clear();
 		//editAdjustment->setText(QString());
 		//editAdjustment->setEnabled(false);
 	}
@@ -112,13 +122,13 @@ void ChannelInfoView::SetCurrentChannel(int index)
 
 static QString TextForSamplingRate(int rate)
 {
-	if ((rate/1000)*1000 == rate){
+	if ((rate%1000) == 0){
 		return QString("%1kHz").arg(rate/1000);
 	}
-	if ((rate/100)*100 == rate){
+	if ((rate%100) == 0){
 		return QString("%1.%2kHz").arg(rate/1000).arg((rate/100)%10);
 	}
-	if ((rate/10)*10 == rate){
+	if ((rate%10) == 0){
 		return QString("%1.%2%3kHz").arg(rate/1000).arg((rate/100)%10).arg((rate/10)%10);
 	}
 	return QString("%1.%2%3%4kHz").arg(rate/1000).arg((rate/100)%10).arg((rate/10)%10).arg(rate%10);
@@ -166,24 +176,44 @@ void ChannelInfoView::PreviewSound()
 {
 	if (!channel)
 		return;
-	mainWindow->GetAudioPlayer()->PreviewSoundChannelSource(channel);
+	channelSourcePreviewer =  new SoundChannelSourceFilePreviewer(channel, this);
+	connect(channelSourcePreviewer, SIGNAL(Stopped()), channelSourcePreviewer, SLOT(deleteLater()));
+	mainWindow->GetAudioPlayer()->Play(channelSourcePreviewer);
 }
 
 void ChannelInfoView::SoundChannelInserted(int index, SoundChannel *channel)
 {
+	SetCurrentChannel(-1);
+	disconnect(channelList, SIGNAL(currentIndexChanged(int)), this, SLOT(ChannelListSelectChanged(int)));
 	channelList->insertItem(index, channel->GetName());
+	channelList->setCurrentIndex(index);
+	connect(channelList, SIGNAL(currentIndexChanged(int)), this, SLOT(ChannelListSelectChanged(int)));
 }
 
 void ChannelInfoView::SoundChannelRemoved(int index, SoundChannel *channel)
 {
+	SetCurrentChannel(-1);
+	disconnect(channelList, SIGNAL(currentIndexChanged(int)), this, SLOT(ChannelListSelectChanged(int)));
 	channelList->removeItem(index);
+	connect(channelList, SIGNAL(currentIndexChanged(int)), this, SLOT(ChannelListSelectChanged(int)));
 }
 
 void ChannelInfoView::SoundChannelMoved(int indexBefore, int indexAfter)
 {
+	SetCurrentChannel(-1);
 	auto s = channelList->itemText(indexBefore);
+	disconnect(channelList, SIGNAL(currentIndexChanged(int)), this, SLOT(ChannelListSelectChanged(int)));
 	channelList->removeItem(indexBefore);
 	channelList->insertItem(indexAfter, s);
+	channelList->setCurrentIndex(indexAfter);
+	connect(channelList, SIGNAL(currentIndexChanged(int)), this, SLOT(ChannelListSelectChanged(int)));
+}
+
+void ChannelInfoView::AfterSoundChannelsChange()
+{
+	int index = channelList->currentIndex();
+	SetCurrentChannel(index);
+	emit CurrentChannelChanged(index);
 }
 
 void ChannelInfoView::ChannelListSelectChanged(int index)

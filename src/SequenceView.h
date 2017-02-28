@@ -100,6 +100,7 @@ public:
 	virtual void mousePressEvent(QMouseEvent *event);
 	virtual void mouseReleaseEvent(QMouseEvent *event);
 	virtual void mouseDoubleClickEvent(QMouseEvent *event);
+	virtual void contextMenuEvent(QContextMenuEvent * event);
 };
 
 
@@ -120,6 +121,7 @@ public:
 	virtual void mousePressEvent(QMouseEvent *event);
 	virtual void mouseReleaseEvent(QMouseEvent *event);
 	virtual void mouseDoubleClickEvent(QMouseEvent *event);
+	virtual void contextMenuEvent(QContextMenuEvent * event);
 };
 
 
@@ -136,11 +138,37 @@ private:
 	QMap<int, SoundNoteView*> notes;
 	bool current;
 
+	QImage *backBuffer;
+
+private:
+	QAction *actionPreview;
+	QAction *actionMoveLeft;
+	QAction *actionMoveRight;
+	QAction *actionDestroy;
+
+private:
 	SoundNoteView *HitTestBGPane(int y, qreal time);
+	void OnChannelMenu(QContextMenuEvent * event);
+
+private slots:
+	void NoteInserted(SoundNote note);
+	void NoteRemoved(SoundNote note);
+	void NoteChanged(int oldLocation, SoundNote note);
+
+	void RmsUpdated();
+
+	void Preview();
+	void MoveLeft();
+	void MoveRight();
+	void Destroy();
+
 public:
 	SoundChannelView(SequenceView *sview, SoundChannel *channel);
 	~SoundChannelView();
 
+	void UpdateBackBuffer(const QRect &rect);
+	void UpdateWholeBackBuffer();
+	void RemakeBackBuffer();
 	void ScrollContents(int dy);
 
 	SoundChannel *GetChannel() const{ return channel; }
@@ -156,13 +184,6 @@ public:
 	virtual void mouseDoubleClickEvent(QMouseEvent *event);
 	virtual void enterEvent(QEvent *event);
 	virtual void leaveEvent(QEvent *event);
-
-private slots:
-	void NoteInserted(SoundNote note);
-	void NoteRemoved(SoundNote note);
-	void NoteChanged(int oldLocation, SoundNote note);
-
-	void RmsUpdated();
 };
 
 
@@ -284,6 +305,7 @@ private:
 	//void LeftClickOnExistingNote();
 	//void RightClickOnExistingNote();
 	void PreviewSingleNote(SoundNoteView *nview);
+	void MakeVisibleCurrentChannel();
 
 	void mouseMoveEventVp(QMouseEvent *event);
 	void dragEnterEventVp(QDragEnterEvent *event);
@@ -307,6 +329,9 @@ private slots:
 	void SoundChannelRemoved(int index, SoundChannel *channel);
 	void SoundChannelMoved(int indexBefore, int indexAfter);
 	void TotalLengthChanged(int totalLength);
+	void DestroySoundChannel(SoundChannelView *cview);
+	void MoveSoundChannelLeft(SoundChannelView *cview);
+	void MoveSoundChannelRight(SoundChannelView *cview);
 
 public slots:
 	void OnCurrentChannelChanged(int index);
