@@ -25,5 +25,24 @@ public:
 
 
 
-#endif // UIDEF_H
+class IEdit
+{
+public:
+	virtual void Commit()=0;
+};
 
+
+
+class SharedUIHelper
+{
+	static IEdit *globallyDirtyEdit;
+
+public:
+	static void SetGloballyDirtyEdit(IEdit *edit=nullptr);
+	static void CommitDirtyEdit();
+
+};
+
+
+
+#endif // UIDEF_H

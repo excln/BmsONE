@@ -3,11 +3,19 @@
 
 #include <QtCore>
 #include <QtWidgets>
+#include "UIDef.h"
 
 
-class QuasiModalEdit : public QLineEdit
+class QuasiModalEdit : public QLineEdit, public IEdit
 {
 	Q_OBJECT
+
+private slots:
+	void OnTextChanged();
+	void OnTextEdited();
+
+private:
+	virtual void Commit();
 
 public:
 	QuasiModalEdit(QWidget *parent=nullptr);

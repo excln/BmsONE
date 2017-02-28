@@ -302,6 +302,7 @@ void MainWindow::FileSave()
 
 void MainWindow::FileSaveAs()
 {
+	SharedUIHelper::CommitDirtyEdit();
 	try{
 		QString filters = tr("bmson files (*.bmson)"
 							 ";;" "all files (*.*)");
@@ -483,6 +484,7 @@ void MainWindow::ReplaceDocument(Document *newDocument)
 bool MainWindow::Save()
 {
 	try{
+		SharedUIHelper::CommitDirtyEdit();
 		if (document->GetFilePath().isEmpty()){
 			QString filters = tr("bmson files (*.bmson)"
 								 ";;" "all files (*.*)");

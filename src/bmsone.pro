@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     SoundChannel.cpp \
     WaveData.cpp \
     WaveStream.cpp \
-    ScrollableForm.cpp
+    ScrollableForm.cpp \
+    Util.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
