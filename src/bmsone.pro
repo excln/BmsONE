@@ -8,7 +8,7 @@ QT       += core concurrent gui multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = bmsone
+TARGET = BmsONE
 TEMPLATE = app
 
 QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
@@ -56,6 +56,8 @@ RESOURCES += \
     bmsone.qrc
 
 win32: RC_ICONS = bmsone.ico
+
+macx: ICON = bmsone.icns
 
 
 

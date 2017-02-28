@@ -393,7 +393,7 @@
         <location line="-304"/>
         <location line="+182"/>
         <source>bmson files (*.bmson);;all files (*.*)</source>
-        <translation>音声ファイル (*.wav *.ogg);;すべてのファイル (*.*)</translation>
+        <translation>BMSONファイル (*.bmson);;すべてのファイル (*.*)</translation>
     </message>
     <message>
         <location line="-173"/>

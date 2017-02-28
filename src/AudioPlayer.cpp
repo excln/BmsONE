@@ -236,7 +236,7 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 			tmp[i].clear();
 		}
 		QMutexLocker locker(&mutex);
-		if (!mute && srcCurrent){
+		if (srcCurrent){
 			int posOut = 0;
 			while (posOut + tmpCurrentPosition <= samplesToRead){
 				for (int i=0; i<tmpCurrentPosition; i++){
@@ -265,7 +265,7 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 				srcCurrent = nullptr;
 			}
 		}
-		if (!mute && srcPrev){
+		if (srcPrev){
 			int posOut = 0;
 			while (posOut + tmpPrevPosition <= samplesToRead){
 				for (int i=0; i<tmpPrevPosition; i++){
@@ -310,8 +310,12 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 			}
 			rmsL += l*l;
 			rmsR += r*r;
-			buf[i].left = l * 32767.f;
-			buf[i].right = r * 32767.f;
+			if (mute){
+				buf[i].clear();
+			}else{
+				buf[i].left = l * 32767.f;
+				buf[i].right = r * 32767.f;
+			}
 		}
 	}
 	emit AudioIndicator(peakL, peakR, std::sqrtf(rmsL/samplesToRead), std::sqrtf(rmsR/samplesToRead));
