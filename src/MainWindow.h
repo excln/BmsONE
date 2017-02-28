@@ -60,6 +60,8 @@ private:
 	QAction *actionChannelDestroy;
 	QAction *actionChannelSelectFile;
 
+	QAction *actionHelpAbout;
+
 private:
 	void ReplaceDocument(Document *newDocument);
 	bool Save();
@@ -84,6 +86,7 @@ private slots:
 	void ChannelDestroy();
 	void ChannelSelectFile();
 	void ChannelsNew(QList<QString> filePaths);
+	void HelpAbout();
 
 	void FilePathChanged();
 

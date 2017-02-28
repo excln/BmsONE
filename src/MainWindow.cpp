@@ -4,6 +4,15 @@
 #include "ChannelInfoView.h"
 #include <QtMultimedia/QMediaPlayer>
 
+#define APP_NAME "BmsONE"
+#define APP_VERSION_STRING "alpha 0.0.1"
+#define APP_URL "http://sky.geocities.jp/exclusion_bms/"
+
+#define QT_URL "http://www.qt.io/"
+#define OGG_VERSION_STRING "Xiph.Org libOgg 1.3.2"
+#define OGG_URL "https://www.xiph.org/"
+#define VORBIS_URL "https://www.xiph.org/"
+
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, document(nullptr)
@@ -114,6 +123,9 @@ MainWindow::MainWindow(QWidget *parent)
 	actionChannelSelectFile = new QAction(tr("Select File"), this);
 	connect(actionChannelSelectFile, SIGNAL(triggered()), this, SLOT(ChannelSelectFile()));
 
+	actionHelpAbout = new QAction(tr("About BmsONE"), this);
+	connect(actionHelpAbout, SIGNAL(triggered()), this, SLOT(HelpAbout()));
+
 	auto *menuFile = menuBar()->addMenu(tr("File"));
 	menuFile->addAction(actionFileNew);
 	menuFile->addAction(actionFileOpen);
@@ -162,6 +174,10 @@ MainWindow::MainWindow(QWidget *parent)
 	menuChannel->addAction(actionChannelDestroy);
 	menuChannel->addSeparator();
 	menuChannel->addAction(actionChannelSelectFile);
+
+	auto *menuHelp = menuBar()->addMenu(tr("Help"));
+	menuHelp->addAction(actionHelpAbout);
+	connect(menuHelp->addAction(tr("About Qt")), SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
 	auto *fileTools = new QToolBar(tr("File"));
 	fileTools->setObjectName("File Tools");
@@ -384,6 +400,21 @@ void MainWindow::ChannelsNew(QList<QString> filePaths)
 	document->InsertNewSoundChannels(filePaths);
 }
 
+void MainWindow::HelpAbout()
+{
+	QString text = "<h2>" APP_NAME "</h2>"
+			"<p>version " APP_VERSION_STRING " (" __DATE__ " " __TIME__ ")</p>"
+			"<p>Copyright 2015 <a href=\"" APP_URL "\">exclusion</a></p>"
+			"<hr>"
+			"Libraries:"
+			"<ul>"
+			"<li>" "<a href=\"" QT_URL "\">Qt</a> " QT_VERSION_STR
+			"<li>" "<a href=\"" OGG_URL "\">libogg</a> " OGG_VERSION_STRING
+			"<li>" "<a href=\"" VORBIS_URL "\">libvorbis</a> " + QString(vorbis_version_string()) +
+			"</ul>";
+	QMessageBox::about(this, tr("About BmsONE"), text);
+}
+
 void MainWindow::FilePathChanged()
 {
 	QString title = document->GetFilePath();
@@ -393,7 +424,7 @@ void MainWindow::FilePathChanged()
 	if (document->GetHistory()->IsDirty()){
 		title += " *";
 	}
-	title += " - bmsone";
+	title += " - " APP_NAME;
 	this->setWindowTitle(title);
 }
 
