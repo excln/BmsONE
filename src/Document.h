@@ -261,6 +261,8 @@ public:
 	void LoadSound(const QString &filePath); // for initialization
 	void LoadBmson(Bmson::SoundChannel &source); // for initialization
 
+	void SaveBmson(Bmson::SoundChannel &source);
+
 	void SetSourceFile(const QString &absolutePath);
 	bool InsertNote(SoundNote note);
 	bool RemoveNote(SoundNote note);
@@ -343,6 +345,8 @@ public:
 	~DocumentInfo();
 	void Initialize(); // for initialization
 	void LoadBmson(Bmson::BmsInfo &info); // for initialization
+
+	void SaveBmson(Bmson::BmsInfo &info);
 
 	QString GetTitle() const{ return title; }
 	QString GetGenre() const{ return genre; }

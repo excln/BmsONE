@@ -93,10 +93,30 @@ QString Document::GetAbsolutePath(QString fileName) const
 }
 
 
+
 void Document::Save()
 	throw(Bmson::BmsonIoException)
 {
-	//Bmson::BmsonIo::SaveFile(bms, fileName);
+	Bmson::Bms bms;
+	info.SaveBmson(bms.info);
+	for (BarLine barLine : barLines){
+		Bmson::BarLine bar;
+		bar.location = barLine.Location;
+		bar.kind = barLine.Kind;
+		bms.barLines.append(bar);
+	}
+	for (BpmEvent event : bpmEvents){
+		Bmson::EventNote e;
+		e.location = event.location;
+		e.value = event.value;
+		bms.bpmNotes.append(e);
+	}
+	for (SoundChannel *channel : soundChannels){
+		Bmson::SoundChannel sc;
+		channel->SaveBmson(sc);
+		bms.soundChannels.append(sc);
+	}
+	Bmson::BmsonIo::SaveFile(bms, filePath);
 	history->MarkClean();
 }
 
@@ -203,7 +223,7 @@ void DocumentInfo::Initialize()
 	title = QString();
 	genre = QString();
 	artist = QString();
-	judgeRank = 3;
+	judgeRank = 100;
 	total = 400.;
 	initBpm = 120.;
 	level = 1;
@@ -218,6 +238,17 @@ void DocumentInfo::LoadBmson(Bmson::BmsInfo &info)
 	total = info.total;
 	initBpm = info.initBpm;
 	level = info.level;
+}
+
+void DocumentInfo::SaveBmson(Bmson::BmsInfo &info)
+{
+	info.title = title;
+	info.genre = genre;
+	info.artist = artist;
+	info.judgeRank = judgeRank;
+	info.total = total;
+	info.initBpm = initBpm;
+	info.level = level;
 }
 
 void DocumentInfo::SetInitBpm(double value)

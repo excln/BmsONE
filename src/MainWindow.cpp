@@ -302,7 +302,21 @@ void MainWindow::FileSave()
 
 void MainWindow::FileSaveAs()
 {
-	Save();
+	try{
+		QString filters = tr("bmson files (*.bmson)"
+							 ";;" "all files (*.*)");
+		QString defaultPath = document->GetFilePath();
+		QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"), defaultPath.isEmpty() ? document->GetProjectDirectory().path() : defaultPath, filters, 0);
+		document->SaveAs(fileName);
+	}catch(...){
+		QMessageBox *msgbox = new QMessageBox(
+					QMessageBox::Warning,
+					tr("Error"),
+					tr("Failed to save file."),
+					QMessageBox::Ok,
+					this);
+		msgbox->show();
+	}
 }
 
 void MainWindow::EditUndo()
@@ -470,10 +484,25 @@ bool MainWindow::Save()
 {
 	try{
 		if (document->GetFilePath().isEmpty()){
-
+			QString filters = tr("bmson files (*.bmson)"
+								 ";;" "all files (*.*)");
+			QString defaultPath = document->GetFilePath();
+			QString fileName = QFileDialog::getSaveFileName(this, tr("Save"), defaultPath.isEmpty() ? document->GetProjectDirectory().path() : defaultPath, filters, 0);
+			if (fileName.isEmpty())
+				return false;
+			document->SaveAs(fileName);
+		}else{
+			document->Save();
 		}
 		return true;
 	}catch(...){
+		QMessageBox *msgbox = new QMessageBox(
+					QMessageBox::Warning,
+					tr("Error"),
+					tr("Failed to save file."),
+					QMessageBox::Ok,
+					this);
+		msgbox->show();
 		return false;
 	}
 }

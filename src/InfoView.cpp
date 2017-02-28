@@ -67,22 +67,23 @@ void InfoView::ReplaceDocument(Document *newDocument)
 
 void InfoView::TitleEdited()
 {
-
+	document->GetInfo()->SetTitle(editTitle->text());
 }
 
 void InfoView::GenreEdited()
 {
-
+	document->GetInfo()->SetGenre(editGenre->text());
 }
 
 void InfoView::ArtistEdited()
 {
-
+	document->GetInfo()->SetArtist(editArtist->text());
 }
 
 void InfoView::JudgeRankEdited()
 {
-
+	int val = editJudgeRank->text().toInt();
+	document->GetInfo()->SetJudgeRank(val);
 }
 
 void InfoView::InitBpmEdited()
@@ -94,12 +95,14 @@ void InfoView::InitBpmEdited()
 
 void InfoView::TotalEdited()
 {
-
+	double val = editTotal->text().toDouble();
+	document->GetInfo()->SetTotal(val);
 }
 
 void InfoView::LevelEdited()
 {
-
+	int val = editLevel->text().toInt();
+	document->GetInfo()->SetLevel(val);
 }
 
 

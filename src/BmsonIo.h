@@ -27,6 +27,15 @@ namespace Bmson
 		static void LoadSoundChannels(QVector<SoundChannel> &soundChannels, QJsonValue json);
 		static SoundChannel LoadSoundChannel(QJsonValue json);
 		static SoundNote LoadSoundNote(QJsonValue json);
+
+		static QJsonValue SaveBarLines(QVector<BarLine> barLines);
+		static QJsonValue SaveBarLine(BarLine barLine);
+		static QJsonValue SaveBmsInfo(BmsInfo bmsInfo);
+		static QJsonValue SaveBpmNotes(QVector<EventNote> bpmNotes);
+		static QJsonValue SaveEventNote(EventNote event);
+		static QJsonValue SaveSoundChannels(QVector<SoundChannel> soundChannels);
+		static QJsonValue SaveSoundChannel(SoundChannel channel);
+		static QJsonValue SaveSoundNote(SoundNote note);
 	public:
 		static void LoadFile(Bms &bms, QString fileName) throw(BmsonIoException);
 		static void SaveFile(Bms &bms, QString fileName) throw(BmsonIoException);

@@ -110,8 +110,101 @@ Bmson::SoundNote Bmson::BmsonIo::LoadSoundNote(QJsonValue json)
 	return note;
 }
 
+QJsonValue Bmson::BmsonIo::SaveBarLines(QVector<Bmson::BarLine> barLines)
+{
+	QJsonArray a;
+	for (Bmson::BarLine line : barLines){
+		a.append(SaveBarLine(line));
+	}
+	return QJsonValue(a);
+}
+
+QJsonValue Bmson::BmsonIo::SaveBarLine(Bmson::BarLine barLine)
+{
+	QJsonObject o;
+	o["y"] = QJsonValue(barLine.location);
+	o["k"] = QJsonValue(barLine.kind);
+	return QJsonValue(o);
+}
+
+QJsonValue Bmson::BmsonIo::SaveBmsInfo(Bmson::BmsInfo bmsInfo)
+{
+	QJsonObject o;
+	o["title"] = QJsonValue(bmsInfo.title);
+	o["genre"] = QJsonValue(bmsInfo.genre);
+	o["artist"] = QJsonValue(bmsInfo.artist);
+	o["judgeRank"] = QJsonValue(bmsInfo.judgeRank);
+	o["total"] = QJsonValue(bmsInfo.total);
+	o["initBPM"] = QJsonValue(bmsInfo.initBpm);
+	o["level"] = QJsonValue(bmsInfo.level);
+	return QJsonValue(o);
+}
+
+QJsonValue Bmson::BmsonIo::SaveBpmNotes(QVector<EventNote> bpmNotes)
+{
+	QJsonArray a;
+	for (EventNote note : bpmNotes){
+		a.append(SaveEventNote(note));
+	}
+	return QJsonValue(a);
+}
+
+QJsonValue Bmson::BmsonIo::SaveEventNote(Bmson::EventNote event)
+{
+	QJsonObject o;
+	o["y"] = QJsonValue(event.location);
+	o["v"] = QJsonValue(event.value);
+	return QJsonValue(o);
+}
+
+QJsonValue Bmson::BmsonIo::SaveSoundChannels(QVector<Bmson::SoundChannel> soundChannels)
+{
+	QJsonArray a;
+	for (SoundChannel ch : soundChannels){
+		a.append(SaveSoundChannel(ch));
+	}
+	return QJsonValue(a);
+}
+
+QJsonValue Bmson::BmsonIo::SaveSoundChannel(Bmson::SoundChannel channel)
+{
+	QJsonObject o;
+	o["name"] = channel.name;
+	QJsonArray a;
+	for (SoundNote n : channel.notes){
+		a.append(SaveSoundNote(n));
+	}
+	o["notes"] = a;
+	return QJsonValue(o);
+}
+
+QJsonValue Bmson::BmsonIo::SaveSoundNote(Bmson::SoundNote note)
+{
+	QJsonObject o;
+	o["x"] = QJsonValue(note.lane);
+	o["y"] = QJsonValue(note.location);
+	o["l"] = QJsonValue(note.length);
+	o["c"] = QJsonValue(note.cut);
+	return o;
+}
+
 void Bmson::BmsonIo::SaveFile(Bms &bms, QString fileName)
 	throw(BmsonIoException)
 {
-
+	try{
+		QFile file(fileName);
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+			throw BmsonIoException(tr("Failed to open file."));
+		QJsonObject json;
+		json["info"] = SaveBmsInfo(bms.info);
+		json["bpmNotes"] = SaveBpmNotes(bms.bpmNotes);
+		json["soundChannel"] = SaveSoundChannels(bms.soundChannels);
+		json["lines"] = SaveBarLines(bms.barLines);
+		QJsonDocument document(json);
+		file.write(document.toJson());
+	}catch(BmsonIoException e){
+		throw e;
+	}catch(...){
+		throw BmsonIoException(QString("BmsonIo: Unknown error."));
+	}
 }

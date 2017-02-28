@@ -863,6 +863,19 @@ void SoundChannel::LoadBmson(Bmson::SoundChannel &source)
 	resource.UpdateWaveData(document->GetAbsolutePath(fileName));
 }
 
+void SoundChannel::SaveBmson(Bmson::SoundChannel &source)
+{
+	source.name = fileName;
+	for (SoundNote note : notes){
+		Bmson::SoundNote n;
+		n.location = note.location;
+		n.lane = note.lane;
+		n.length = note.length;
+		n.cut = note.noteType != 0;
+		source.notes.append(n);
+	}
+}
+
 void SoundChannel::SetSourceFile(const QString &absolutePath)
 {
 	fileName = document->GetRelativePath(absolutePath);
