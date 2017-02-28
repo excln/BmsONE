@@ -44,7 +44,8 @@ HEADERS  += MainWindow.h \
     SequenceTools.h \
     Stabilizer.h \
     SequenceDef.h \
-    ScrollableForm.h
+    ScrollableForm.h \
+    UIDef.h
 
 FORMS    +=
 

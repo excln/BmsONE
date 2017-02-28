@@ -3,15 +3,9 @@
 #include "InfoView.h"
 #include "ChannelInfoView.h"
 #include <QtMultimedia/QMediaPlayer>
+#include "UIDef.h"
 
-#define APP_NAME "BmsONE"
-#define APP_VERSION_STRING "alpha 0.0.1"
-#define APP_URL "http://sky.geocities.jp/exclusion_bms/"
-
-#define QT_URL "http://www.qt.io/"
-#define OGG_VERSION_STRING "Xiph.Org libOgg 1.3.2"
-#define OGG_URL "https://www.xiph.org/"
-#define VORBIS_URL "https://www.xiph.org/"
+const QSize UIUtil::ToolBarIconSize(18, 18);
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -187,14 +181,17 @@ MainWindow::MainWindow(QWidget *parent)
 	fileTools->addAction(actionFileNew);
 	fileTools->addAction(actionFileOpen);
 	fileTools->addAction(actionFileSave);
+	fileTools->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(fileTools);
 	menuView->insertAction(actionViewTbSeparator, fileTools->toggleViewAction());
 
 	sequenceTools = new SequenceTools("Sequence Tools", tr("Sequence Tools"), this);
+	sequenceTools->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(sequenceTools);
 	menuView->insertAction(actionViewTbSeparator, sequenceTools->toggleViewAction());
 
 	audioPlayer = new AudioPlayer("Sound Output", tr("Sound Output"), this);
+	audioPlayer->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(audioPlayer);
 	menuView->insertAction(actionViewTbSeparator, audioPlayer->toggleViewAction());
 

@@ -174,7 +174,7 @@ public:
 	};
 
 private:
-	static const int timeLineWidth = 32;
+	static const int timeLineWidth = 48;
 	static const int headerHeight = 60;
 	static const int footerHeight = 40;
 
@@ -248,7 +248,7 @@ private:
 	int X2Lane(int x) const;
 	QSet<int> FineGridsInRange(qreal tBegin, qreal tEnd);
 	QSet<int> CoarseGridsInRange(qreal tBegin, qreal tEnd);
-	QSet<int> BarsInRange(qreal tBegin, qreal tEnd);
+	QMap<int, int> BarsInRange(qreal tBegin, qreal tEnd);
 	qreal SnapToFineGrid(qreal time) const;
 	void SetNoteColor(QLinearGradient &g, int lane, bool active) const;
 	void UpdateVerticalScrollBar(qreal newTimeBegin=-1.0);
@@ -277,6 +277,8 @@ private:
 	bool paintEventFooterArea(QWidget *widget, QPaintEvent *event);
 	bool enterEventPlayingPane(QWidget *playingPane, QEvent *event);
 	bool mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *event);
+	bool paintEventPlayingHeader(QWidget *widget, QPaintEvent *event);
+	bool paintEventPlayingFooter(QWidget *widget, QPaintEvent *event);
 
 private slots:
 	void SoundChannelInserted(int index, SoundChannel *channel);

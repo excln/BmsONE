@@ -76,17 +76,17 @@ SequenceView::SequenceView(MainWindow *parent)
 	setViewportMargins(timeLineWidth + playingWidth, headerHeight, 0, footerHeight);
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	viewport()->setAutoFillBackground(true);
-	QPalette pal;
-	pal.setBrush(QPalette::Background, QColor(135, 135, 135));
-	viewport()->setPalette(pal);
+	QPalette palette;
+	palette.setBrush(QPalette::Background, QColor(102, 102, 102));
+	viewport()->setPalette(palette);
 	timeLine = NewWidget(&SequenceView::paintEventTimeLine);
 	playingPane = NewWidget(&SequenceView::paintEventPlayingPane, &SequenceView::mouseEventPlayingPane, &SequenceView::enterEventPlayingPane);
 	headerChannelsArea = NewWidget(&SequenceView::paintEventHeaderArea);
 	headerCornerEntry = NewWidget(&SequenceView::paintEventHeaderEntity);
-	headerPlayingEntry = NewWidget(&SequenceView::paintEventHeaderEntity);
+	headerPlayingEntry = NewWidget(&SequenceView::paintEventPlayingHeader);
 	footerChannelsArea = NewWidget(&SequenceView::paintEventFooterArea);
 	footerCornerEntry = NewWidget(&SequenceView::paintEventFooterEntity);
-	footerPlayingEntry = NewWidget(&SequenceView::paintEventFooterEntity);
+	footerPlayingEntry = NewWidget(&SequenceView::paintEventPlayingFooter);
 	playingPane->setMouseTracking(true);
 #if 0
 	auto *tb = new QToolBar(headerPlayingEntry);
@@ -283,13 +283,16 @@ QSet<int> SequenceView::CoarseGridsInRange(qreal tBegin, qreal tEnd)
 	return coarseGridLines;
 }
 
-QSet<int> SequenceView::BarsInRange(qreal tBegin, qreal tEnd)
+QMap<int, int> SequenceView::BarsInRange(qreal tBegin, qreal tEnd)
 {
 	const QMap<int, BarLine> &bars = document->GetBarLines();
 	const QMap<int, BarLine>::const_iterator ibar = bars.lowerBound(tBegin);
-	QSet<int> barLines;
-	for (QMap<int, BarLine>::const_iterator i=ibar; i!=bars.end() && i->Location<=(int)tEnd; i++){
-		barLines.insert(i->Location);
+	QMap<int, int> barLines;
+	int num = 0;
+	for (QMap<int, BarLine>::const_iterator i=bars.begin(); i!=bars.end() && i->Location<=(int)tEnd; i++, num++){
+		if (i.key() >= tBegin){
+			barLines.insert(i->Location, num);
+		}
 	}
 	return barLines;
 }
@@ -693,9 +696,9 @@ bool SequenceView::paintEventTimeLine(QWidget *timeLine, QPaintEvent *event)
 	qreal tBegin = viewLength - (scrollY + bottom)/zoomY;
 	qreal tEnd = viewLength - (scrollY + top)/zoomY;
 
-	QSet<int> bars = BarsInRange(tBegin, tEnd);
-	QSet<int> coarseGrids = CoarseGridsInRange(tBegin, tEnd) - bars;
-	QSet<int> fineGrids = FineGridsInRange(tBegin, tEnd) - bars - coarseGrids;
+	QMap<int, int> bars = BarsInRange(tBegin, tEnd);
+	QSet<int> coarseGrids = CoarseGridsInRange(tBegin, tEnd) - bars.keys().toSet();
+	QSet<int> fineGrids = FineGridsInRange(tBegin, tEnd) - bars.keys().toSet() - coarseGrids;
 	{
 		QVector<QLine> lines;
 		for (int t : fineGrids){
@@ -716,12 +719,23 @@ bool SequenceView::paintEventTimeLine(QWidget *timeLine, QPaintEvent *event)
 	}
 	{
 		QVector<QLine> lines;
-		for (int t : bars){
+		for (int t : bars.keys()){
 			int y = Time2Y(t) - 1;
 			lines.append(QLine(left, y, right, y));
 		}
 		painter.setPen(penBar);
 		painter.drawLines(lines);
+		painter.save();
+		painter.setPen(QColor(0, 255, 0));
+		for (auto i=bars.begin(); i!=bars.end(); i++){
+			int y = Time2Y(i.key()) - 1;
+			QTransform tf;
+			tf.rotate(-90.0);
+			tf.translate(2-y, 2);
+			painter.setTransform(tf);
+			painter.drawText(0, 0, 60, 24, 0, QString::number(i.value()));
+		}
+		painter.restore();
 	}
 
 	if (showCursorNewNote){
@@ -738,7 +752,7 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 	static const int mx = 4, my = 4;
 	QPainter painter(playingPane);
 	QRect rect = event->rect();
-	painter.fillRect(rect, QColor(255, 255, 255));
+	painter.fillRect(playingPane->rect(), palette().window());
 
 	int scrollX = horizontalScrollBar()->value();
 	int scrollY = verticalScrollBar()->value();
@@ -753,7 +767,9 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 	qreal tEnd = viewLength - (scrollY + top)/zoomY;
 
 	// lanes
+	QRegion rgn;
 	for (LaneDef lane : lanes){
+		rgn += QRegion(lane.left, top, lane.width, height);
 		painter.fillRect(lane.left, top, lane.width, height, lane.color);
 		painter.setPen(QPen(QBrush(lane.leftLine), 1.0));
 		painter.drawLine(lane.left, top, lane.left, bottom);
@@ -761,10 +777,11 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 		painter.drawLine(lane.left+lane.width, top, lane.left+lane.width, bottom);
 	}
 	// horizontal lines
+	painter.setClipRegion(rgn);
 	{
-		QSet<int> bars = BarsInRange(tBegin, tEnd);
-		QSet<int> coarseGrids = CoarseGridsInRange(tBegin, tEnd) - bars;
-		QSet<int> fineGrids = FineGridsInRange(tBegin, tEnd) - bars - coarseGrids;
+		QMap<int, int> bars = BarsInRange(tBegin, tEnd);
+		QSet<int> coarseGrids = CoarseGridsInRange(tBegin, tEnd) - bars.keys().toSet();
+		QSet<int> fineGrids = FineGridsInRange(tBegin, tEnd) - bars.keys().toSet() - coarseGrids;
 		{
 			QVector<QLine> lines;
 			for (int t : fineGrids){
@@ -785,7 +802,7 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 		}
 		{
 			QVector<QLine> lines;
-			for (int t : bars){
+			for (int t : bars.keys()){
 				int y = Time2Y(t) - 1;
 				lines.append(QLine(left, y, right, y));
 			}
@@ -793,6 +810,10 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 			painter.drawLines(lines);
 		}
 	}
+	painter.setClipping(false);
+	painter.setPen(palette().dark().color());
+	painter.drawLine(0, 0, 0, playingPane->height());
+	painter.drawLine(playingPane->width()-1, 0, playingPane->width()-1, playingPane->height());
 
 	// notes
 	{
@@ -947,14 +968,14 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 bool SequenceView::paintEventHeaderArea(QWidget *header, QPaintEvent *event)
 {
 	QPainter painter(header);
-	painter.fillRect(event->rect(), QColor(135, 135, 135));
+	painter.fillRect(event->rect(), QColor(102, 102, 102));
 	return true;
 }
 
 bool SequenceView::paintEventFooterArea(QWidget *footer, QPaintEvent *event)
 {
 	QPainter painter(footer);
-	painter.fillRect(event->rect(), QColor(135, 135, 135));
+	painter.fillRect(event->rect(), QColor(102, 102, 102));
 	return true;
 }
 
@@ -1117,6 +1138,26 @@ bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *even
 	}
 }
 
+bool SequenceView::paintEventPlayingHeader(QWidget *widget, QPaintEvent *event)
+{
+	QPainter painter(widget);
+	QRect rect(0, 0, widget->width(), widget->height());
+	painter.setBrush(palette().window());
+	painter.setPen(palette().dark().color());
+	painter.drawRect(rect.adjusted(0, 0, -1, 0));
+	return true;
+}
+
+bool SequenceView::paintEventPlayingFooter(QWidget *widget, QPaintEvent *event)
+{
+	QPainter painter(widget);
+	QRect rect(0, 0, widget->width(), widget->height());
+	painter.setBrush(palette().window());
+	painter.setPen(palette().dark().color());
+	painter.drawRect(rect.adjusted(0, -1, -1, -1));
+	return true;
+}
+
 void SequenceView::SelectSoundChannel(SoundChannelView *cview){
 	for (int i=0; i<soundChannels.size(); i++){
 		if (soundChannels[i] == cview){
@@ -1143,13 +1184,8 @@ bool SequenceView::paintEventHeaderEntity(QWidget *widget, QPaintEvent *event)
 {
 	QPainter painter(widget);
 	QRect rect(0, 0, widget->width(), widget->height());
-	QLinearGradient g(rect.topLeft(), rect.bottomLeft());
-	QColor cd(204, 204, 204);
-	QColor cl(238, 238, 238);
-	g.setColorAt(0, cl);
-	g.setColorAt(1, cd);
-	painter.setBrush(QBrush(g));
-	painter.setPen(QColor(170, 170, 170));
+	painter.setBrush(palette().window());
+	painter.setPen(palette().dark().color());
 	painter.drawRect(rect.adjusted(0, 0, -1, -1));
 	return true;
 }
@@ -1158,13 +1194,8 @@ bool SequenceView::paintEventFooterEntity(QWidget *widget, QPaintEvent *event)
 {
 	QPainter painter(widget);
 	QRect rect(0, 0, widget->width(), widget->height());
-	QLinearGradient g(rect.topLeft(), rect.bottomLeft());
-	QColor cd(204, 204, 204);
-	QColor cl(238, 238, 238);
-	g.setColorAt(0, cl);
-	g.setColorAt(1, cd);
-	painter.setBrush(QBrush(g));
-	painter.setPen(QColor(170, 170, 170));
+	painter.setBrush(palette().window());
+	painter.setPen(palette().dark().color());
 	painter.drawRect(rect.adjusted(0, 0, -1, -1));
 	return true;
 }
@@ -1482,9 +1513,9 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 	painter.fillRect(rect, current ? QColor(85, 85, 85) : QColor(51, 51, 51));
 	// grids
 	{
-		QSet<int> bars = sview->BarsInRange(tBegin, tEnd);
-		QSet<int> coarseGrids = sview->CoarseGridsInRange(tBegin, tEnd) - bars;
-		QSet<int> fineGrids = sview->FineGridsInRange(tBegin, tEnd) - bars - coarseGrids;
+		QMap<int, int> bars = sview->BarsInRange(tBegin, tEnd);
+		QSet<int> coarseGrids = sview->CoarseGridsInRange(tBegin, tEnd) - bars.keys().toSet();
+		QSet<int> fineGrids = sview->FineGridsInRange(tBegin, tEnd) - bars.keys().toSet() - coarseGrids;
 		{
 			QVector<QLine> lines;
 			for (int t : fineGrids){
@@ -1505,7 +1536,7 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 		}
 		{
 			QVector<QLine> lines;
-			for (int t : bars){
+			for (int t : bars.keys()){
 				int y = sview->Time2Y(t) - 1;
 				lines.append(QLine(0, y, width(), y));
 			}
@@ -1783,13 +1814,8 @@ void SoundChannelHeader::paintEvent(QPaintEvent *event)
 {
 	QPainter painter(this);
 	QRect rect(0, 0, width(), height());
-	QLinearGradient g(rect.topLeft(), rect.bottomLeft());
-	QColor cd(204, 204, 204);
-	QColor cl(238, 238, 238);
-	g.setColorAt(0, cl);
-	g.setColorAt(1, cd);
-	painter.setBrush(QBrush(g));
-	painter.setPen(QColor(170, 170, 170));
+	painter.setBrush(palette().window());
+	painter.setPen(palette().dark().color());
 	painter.drawRect(rect.adjusted(0, 0, -1, -1));
 }
 
@@ -1842,13 +1868,8 @@ void SoundChannelFooter::paintEvent(QPaintEvent *event)
 {
 	QPainter painter(this);
 	QRect rect(0, 0, width(), height());
-	QLinearGradient g(rect.topLeft(), rect.bottomLeft());
-	QColor cd(204, 204, 204);
-	QColor cl(238, 238, 238);
-	g.setColorAt(0, cl);
-	g.setColorAt(1, cd);
-	painter.setBrush(QBrush(g));
-	painter.setPen(QColor(170, 170, 170));
+	painter.setBrush(palette().window());
+	painter.setPen(palette().dark().color());
 	painter.drawRect(rect.adjusted(0, 0, -1, -1));
 
 	QRect rectText = rect.marginsRemoved(QMargins(4, 4, 4, 4));
