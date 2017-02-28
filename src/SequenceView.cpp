@@ -190,6 +190,25 @@ void SequenceView::SetNoteColor(QLinearGradient &g, int lane, bool active) const
 	g.setColorAt(1, cd);
 }
 
+void SequenceView::VisibleRangeChanged() const
+{
+	if (!document)
+		return;
+	static const int my = 4;
+	int scrollY = verticalScrollBar()->value();
+	int top = 0 - my;
+	int bottom = viewport()->height() + my;
+	qreal tBegin = viewLength - (scrollY + bottom)/zoomY;
+	qreal tEnd = viewLength - (scrollY + top)/zoomY;
+
+	// sequence view instance is currently single
+	QList<QPair<int, int>> regions;
+	regions.append(QPair<int, int>(tBegin, tEnd));
+	for (SoundChannel *channel : document->GetSoundChannels()){
+		channel->UpdateVisibleRegions(regions);
+	}
+}
+
 void SequenceView::wheelEventVp(QWheelEvent *event)
 {
 	QPoint numPixels = event->pixelDelta();
@@ -221,6 +240,7 @@ void SequenceView::wheelEventVp(QWheelEvent *event)
 			for (SoundChannelView *cview : soundChannels){
 				cview->update();
 			}
+			VisibleRangeChanged();
 		}
 		event->accept();
 	}else{
@@ -239,8 +259,6 @@ bool SequenceView::viewportEvent(QEvent *event)
 {
 	switch (event->type()){
 	case QEvent::Paint:
-		//paintEventVp(dynamic_cast<QPaintEvent*>(event));
-		//return true;
 		return false;
 	case QEvent::MouseMove:
 		mouseMoveEventVp(dynamic_cast<QMouseEvent*>(event));
@@ -269,10 +287,10 @@ bool SequenceView::viewportEvent(QEvent *event)
 
 void SequenceView::scrollContentsBy(int dx, int dy)
 {
-	if (dx) viewport()->scroll(dx, 0);
 	if (dy) for (SoundChannelView *cview : soundChannels){
 		cview->ScrollContents(dy);
 	}
+	if (dx) viewport()->scroll(dx, 0);
 
 	if (dy){
 		timeLine->scroll(0, dy);
@@ -285,6 +303,8 @@ void SequenceView::scrollContentsBy(int dx, int dy)
 		headerChannelsArea->scroll(dx, 0);
 		footerChannelsArea->scroll(dx, 0);
 	}
+
+	VisibleRangeChanged();
 }
 
 void SequenceView::OnViewportResize()
@@ -311,6 +331,8 @@ void SequenceView::OnViewportResize()
 	horizontalScrollBar()->setRange(0, std::max(0, 64*soundChannels.size() - viewport()->width()));
 	horizontalScrollBar()->setPageStep(viewport()->width());
 	horizontalScrollBar()->setSingleStep(64);
+
+	VisibleRangeChanged();
 }
 
 void SequenceView::SoundChannelInserted(int index, SoundChannel *channel)
@@ -610,6 +632,7 @@ SoundChannelView::SoundChannelView(SequenceView *sview, SoundChannel *channel)
 	, channel(channel)
 	, current(false)
 {
+	// this make scrolling fast, but I must treat redrawing region carefully.
 	setAttribute(Qt::WA_OpaquePaintEvent);
 
 	// follow current state
@@ -620,6 +643,7 @@ SoundChannelView::SoundChannelView(SequenceView *sview, SoundChannel *channel)
 	connect(channel, &SoundChannel::NoteInserted, this, &SoundChannelView::NoteInserted);
 	connect(channel, &SoundChannel::NoteRemoved, this, &SoundChannelView::NoteRemoved);
 	connect(channel, &SoundChannel::NoteChanged, this, &SoundChannelView::NoteChanged);
+	connect(channel, &SoundChannel::RmsUpdated, this, &SoundChannelView::RmsUpdated);
 }
 
 SoundChannelView::~SoundChannelView()
@@ -635,20 +659,29 @@ void SoundChannelView::ScrollContents(int dy)
 void SoundChannelView::NoteInserted(SoundNote note)
 {
 	notes.insert(note.location, new SoundNoteView(this, note));
-	sview->viewport()->update();
+	update();
+	sview->playingPane->update();
 }
 
 void SoundChannelView::NoteRemoved(SoundNote note)
 {
 	delete notes.take(note.location);
-	sview->viewport()->update();
+	update();
+	sview->playingPane->update();
 }
 
 void SoundChannelView::NoteChanged(int oldLocation, SoundNote note)
 {
 	SoundNoteView *nview = notes.take(note.location);
 	nview->UpdateNote(note);
-	sview->viewport()->update();
+	update();
+	sview->playingPane->update();
+}
+
+void SoundChannelView::RmsUpdated()
+{
+	update();
+	sview->playingPane->update();
 }
 
 
@@ -714,13 +747,17 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 	}
 
 	// waveform(rms)
-	int y = bottom;
-	painter.setPen(QColor(0, 0, 0));
-	channel->DrawRmsGraph(tBegin, sview->zoomY, [&](float l, float r){
-		if (l >= 0.0f){
+	int y = bottom - 1;
+	if (current){
+		painter.setPen(QColor(0, 255, 0));
+	}else{
+		painter.setPen(QColor(0, 127, 0));
+	}
+	channel->DrawRmsGraph(tBegin, sview->zoomY, [&](Rms rms){
+		if (rms.IsValid()){
 			static const float gain = 2.0f;
-			painter.drawLine(width()/2, y, (width()/2)*(1.0 + r*gain), y);
-			painter.drawLine(width()/2, y, (width()/2)*(1.0 - l*gain), y);
+			painter.drawLine(width()/2, y, (width()/2)*(1.0 + rms.R*gain), y);
+			painter.drawLine(width()/2, y, (width()/2)*(1.0 - rms.L*gain), y);
 		}
 		if (--y < top){
 			return false;

@@ -18,7 +18,8 @@ struct SoundNote;
 class SoundLoader;
 
 
-struct WaveSummary {
+struct WaveSummary
+{
 	QAudioFormat Format;
 	qint64 FrameCount;
 
@@ -54,15 +55,38 @@ struct SoundNote
 };
 
 
+struct RmsCacheEntry
+{
+	qint8 L;
+	qint8 R;
 
-struct RmsCacheEntry{
+	RmsCacheEntry() : L(-1), R(-1){}
+	RmsCacheEntry(qint8 l, qint8 r) : L(l), R(r){}
+	bool IsNull() const{ return L < 0; }
+};
+
+Q_DECLARE_METATYPE(QList<RmsCacheEntry>)
+
+struct Rms
+{
 	float L;
 	float R;
 
-	RmsCacheEntry() : L(-1.f), R(-1.f){}
-	RmsCacheEntry(float l, float r) : L(l), R(r){}
-	bool IsNull() const{ return L < 0.f; }
-	bool IsValid() const{ return L >= 0.f; }
+	Rms() : L(-1.f), R(-1.f){}
+	Rms(qint8 l, qint8 r) : L(l), R(r){}
+	bool IsValid() const{ return L >= 0; }
+	bool IsNull() const{ return L < 0; }
+};
+
+
+class RmsCachePacket
+{
+	int blockCount;
+	QByteArray compressed;
+
+public:
+	RmsCachePacket(const QList<RmsCacheEntry> &entries, int count);
+	QList<RmsCacheEntry> Uncompress() const;
 };
 
 
@@ -74,9 +98,11 @@ class SoundChannelResourceManager : public QObject
 
 private:
 	static const quint64 BufferFrames = 1024;
-	static const quint32 InitialCacheFrames = 65536;
-	static const quint32 ForwardCacheFrames = 65536;
-	static const quint32 BackwardCacheFrames = 4096;
+
+public:
+	static const int RmsCacheBlockSize = 64;
+	static const int RmsCachePacketSize = 256;
+	static const int RmsCachePacketSampleCount = RmsCacheBlockSize * RmsCachePacketSize;
 
 private:
 	QFuture<void> currentTask;
@@ -87,7 +113,7 @@ private:
 	QImage overallWaveform;
 
 	mutable QMutex rmsCacheMutex;
-	QMap<quint64, QVector<RmsCacheEntry>> rmsCacheRegions;
+	QMap<quint64, RmsCachePacket> rmsCachePackets;
 
 	static const quint64 auxBufferSize = 4096;
 	char *auxBuffer;
@@ -95,11 +121,10 @@ private:
 private:
 	// tasks
 	void RunTaskWaveData();
-	void RunTaskVisibleRegions(const QList<QPair<int, int>> &visibleRegionsOffsetAndLength);
+	void RunTaskRmsCachePacket(int position);
 
 	bool TaskLoadWaveSummary();
-	void TaskDrawOverallWaveform();
-	void TaskLoadInitialData();
+	void TaskDrawOverallWaveformAndRmsCache();
 
 	quint64 ReadAsS16S(QAudioBuffer::S16S *buffer, quint64 frames);
 	void ConvertAuxBufferToS16S(QAudioBuffer::S16S *buffer, quint64 frames);
@@ -110,16 +135,16 @@ public:
 
 	// task request
 	void UpdateWaveData(const QString &srcPath);
-	void UpdateVisibleRegions(const QList<QPair<int, int>> &visibleRegionsOffsetAndLength);
+	void RequireRmsCachePacket(int position);
 
 	// get data
 	const QImage &GetOverallWaveform() const{ return overallWaveform; }
-	QVector<RmsCacheEntry> GetRmsInRange(int position, int length) const;
 
 signals:
 	void WaveSummaryReady(const WaveSummary *summary);
 	void OverallWaveformReady();
 	void RmsCacheUpdated();
+	void RmsCachePacketReady(int position, QList<RmsCacheEntry> packet);
 
 };
 
@@ -149,16 +174,22 @@ private:
 	// utility
 	WaveSummary *waveSummary;
 	QImage overallWaveform;
+	mutable QMutex cacheMutex;
 	QMap<int, CacheEntry> cache;
+
+	QList<QPair<int, int>> visibleRegions;
+	QMap<int, QList<RmsCacheEntry>> rmsCacheLibrary;
+	QMap<int, bool> rmsCacheRequestFlag;
 
 private:
 	void UpdateCache();
+	void UpdateVisibleRegionsInternal();
 
 private slots:
 	void OnWaveSummaryReady(const WaveSummary *summary);
 	void OnOverallWaveformReady();
-	//void OnSoundLoaded(QString fileName, WaveData *waveData);
-	//void OnAnalysisComplete(WaveData *waveData, StandardWaveData *preview, RmsCacheEntry *rmsCache);
+	void OnRmsCacheUpdated();
+	void OnRmsCachePacketReady(int position, QList<RmsCacheEntry> packet);
 
 public:
 	SoundChannel(Document *document);
@@ -176,7 +207,8 @@ public:
 
 	const WaveSummary *GetWaveSummary() const{ return waveSummary; }
 	const QImage &GetOverallWaveform() const{ return overallWaveform; } // .isNull()==true means uninitialized
-	void DrawRmsGraph(double location, double resolution, std::function<bool(float, float)> drawer) const;
+	void UpdateVisibleRegions(const QList<QPair<int, int>> &visibleRegionsTime);
+	void DrawRmsGraph(double location, double resolution, std::function<bool(Rms)> drawer) const;
 
 signals:
 	void NoteInserted(SoundNote note);
@@ -185,7 +217,7 @@ signals:
 
 	void WaveSummaryUpdated();
 	void OverallWaveformUpdated();
-	//void WaveDataUpdated();
+	void RmsUpdated();
 };
 
 

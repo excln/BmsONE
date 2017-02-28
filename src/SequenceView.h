@@ -62,6 +62,8 @@ private slots:
 	void NoteInserted(SoundNote note);
 	void NoteRemoved(SoundNote note);
 	void NoteChanged(int oldLocation, SoundNote note);
+
+	void RmsUpdated();
 };
 
 
@@ -156,6 +158,7 @@ private:
 	qreal Time2Y(qreal time) const;
 	qreal TimeSpan2DY(qreal time) const;
 	void SetNoteColor(QLinearGradient &g, int lane, bool active) const;
+	void VisibleRangeChanged() const;
 
 	void mouseMoveEventVp(QMouseEvent *event);
 	void dragEnterEventVp(QDragEnterEvent *event);

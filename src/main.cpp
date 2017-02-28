@@ -1,8 +1,11 @@
 #include "MainWindow.h"
 #include <QApplication>
+#include <QMetaType>
 
 int main(int argc, char *argv[])
 {
+	qRegisterMetaType<QList<RmsCacheEntry>>("QList<RmsCacheEntry>");
+
 	QApplication app(argc, argv);
 	QTranslator translator;
 	translator.load(":/i18n/" + QLocale::system().name());

@@ -1,6 +1,214 @@
 #include "Document.h"
 
 
+static QMap<int, int> MergeRegions(const QMultiMap<int, int> &regs)
+{
+	if (regs.empty()){
+		return QMap<int, int>();
+	}
+	QMap<int, int> merged;
+	QPair<int, int> r(regs.begin().key(), regs.begin().value());
+	for (QMap<int, int>::const_iterator i=regs.begin()+1; i!=regs.end(); i++){
+		if (i.key() <= r.second){
+			if (i.value() > r.first){
+				r.second = i.value();
+			}
+			continue;
+		}
+		merged.insert(r.first, r.second);
+		r.first = i.key();
+		r.second = i.value();
+	}
+	merged.insert(r.first, r.second);
+	return merged;
+}
+
+
+// regions in regsOld must be disjoint & regions in regNew must be disjoint
+static void RegionsDiff(const QMap<int, int> &regsOld, const QMap<int, int> &regsNew, QMap<int, int> &regsAdded, QMap<int, int> &regsRemoved)
+{
+	regsAdded.clear();
+	regsRemoved.clear();
+	QMap<int, bool> marks;
+	for (QMap<int, int>::const_iterator i=regsOld.begin(); i!=regsOld.end(); i++){
+		marks.insert(i.key(), false);
+		marks.insert(i.value(), true);
+	}
+	for (QMap<int, int>::const_iterator i=regsNew.begin(); i!=regsNew.end(); i++){
+		marks.insert(i.key(), true);
+		marks.insert(i.value(), false);
+	}
+	int c = 0;
+	int from;
+	for (QMap<int, bool>::const_iterator i=marks.begin(); i!=marks.end(); i++){
+		switch (c){
+		case 0:
+			from = i.key();
+			i.value() ? c++ : c--;
+			break;
+		case 1:
+			// i.value() == false
+			regsAdded.insert(from, i.key());
+			c = 0;
+			break;
+		case -1:
+			// i.value() == true
+			regsRemoved.insert(from, i.key());
+			c = 0;
+			break;
+		}
+	}
+}
+
+
+// all entries must be valid
+RmsCachePacket::RmsCachePacket(const QList<RmsCacheEntry> &entries, int count)
+	: blockCount(count)
+{
+	//qDebug() << "RmsCachePacket create" << count;
+	// algorithm: silence compression & 8bit->4bit(when all samples in 4bit)
+	qint8 peak = 0;
+	QMap<int, int> silent;
+	int silentCur = -1;
+	for (int i=0; i<count; i++){
+		if (entries[i].L > peak)
+			peak = entries[i].R;
+		if (entries[i].R > peak)
+			peak = entries[i].R;
+		if (entries[i].L == 0 && entries[i].R == 0){
+			if (silentCur < 0){
+				silentCur = i;
+			}
+		}else if (silentCur >= 0){
+			silent.insert(silentCur, i - silentCur);
+			silentCur = -1;
+		}
+	}
+	if (silentCur >= 0){
+		silent.insert(silentCur, count - silentCur);
+	}
+	if (peak == 0){
+		// perfect silence!
+	}else if (peak < 0x08){
+		compressed.append(0x01);
+		QMap<int, int>::const_iterator isilent = silent.begin();
+		for (int i=0; i<count; i++){
+			if (isilent != silent.end() && isilent.key() == i){
+				if (isilent.value() >= 128){
+					compressed.append(char(uchar(0x80)));
+					compressed.append(char(uchar(isilent.value() & 0xff)));
+					compressed.append(char(uchar((isilent.value() & 0xff00) >> 8)));
+				}else{
+					compressed.append(char(uchar(0x80 + isilent.value())));
+				}
+				i += isilent.value() - 1;
+				isilent++;
+			}else{
+				compressed.append(uchar(entries[i].L & 0x07) | uchar((entries[i].R & 0x07) << 4));
+			}
+		}
+	}else{
+		compressed.append(0x02);
+		QMap<int, int>::const_iterator isilent = silent.begin();
+		for (int i=0; i<count; i++){
+			if (isilent != silent.end() && isilent.key() == i){
+				if (isilent.value() >= 128){
+					compressed.append(char(uchar(0x80)));
+					compressed.append(char(uchar(isilent.value() & 0xff)));
+					compressed.append(char(uchar((isilent.value() & 0xff00) >> 8)));
+				}else{
+					compressed.append(char(uchar(0x80 + isilent.value())));
+				}
+				i += isilent.value() - 1;
+				isilent++;
+			}else{
+				compressed.append(char(uchar(entries[i].L & 0x7f)));
+				compressed.append(char(uchar(entries[i].R & 0x7f)));
+			}
+		}
+	}
+	//qDebug() << QString("compressed. %1 -> %2 (%3%)").arg(count*2).arg(compressed.size()).arg(50*compressed.size()/count);
+}
+
+QList<RmsCacheEntry> RmsCachePacket::Uncompress() const
+{
+	QList<RmsCacheEntry> entries;
+	entries.reserve(blockCount);
+	if (compressed.size() == 0){
+		for (int i=0; i<blockCount; i++){
+			entries.append(RmsCacheEntry(0, 0));
+		}
+		return entries;
+	}
+	int c=0;
+	switch (compressed[c++]){
+	case 1:
+		while (c < compressed.size()){
+			int v = (uchar)compressed[c++];
+			if (v & 0x80){
+				int size = v - 0x80;
+				if (size > 0){
+					for (int i=0; i<size; i++){
+						entries.append(RmsCacheEntry(0, 0));
+					}
+				}else{
+					if (c > compressed.size() - 2){
+						qDebug() << "malformed1";
+						break;
+					}
+					int sl = (uchar)compressed[c++];
+					int sh = (uchar)compressed[c++];
+					int sz = sl | (sh << 8);
+					for (int i=0; i<sz; i++){
+						entries.append(RmsCacheEntry(0, 0));
+					}
+				}
+			}else{
+				entries.append(RmsCacheEntry(v & 0x07, (v & 0x70) >> 4));
+			}
+		}
+		break;
+	case 2:
+		while (c < compressed.size()){
+			int v = (uchar)compressed[c++];
+			if (v & 0x80){
+				int size = v - 0x80;
+				if (size > 0){
+					for (int i=0; i<size; i++){
+						entries.append(RmsCacheEntry(0, 0));
+					}
+				}else{
+					if (c > compressed.size() - 2){
+						qDebug() << "malformed 2-a";
+						break;
+					}
+					int sl = (uchar)compressed[c++];
+					int sh = (uchar)compressed[c++];
+					int sz = sl | (sh << 8);
+					for (int i=0; i<sz; i++){
+						entries.append(RmsCacheEntry(0, 0));
+					}
+				}
+			}else{
+				if (c >= compressed.size()){
+					qDebug() << "malformed 2-b";
+					break;
+				}
+				int w = (uchar)compressed[c++];
+				entries.append(RmsCacheEntry(v, w));
+			}
+		}
+		break;
+	default:
+		break;
+	}
+	return entries;
+}
+
+
+
+
+
 
 
 SoundChannelResourceManager::SoundChannelResourceManager(QObject *parent)
@@ -27,7 +235,7 @@ void SoundChannelResourceManager::UpdateWaveData(const QString &srcPath)
 		wave = nullptr;
 	}
 	overallWaveform.fill(0x00000000);
-	rmsCacheRegions.clear();
+	rmsCachePackets.clear();
 	file = QFileInfo(srcPath);
 	QString ext = file.suffix().toLower();
 	if (ext == "wav"){
@@ -64,14 +272,17 @@ void SoundChannelResourceManager::UpdateWaveData(const QString &srcPath)
 	});
 }
 
-void SoundChannelResourceManager::UpdateVisibleRegions(const QList<QPair<int, int> > &visibleRegionsOffsetAndLength)
+void SoundChannelResourceManager::RequireRmsCachePacket(int position)
 {
-	currentTask = QtConcurrent::run([this](QFuture<void> prevTask, const QList<QPair<int, int> > &visibleRegionsOffsetAndLength){
-		if (prevTask.isRunning()){
-			prevTask.waitForFinished();
-		}
-		RunTaskVisibleRegions(visibleRegionsOffsetAndLength);
-}, currentTask, visibleRegionsOffsetAndLength);
+	// uncompression may be done before whole compression completes.
+	QtConcurrent::run([=, this](){
+		RunTaskRmsCachePacket(position);
+	});
+//	currentTask = QtConcurrent::run([this](QFuture<void> currentTask, int position){
+//		if (currentTask.isRunning())
+//			currentTask.waitForFinished();
+//		RunTaskRmsCachePacket(position);
+//	}, currentTask, position);
 }
 
 void SoundChannelResourceManager::RunTaskWaveData()
@@ -82,11 +293,19 @@ void SoundChannelResourceManager::RunTaskWaveData()
 	}
 	emit WaveSummaryReady(&summary);
 
-	TaskDrawOverallWaveform();
+	TaskDrawOverallWaveformAndRmsCache();
 	emit OverallWaveformReady();
+	emit RmsCacheUpdated();
+}
 
-	TaskLoadInitialData();
-	// emit nothing
+void SoundChannelResourceManager::RunTaskRmsCachePacket(int position)
+{
+	QMap<quint64, RmsCachePacket>::const_iterator i = rmsCachePackets.find(position);
+	if (i == rmsCachePackets.end()){
+		// packet not found
+		return;
+	}
+	emit RmsCachePacketReady(position, i->Uncompress());
 }
 
 bool SoundChannelResourceManager::TaskLoadWaveSummary()
@@ -107,7 +326,7 @@ bool SoundChannelResourceManager::TaskLoadWaveSummary()
 	return true;
 }
 
-void SoundChannelResourceManager::TaskDrawOverallWaveform()
+void SoundChannelResourceManager::TaskDrawOverallWaveformAndRmsCache()
 {
 	static const quint64 BufferSize = 4096;
 	wave->SeekAbsolute(0);
@@ -120,6 +339,10 @@ void SoundChannelResourceManager::TaskDrawOverallWaveform()
 	qreal dx = qreal(width) / summary.FrameCount;
 	const int ditherRes = 32;
 	qreal dxd = dx*ditherRes;
+	QList<RmsCacheEntry> rmsBuf;
+	QPair<float, float> rmsCur(0, 0);
+	int rmsCurSize = 0;
+	int rmsCurPos = 0;
 	switch (wave->GetFormat().sampleSize()){
 	case 8:
 		switch (wave->GetFormat().channelCount()){
@@ -134,6 +357,25 @@ void SoundChannelResourceManager::TaskDrawOverallWaveform()
 					auto be = (const quint8 *)(buffer + sizeRead);
 					for (auto b = (const quint8 *)buffer; b<be; ismp++){
 						quint8 v = *b++;
+						{
+							float vv = (float)(v - 128) / 128.0f;
+							float sv = vv*vv;
+							rmsCur.first += sv;
+							rmsCur.second += sv;
+							if (++rmsCurSize >= RmsCacheBlockSize){
+								RmsCacheEntry entry(rmsCur.first * 127.0 / RmsCacheBlockSize, rmsCur.second * 127.0 / RmsCacheBlockSize);
+								rmsBuf.append(entry);
+								rmsCur.first = 0.0;
+								rmsCur.second = 0.0;
+								rmsCurSize = 0;
+								if (rmsBuf.size() >= RmsCachePacketSize){
+									QMutexLocker lockerRms(&rmsCacheMutex);
+									rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, RmsCachePacketSize));
+									rmsBuf.erase(rmsBuf.begin(), rmsBuf.begin()+RmsCachePacketSize);
+									rmsCurPos += RmsCachePacketSampleCount;
+								}
+							}
+						}
 						qreal x = (qreal)ismp * dx;
 						qreal y = (qreal)(256-v) * dy;
 						int ix = int(x);
@@ -151,6 +393,25 @@ void SoundChannelResourceManager::TaskDrawOverallWaveform()
 					auto be = (const qint8 *)(buffer + sizeRead);
 					for (auto b = (const qint8 *)buffer; b<be; ismp++){
 						qint8 v = *b++;
+						{
+							float vv = (float)v / 128.0f;
+							float sv = vv*vv;
+							rmsCur.first += sv;
+							rmsCur.second += sv;
+							if (++rmsCurSize >= RmsCacheBlockSize){
+								RmsCacheEntry entry(rmsCur.first * 127.0 / RmsCacheBlockSize, rmsCur.second * 127.0 / RmsCacheBlockSize);
+								rmsBuf.append(entry);
+								rmsCur.first = 0.0;
+								rmsCur.second = 0.0;
+								rmsCurSize = 0;
+								if (rmsBuf.size() >= RmsCachePacketSize){
+									QMutexLocker lockerRms(&rmsCacheMutex);
+									rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, RmsCachePacketSize));
+									rmsBuf.erase(rmsBuf.begin(), rmsBuf.begin()+RmsCachePacketSize);
+									rmsCurPos += RmsCachePacketSampleCount;
+								}
+							}
+						}
 						qreal x = (qreal)ismp * dx;
 						qreal y = (qreal)(128-v) * dy;
 						int ix = int(x);
@@ -184,6 +445,25 @@ void SoundChannelResourceManager::TaskDrawOverallWaveform()
 					for (auto b = (const quint16 *)buffer; b<be; ismp++){
 						quint16 l = *b++;
 						quint16 r = *b++;
+						{
+							float vl = (float)(l-32768) / 32768.0;
+							float vr = (float)(r-32768) / 32768.0;
+							rmsCur.first += vl*vl;
+							rmsCur.second += vr*vr;
+							if (++rmsCurSize >= RmsCacheBlockSize){
+								RmsCacheEntry entry(rmsCur.first * 127.0 / RmsCacheBlockSize, rmsCur.second * 127.0 / RmsCacheBlockSize);
+								rmsBuf.append(entry);
+								rmsCur.first = 0.0;
+								rmsCur.second = 0.0;
+								rmsCurSize = 0;
+								if (rmsBuf.size() >= RmsCachePacketSize){
+									QMutexLocker lockerRms(&rmsCacheMutex);
+									rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, RmsCachePacketSize));
+									rmsBuf.erase(rmsBuf.begin(), rmsBuf.begin()+RmsCachePacketSize);
+									rmsCurPos += RmsCachePacketSampleCount;
+								}
+							}
+						}
 						qreal x = (qreal)ismp * dxd;
 						int ix = (int(x) + (std::rand() - RAND_MAX/2)/(RAND_MAX/2/ditherRes) ) / ditherRes;
 						if (ix >= width || ix < 0)
@@ -207,6 +487,25 @@ void SoundChannelResourceManager::TaskDrawOverallWaveform()
 					for (auto b = (const qint16*)buffer; b<be; ismp++){
 						qint16 l = *b++;
 						qint16 r = *b++;
+						{
+							float vl = (float)l / 32768.0;
+							float vr = (float)r / 32768.0;
+							rmsCur.first += vl*vl;
+							rmsCur.second += vr*vr;
+							if (++rmsCurSize >= RmsCacheBlockSize){
+								RmsCacheEntry entry(std::sqrtf(rmsCur.first / RmsCacheBlockSize) * 127.0f, std::sqrtf(rmsCur.second / RmsCacheBlockSize) * 127.0f);
+								rmsBuf.append(entry);
+								rmsCur.first = 0.0;
+								rmsCur.second = 0.0;
+								rmsCurSize = 0;
+								if (rmsBuf.size() >= RmsCachePacketSize){
+									QMutexLocker lockerRms(&rmsCacheMutex);
+									rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, RmsCachePacketSize));
+									rmsBuf.erase(rmsBuf.begin(), rmsBuf.begin()+RmsCachePacketSize);
+									rmsCurPos += RmsCachePacketSampleCount;
+								}
+							}
+						}
 						qreal x = (qreal)ismp * dxd;
 						int ix = (int(x) + (std::rand() - RAND_MAX/2)/(RAND_MAX/2/ditherRes) ) / ditherRes;
 						if (ix >= width || ix < 0)
@@ -242,6 +541,10 @@ void SoundChannelResourceManager::TaskDrawOverallWaveform()
 		}
 		break;
 	}
+	if (rmsBuf.size() > 0){
+		QMutexLocker lockerRms(&rmsCacheMutex);
+		rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, rmsBuf.size()));
+	}
 	delete[] buffer;
 	const int density = wave->GetFrameCount() / width;
 	const int hd = wave->GetFormat().channelCount() == 1 ? height/2 : height/4;
@@ -262,49 +565,6 @@ void SoundChannelResourceManager::TaskDrawOverallWaveform()
 		}
 	}
 	delete[] temp;
-}
-
-void SoundChannelResourceManager::TaskLoadInitialData()
-{
-	wave->SeekAbsolute(0);
-	QVector<RmsCacheEntry> region;
-	region.reserve(InitialCacheFrames);
-	auto buffer = new QAudioBuffer::S16S[BufferFrames];
-	quint32 requiredFrames = InitialCacheFrames;
-	while (requiredFrames > BufferFrames){
-		int framesRead = ReadAsS16S(buffer, BufferFrames);
-		if (framesRead == 0){
-			goto fin;
-		}
-		for (int i=0; i<framesRead; i++){
-			float fl = (float)buffer[i].left / 32768.0;
-			float fr = (float)buffer[i].right / 32768.0;
-			region.append(RmsCacheEntry(fl*fl, fr*fr));
-		}
-		requiredFrames -= framesRead;
-	}
-	{
-		quint64 framesRead = ReadAsS16S(buffer, requiredFrames);
-		if (framesRead == 0){
-			goto fin;
-		}
-		for (int i=0; i<framesRead; i++){
-			float fl = (float)buffer[i].left / 32768.0;
-			float fr = (float)buffer[i].right / 32768.0;
-			region.append(RmsCacheEntry(fl*fl, fr*fr));
-		}
-	}
-fin:
-	rmsCacheMutex.lock();
-	rmsCacheRegions.insert(0, region);
-	rmsCacheMutex.unlock();
-	delete[] buffer;
-}
-
-void SoundChannelResourceManager::RunTaskVisibleRegions(const QList<QPair<int, int> > &visibleRegionsOffsetAndLength)
-{
-	if (!wave)
-		return;
 }
 
 quint64 SoundChannelResourceManager::ReadAsS16S(QAudioBuffer::S16S *buffer, quint64 frames)
@@ -514,64 +774,9 @@ void SoundChannelResourceManager::ConvertAuxBufferToS16S(QAudioBuffer::S16S *buf
 }
 
 
-QVector<RmsCacheEntry> SoundChannelResourceManager::GetRmsInRange(int position, int length) const
-{
-	QVector<RmsCacheEntry> rms(length);
-	rmsCacheMutex.lock();
-	QMap<quint64, QVector<RmsCacheEntry>>::const_iterator r = rmsCacheRegions.upperBound(position);
-	if (r == rmsCacheRegions.end()){
-		if (r == rmsCacheRegions.begin()){
-			// no region exists
-		}else{
-			r--; // last region may be available
-			for (int i = position - r.key(), j=0; i < r->size() && j < length; i++, j++){
-				rms[j] = r.value()[i];
-			}
-		}
-	}else{
-		if (r != rmsCacheRegions.begin()){
-			r--; // previous region may be also available
-			for (int i = position - r.key(), j=0; i < r->size() && j < length; i++, j++){
-				rms[j] = r.value()[i];
-			}
-		}
-		for (; r!=rmsCacheRegions.end() && r.key()<position+length; r++){
-			for (int i=0, j = r.key() - position; i < r->size() && j < length; i++, j++){
-				rms[j] = r.value()[i];
-			}
-		}
-	}
-	rmsCacheMutex.unlock();
-	return rms;
-}
 
 
 
-
-
-
-
-
-
-
-/*
-void SoundChannelAnalyzer::run()
-{
-	while (!waves.empty()){
-		WaveData *waveData = waves.takeFirst();
-		auto preview = new StandardWaveData(waveData);
-		int fk = preview->GetFrameCount();
-		auto rmsCache = new RmsCacheEntry[fk];
-		for (int i=0; i<preview->GetFrameCount(); i++){
-			StandardWaveData::SampleType s = (*preview)[i*0];
-			float l = s.left / 32768.0;
-			float r = s.right / 32768.0;
-			rmsCache[i*0] = RmsCacheEntry(l, r);
-		}
-		emit Ready(waveData, preview, rmsCache);
-	}
-}
-*/
 
 
 
@@ -584,6 +789,8 @@ SoundChannel::SoundChannel(Document *document)
 {
 	connect(&resource, SIGNAL(WaveSummaryReady(const WaveSummary*)), this, SLOT(OnWaveSummaryReady(const WaveSummary*)));
 	connect(&resource, SIGNAL(OverallWaveformReady()), this, SLOT(OnOverallWaveformReady()));
+	connect(&resource, SIGNAL(RmsCacheUpdated()), this, SLOT(OnRmsCacheUpdated()));
+	connect(&resource, SIGNAL(RmsCachePacketReady(int,QList<RmsCacheEntry>)), this, SLOT(OnRmsCachePacketReady(int,QList<RmsCacheEntry>)));
 }
 
 SoundChannel::~SoundChannel()
@@ -628,6 +835,18 @@ void SoundChannel::OnOverallWaveformReady()
 	emit OverallWaveformUpdated();
 }
 
+void SoundChannel::OnRmsCacheUpdated()
+{
+	emit RmsUpdated();
+}
+
+void SoundChannel::OnRmsCachePacketReady(int position, QList<RmsCacheEntry> packet)
+{
+	rmsCacheLibrary.insert(position, packet);
+	rmsCacheRequestFlag.remove(position);
+	emit RmsUpdated();
+}
+
 bool SoundChannel::InsertNote(SoundNote note)
 {
 	return false;
@@ -638,8 +857,95 @@ bool SoundChannel::RemoveNote(SoundNote note)
 	return false;
 }
 
+void SoundChannel::UpdateVisibleRegions(const QList<QPair<int, int> > &visibleRegionsTime)
+{
+	visibleRegions = visibleRegionsTime;
+	UpdateVisibleRegionsInternal();
+}
 
-void SoundChannel::DrawRmsGraph(double location, double resolution, std::function<bool(float, float)> drawer) const
+void SoundChannel::UpdateVisibleRegionsInternal()
+{
+	if (!waveSummary || visibleRegions.empty()){
+		rmsCacheLibrary.clear();
+		return;
+	}
+	const double samplesPerSec = waveSummary->Format.sampleRate();
+	const double ticksPerBeat = document->GetTimeBase();
+	QMultiMap<int, int> regions; // key:start value:end
+
+	QMutexLocker lock(&cacheMutex);
+	for (QPair<int, int> reg : visibleRegions){
+		const int endAt = reg.second;
+		int ticks = reg.first;
+		QMap<int, CacheEntry>::const_iterator icache = cache.lowerBound(reg.first);
+		if (icache->prevSamplePosition >= 0){
+			// first interval
+			double pos = icache->prevSamplePosition - (icache.key() - ticks)*(60.0 * samplesPerSec / (icache->prevTempo * ticksPerBeat));
+			if (icache.key() >= endAt){
+				// reg is in single interval
+				double posEnd = icache->prevSamplePosition - (icache.key() - endAt)*(60.0 * samplesPerSec / (icache->prevTempo * ticksPerBeat));
+				regions.insert(pos, posEnd);
+				continue;
+			}
+			regions.insert(pos, icache->prevSamplePosition);
+		}
+		ticks = icache.key();
+		int pos = icache->currentSamplePosition;
+		icache++;
+		while (icache.key() < endAt){
+			// middle intervals
+			int posEnd = icache->prevSamplePosition;
+			if (pos >= 0 && posEnd >= 0){
+				regions.insert(pos, posEnd);
+			}
+			ticks = icache.key();
+			pos = icache->currentSamplePosition;
+			icache++;
+		}
+		if (pos >= 0 && icache->prevSamplePosition >= 0){
+			// last interval
+			double posEnd = icache->prevSamplePosition - (icache.key() - endAt)*(60.0 * samplesPerSec / (icache->prevTempo * ticksPerBeat));
+			regions.insert(pos, posEnd);
+		}
+	}
+
+	// merge overlapped regions
+	if (regions.empty()){
+		rmsCacheLibrary.clear();
+		return;
+	}
+	QMap<int, int> merged = MergeRegions(regions);
+
+	// unload invisible packets and (request to) load visible packets
+	int posLast = merged.lastKey() + merged.last();
+	if (!rmsCacheLibrary.empty()){
+		posLast = std::max(posLast, rmsCacheLibrary.lastKey() + SoundChannelResourceManager::RmsCachePacketSampleCount);
+	}
+	int packetIxEnd = (posLast - 1)/SoundChannelResourceManager::RmsCachePacketSampleCount + 1;
+	QSet<int> visiblePacketKeys;
+	for (QMap<int, int>::const_iterator iVisible=merged.begin(); iVisible!=merged.end(); iVisible++){
+		int ixBegin = iVisible.key() / SoundChannelResourceManager::RmsCachePacketSampleCount;
+		int ixEnd = (iVisible.value()-1) / SoundChannelResourceManager::RmsCachePacketSampleCount + 1;
+		for (int ix=ixBegin; ix<ixEnd; ix++){
+			visiblePacketKeys.insert(ix * SoundChannelResourceManager::RmsCachePacketSampleCount);
+		}
+	}
+	for (int ix=0; ix<packetIxEnd; ix++){
+		int pos = ix*SoundChannelResourceManager::RmsCachePacketSampleCount;
+		QMap<int, QList<RmsCacheEntry>>::iterator i = rmsCacheLibrary.find(pos);
+		if (visiblePacketKeys.contains(pos)){
+			if (i == rmsCacheLibrary.end() && !rmsCacheRequestFlag.contains(pos)){
+				rmsCacheRequestFlag.insert(pos, true);
+				resource.RequireRmsCachePacket(pos);
+			}
+		}else if (i != rmsCacheLibrary.end()){
+			rmsCacheLibrary.erase(i);
+		}
+	}
+}
+
+
+void SoundChannel::DrawRmsGraph(double location, double resolution, std::function<bool(Rms)> drawer) const
 {
 	if (!waveSummary){
 		return;
@@ -648,6 +954,7 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 	const double ticksPerBeat = document->GetTimeBase();
 	const double deltaTicks = 1 / resolution;
 	double ticks = location;
+	QMutexLocker lock(&cacheMutex);
 	QMap<int, CacheEntry>::const_iterator icache = cache.lowerBound(location);
 	double pos = icache->prevSamplePosition - (icache.key() - ticks)*(60.0 * samplesPerSec / (icache->prevTempo * ticksPerBeat));
 	while (icache != cache.end()){
@@ -656,7 +963,7 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 		int iPos = pos;
 		int iNextPos = nextPos;
 		if (iPos >= waveSummary->FrameCount|| iNextPos <= 0){
-			if (!drawer(-1.0f, -1.0f)){
+			if (!drawer(Rms())){
 				return;
 			}
 		}else{
@@ -667,22 +974,32 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 				iNextPos = waveSummary->FrameCount;
 			}
 			if (iPos >= iNextPos){
-				if (!drawer(-1.0f, -1.0f)){
+				if (!drawer(Rms())){
 					return;
 				}
 			}else{
-				float l = 0.0f, r = 0.0f;
-				int validSamples = 0;
-				QVector<RmsCacheEntry> rms = resource.GetRmsInRange(iPos, iNextPos-iPos);
-				for (int i=0; i<rms.size(); i++){
-					if (rms[i].IsValid()){
-						l += rms[i].L;
-						r += rms[i].R;
-						validSamples++;
+				int ixBegin = pos / SoundChannelResourceManager::RmsCachePacketSampleCount;
+				int ixPacket = ixBegin * SoundChannelResourceManager::RmsCachePacketSampleCount;
+				auto itRms = rmsCacheLibrary.find(ixPacket);
+				if (itRms != rmsCacheLibrary.end() && itRms->size() > 0){
+					const QList<RmsCacheEntry> &entries = *itRms;
+					int bxBegin = std::max(0, std::min(entries.size()-1, (iPos - ixPacket) / SoundChannelResourceManager::RmsCacheBlockSize));
+					int bxEnd = std::max(bxBegin+1, std::min(entries.size(), (iNextPos - ixPacket) / SoundChannelResourceManager::RmsCacheBlockSize));
+					Rms rms(0, 0);
+					for (int b=bxBegin; b!=bxEnd; b++){
+						rms.L += entries[b].L*entries[b].L;
+						rms.R += entries[b].R*entries[b].R;
 					}
-				}
-				if (validSamples>0 ? !drawer(std::sqrt(l/validSamples), std::sqrt(r/validSamples)) : !drawer(-1.0f, -1.0f)){
-					return;
+					rms.L = std::sqrtf(rms.L / (bxEnd-bxBegin)) / 128.f;
+					rms.R = std::sqrtf(rms.R / (bxEnd-bxBegin)) / 128.f;
+					if (!drawer(rms)){
+						return;
+					}
+				}else{
+					// no cache
+					if (!drawer(Rms())){
+						return;
+					}
 				}
 			}
 		}
@@ -691,11 +1008,12 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 			icache++;
 		}
 	}
-	while (drawer(-1.0f, -1.0f));
+	while (drawer(Rms()));
 }
 
 void SoundChannel::UpdateCache()
 {
+	QMutexLocker lock(&cacheMutex);
 	cache.clear();
 	if (!waveSummary){
 		return;
@@ -818,6 +1136,9 @@ void SoundChannel::UpdateCache()
 			}
 		}
 	}
+	entry.prevSamplePosition = entry.currentSamplePosition = -1;
+	entry.prevTempo = entry.currentTempo;
+	cache.insert(INT_MAX, entry);
 }
 
 
