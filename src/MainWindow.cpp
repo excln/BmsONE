@@ -124,7 +124,7 @@ MainWindow::MainWindow(QWidget *parent)
 	menuFile->addSeparator();
 	menuFile->addAction(actionFileQuit);
 #endif
-
+#if 0
 	auto *menuEdit = menuBar()->addMenu(tr("Edit"));
 	menuEdit->addAction(actionEditUndo);
 	menuEdit->addAction(actionEditRedo);
@@ -144,7 +144,7 @@ MainWindow::MainWindow(QWidget *parent)
 	menuEdit->addAction(actionEditLockVerticalMove);
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditPlay);
-
+#endif
 	auto *menuView = menuBar()->addMenu(tr("View"));
 	actionViewTbSeparator = menuView->addSeparator();
 	actionViewDockSeparator = menuView->addSeparator();

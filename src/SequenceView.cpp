@@ -88,14 +88,14 @@ SequenceView::SequenceView(MainWindow *parent)
 	footerCornerEntry = NewWidget(&SequenceView::paintEventFooterEntity);
 	footerPlayingEntry = NewWidget(&SequenceView::paintEventFooterEntity);
 	playingPane->setMouseTracking(true);
-
+#if 0
 	auto *tb = new QToolBar(headerPlayingEntry);
 	tb->addAction("L");
 	tb->addAction("R");
 	tb->addSeparator();
 	tb->addAction("S");
 	tb->addAction("M");
-
+#endif
 	editMode = EditMode::EDIT_MODE;
 	lockCreation = false;
 	lockDeletion = false;
@@ -1768,9 +1768,11 @@ SoundChannelHeader::SoundChannelHeader(SequenceView *sview, SoundChannelView *cv
 	, cview(cview)
 {
 	setContextMenuPolicy(Qt::DefaultContextMenu);
+#if 0
 	auto *tb = new QToolBar(this);
 	tb->addAction("S");
 	tb->addAction("M");
+#endif
 }
 
 SoundChannelHeader::~SoundChannelHeader()
