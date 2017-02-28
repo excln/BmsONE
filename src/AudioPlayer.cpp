@@ -202,8 +202,7 @@ void AudioPlayerInternal::OnSourceDestroyed(QObject *src)
 		srcPrev = nullptr;
 		tmpPrevPosition = 0;
 		return;
-	}
-	if (src == srcCurrent){
+	}else if (src == srcCurrent){
 		srcCurrent = nullptr;
 		tmpCurrentPosition = 0;
 		return;
@@ -347,9 +346,12 @@ void AudioPlayerInternal::PlaySource(AudioPlaySource *srcNew)
 		srcPrev->AudioPlayRelease();
 	}
 	srcPrev = srcCurrent;
-	tmpPrevPosition = tmpCurrentPosition;
-	for (int i=0; i<tmpPrevPosition; i++){
-		tmpPrev[i] = tmpCurrent[i];
+	if (srcPrev){
+		qDebug() << "migrating current -> prev...";
+		tmpPrevPosition = tmpCurrentPosition;
+		for (int i=0; i<tmpPrevPosition; i++){
+			tmpPrev[i] = tmpCurrent[i];
+		}
 	}
 	srcCurrent = srcNew;
 	tmpCurrentPosition = 0;

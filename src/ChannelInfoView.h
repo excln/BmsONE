@@ -46,6 +46,8 @@ private slots:
 
 	void PreviewSound();
 
+	void OnChannelSourcePreviewerStopped();
+
 public slots:
 	void OnCurrentChannelChanged(int index);
 	void SelectSourceFile();

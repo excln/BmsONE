@@ -191,8 +191,16 @@ void ChannelInfoView::PreviewSound()
 	if (!channel)
 		return;
 	channelSourcePreviewer =  new SoundChannelSourceFilePreviewer(channel, this);
-	connect(channelSourcePreviewer, SIGNAL(Stopped()), channelSourcePreviewer, SLOT(deleteLater()));
+	connect(channelSourcePreviewer, SIGNAL(Stopped()), this, SLOT(OnChannelSourcePreviewerStopped()));
 	mainWindow->GetAudioPlayer()->Play(channelSourcePreviewer);
+}
+
+void ChannelInfoView::OnChannelSourcePreviewerStopped()
+{
+	if (!channelSourcePreviewer)
+		return;
+	delete channelSourcePreviewer;
+	channelSourcePreviewer = nullptr;
 }
 
 void ChannelInfoView::SelectSourceFile()
