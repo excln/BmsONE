@@ -48,6 +48,10 @@ private:
 	QAction *actionEditLockVerticalMove;
 	QAction *actionEditPlay;
 
+	QAction *actionViewTbSeparator;
+	QAction *actionViewDockSeparator;
+	QAction *actionViewFullScreen;
+
 	QAction *actionChannelNew;
 	QAction *actionChannelPrev;
 	QAction *actionChannelNext;
@@ -71,6 +75,7 @@ private slots:
 	void FileSaveAs();
 	void EditUndo();
 	void EditRedo();
+	void ViewFullScreen();
 	void ChannelNew();
 	void ChannelPrev();
 	void ChannelNext();

@@ -350,211 +350,63 @@ void SoundChannelResourceManager::TaskDrawOverallWaveformAndRmsCache()
 	std::memset(temp, 0, sizeof(quint32)*width*height);
 	char *buffer = new char[BufferSize];
 	quint64 ismp = 0;
-	qreal dx = qreal(width) / summary.FrameCount;
+	float dx = float(width) / summary.FrameCount;
 	const int ditherRes = 32;
-	qreal dxd = dx*ditherRes;
+	float dxd = dx*ditherRes;
 	QList<RmsCacheEntry> rmsBuf;
 	QPair<float, float> rmsCur(0, 0);
 	int rmsCurSize = 0;
 	int rmsCurPos = 0;
-	switch (wave->GetFormat().sampleSize()){
-	case 8:
-		switch (wave->GetFormat().channelCount()){
-		case 1: {
-			qreal dy = qreal(height) / 256;
-			switch (wave->GetFormat().sampleType()){
-			case QAudioFormat::UnSignedInt:
-				while (wave->GetRemainingFrameCount() > 0){
-					const quint64 sizeRead = wave->Read(buffer, BufferSize);
-					if (sizeRead == 0)
-						break;
-					auto be = (const quint8 *)(buffer + sizeRead);
-					for (auto b = (const quint8 *)buffer; b<be; ismp++){
-						quint8 v = *b++;
-						{
-							float vv = (float)(v - 128) / 128.0f;
-							float sv = vv*vv;
-							rmsCur.first += sv;
-							rmsCur.second += sv;
-							if (++rmsCurSize >= RmsCacheBlockSize){
-								RmsCacheEntry entry(rmsCur.first * 127.0 / RmsCacheBlockSize, rmsCur.second * 127.0 / RmsCacheBlockSize);
-								rmsBuf.append(entry);
-								rmsCur.first = 0.0;
-								rmsCur.second = 0.0;
-								rmsCurSize = 0;
-								if (rmsBuf.size() >= RmsCachePacketSize){
-									QMutexLocker lockerRms(&rmsCacheMutex);
-									rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, RmsCachePacketSize));
-									rmsBuf.erase(rmsBuf.begin(), rmsBuf.begin()+RmsCachePacketSize);
-									rmsCurPos += RmsCachePacketSampleCount;
-								}
-							}
-						}
-						qreal x = (qreal)ismp * dx;
-						qreal y = (qreal)(256-v) * dy;
-						int ix = int(x);
-						if (ix >= width || ix < 0)
-							break;
-						temp[ix * height + int(y)]++;
-					}
-				}
-				break;
-			case QAudioFormat::SignedInt:
-				while (wave->GetRemainingFrameCount() > 0){
-					const quint64 sizeRead = wave->Read(buffer, BufferSize);
-					if (sizeRead == 0)
-						break;
-					auto be = (const qint8 *)(buffer + sizeRead);
-					for (auto b = (const qint8 *)buffer; b<be; ismp++){
-						qint8 v = *b++;
-						{
-							float vv = (float)v / 128.0f;
-							float sv = vv*vv;
-							rmsCur.first += sv;
-							rmsCur.second += sv;
-							if (++rmsCurSize >= RmsCacheBlockSize){
-								RmsCacheEntry entry(rmsCur.first * 127.0 / RmsCacheBlockSize, rmsCur.second * 127.0 / RmsCacheBlockSize);
-								rmsBuf.append(entry);
-								rmsCur.first = 0.0;
-								rmsCur.second = 0.0;
-								rmsCurSize = 0;
-								if (rmsBuf.size() >= RmsCachePacketSize){
-									QMutexLocker lockerRms(&rmsCacheMutex);
-									rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, RmsCachePacketSize));
-									rmsBuf.erase(rmsBuf.begin(), rmsBuf.begin()+RmsCachePacketSize);
-									rmsCurPos += RmsCachePacketSampleCount;
-								}
-							}
-						}
-						qreal x = (qreal)ismp * dx;
-						qreal y = (qreal)(128-v) * dy;
-						int ix = int(x);
-						if (ix >= width || ix < 0)
-							break;
-						temp[ix * height + int(y)]++;
-					}
-				}
-				break;
+	wave->EnumerateAllAsFloat([&](float v){
+		// when Monoral
+		float sqv = v*v;
+		rmsCur.first += sqv;
+		rmsCur.second += sqv;
+		if (++rmsCurSize >= RmsCacheBlockSize){
+			RmsCacheEntry entry(std::sqrtf(rmsCur.first / RmsCacheBlockSize) * 127.0f, std::sqrtf(rmsCur.second / RmsCacheBlockSize) * 127.0f);
+			rmsBuf.append(entry);
+			rmsCur.first = 0.0f;
+			rmsCur.second = 0.0f;
+			rmsCurSize = 0;
+			if (rmsBuf.size() >= RmsCachePacketSize){
+				QMutexLocker lockerRms(&rmsCacheMutex);
+				rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, RmsCachePacketSize));
+				rmsBuf.erase(rmsBuf.begin(), rmsBuf.begin()+RmsCachePacketSize);
+				rmsCurPos += RmsCachePacketSampleCount;
 			}
-			break;
 		}
-		case 2: {
-			break;
-		}}
-		break;
-	case 16:
-		switch (wave->GetFormat().channelCount()){
-		case 1: {
-			break;
+		float x = (float)ismp * dxd;
+		float y = (0.5f - 0.48*v) * height;
+		int ix = (int(x) + (std::rand() - RAND_MAX/2)/(RAND_MAX/2/ditherRes) ) / ditherRes;
+		if (ix < width && ix >= 0){
+			temp[ix * height + int(y)]++;
 		}
-		case 2: {
-			qreal dy = qreal(height) / (65536*2);
-			switch (wave->GetFormat().sampleType()){
-			case QAudioFormat::UnSignedInt:
-				while (wave->GetRemainingFrameCount() > 0){
-					const quint64 sizeRead = wave->Read(buffer, BufferSize);
-					if (sizeRead == 0)
-						break;
-					auto be = (const quint16*)(buffer + sizeRead);
-					for (auto b = (const quint16 *)buffer; b<be; ismp++){
-						quint16 l = *b++;
-						quint16 r = *b++;
-						{
-							float vl = (float)(l-32768) / 32768.0;
-							float vr = (float)(r-32768) / 32768.0;
-							rmsCur.first += vl*vl;
-							rmsCur.second += vr*vr;
-							if (++rmsCurSize >= RmsCacheBlockSize){
-								RmsCacheEntry entry(rmsCur.first * 127.0 / RmsCacheBlockSize, rmsCur.second * 127.0 / RmsCacheBlockSize);
-								rmsBuf.append(entry);
-								rmsCur.first = 0.0;
-								rmsCur.second = 0.0;
-								rmsCurSize = 0;
-								if (rmsBuf.size() >= RmsCachePacketSize){
-									QMutexLocker lockerRms(&rmsCacheMutex);
-									rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, RmsCachePacketSize));
-									rmsBuf.erase(rmsBuf.begin(), rmsBuf.begin()+RmsCachePacketSize);
-									rmsCurPos += RmsCachePacketSampleCount;
-								}
-							}
-						}
-						qreal x = (qreal)ismp * dxd;
-						int ix = (int(x) + (std::rand() - RAND_MAX/2)/(RAND_MAX/2/ditherRes) ) / ditherRes;
-						if (ix >= width || ix < 0)
-							break;
-						{
-							qreal y = (qreal)(65536-l) * dy;
-							temp[ix * height + int(y)]++;
-						}{
-							qreal y = (qreal)(65536+65536-r) * dy;
-							temp[ix * height + int(y)]++;
-						}
-					}
-				}
-				break;
-			case QAudioFormat::SignedInt:
-				while (wave->GetRemainingFrameCount() > 0){
-					const quint64 sizeRead = wave->Read(buffer, BufferSize);
-					if (sizeRead == 0)
-						break;
-					auto be = (const qint16*)(buffer + sizeRead);
-					for (auto b = (const qint16*)buffer; b<be; ismp++){
-						qint16 l = *b++;
-						qint16 r = *b++;
-						{
-							float vl = (float)l / 32768.0;
-							float vr = (float)r / 32768.0;
-							rmsCur.first += vl*vl;
-							rmsCur.second += vr*vr;
-							if (++rmsCurSize >= RmsCacheBlockSize){
-								RmsCacheEntry entry(std::sqrtf(rmsCur.first / RmsCacheBlockSize) * 127.0f, std::sqrtf(rmsCur.second / RmsCacheBlockSize) * 127.0f);
-								rmsBuf.append(entry);
-								rmsCur.first = 0.0;
-								rmsCur.second = 0.0;
-								rmsCurSize = 0;
-								if (rmsBuf.size() >= RmsCachePacketSize){
-									QMutexLocker lockerRms(&rmsCacheMutex);
-									rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, RmsCachePacketSize));
-									rmsBuf.erase(rmsBuf.begin(), rmsBuf.begin()+RmsCachePacketSize);
-									rmsCurPos += RmsCachePacketSampleCount;
-								}
-							}
-						}
-						qreal x = (qreal)ismp * dxd;
-						int ix = (int(x) + (std::rand() - RAND_MAX/2)/(RAND_MAX/2/ditherRes) ) / ditherRes;
-						if (ix >= width || ix < 0)
-							break;
-						{
-							qreal y = (qreal)(32768-l) * dy;
-							temp[ix * height + int(y)]++;
-						}{
-							qreal y = (qreal)(65536+32768-r) * dy;
-							temp[ix * height + int(y)]++;
-						}
-					}
-				}
-				break;
+		ismp++;
+	}, [&](float l, float r){
+		// when Stereo
+		rmsCur.first += l*l;
+		rmsCur.second += r*r;
+		if (++rmsCurSize >= RmsCacheBlockSize){
+			RmsCacheEntry entry(std::sqrtf(rmsCur.first / RmsCacheBlockSize) * 127.0f, std::sqrtf(rmsCur.second / RmsCacheBlockSize) * 127.0f);
+			rmsBuf.append(entry);
+			rmsCur.first = 0.0f;
+			rmsCur.second = 0.0f;
+			rmsCurSize = 0;
+			if (rmsBuf.size() >= RmsCachePacketSize){
+				QMutexLocker lockerRms(&rmsCacheMutex);
+				rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, RmsCachePacketSize));
+				rmsBuf.erase(rmsBuf.begin(), rmsBuf.begin()+RmsCachePacketSize);
+				rmsCurPos += RmsCachePacketSampleCount;
 			}
-			break;
-		}}
-		break;
-	case 24:
-		switch (wave->GetFormat().channelCount()){
-		case 1:
-			break;
-		case 2:
-			break;
 		}
-		break;
-	case 32:
-		switch (wave->GetFormat().channelCount()){
-		case 1:
-			break;
-		case 2:
-			break;
+		float x = (float)ismp * dxd;
+		int ix = (int(x) + (std::rand() - RAND_MAX/2)/(RAND_MAX/2/ditherRes) ) / ditherRes;
+		if (ix < width && ix >= 0){
+			temp[ix * height + int((0.25f - 0.24*l) * height)]++;
+			temp[ix * height + int((0.75f - 0.24*r) * height)]++;
 		}
-		break;
-	}
+		ismp++;
+	});
 	if (rmsBuf.size() > 0){
 		QMutexLocker lockerRms(&rmsCacheMutex);
 		rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, rmsBuf.size()));
@@ -836,11 +688,23 @@ int SoundChannelSourceFilePreviewer::AudioPlayRead(AudioPlaySource::SampleType *
 
 SoundChannelNotePreviewer::SoundChannelNotePreviewer(SoundChannel *channel, int location, QObject *parent)
 	: AudioPlaySource(parent)
-	, SamplesPerSec(channel->waveSummary->Format.sampleRate())
+	, SamplesPerSec(44100.0)
+	, SamplesPerSecOrg(channel->waveSummary->Format.sampleRate())
 	, TicksPerBeat(channel->document->GetTimeBase())
 	, wave(nullptr)
 	, cache(channel->cache)
 {
+	// scale any sample positions
+	const double ratio = SamplesPerSec / SamplesPerSecOrg;
+	for (SoundChannel::CacheEntry &c : cache){
+		if (c.prevSamplePosition >= 0){
+			c.prevSamplePosition *= ratio;
+		}
+		if (c.currentSamplePosition >= 0){
+			c.currentSamplePosition *= ratio;
+		}
+	}
+
 	auto inote = channel->notes.find(location);
 	if (inote == channel->notes.end())
 		return;

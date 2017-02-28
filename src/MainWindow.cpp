@@ -84,6 +84,10 @@ MainWindow::MainWindow(QWidget *parent)
 	actionEditPlay = new QAction(tr("Play"), this);
 	actionEditPlay->setShortcut(Qt::ControlModifier + Qt::Key_P);
 
+	actionViewFullScreen = new QAction(tr("Toggle Full Screen"), this);
+	actionViewFullScreen->setShortcut(QKeySequence::FullScreen);
+	connect(actionViewFullScreen, SIGNAL(triggered()), this, SLOT(ViewFullScreen()));
+
 	actionChannelNew = new QAction(tr("Add"), this);
 	actionChannelNew->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_N);
 	connect(actionChannelNew, SIGNAL(triggered()), this, SLOT(ChannelNew()));
@@ -141,6 +145,11 @@ MainWindow::MainWindow(QWidget *parent)
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditPlay);
 
+	auto *menuView = menuBar()->addMenu(tr("View"));
+	actionViewTbSeparator = menuView->addSeparator();
+	actionViewDockSeparator = menuView->addSeparator();
+	menuView->addAction(actionViewFullScreen);
+
 	auto *menuChannel = menuBar()->addMenu(tr("Channel"));
 	menuChannel->addAction(actionChannelNew);
 	menuChannel->addSeparator();
@@ -154,11 +163,21 @@ MainWindow::MainWindow(QWidget *parent)
 	menuChannel->addSeparator();
 	menuChannel->addAction(actionChannelSelectFile);
 
+	auto *fileTools = new QToolBar(tr("File"));
+	fileTools->setObjectName("File Tools");
+	fileTools->addAction(actionFileNew);
+	fileTools->addAction(actionFileOpen);
+	fileTools->addAction(actionFileSave);
+	addToolBar(fileTools);
+	menuView->insertAction(actionViewTbSeparator, fileTools->toggleViewAction());
+
 	sequenceTools = new SequenceTools("Sequence Tools", tr("Sequence Tools"), this);
 	addToolBar(sequenceTools);
+	menuView->insertAction(actionViewTbSeparator, sequenceTools->toggleViewAction());
 
 	audioPlayer = new AudioPlayer("Sound Output", tr("Sound Output"), this);
 	addToolBar(audioPlayer);
+	menuView->insertAction(actionViewTbSeparator, audioPlayer->toggleViewAction());
 
 	sequenceView = new SequenceView(this);
 	setCentralWidget(sequenceView);
@@ -168,12 +187,14 @@ MainWindow::MainWindow(QWidget *parent)
 	dock->setObjectName("Info");
 	dock->setWidget(infoView = new InfoView(this));
 	addDockWidget(Qt::LeftDockWidgetArea, dock);
+	menuView->insertAction(actionViewDockSeparator, dock->toggleViewAction());
 
 	auto dock2 = new QDockWidget(tr("Channel"));
 	dock2->setObjectName("Channel");
 	dock2->setWidget(channelInfoView = new ChannelInfoView(this));
 	addDockWidget(Qt::LeftDockWidgetArea, dock2);
 	dock2->resize(334, dock2->height());
+	menuView->insertAction(actionViewDockSeparator, dock2->toggleViewAction());
 
 
 	// Current Channel Binding
@@ -184,8 +205,11 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(channelInfoView, SIGNAL(CurrentChannelChanged(int)), sequenceView, SLOT(OnCurrentChannelChanged(int)));
 	connect(sequenceView, SIGNAL(CurrentChannelChanged(int)), channelInfoView, SLOT(OnCurrentChannelChanged(int)));
 
+	// SequenceView-SequenceTools Initial Binding
+	sequenceTools->ReplaceSequenceView(sequenceView);
 
 
+	// Initial Document
 	auto newDocument = new Document(this);
 	newDocument->Initialize();
 	ReplaceDocument(newDocument);
@@ -277,6 +301,15 @@ void MainWindow::EditRedo()
 	if (!document->GetHistory()->CanRedo())
 		return;
 	document->GetHistory()->Redo();
+}
+
+void MainWindow::ViewFullScreen()
+{
+	if (isFullScreen()){
+		showNormal();
+	}else{
+		showFullScreen();
+	}
 }
 
 void MainWindow::ChannelNew()

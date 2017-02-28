@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include <QtMultimedia>
+#include <functional>
 #include <ogg/ogg.h>
 #include <vorbis/vorbisfile.h>
 
@@ -52,6 +53,8 @@ public:
 	virtual quint64 Read(char *buffer, quint64 bufferSize)=0;
 	virtual void SeekRelative(qint64 relativeFrames)=0;
 	virtual void SeekAbsolute(quint64 absoluteFrames)=0;
+
+	void EnumerateAllAsFloat(std::function<void(float)> whenMonoral, std::function<void(float, float)> whenStereo);
 };
 
 
@@ -98,18 +101,19 @@ class S16S44100StreamTransformer : public AudioStreamSource
 	Q_OBJECT
 
 private:
-	static const uint AuxBufferSize = 4096;
+	static const uint InputBufferSize = 4096;
 
 public:
 	typedef QAudioBuffer::S16S SampleType;
 
 private:
 	AudioStreamSource *src;
-	char *auxBuffer;
-	QList<SampleType> hindBuffer;
-	int adjust;
+	char *inputBuffer;
+	QList<SampleType> auxBuffer;
 
 	bool IsSourceS16S44100() const;
+	void Provide(qreal playHeadEnd);
+	void Forget(qreal playHeadEnd);
 
 public:
 	S16S44100StreamTransformer(AudioStreamSource *src);

@@ -296,6 +296,7 @@ class SoundChannelNotePreviewer : public AudioPlaySource
 
 private:
 	const double SamplesPerSec;
+	const double SamplesPerSecOrg;
 	const double TicksPerBeat;
 	S16S44100StreamTransformer *wave;
 	QMap<int, SoundChannel::CacheEntry> cache;

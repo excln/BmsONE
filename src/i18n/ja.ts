@@ -4,15 +4,25 @@
 <context>
     <name>AudioPlayer</name>
     <message>
-        <location filename="../AudioPlayer.cpp" line="+22"/>
+        <location filename="../AudioPlayer.cpp" line="+16"/>
+        <source>Mute</source>
+        <translation>ミュート</translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Volume</source>
         <translation>音量</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Stop</source>
+        <translation>停止</translation>
     </message>
 </context>
 <context>
     <name>AudioPlayerIndicator</name>
     <message>
-        <location line="+398"/>
+        <location line="+393"/>
         <source>Output Level Meter</source>
         <translation>出力レベルメーター</translation>
     </message>
@@ -61,11 +71,26 @@
         <translation>長さ:</translation>
     </message>
     <message>
+        <location line="+15"/>
+        <source>Preview</source>
+        <translation>プレビュー</translation>
+    </message>
+    <message>
+        <location line="+174"/>
+        <source>sound files (*.wav *.ogg);;all files (*.*)</source>
+        <translation>音声ファイル (*.wav *.ogg);;すべてのファイル (*.*)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Select Sound File</source>
+        <translation>音声ファイル選択</translation>
+    </message>
+    <message>
         <source>Timing Adjustment:</source>
         <translation>タイミング調整:</translation>
     </message>
     <message>
-        <location line="+143"/>
+        <location line="-34"/>
         <location line="+1"/>
         <source>Loading...</source>
         <translation>読み込み中...</translation>
@@ -146,11 +171,12 @@
     </message>
     <message>
         <location line="+4"/>
+        <location line="+216"/>
         <source>Open</source>
         <translation>開く</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-212"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
@@ -235,6 +261,11 @@
     </message>
     <message>
         <location line="+3"/>
+        <source>Toggle Full Screen</source>
+        <translation>フルスクリーン切り替え</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Add</source>
         <translation>追加</translation>
     </message>
@@ -270,49 +301,65 @@
     </message>
     <message>
         <location line="+3"/>
+        <location line="+49"/>
         <source>File</source>
         <translation>ファイル</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="-38"/>
         <source>Edit</source>
         <translation>編集</translation>
     </message>
     <message>
         <location line="+20"/>
-        <location line="+28"/>
+        <source>View</source>
+        <translation>表示</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <location line="+36"/>
         <source>Channel</source>
         <translation>チャンネル</translation>
     </message>
     <message>
-        <location line="-15"/>
+        <location line="-18"/>
         <source>Sequence Tools</source>
         <translation>シーケンスツール</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Sound Output</source>
         <translation>音声出力</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
         <source>Info</source>
         <translation>情報</translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="+54"/>
         <source>bmson files (*.bmson);;old bms files (*.bms *.bme *.bml *.pms);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;旧BMSファイル (*.bms *.bme *.bml *.pms);;すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+13"/>
         <location line="+21"/>
-        <location line="+257"/>
+        <location line="+275"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location line="-158"/>
+        <location line="-230"/>
+        <source>sound files (*.wav *.ogg);;all files (*.*)</source>
+        <translation>音声ファイル (*.wav *.ogg);;すべてのファイル (*.*)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Select Sound Files</source>
+        <translation>音声ファイル選択</translation>
+    </message>
+    <message>
+        <location line="+69"/>
         <source>untitled</source>
         <translation>無題</translation>
     </message>
@@ -401,9 +448,23 @@
     </message>
 </context>
 <context>
+    <name>SequenceTools</name>
+    <message>
+        <location filename="../SequenceTools.cpp" line="+22"/>
+        <location line="+1"/>
+        <source>Snap to Grid</source>
+        <translation>グリッドにスナップ</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Grid</source>
+        <translation>グリッド</translation>
+    </message>
+</context>
+<context>
     <name>SoundChannelView</name>
     <message>
-        <location filename="../SequenceView.cpp" line="+1169"/>
+        <location filename="../SequenceView.cpp" line="+1201"/>
         <source>Preview Source Sound</source>
         <translation>ソースをプレビュー</translation>
     </message>

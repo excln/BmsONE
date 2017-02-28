@@ -26,6 +26,7 @@ SequenceView::SequenceView(MainWindow *parent)
 	, documentReady(false)
 {
 	qRegisterMetaType<SoundChannelView*>("SoundChannelView*");
+	qRegisterMetaType<GridSize>("GridSize");
 	{
 		const int lmargin = 5;
 		const int wscratch = 36;
@@ -460,6 +461,7 @@ void SequenceView::OnViewportResize()
 	for (int i=0; i<soundChannels.size(); i++){
 		int x = i * 64 - horizontalScrollBar()->value();
 		soundChannels[i]->setGeometry(x, 0, 64, vr.height());
+		soundChannels[i]->RemakeBackBuffer();
 		soundChannelHeaders[i]->setGeometry(x, 0, 64, headerHeight);
 		soundChannelFooters[i]->setGeometry(x, 0, 64, footerHeight);
 	}
@@ -596,6 +598,36 @@ void SequenceView::OnCurrentChannelChanged(int index)
 		update();
 	}
 	MakeVisibleCurrentChannel();
+}
+
+void SequenceView::SetSnapToGrid(bool snap)
+{
+	snapToGrid = snap;
+	emit SnapToGridChanged(snapToGrid);
+}
+
+void SequenceView::SetSmallGrid(GridSize grid)
+{
+	fineGrid = grid;
+	timeLine->update();
+	playingPane->update();
+	for (auto cview : soundChannels){
+		cview->UpdateWholeBackBuffer();
+		cview->update();
+	}
+	emit SmallGridChanged(fineGrid);
+}
+
+void SequenceView::SetMediumGrid(GridSize grid)
+{
+	coarseGrid = grid;
+	timeLine->update();
+	playingPane->update();
+	for (auto cview : soundChannels){
+		cview->UpdateWholeBackBuffer();
+		cview->update();
+	}
+	emit MediumGridChanged(coarseGrid);
 }
 
 bool SequenceView::eventFilter(QObject *sender, QEvent *event)
@@ -915,26 +947,14 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 bool SequenceView::paintEventHeaderArea(QWidget *header, QPaintEvent *event)
 {
 	QPainter painter(header);
-	QRect rect(event->rect().left(), 0, event->rect().width(), header->height());
-	QLinearGradient g(rect.topLeft(), rect.bottomLeft());
-	QColor cd(57, 57, 57);
-	QColor cl(91, 91, 91);
-	g.setColorAt(0, cd);
-	g.setColorAt(1, cl);
-	painter.fillRect(rect, QBrush(g));
+	painter.fillRect(event->rect(), QColor(135, 135, 135));
 	return true;
 }
 
 bool SequenceView::paintEventFooterArea(QWidget *footer, QPaintEvent *event)
 {
 	QPainter painter(footer);
-	QRect rect(event->rect().left(), 0, event->rect().width(), footer->height());
-	QLinearGradient g(rect.topLeft(), rect.bottomLeft());
-	QColor cd(57, 57, 57);
-	QColor cl(91, 91, 91);
-	g.setColorAt(0, cd);
-	g.setColorAt(1, cl);
-	painter.fillRect(rect, QBrush(g));
+	painter.fillRect(event->rect(), QColor(135, 135, 135));
 	return true;
 }
 
@@ -1502,11 +1522,11 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 			if ((*iprev)->GetNote().lane == 0){
 				//painter.setPen(current ? QColor(153, 153, 153) : QColor(85, 85, 85));
 				//painter.setPen(current ? QColor(0, 170, 0) : QColor(0, 102, 0));
-				color = current ? 0xFF00AA00 : 0xFF006600;
+				color = current ? 0xFF00CC00 : 0xFF009900;
 			}else{
 				//painter.setPen(current ? QColor(0, 170, 0) : QColor(0, 102, 0));
 				//painter.setPen(current ? QColor(238, 170, 51) : QColor(153, 102, 34));
-				color = current ? 0xFFEEAA33 : 0xFF996622;
+				color = current ? 0xFFFFCC66 : 0xFFCC9933;
 			}
 		}else{
 			painter.setPen(current ? QColor(0, 170, 0) : QColor(0, 85, 0));
@@ -1521,11 +1541,11 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 					if ((*inote)->GetNote().lane == 0){
 						//painter.setPen(current ? QColor(153, 153, 153) : QColor(85, 85, 85));
 						//painter.setPen(current ? QColor(0, 170, 0) : QColor(0, 102, 0));
-						color = curr ? 0xFF00AA00 : 0xFF006600;
+						color = current ? 0xFF00CC00 : 0xFF009900;
 					}else{
 						//painter.setPen(current ? QColor(0, 170, 0) : QColor(0, 102, 0));
 						//painter.setPen(current ? QColor(238, 170, 51) : QColor(153, 102, 34));
-						color = curr ? 0xFFEEAA33 : 0xFF996622;
+						color = current ? 0xFFFFCC66 : 0xFFCC9933;
 					}
 					inote++;
 					noteY = inote==notes.end() ? INT_MIN : sview->Time2Y((*inote)->GetNote().location) - 1;

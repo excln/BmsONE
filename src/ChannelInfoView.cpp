@@ -27,6 +27,7 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	auto *b = new QToolButton(labelImage);
 	connect(b, SIGNAL(clicked()), this, SLOT(PreviewSound()));
 	b->setText("Preview");
+	b->setToolTip(tr("Preview"));
 
 	setLayout(layout);
 	setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));

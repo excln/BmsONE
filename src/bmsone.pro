@@ -19,14 +19,15 @@ SOURCES += main.cpp\
     BmsonIo.cpp \
     SequenceView.cpp \
     Document.cpp \
-    Sequence.cpp \
     InfoView.cpp \
     ChannelInfoView.cpp \
-    Wave.cpp \
     QuasiModalEdit.cpp \
     AudioPlayer.cpp \
     SequenceTools.cpp \
-    Stabilizer.cpp
+    Stabilizer.cpp \
+    SoundChannel.cpp \
+    WaveData.cpp \
+    WaveStream.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -40,7 +41,8 @@ HEADERS  += MainWindow.h \
     QuasiModalEdit.h \
     AudioPlayer.h \
     SequenceTools.h \
-    Stabilizer.h
+    Stabilizer.h \
+    SequenceDef.h
 
 FORMS    +=
 
