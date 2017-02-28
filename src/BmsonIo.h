@@ -19,6 +19,8 @@ namespace Bmson
 	{
 		Q_OBJECT
 
+		static void LoadBarLines(QVector<BarLine> &barLines, QJsonValue json);
+		static BarLine LoadBarLine(QJsonValue json);
 		static void LoadBmsInfo(BmsInfo &bmsInfo, QJsonValue json);
 		static void LoadBpmNotes(QVector<EventNote> &bpmNotes, QJsonValue json);
 		static EventNote LoadEventNote(QJsonValue json);

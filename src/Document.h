@@ -18,6 +18,21 @@ struct SoundNote;
 class SoundLoader;
 
 
+
+class BmsConsts{
+public:
+
+	static const double MinBpm;
+	static const double MaxBpm;
+
+	static bool IsBpmValid(double value);
+	static double ClampBpm(double value);
+
+};
+
+
+
+
 struct WaveSummary
 {
 	QAudioFormat Format;
@@ -32,6 +47,16 @@ struct WaveSummary
  *      = must be called right after constructor, does not emit signals
  *
  */
+
+
+struct BarLine
+{
+	int Location;
+	int Kind;
+
+	BarLine(){}
+	BarLine(int location, int kind) : Location(location), Kind(kind){}
+};
 
 
 struct BpmEvent
@@ -168,7 +193,7 @@ private:
 	QString fileName; // relative to BMS file
 
 	// data
-	double adjustment;
+	//double adjustment;
 	QMap<int, SoundNote> notes; // indexed by location
 
 	// utility
@@ -181,6 +206,8 @@ private:
 	QMap<int, QList<RmsCacheEntry>> rmsCacheLibrary;
 	QMap<int, bool> rmsCacheRequestFlag;
 
+	int totalLength;
+
 private:
 	void UpdateCache();
 	void UpdateVisibleRegionsInternal();
@@ -190,6 +217,8 @@ private slots:
 	void OnOverallWaveformReady();
 	void OnRmsCacheUpdated();
 	void OnRmsCachePacketReady(int position, QList<RmsCacheEntry> packet);
+
+	void OnTimeMappingChanged();
 
 public:
 	SoundChannel(Document *document);
@@ -202,8 +231,9 @@ public:
 
 	QString GetFileName() const{ return fileName; }
 	QString GetName() const{ return QFileInfo(fileName).baseName(); }
-	double GetAdjustment() const{ return adjustment; }
+	//double GetAdjustment() const{ return adjustment; }
 	const QMap<int, SoundNote> &GetNotes() const{ return notes; }
+	int GetLength() const;
 
 	const WaveSummary *GetWaveSummary() const{ return waveSummary; }
 	const QImage &GetOverallWaveform() const{ return overallWaveform; } // .isNull()==true means uninitialized
@@ -256,7 +286,7 @@ public:
 	void SetArtist(QString value){ artist = value; emit ArtistChanged(artist); }
 	void SetJudgeRank(int value){ judgeRank = value; emit JudgeRankChanged(judgeRank); }
 	void SetTotal(double value){ total = value; emit TotalChanged(total); }
-	void SetInitBpm(double value){ initBpm = value; emit InitBpmChanged(initBpm); } // to be modified
+	void SetInitBpm(double value);
 	void SetLevel(int value){ level = value; emit LevelChanged(level); }
 
 signals:
@@ -285,10 +315,16 @@ private:
 	// data
 	DocumentInfo info;
 	int timeBase;
+	QMap<int, BarLine> barLines;
 	QMap<int, BpmEvent> bpmEvents;
 	QList<SoundChannel*> soundChannels;
+	QMap<SoundChannel*, int> soundChannelLength;
 
 	// utility
+	int totalLength;
+
+private slots:
+	void OnInitBpmChanged();
 
 public:
 	Document(QObject *parent=nullptr);
@@ -306,11 +342,15 @@ public:
 
 	int GetTimeBase() const{ return timeBase; }
 	DocumentInfo *GetInfo(){ return &info; }
+	const QMap<int, BarLine> &GetBarLines() const{ return barLines; }
 	const QMap<int, BpmEvent> &GetBpmEvents() const{ return bpmEvents; }
 	const QList<SoundChannel*> &GetSoundChannels() const{ return soundChannels; }
-	int GetLength() const;
+	int GetTotalLength() const;
+	QList<QPair<int, int>> FindConflictingNotes(SoundNote note) const; // returns [Channel,Location]
 
-	void GetBpmEventsInRange(int startTick, int span, double &initBpm, QVector<BpmEvent> &bpmEvents) const; // span=0 = untill end
+	//void GetBpmEventsInRange(int startTick, int span, double &initBpm, QVector<BpmEvent> &bpmEvents) const; // span=0 = untill end
+
+	void ChannelLengthChanged(SoundChannel *channel, int length);
 
 signals:
 	void FilePathChanged();
@@ -322,7 +362,7 @@ signals:
 	void TimeMappingChanged();
 
 	// emitted when length of song (in ticks) changed.
-	void LengthChanged(int length);
+	void TotalLengthChanged(int length);
 };
 
 

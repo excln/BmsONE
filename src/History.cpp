@@ -73,6 +73,7 @@ bool EditHistory::CanRedo() const
 
 void EditHistory::Undo()
 {
+	qDebug() << "Undo";
 	try{
 		auto *action = undoActions.top();
 		action->Undo();
@@ -87,6 +88,7 @@ void EditHistory::Undo()
 
 void EditHistory::Redo()
 {
+	qDebug() << "Redo";
 	try{
 		auto *action = redoActions.top();
 		action->Redo();

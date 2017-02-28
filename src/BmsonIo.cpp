@@ -18,6 +18,7 @@ void Bmson::BmsonIo::LoadFile(Bmson::Bms &bms, QString fileName)
 		LoadBmsInfo(bms.info, json["info"]);
 		LoadBpmNotes(bms.bpmNotes, json["bpmNotes"]);
 		LoadSoundChannels(bms.soundChannels, json["soundChannel"]);
+		LoadBarLines(bms.barLines, json["lines"]);
 	}catch(BmsonIoException e){
 		throw e;
 	}catch(...){
@@ -37,6 +38,24 @@ void Bmson::BmsonIo::LoadBmsInfo(BmsInfo &bmsInfo, QJsonValue json)
 	bmsInfo.total = object["total"].toDouble(0.0);
 	bmsInfo.initBpm = object["initBPM"].toDouble(120.0);
 	bmsInfo.level = object["level"].toInt(0);
+}
+
+void Bmson::BmsonIo::LoadBarLines(QVector<BarLine> &barLines, QJsonValue json)
+{
+	if (!json.isArray())
+		return;
+	for (auto elem : json.toArray()){
+		barLines.push_back(LoadBarLine(elem));
+	}
+}
+
+Bmson::BarLine Bmson::BmsonIo::LoadBarLine(QJsonValue json)
+{
+	QJsonObject object = json.toObject();
+	BarLine bar;
+	bar.location = object["y"].toInt(0);
+	bar.kind = object["k"].toInt(0);
+	return bar;
 }
 
 void Bmson::BmsonIo::LoadBpmNotes(QVector<EventNote> &bpmNotes, QJsonValue json)

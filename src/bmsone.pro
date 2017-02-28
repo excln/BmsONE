@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     Sequence.cpp \
     InfoView.cpp \
     ChannelInfoView.cpp \
-    Wave.cpp
+    Wave.cpp \
+    QuasiModalEdit.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -32,7 +33,8 @@ HEADERS  += MainWindow.h \
     Document.h \
     InfoView.h \
     ChannelInfoView.h \
-    Wave.h
+    Wave.h \
+    QuasiModalEdit.h
 
 FORMS    +=
 

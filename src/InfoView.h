@@ -4,7 +4,7 @@
 #include <QtCore>
 #include <QtWidgets>
 #include "Document.h"
-
+#include "QuasiModalEdit.h"
 
 class MainWindow;
 
@@ -15,13 +15,13 @@ class InfoView : public QWidget
 
 private:
 	MainWindow *mainWindow;
-	QLineEdit *editTitle;
-	QLineEdit *editGenre;
-	QLineEdit *editArtist;
-	QLineEdit *editJudgeRank;
-	QLineEdit *editTotal;
-	QLineEdit *editInitBpm;
-	QLineEdit *editLevel;
+	QuasiModalEdit *editTitle;
+	QuasiModalEdit *editGenre;
+	QuasiModalEdit *editArtist;
+	QuasiModalEdit *editJudgeRank;
+	QuasiModalEdit *editTotal;
+	QuasiModalEdit *editInitBpm;
+	QuasiModalEdit *editLevel;
 
 	// current document
 	Document *document;
@@ -44,13 +44,21 @@ public:
 
 
 private slots:
-	void TitleEdited(QString s);
-	void GenreEdited(QString s);
-	void ArtistEdited(QString s);
-	void JudgeRankEdited(QString s);
-	void TotalEdited(QString s);
-	void InitBpmEdited(QString s);
-	void LevelEdited(QString s);
+	void TitleEdited();
+	void GenreEdited();
+	void ArtistEdited();
+	void JudgeRankEdited();
+	void TotalEdited();
+	void InitBpmEdited();
+	void LevelEdited();
+
+	void TitleEditCanceled();
+	void GenreEditCanceled();
+	void ArtistEditCanceled();
+	void JudgeRankEditCanceled();
+	void TotalEditCanceled();
+	void InitBpmEditCanceled();
+	void LevelEditCanceled();
 
 	void TitleChanged(QString value);
 	void GenreChanged(QString value);

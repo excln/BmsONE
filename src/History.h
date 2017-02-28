@@ -1,9 +1,9 @@
 #ifndef HISTORY_H
 #define HISTORY_H
 
+#include <QtCore>
 #include <string>
 #include <stack>
-#include <QObject>
 
 
 class EditActionException

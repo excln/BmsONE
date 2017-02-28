@@ -8,23 +8,31 @@ InfoView::InfoView(MainWindow *mainWindow)
 	, document(nullptr)
 {
 	QFormLayout *layout = new QFormLayout();
-	layout->addRow(tr("Title:"), editTitle = new QLineEdit());
-	layout->addRow(tr("Genre:"), editGenre = new QLineEdit());
-	layout->addRow(tr("Artist:"), editArtist = new QLineEdit());
-	layout->addRow(tr("Judge Rank:"), editJudgeRank = new QLineEdit());
-	layout->addRow(tr("Initial Bpm:"), editInitBpm = new QLineEdit());
-	layout->addRow(tr("Total:"), editTotal = new QLineEdit());
-	layout->addRow(tr("Level:"), editLevel = new QLineEdit());
+	layout->addRow(tr("Title:"), editTitle = new QuasiModalEdit());
+	layout->addRow(tr("Genre:"), editGenre = new QuasiModalEdit());
+	layout->addRow(tr("Artist:"), editArtist = new QuasiModalEdit());
+	layout->addRow(tr("Judge Rank:"), editJudgeRank = new QuasiModalEdit());
+	layout->addRow(tr("Initial Bpm:"), editInitBpm = new QuasiModalEdit());
+	layout->addRow(tr("Total:"), editTotal = new QuasiModalEdit());
+	layout->addRow(tr("Level:"), editLevel = new QuasiModalEdit());
 	setLayout(layout);
 	setMinimumWidth(34);
 
-	connect(editTitle, &QLineEdit::textEdited, this, &InfoView::TitleEdited);
-	connect(editGenre, &QLineEdit::textEdited, this, &InfoView::GenreEdited);
-	connect(editArtist, &QLineEdit::textEdited, this, &InfoView::ArtistEdited);
-	connect(editJudgeRank, &QLineEdit::textEdited, this, &InfoView::JudgeRankEdited);
-	connect(editInitBpm, &QLineEdit::textEdited, this, &InfoView::InitBpmEdited);
-	connect(editTotal, &QLineEdit::textEdited, this, &InfoView::TotalEdited);
-	connect(editLevel, &QLineEdit::textEdited, this, &InfoView::LevelEdited);
+	connect(editTitle, &QLineEdit::editingFinished, this, &InfoView::TitleEdited);
+	connect(editGenre, &QLineEdit::editingFinished, this, &InfoView::GenreEdited);
+	connect(editArtist, &QLineEdit::editingFinished, this, &InfoView::ArtistEdited);
+	connect(editJudgeRank, &QLineEdit::editingFinished, this, &InfoView::JudgeRankEdited);
+	connect(editInitBpm, &QLineEdit::editingFinished, this, &InfoView::InitBpmEdited);
+	connect(editTotal, &QLineEdit::editingFinished, this, &InfoView::TotalEdited);
+	connect(editLevel, &QLineEdit::editingFinished, this, &InfoView::LevelEdited);
+
+	connect(editTitle, &QuasiModalEdit::EscPressed, this, &InfoView::TitleEditCanceled);
+	connect(editGenre, &QuasiModalEdit::EscPressed, this, &InfoView::GenreEditCanceled);
+	connect(editArtist, &QuasiModalEdit::EscPressed, this, &InfoView::ArtistEditCanceled);
+	connect(editJudgeRank, &QuasiModalEdit::EscPressed, this, &InfoView::JudgeRankEditCanceled);
+	connect(editInitBpm, &QuasiModalEdit::EscPressed, this, &InfoView::InitBpmEditCanceled);
+	connect(editTotal, &QuasiModalEdit::EscPressed, this, &InfoView::TotalEditCanceled);
+	connect(editLevel, &QuasiModalEdit::EscPressed, this, &InfoView::LevelEditCanceled);
 }
 
 InfoView::~InfoView()
@@ -58,40 +66,83 @@ void InfoView::ReplaceDocument(Document *newDocument)
 	}
 }
 
-void InfoView::TitleEdited(QString s)
+void InfoView::TitleEdited()
 {
 
 }
 
-void InfoView::GenreEdited(QString s)
+void InfoView::GenreEdited()
 {
 
 }
 
-void InfoView::ArtistEdited(QString s)
+void InfoView::ArtistEdited()
 {
 
 }
 
-void InfoView::JudgeRankEdited(QString s)
+void InfoView::JudgeRankEdited()
 {
 
 }
 
-void InfoView::InitBpmEdited(QString s)
+void InfoView::InitBpmEdited()
+{
+	// if invalid, reverted to old value.
+	double bpm = editInitBpm->text().toDouble();
+	document->GetInfo()->SetInitBpm(bpm);
+}
+
+void InfoView::TotalEdited()
 {
 
 }
 
-void InfoView::TotalEdited(QString s)
+void InfoView::LevelEdited()
 {
 
 }
 
-void InfoView::LevelEdited(QString s)
-{
 
+void InfoView::TitleEditCanceled()
+{
+	SetTitle(document->GetInfo()->GetTitle());
 }
+
+void InfoView::GenreEditCanceled()
+{
+	SetGenre(document->GetInfo()->GetGenre());
+}
+
+void InfoView::ArtistEditCanceled()
+{
+	SetArtist(document->GetInfo()->GetArtist());
+}
+
+void InfoView::JudgeRankEditCanceled()
+{
+	SetJudgeRank(document->GetInfo()->GetJudgeRank());
+}
+
+void InfoView::InitBpmEditCanceled()
+{
+	SetInitBpm(document->GetInfo()->GetInitBpm());
+}
+
+void InfoView::TotalEditCanceled()
+{
+	SetTotal(document->GetInfo()->GetTotal());
+}
+
+void InfoView::LevelEditCanceled()
+{
+	SetLevel(document->GetInfo()->GetLevel());
+}
+
+
+
+
+
 
 void InfoView::TitleChanged(QString value)
 {

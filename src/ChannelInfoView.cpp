@@ -12,7 +12,7 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	layout->addRow(tr("Format:"), labelFormat = new QLabel());
 	layout->addRow(tr("Length:"), labelLength = new QLabel());
 	layout->addRow(labelImage = new QLabel());
-	layout->addRow(tr("Timing Adjustment:"), editAdjustment = new QLineEdit());
+	//layout->addRow(tr("Timing Adjustment:"), editAdjustment = new QLineEdit());
 	channelList->setMinimumWidth(34);
 	buttonFile->setFocusPolicy(Qt::NoFocus);
 	buttonFile->setMinimumWidth(13);
@@ -58,8 +58,8 @@ void ChannelInfoView::ReplaceDocument(Document *newDocument)
 		labelFormat->setText(QString());
 		labelLength->setText(QString());
 		labelImage->setPixmap(QPixmap());
-		editAdjustment->setText(QString());
-		editAdjustment->setEnabled(false);
+		//editAdjustment->setText(QString());
+		//editAdjustment->setEnabled(false);
 		ichannel = -1;
 		channel = nullptr;
 	}
@@ -90,8 +90,8 @@ void ChannelInfoView::SetCurrentChannel(int index)
 		buttonFile->setText(channel->GetFileName());
 		WaveSummaryUpdated();
 		OverallWaveformUpdated();
-		editAdjustment->setEnabled(true);
-		editAdjustment->setText(QString::number(channel->GetAdjustment()));
+		//editAdjustment->setEnabled(true);
+		//editAdjustment->setText(QString::number(channel->GetAdjustment()));
 
 		connect(channel, SIGNAL(WaveSummaryUpdated()), this, SLOT(WaveSummaryUpdated()));
 		connect(channel, SIGNAL(OverallWaveformUpdated()), this, SLOT(OverallWaveformUpdated()));
@@ -100,8 +100,8 @@ void ChannelInfoView::SetCurrentChannel(int index)
 		buttonFile->setEnabled(false);
 		labelFormat->setText(QString());
 		labelLength->setText(QString());
-		editAdjustment->setText(QString());
-		editAdjustment->setEnabled(false);
+		//editAdjustment->setText(QString());
+		//editAdjustment->setEnabled(false);
 	}
 }
 

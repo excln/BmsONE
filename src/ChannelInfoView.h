@@ -18,7 +18,7 @@ private:
 	QPushButton *buttonFile;
 	QLabel *labelFormat;
 	QLabel *labelLength;
-	QLineEdit *editAdjustment;
+	//QLineEdit *editAdjustment;
 	QLabel *labelImage;
 
 	Document *document;

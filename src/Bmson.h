@@ -9,6 +9,7 @@ namespace Bmson
 
 	struct Bms;
 	struct BmsInfo;
+	struct BarLine;
 	struct SoundChannel;
 	struct SoundNote;
 	struct EventNote;
@@ -69,9 +70,16 @@ namespace Bmson
 		QVector<BgaNote> missNotes;
 	};
 
+	struct BarLine
+	{
+		int location;
+		int kind;
+	};
+
 	struct Bms
 	{
 		BmsInfo info;
+		QVector<BarLine> barLines;
 		QVector<EventNote> bpmNotes;
 		QVector<SoundChannel> soundChannels;
 		Bga bga;

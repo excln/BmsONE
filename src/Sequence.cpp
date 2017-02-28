@@ -303,6 +303,7 @@ void SoundChannelResourceManager::RunTaskRmsCachePacket(int position)
 	QMap<quint64, RmsCachePacket>::const_iterator i = rmsCachePackets.find(position);
 	if (i == rmsCachePackets.end()){
 		// packet not found
+		emit RmsCachePacketReady(position, QList<RmsCacheEntry>());
 		return;
 	}
 	emit RmsCachePacketReady(position, i->Uncompress());
@@ -786,11 +787,14 @@ SoundChannel::SoundChannel(Document *document)
 	, document(document)
 	, resource(this)
 	, waveSummary(nullptr)
+	, totalLength(0)
 {
 	connect(&resource, SIGNAL(WaveSummaryReady(const WaveSummary*)), this, SLOT(OnWaveSummaryReady(const WaveSummary*)));
 	connect(&resource, SIGNAL(OverallWaveformReady()), this, SLOT(OnOverallWaveformReady()));
 	connect(&resource, SIGNAL(RmsCacheUpdated()), this, SLOT(OnRmsCacheUpdated()));
 	connect(&resource, SIGNAL(RmsCachePacketReady(int,QList<RmsCacheEntry>)), this, SLOT(OnRmsCachePacketReady(int,QList<RmsCacheEntry>)));
+
+	connect(document, SIGNAL(TimeMappingChanged()), this, SLOT(OnTimeMappingChanged()));
 }
 
 SoundChannel::~SoundChannel()
@@ -803,7 +807,7 @@ SoundChannel::~SoundChannel()
 void SoundChannel::LoadSound(const QString &filePath)
 {
 	fileName = document->GetRelativePath(filePath);
-	adjustment = 0.;
+	//adjustment = 0.;
 
 	resource.UpdateWaveData(filePath);
 }
@@ -811,9 +815,16 @@ void SoundChannel::LoadSound(const QString &filePath)
 void SoundChannel::LoadBmson(Bmson::SoundChannel &source)
 {
 	fileName = source.name;
-	adjustment = 0.;
+	//adjustment = 0.;
 	for (Bmson::SoundNote soundNote : source.notes){
 		notes.insert(soundNote.location, SoundNote(soundNote.location, soundNote.lane, soundNote.length, soundNote.cut ? 1 : 0));
+	}
+
+	// temporary length (exact totalLength is calculated in UpdateCache() when whole sound data is available)
+	if (notes.empty()){
+		totalLength = 0;
+	}else{
+		totalLength = notes.last().location + notes.last().length;
 	}
 
 	resource.UpdateWaveData(document->GetAbsolutePath(fileName));
@@ -837,6 +848,17 @@ void SoundChannel::OnOverallWaveformReady()
 
 void SoundChannel::OnRmsCacheUpdated()
 {
+	// forget missing cache
+	for (QMap<int, QList<RmsCacheEntry>>::iterator i=rmsCacheLibrary.begin(); i!=rmsCacheLibrary.end(); ){
+		if (i->empty()){
+			if (rmsCacheRequestFlag.contains(i.key())){
+				rmsCacheRequestFlag.remove(i.key());
+			}
+			i = rmsCacheLibrary.erase(i);
+			continue;
+		}
+		i++;
+	}
 	emit RmsUpdated();
 }
 
@@ -847,14 +869,55 @@ void SoundChannel::OnRmsCachePacketReady(int position, QList<RmsCacheEntry> pack
 	emit RmsUpdated();
 }
 
+void SoundChannel::OnTimeMappingChanged()
+{
+	UpdateCache();
+	UpdateVisibleRegionsInternal();
+}
+
 bool SoundChannel::InsertNote(SoundNote note)
 {
-	return false;
+	// check lane conflict
+	if (note.lane == 0){
+		if (notes.contains(note.location) && notes[note.location].lane == 0){
+			return false;
+		}
+	}else{
+		if (!document->FindConflictingNotes(note).empty()){
+			return false;
+		}
+	}
+	if (notes.contains(note.location)){
+		// move
+		notes[note.location] = note;
+		UpdateCache();
+		UpdateVisibleRegionsInternal();
+		emit NoteChanged(note.location, note);
+		return true;
+	}else{
+		notes.insert(note.location, note);
+		UpdateCache();
+		UpdateVisibleRegionsInternal();
+		emit NoteInserted(note);
+		return true;
+	}
 }
 
 bool SoundChannel::RemoveNote(SoundNote note)
 {
+	if (notes.contains(note.location)){
+		SoundNote actualNote = notes.take(note.location);
+		UpdateCache();
+		UpdateVisibleRegionsInternal();
+		emit NoteRemoved(actualNote);
+		return true;
+	}
 	return false;
+}
+
+int SoundChannel::GetLength() const
+{
+	return totalLength;
 }
 
 void SoundChannel::UpdateVisibleRegions(const QList<QPair<int, int> > &visibleRegionsTime)
@@ -1013,132 +1076,142 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 
 void SoundChannel::UpdateCache()
 {
-	QMutexLocker lock(&cacheMutex);
-	cache.clear();
-	if (!waveSummary){
-		return;
-	}
-	QMap<int, SoundNote>::const_iterator iNote = notes.begin();
-	QMap<int, BpmEvent>::const_iterator iTempo = document->GetBpmEvents().begin();
-	for (; iNote != notes.end() && iNote->noteType != 0; iNote++);
-	int loc = 0;
-	int soundEndsAt = -1;
-	CacheEntry entry;
-	entry.currentSamplePosition = -1;
-	entry.currentTempo = document->GetInfo()->GetInitBpm();
-	const double samplesPerSec = waveSummary->Format.sampleRate();
-	const double ticksPerBeat = document->GetTimeBase();
-	double currentSamplesPerTick = samplesPerSec * 60.0 / (entry.currentTempo * ticksPerBeat);
-	while (true){
-		if (iNote != notes.end() && (iTempo == document->GetBpmEvents().end() || iNote->location < iTempo->location)){
-			if (entry.currentSamplePosition < 0){
-				// START
-				entry.prevSamplePosition = -1;
-				entry.currentSamplePosition = 0;
-				entry.prevTempo = entry.currentTempo;
-				loc = iNote->location;
-				cache.insert(loc, entry);
-				soundEndsAt = loc + int(waveSummary->FrameCount / currentSamplesPerTick);
-				for (iNote++; iNote != notes.end() && iNote->noteType != 0; iNote++);
-			}else if (soundEndsAt < iNote->location){
-				// END before RESTART
-				entry.prevSamplePosition = waveSummary->FrameCount;
-				entry.prevTempo = entry.currentTempo;
-				entry.currentSamplePosition = -1;
-				loc = soundEndsAt;
-				cache.insert(loc, entry);
+	{
+		QMutexLocker lock(&cacheMutex);
+		cache.clear();
+		if (!waveSummary){
+			return;
+		}
+		QMap<int, SoundNote>::const_iterator iNote = notes.begin();
+		QMap<int, BpmEvent>::const_iterator iTempo = document->GetBpmEvents().begin();
+		for (; iNote != notes.end() && iNote->noteType != 0; iNote++);
+		int loc = 0;
+		int soundEndsAt = -1;
+		CacheEntry entry;
+		entry.currentSamplePosition = -1;
+		entry.currentTempo = document->GetInfo()->GetInitBpm();
+		const double samplesPerSec = waveSummary->Format.sampleRate();
+		const double ticksPerBeat = document->GetTimeBase();
+		double currentSamplesPerTick = samplesPerSec * 60.0 / (entry.currentTempo * ticksPerBeat);
+		while (true){
+			if (iNote != notes.end() && (iTempo == document->GetBpmEvents().end() || iNote->location < iTempo->location)){
+				if (entry.currentSamplePosition < 0){
+					// START
+					entry.prevSamplePosition = -1;
+					entry.currentSamplePosition = 0;
+					entry.prevTempo = entry.currentTempo;
+					loc = iNote->location;
+					cache.insert(loc, entry);
+					soundEndsAt = loc + int(waveSummary->FrameCount / currentSamplesPerTick);
+					for (iNote++; iNote != notes.end() && iNote->noteType != 0; iNote++);
+				}else if (soundEndsAt < iNote->location){
+					// END before RESTART
+					entry.prevSamplePosition = waveSummary->FrameCount;
+					entry.prevTempo = entry.currentTempo;
+					entry.currentSamplePosition = -1;
+					loc = soundEndsAt;
+					cache.insert(loc, entry);
+				}else{
+					// RESTART before END
+					qint64 sp = entry.currentSamplePosition + qint64((iNote.key() - loc) * currentSamplesPerTick);
+					entry.prevSamplePosition = std::min(sp, waveSummary->FrameCount);
+					entry.prevTempo = entry.currentTempo;
+					entry.currentSamplePosition = 0;
+					loc = iNote->location;
+					cache.insert(loc, entry);
+					soundEndsAt = loc + int(waveSummary->FrameCount / currentSamplesPerTick);
+					for (iNote++; iNote != notes.end() && iNote->noteType != 0; iNote++);
+				}
+			}else if (iNote != notes.end() && iTempo != document->GetBpmEvents().end() && iNote->location == iTempo->location){
+				if (entry.currentSamplePosition < 0){
+					// START & BPM
+					entry.prevSamplePosition = -1;
+					entry.currentSamplePosition = 0;
+					entry.prevTempo = entry.currentTempo;
+					entry.currentTempo = iTempo->value;
+					currentSamplesPerTick = samplesPerSec * 60.0 / (iTempo->value * ticksPerBeat);
+					loc = iNote->location;
+					cache.insert(loc, entry);
+					soundEndsAt = loc + int(waveSummary->FrameCount / currentSamplesPerTick);
+					for (iNote++; iNote != notes.end() && iNote->noteType != 0; iNote++);
+					iTempo++;
+				}else if (soundEndsAt < iNote->location){
+					// END before RESTART & BPM
+					entry.prevSamplePosition = waveSummary->FrameCount;
+					entry.prevTempo = entry.currentTempo;
+					entry.currentSamplePosition = -1;
+					loc = soundEndsAt;
+					cache.insert(loc, entry);
+				}else{
+					// RESTART & BPM before END
+					qint64 sp = entry.currentSamplePosition + qint64((iNote.key() - loc) * currentSamplesPerTick);
+					entry.prevSamplePosition = std::min(sp, waveSummary->FrameCount);
+					entry.prevTempo = entry.currentTempo;
+					entry.currentSamplePosition = 0;
+					entry.currentTempo = iTempo->value;
+					currentSamplesPerTick = samplesPerSec * 60.0 / (iTempo->value * ticksPerBeat);
+					loc = iNote->location;
+					cache.insert(loc, entry);
+					soundEndsAt = loc + int(waveSummary->FrameCount / currentSamplesPerTick);
+					for (iNote++; iNote != notes.end() && iNote->noteType != 0; iNote++);
+					iTempo++;
+				}
+			}else if (iTempo != document->GetBpmEvents().end()){
+				if (entry.currentSamplePosition < 0){
+					// BPM (no sound)
+					entry.prevSamplePosition = -1;
+					entry.prevTempo = entry.currentTempo;
+					entry.currentTempo = iTempo->value;
+					currentSamplesPerTick = samplesPerSec * 60.0 / (iTempo->value * ticksPerBeat);
+					loc = iTempo->location;
+					cache.insert(loc, entry);
+					iTempo++;
+				}else if (soundEndsAt < iTempo.key()){
+					// END before BPM
+					entry.prevSamplePosition = waveSummary->FrameCount;
+					entry.prevTempo = entry.currentTempo;
+					entry.currentSamplePosition = -1;
+					loc = soundEndsAt;
+					cache.insert(loc, entry);
+				}else{
+					// BPM during playing
+					qint64 sp = entry.currentSamplePosition + qint64((iNote.key() - loc) * currentSamplesPerTick);
+					entry.prevSamplePosition = std::min(sp, waveSummary->FrameCount);
+					entry.prevTempo = entry.currentTempo;
+					entry.currentSamplePosition = entry.prevSamplePosition;
+					entry.currentTempo = iTempo->value;
+					currentSamplesPerTick = samplesPerSec * 60.0 / (iTempo->value * ticksPerBeat);
+					loc = iNote->location;
+					cache.insert(loc, entry);
+					soundEndsAt = loc + int((waveSummary->FrameCount - entry.currentSamplePosition) / currentSamplesPerTick);
+					iTempo++;
+				}
 			}else{
-				// RESTART before END
-				qint64 sp = entry.currentSamplePosition + qint64((iNote.key() - loc) * currentSamplesPerTick);
-				entry.prevSamplePosition = std::min(sp, waveSummary->FrameCount);
-				entry.prevTempo = entry.currentTempo;
-				entry.currentSamplePosition = 0;
-				loc = iNote->location;
-				cache.insert(loc, entry);
-				soundEndsAt = loc + int(waveSummary->FrameCount / currentSamplesPerTick);
-				for (iNote++; iNote != notes.end() && iNote->noteType != 0; iNote++);
-			}
-		}else if (iNote != notes.end() && iTempo != document->GetBpmEvents().end() && iNote->location == iTempo->location){
-			if (entry.currentSamplePosition < 0){
-				// START & BPM
-				entry.prevSamplePosition = -1;
-				entry.currentSamplePosition = 0;
-				entry.prevTempo = entry.currentTempo;
-				entry.currentTempo = iTempo->value;
-				currentSamplesPerTick = samplesPerSec * 60.0 / (iTempo->value * ticksPerBeat);
-				loc = iNote->location;
-				cache.insert(loc, entry);
-				soundEndsAt = loc + int(waveSummary->FrameCount / currentSamplesPerTick);
-				for (iNote++; iNote != notes.end() && iNote->noteType != 0; iNote++);
-				iTempo++;
-			}else if (soundEndsAt < iNote->location){
-				// END before RESTART & BPM
-				entry.prevSamplePosition = waveSummary->FrameCount;
-				entry.prevTempo = entry.currentTempo;
-				entry.currentSamplePosition = -1;
-				loc = soundEndsAt;
-				cache.insert(loc, entry);
-			}else{
-				// RESTART & BPM before END
-				qint64 sp = entry.currentSamplePosition + qint64((iNote.key() - loc) * currentSamplesPerTick);
-				entry.prevSamplePosition = std::min(sp, waveSummary->FrameCount);
-				entry.prevTempo = entry.currentTempo;
-				entry.currentSamplePosition = 0;
-				entry.currentTempo = iTempo->value;
-				currentSamplesPerTick = samplesPerSec * 60.0 / (iTempo->value * ticksPerBeat);
-				loc = iNote->location;
-				cache.insert(loc, entry);
-				soundEndsAt = loc + int(waveSummary->FrameCount / currentSamplesPerTick);
-				for (iNote++; iNote != notes.end() && iNote->noteType != 0; iNote++);
-				iTempo++;
-			}
-		}else if (iTempo != document->GetBpmEvents().end()){
-			if (entry.currentSamplePosition < 0){
-				// BPM (no sound)
-				entry.prevSamplePosition = -1;
-				entry.prevTempo = entry.currentTempo;
-				entry.currentTempo = iTempo->value;
-				currentSamplesPerTick = samplesPerSec * 60.0 / (iTempo->value * ticksPerBeat);
-				loc = iTempo->location;
-				cache.insert(loc, entry);
-				iTempo++;
-			}else if (soundEndsAt < iTempo.key()){
-				// END before BPM
-				entry.prevSamplePosition = waveSummary->FrameCount;
-				entry.prevTempo = entry.currentTempo;
-				entry.currentSamplePosition = -1;
-				loc = soundEndsAt;
-				cache.insert(loc, entry);
-			}else{
-				// BPM during playing
-				qint64 sp = entry.currentSamplePosition + qint64((iNote.key() - loc) * currentSamplesPerTick);
-				entry.prevSamplePosition = std::min(sp, waveSummary->FrameCount);
-				entry.prevTempo = entry.currentTempo;
-				entry.currentSamplePosition = entry.prevSamplePosition;
-				entry.currentTempo = iTempo->value;
-				currentSamplesPerTick = samplesPerSec * 60.0 / (iTempo->value * ticksPerBeat);
-				loc = iNote->location;
-				cache.insert(loc, entry);
-				soundEndsAt = loc + int((waveSummary->FrameCount - entry.currentSamplePosition) / currentSamplesPerTick);
-				iTempo++;
-			}
-		}else{
-			// no iNote, iTempo
-			if (entry.currentSamplePosition < 0){
-				break;
-			}else{
-				entry.prevSamplePosition = waveSummary->FrameCount;
-				entry.prevTempo = entry.currentTempo;
-				entry.currentSamplePosition = -1;
-				loc = soundEndsAt;
-				cache.insert(loc, entry);
-				break;
+				// no iNote, iTempo
+				if (entry.currentSamplePosition < 0){
+					break;
+				}else{
+					entry.prevSamplePosition = waveSummary->FrameCount;
+					entry.prevTempo = entry.currentTempo;
+					entry.currentSamplePosition = -1;
+					loc = soundEndsAt;
+					cache.insert(loc, entry);
+					break;
+				}
 			}
 		}
+		entry.prevSamplePosition = entry.currentSamplePosition = -1;
+		entry.prevTempo = entry.currentTempo;
+		cache.insert(INT_MAX, entry);
+
+		if (cache.isEmpty()){
+			totalLength = 0;
+		}else{
+			totalLength = loc; // last event (may be BPM change)
+		}
 	}
-	entry.prevSamplePosition = entry.currentSamplePosition = -1;
-	entry.prevTempo = entry.currentTempo;
-	cache.insert(INT_MAX, entry);
+	// this call must be out of mutex (to avoid deadlock)
+	document->ChannelLengthChanged(this, totalLength);
 }
 
 
