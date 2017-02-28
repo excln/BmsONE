@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
 	setFont(QFont("Meiryo"));
 #endif
 	resize(900,600);
+	setDockOptions(QMainWindow::AnimatedDocks);
 	setUnifiedTitleAndToolBarOnMac(true);
 	setAcceptDrops(true);
 
@@ -141,12 +142,15 @@ MainWindow::MainWindow(QWidget *parent)
 	//sequenceView->installEventFilter(this);
 
 	auto dock = new QDockWidget(tr("Info"));
+	dock->setObjectName("Info");
 	dock->setWidget(infoView = new InfoView(this));
 	addDockWidget(Qt::LeftDockWidgetArea, dock);
 
 	auto dock2 = new QDockWidget(tr("Channel"));
+	dock2->setObjectName("Channel");
 	dock2->setWidget(channelInfoView = new ChannelInfoView(this));
 	addDockWidget(Qt::LeftDockWidgetArea, dock2);
+	dock2->resize(334, dock2->height());
 
 
 	// Current Channel Binding
@@ -157,6 +161,11 @@ MainWindow::MainWindow(QWidget *parent)
 	auto newDocument = new Document(this);
 	newDocument->Initialize();
 	ReplaceDocument(newDocument);
+
+
+	// hack for dock widgets sizing
+	restoreState(saveState());
+
 }
 
 MainWindow::~MainWindow()

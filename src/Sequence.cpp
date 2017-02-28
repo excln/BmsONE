@@ -4,18 +4,26 @@
 SoundChannel::SoundChannel(Document *document)
 	: QObject(document)
 	, document(document)
+	, buffer(nullptr)
 {
 }
 
 SoundChannel::~SoundChannel()
 {
+	// QAudioBuffer is not a QObject.
+	if (buffer)
+		delete buffer;
 }
 
-void SoundChannel::LoadSound(const QString &fileName)
+void SoundChannel::LoadSound(const QString &filePath)
 {
-	this->fileName = fileName;
-	this->adjustment = 0.;
-	//...
+	fileName = document->GetRelativePath(filePath);
+	adjustment = 0.;
+
+	document->GetSoundLoader()->LoadSoundAsync(fileName, [this](WaveData *buffer){
+		this->buffer = buffer;
+		emit WaveDataUpdated();
+	});
 }
 
 void SoundChannel::LoadBmson(Bmson::SoundChannel &source)
@@ -25,6 +33,12 @@ void SoundChannel::LoadBmson(Bmson::SoundChannel &source)
 	for (Bmson::SoundNote soundNote : source.notes){
 		notes.insert(soundNote.location, SoundNote(soundNote.location, soundNote.lane, soundNote.length, soundNote.restart ? 1 : 0));
 	}
+
+	document->GetSoundLoader()->LoadSoundAsync(fileName, [this](WaveData *buffer){
+		this->buffer = buffer;
+		//qDebug() << "Sound Loaded[" << fileName << "]: " << buffer->GetFrameCount();
+		emit WaveDataUpdated();
+	});
 }
 
 

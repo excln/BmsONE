@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     Document.cpp \
     Sequence.cpp \
     InfoView.cpp \
-    ChannelInfoView.cpp
+    ChannelInfoView.cpp \
+    Wave.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -30,7 +31,8 @@ HEADERS  += MainWindow.h \
     SequenceView.h \
     Document.h \
     InfoView.h \
-    ChannelInfoView.h
+    ChannelInfoView.h \
+    Wave.h
 
 FORMS    +=
 

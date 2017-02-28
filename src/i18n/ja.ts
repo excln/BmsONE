@@ -18,12 +18,10 @@
 <context>
     <name>ChannelInfoView</name>
     <message>
-        <location filename="../ChannelInfoView.cpp" line="+11"/>
         <source>Sound File</source>
         <translation>音声ファイル</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Timing Adjustment</source>
         <translation>タイミング調整</translation>
     </message>
@@ -31,49 +29,103 @@
         <source>Adjustment</source>
         <translation>調整</translation>
     </message>
+    <message>
+        <location filename="../ChannelInfoView.cpp" line="+11"/>
+        <source>Sound File:</source>
+        <translation>音声ファイル:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Format:</source>
+        <translation>形式:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Length:</source>
+        <translation>長さ:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Timing Adjustment:</source>
+        <translation>タイミング調整:</translation>
+    </message>
+    <message>
+        <location line="+115"/>
+        <location line="+1"/>
+        <source>Loading...</source>
+        <translation>読み込み中...</translation>
+    </message>
 </context>
 <context>
     <name>InfoView</name>
     <message>
-        <location filename="../InfoView.cpp" line="+11"/>
         <source>Title</source>
         <translation>タイトル</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Genre</source>
         <translation>ジャンル</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Artist</source>
         <translation>アーティスト</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Judge Rank</source>
         <translation>判定ランク</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Initial Bpm</source>
         <translation>初期BPM</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Total</source>
         <translation>トータル値</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Level</source>
         <translation>レベル</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="+11"/>
+        <source>Title:</source>
+        <translation>タイトル:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Genre:</source>
+        <translation>ジャンル:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Artist:</source>
+        <translation>アーティスト:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Judge Rank:</source>
+        <translation>判定ランク:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Initial Bpm:</source>
+        <translation>初期BPM:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Total:</source>
+        <translation>トータル値:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Level:</source>
+        <translation>レベル:</translation>
     </message>
 </context>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../MainWindow.cpp" line="+18"/>
+        <location filename="../MainWindow.cpp" line="+19"/>
         <source>New</source>
         <translation>新規作成</translation>
     </message>
@@ -203,17 +255,17 @@
     </message>
     <message>
         <location line="+20"/>
-        <location line="+18"/>
+        <location line="+19"/>
         <source>Channel</source>
         <translation>チャンネル</translation>
     </message>
     <message>
-        <location line="-4"/>
+        <location line="-5"/>
         <source>Info</source>
         <translation>情報</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+44"/>
         <source>bmson files (*.bmson);;old bms files (*.bms *.bme *.bml *.pms);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;旧BMSファイル (*.bms *.bme *.bml *.pms);;すべてのファイル (*.*)</translation>
     </message>

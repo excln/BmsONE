@@ -65,6 +65,7 @@ SequenceView::SequenceView(MainWindow *parent)
 	setCornerWidget(new QSizeGrip(this));
 	setViewport(nullptr);	// creates new viewport widget
 	setViewportMargins(timeLineWidth + playingWidth, headerHeight, 0, footerHeight);
+	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
 	timeLine = NewWidget(std::bind(&SequenceView::paintEventTimeLine, this, std::placeholders::_1, std::placeholders::_2));
 	playingPane = NewWidget(std::bind(&SequenceView::paintEventPlayingPane, this, std::placeholders::_1, std::placeholders::_2));
@@ -278,23 +279,32 @@ void SequenceView::wheelEventVp(QWheelEvent *event)
 	QPoint numPixels = event->pixelDelta();
 	QPoint numDegrees = event->angleDelta() / 8;
 	if (event->modifiers() & Qt::ControlModifier){
+		int zoomY_B = zoomY;
 		if (!numPixels.isNull()){
+			zoomY *= std::pow(1.01, numPixels.y());
 		}else if (!numDegrees.isNull()){
 			QPoint numSteps = numDegrees / 15;
-			int zoomY_B = zoomY;
 			if (numSteps.y() > 0){
 				zoomY *= 1.25;
 			}else if (numSteps.y() < 0){
 				zoomY /= 1.25;
 			}
-			zoomY = std::max(48./resolution, std::min(16.*48./resolution, zoomY));
-			int h = viewport()->height();
-			int scrollY = verticalScrollBar()->value();
-			verticalScrollBar()->setRange(0, std::max(0, int(viewLength*zoomY) - h));
-			verticalScrollBar()->setPageStep(h);
-			verticalScrollBar()->setSingleStep(48); // not affected by zoomY!
-			verticalScrollBar()->setValue(scrollY + (zoomY - zoomY_B)/2);
-			update();
+		}
+		zoomY = std::max(0.5*48./resolution, std::min(8.*48./resolution, zoomY));
+		int h = viewport()->height();
+		int scrollY = verticalScrollBar()->value();
+		verticalScrollBar()->setRange(0, std::max(0, int(viewLength*zoomY) - h));
+		verticalScrollBar()->setPageStep(h);
+		verticalScrollBar()->setSingleStep(48); // not affected by zoomY!
+		verticalScrollBar()->setValue(scrollY + (zoomY - zoomY_B)/2);
+		{
+			timeLine->update();
+			playingPane->update();
+			headerChannelsArea->update();
+			footerChannelsArea->update();
+			for (SoundChannelView *cview : soundChannels){
+				cview->update();
+			}
 		}
 		event->accept();
 	}else{

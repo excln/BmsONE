@@ -8,14 +8,15 @@ InfoView::InfoView(MainWindow *mainWindow)
 	, document(nullptr)
 {
 	QFormLayout *layout = new QFormLayout();
-	layout->addRow(tr("Title"), editTitle = new QLineEdit());
-	layout->addRow(tr("Genre"), editGenre = new QLineEdit());
-	layout->addRow(tr("Artist"), editArtist = new QLineEdit());
-	layout->addRow(tr("Judge Rank"), editJudgeRank = new QLineEdit());
-	layout->addRow(tr("Initial Bpm"), editInitBpm = new QLineEdit());
-	layout->addRow(tr("Total"), editTotal = new QLineEdit());
-	layout->addRow(tr("Level"), editLevel = new QLineEdit());
+	layout->addRow(tr("Title:"), editTitle = new QLineEdit());
+	layout->addRow(tr("Genre:"), editGenre = new QLineEdit());
+	layout->addRow(tr("Artist:"), editArtist = new QLineEdit());
+	layout->addRow(tr("Judge Rank:"), editJudgeRank = new QLineEdit());
+	layout->addRow(tr("Initial Bpm:"), editInitBpm = new QLineEdit());
+	layout->addRow(tr("Total:"), editTotal = new QLineEdit());
+	layout->addRow(tr("Level:"), editLevel = new QLineEdit());
 	setLayout(layout);
+	setMinimumWidth(34);
 
 	connect(editTitle, &QLineEdit::textEdited, this, &InfoView::TitleEdited);
 	connect(editGenre, &QLineEdit::textEdited, this, &InfoView::GenreEdited);

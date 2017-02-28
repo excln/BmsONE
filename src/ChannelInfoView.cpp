@@ -8,10 +8,18 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 {
 	QFormLayout *layout = new QFormLayout();
 	layout->addRow(channelList = new QComboBox());
-	layout->addRow(tr("Sound File"), buttonFile = new QPushButton());
-	layout->addRow(tr("Timing Adjustment"), editAdjustment = new QLineEdit());
+	layout->addRow(tr("Sound File:"), buttonFile = new QPushButton());
+	layout->addRow(tr("Format:"), labelFormat = new QLabel());
+	layout->addRow(tr("Length:"), labelLength = new QLabel());
+	layout->addRow(tr("Timing Adjustment:"), editAdjustment = new QLineEdit());
+	channelList->setMinimumWidth(34);
 	buttonFile->setFocusPolicy(Qt::NoFocus);
+	buttonFile->setMinimumWidth(13);
+	labelFormat->setMinimumWidth(13);
+	labelLength->setMinimumWidth(13);
 	setLayout(layout);
+	setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
+	setMinimumWidth(40);
 
 	connect(channelList, SIGNAL(currentIndexChanged(int)), this, SLOT(ChannelListSelectChanged(int)));
 }
@@ -43,6 +51,8 @@ void ChannelInfoView::ReplaceDocument(Document *newDocument)
 		// channel-dependent widgets
 		buttonFile->setText(QString());
 		buttonFile->setEnabled(false);
+		labelFormat->setText(QString());
+		labelLength->setText(QString());
 		editAdjustment->setText(QString());
 		editAdjustment->setEnabled(false);
 		ichannel = -1;
@@ -64,18 +74,65 @@ void ChannelInfoView::Begin()
 
 void ChannelInfoView::SetCurrentChannel(int index)
 {
+	if (channel){
+		disconnect(channel, SIGNAL(WaveDataUpdated()), this, SLOT(WaveDataUpdated()));
+	}
 	ichannel = index;
 	channel = ichannel >= 0 ? document->GetSoundChannels()[ichannel] : nullptr;
 	if (channel){
 		buttonFile->setEnabled(true);
 		buttonFile->setText(channel->GetFileName());
+		WaveDataUpdated();
 		editAdjustment->setEnabled(true);
 		editAdjustment->setText(QString::number(channel->GetAdjustment()));
+
+		connect(channel, SIGNAL(WaveDataUpdated()), this, SLOT(WaveDataUpdated()));
 	}else{
 		buttonFile->setText(QString());
 		buttonFile->setEnabled(false);
+		labelFormat->setText(QString());
+		labelLength->setText(QString());
 		editAdjustment->setText(QString());
 		editAdjustment->setEnabled(false);
+	}
+}
+
+static QString TextForSamplingRate(int rate)
+{
+	if ((rate/1000)*1000 == rate){
+		return QString("%1kHz").arg(rate/1000);
+	}
+	if ((rate/100)*100 == rate){
+		return QString("%1.%2kHz").arg(rate/1000).arg((rate/100)%10);
+	}
+	if ((rate/10)*10 == rate){
+		return QString("%1.%2%3kHz").arg(rate/1000).arg((rate/100)%10).arg((rate/10)%10);
+	}
+	return QString("%1.%2%3%4kHz").arg(rate/1000).arg((rate/100)%10).arg((rate/10)%10).arg(rate%10);
+}
+
+void ChannelInfoView::WaveDataUpdated()
+{
+	if (!channel)
+		return;
+	const WaveData *waveData = channel->GetWaveData();
+	if (waveData){
+		if (waveData->GetRawData()){
+			labelFormat->setText(QString("%1bit/%2ch/%3")
+								 .arg(waveData->GetFormat().sampleSize())
+								 .arg(waveData->GetFormat().channelCount())
+								 .arg(TextForSamplingRate(waveData->GetFormat().sampleRate())));
+			qreal sec = (qreal)waveData->GetFrameCount() / waveData->GetFormat().sampleRate();
+			labelLength->setText(QString("%1 sec").arg(sec));
+		}else{
+			// loading
+			labelFormat->setText(QString(tr("Loading...")));
+			labelFormat->setText(QString(tr("Loading...")));
+		}
+	}else{
+		// empty
+		labelFormat->setText(QString());
+		labelLength->setText(QString());
 	}
 }
 

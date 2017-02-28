@@ -16,6 +16,8 @@ private:
 	MainWindow *mainWindow;
 	QComboBox *channelList;
 	QPushButton *buttonFile;
+	QLabel *labelFormat;
+	QLabel *labelLength;
 	QLineEdit *editAdjustment;
 
 	Document *document;
@@ -32,6 +34,8 @@ private slots:
 	void SoundChannelMoved(int indexBefore, int indexAfter);
 
 	void ChannelListSelectChanged(int index);
+
+	void WaveDataUpdated();
 
 public slots:
 	void OnCurrentChannelChanged(int index);

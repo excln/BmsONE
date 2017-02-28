@@ -1,10 +1,11 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-#include <QObject>
-#include <QString>
-#include <QMap>
+#include <QtCore>
+#include <QtMultimedia>
 #include <string>
+#include <functional>
+#include "Wave.h"
 #include "Bmson.h"
 #include "BmsonIo.h"
 #include "History.h"
@@ -13,12 +14,15 @@ class Document;
 class DocumentInfo;
 class SoundChannel;
 struct SoundNote;
+class SoundLoader;
 
 /*
  *  for initialization
  *      = must be called right after constructor, does not emit signals
  *
  */
+
+
 
 
 struct SoundNote
@@ -40,14 +44,19 @@ class SoundChannel : public QObject
 
 private:
 	Document *document;
-	QString fileName;
+	QString fileName; // relative path to BMS file
+
+	// data
 	double adjustment;
 	QMap<int, SoundNote> notes; // indexed by location
+
+	// utility
+	WaveData *buffer;
 
 public:
 	SoundChannel(Document *document);
 	~SoundChannel();
-	void LoadSound(const QString &fileName); // for initialization
+	void LoadSound(const QString &filePath); // for initialization
 	void LoadBmson(Bmson::SoundChannel &source); // for initialization
 
 	bool InsertNote(SoundNote note);
@@ -58,10 +67,14 @@ public:
 	double GetAdjustment() const{ return adjustment; }
 	const QMap<int, SoundNote> &GetNotes() const{ return notes; }
 
+	const WaveData *GetWaveData() const{ return buffer; }
+
 signals:
 	void NoteInserted(SoundNote note);
 	void NoteRemoved(SoundNote note);
 	void NoteChanged(int oldLocation, SoundNote note);
+
+	void WaveDataUpdated();
 };
 
 
@@ -115,17 +128,84 @@ signals:
 
 
 
+class SoundLoaderNotifier : public QObject
+{
+	Q_OBJECT
+private:
+	QString fileName;
+	std::function<void(WaveData*)> completion;
+private slots:
+	void SoundLoaded(QString fileName, WaveData *buffer);
+public:
+	SoundLoaderNotifier(SoundLoader *loader, QString fileName, std::function<void(WaveData*)> completion);
+};
+
+// QAudioDecoder does not suit this purpose.
+#if 0
+class SoundLoaderQAudioDecoderNotifier : public QObject
+{
+	Q_OBJECT
+private:
+	QString fileName;
+	std::function<void(WaveData*)> completion;
+	QList<QAudioBuffer> buffers;
+	QAudioDecoder *decoder;
+private slots:
+	void bufferReady();
+	void finished();
+	void error(QAudioDecoder::Error e);
+public:
+	SoundLoaderQAudioDecoderNotifier(SoundLoader *loader, QString fileName, std::function<void(WaveData *)> completion);
+};
+#endif
+
+class SoundLoader : public QThread
+{
+	Q_OBJECT
+	friend class SoundLoaderNotifier;
+	friend class SoundLoaderQAudioDecoderNotifier;
+
+private:
+	Document *document;
+	QQueue<QString> soundFileNames;
+
+protected:
+	void run() Q_DECL_OVERRIDE;
+	WaveData *LoadOtherFile(QString path);
+	WaveData *LoadWavFile(QString path);
+	WaveData *LoadOggFile(QString path);
+
+public:
+	SoundLoader(Document *document);
+	~SoundLoader();
+
+	void LoadSoundAsync(QString fileName, std::function<void(WaveData*)> completion);
+	WaveData *LoadSound(QString fileName);
+
+signals:
+	void SoundLoaded(QString fileName, WaveData *buffer);
+
+};
+
+
+
 class Document : public QObject
 {
 	Q_OBJECT
+	friend class SoundLoader;
 
 private:
+	QDir directory;
 	QString filePath;
 	EditHistory *history;
 
+	// data
 	DocumentInfo info;
 	int timeBase;
 	QList<SoundChannel*> soundChannels;
+
+	// utility
+	SoundLoader *soundLoader;
 
 public:
 	Document(QObject *parent=nullptr);
@@ -135,12 +215,16 @@ public:
 
 	EditHistory *GetHistory(){ return history; }
 	QString GetFilePath() const { return filePath; }
+	QString GetRelativePath(QString filePath);
+	QString GetAbsolutePath(QString fileName) const;
 	void Save() throw(Bmson::BmsonIoException);
 	void SaveAs(const QString &filePath);
 
 	int GetTimeBase() const{ return timeBase; }
 	DocumentInfo *GetInfo(){ return &info; }
 	const QList<SoundChannel*> &GetSoundChannels() const{ return soundChannels; }
+
+	SoundLoader *GetSoundLoader(){ return soundLoader; }
 
 signals:
 	void FilePathChanged();
