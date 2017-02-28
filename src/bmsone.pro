@@ -55,8 +55,7 @@ TRANSLATIONS = i18n/ja.ts
 RESOURCES += \
     bmsone.qrc
 
-
-
+win32: RC_ICONS = bmsone.ico
 
 
 

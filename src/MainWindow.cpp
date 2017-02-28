@@ -15,7 +15,8 @@ MainWindow::MainWindow(QWidget *parent)
 #ifdef Q_OS_WIN
 	setFont(QFont("Meiryo"));
 #endif
-	resize(900,600);
+	setWindowIcon(QIcon(":/images/bmsone64.png"));
+	resize(960,640);
 	setDockOptions(QMainWindow::AnimatedDocks);
 	setUnifiedTitleAndToolBarOnMac(true);
 	setAcceptDrops(true);

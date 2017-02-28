@@ -8,5 +8,6 @@
         <file>images/sound.png</file>
         <file>images/new.png</file>
         <file>images/stop.png</file>
+        <file>images/bmsone64.png</file>
     </qresource>
 </RCC>
