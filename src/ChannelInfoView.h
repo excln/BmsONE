@@ -38,6 +38,7 @@ private slots:
 
 	void ChannelListSelectChanged(int index);
 
+	void NameChanged();
 	void WaveSummaryUpdated();
 	void OverallWaveformUpdated();
 	//void WaveDataUpdated();
@@ -46,6 +47,7 @@ private slots:
 
 public slots:
 	void OnCurrentChannelChanged(int index);
+	void SelectSourceFile();
 
 signals:
 	void CurrentChannelChanged(int index);

@@ -17,6 +17,7 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	channelList->setMinimumWidth(34);
 	buttonFile->setFocusPolicy(Qt::NoFocus);
 	buttonFile->setMinimumWidth(13);
+	connect(buttonFile, SIGNAL(clicked()), this, SLOT(SelectSourceFile()));
 	labelFormat->setMinimumWidth(13);
 	labelLength->setMinimumWidth(13);
 	labelImage->setFixedHeight(160 + labelImage->frameWidth()*2);
@@ -94,6 +95,7 @@ void ChannelInfoView::SetCurrentChannel(int index)
 		channelSourcePreviewer = nullptr;
 	}
 	if (channel){
+		disconnect(channel, SIGNAL(NameChanged()), this, SLOT(NameChanged()));
 		disconnect(channel, SIGNAL(WaveSummaryUpdated()), this, SLOT(WaveSummaryUpdated()));
 		disconnect(channel, SIGNAL(OverallWaveformUpdated()), this, SLOT(OverallWaveformUpdated()));
 	}
@@ -107,6 +109,7 @@ void ChannelInfoView::SetCurrentChannel(int index)
 		//editAdjustment->setEnabled(true);
 		//editAdjustment->setText(QString::number(channel->GetAdjustment()));
 
+		connect(channel, SIGNAL(NameChanged()), this, SLOT(NameChanged()));
 		connect(channel, SIGNAL(WaveSummaryUpdated()), this, SLOT(WaveSummaryUpdated()));
 		connect(channel, SIGNAL(OverallWaveformUpdated()), this, SLOT(OverallWaveformUpdated()));
 	}else{
@@ -132,6 +135,18 @@ static QString TextForSamplingRate(int rate)
 		return QString("%1.%2%3kHz").arg(rate/1000).arg((rate/100)%10).arg((rate/10)%10);
 	}
 	return QString("%1.%2%3%4kHz").arg(rate/1000).arg((rate/100)%10).arg((rate/10)%10).arg(rate%10);
+}
+
+void ChannelInfoView::NameChanged()
+{
+	if (!channel || ichannel<0)
+		return;
+	buttonFile->setText(channel->GetFileName());
+	disconnect(channelList, SIGNAL(currentIndexChanged(int)), this, SLOT(ChannelListSelectChanged(int)));
+	channelList->removeItem(ichannel);
+	channelList->insertItem(ichannel, channel->GetName());
+	channelList->setCurrentIndex(ichannel);
+	connect(channelList, SIGNAL(currentIndexChanged(int)), this, SLOT(ChannelListSelectChanged(int)));
 }
 
 void ChannelInfoView::WaveSummaryUpdated()
@@ -179,6 +194,19 @@ void ChannelInfoView::PreviewSound()
 	channelSourcePreviewer =  new SoundChannelSourceFilePreviewer(channel, this);
 	connect(channelSourcePreviewer, SIGNAL(Stopped()), channelSourcePreviewer, SLOT(deleteLater()));
 	mainWindow->GetAudioPlayer()->Play(channelSourcePreviewer);
+}
+
+void ChannelInfoView::SelectSourceFile()
+{
+	if (!channel)
+		return;
+	QString filters = tr("sound files (*.wav *.ogg)"
+						 ";;" "all files (*.*)");
+	QString dir = document->GetProjectDirectory(QDir::home()).absolutePath();
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Select Sound File"), dir, filters, 0);
+	if (fileName.isEmpty())
+		return;
+	channel->SetSourceFile(fileName);
 }
 
 void ChannelInfoView::SoundChannelInserted(int index, SoundChannel *channel)

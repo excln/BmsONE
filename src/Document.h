@@ -261,6 +261,7 @@ public:
 	void LoadSound(const QString &filePath); // for initialization
 	void LoadBmson(Bmson::SoundChannel &source); // for initialization
 
+	void SetSourceFile(const QString &absolutePath);
 	bool InsertNote(SoundNote note);
 	bool RemoveNote(SoundNote note);
 
@@ -280,6 +281,7 @@ signals:
 	void NoteRemoved(SoundNote note);
 	void NoteChanged(int oldLocation, SoundNote note);
 
+	void NameChanged();
 	void WaveSummaryUpdated();
 	void OverallWaveformUpdated();
 	void RmsUpdated();
@@ -402,6 +404,7 @@ public:
 
 	EditHistory *GetHistory(){ return history; }
 
+	QDir GetProjectDirectory(const QDir &def=QDir::root()) const { return directory.isRoot() ? def : directory; }
 	QString GetFilePath() const { return filePath; }
 	QString GetRelativePath(QString filePath);
 	QString GetAbsolutePath(QString fileName) const;

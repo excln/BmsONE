@@ -999,6 +999,13 @@ void SoundChannel::LoadBmson(Bmson::SoundChannel &source)
 	resource.UpdateWaveData(document->GetAbsolutePath(fileName));
 }
 
+void SoundChannel::SetSourceFile(const QString &absolutePath)
+{
+	fileName = document->GetRelativePath(absolutePath);
+	emit NameChanged();
+	resource.UpdateWaveData(absolutePath);
+}
+
 void SoundChannel::OnWaveSummaryReady(const WaveSummary *summary)
 {
 	if (waveSummary){

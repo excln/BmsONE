@@ -216,8 +216,7 @@ void MainWindow::FileOpen()
 	QString filters = tr("bmson files (*.bmson)"
 						 ";;" "old bms files (*.bms *.bme *.bml *.pms)"
 						 ";;" "all files (*.*)");
-	QString dir = QDir::home().path();
-	QString fileName = QFileDialog::getOpenFileName(this, QString("Open"), dir, filters, 0);
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Open"), QString(), filters, 0);
 	if (fileName.isEmpty())
 		return;
 	try{
@@ -282,7 +281,15 @@ void MainWindow::EditRedo()
 
 void MainWindow::ChannelNew()
 {
-
+	if (!document)
+		return;
+	QString filters = tr("sound files (*.wav *.ogg)"
+						 ";;" "all files (*.*)");
+	QString dir = document->GetProjectDirectory(QDir::home()).absolutePath();
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Select Sound Files"), dir, filters, 0);
+	if (fileNames.empty())
+		return;
+	document->InsertNewSoundChannels(fileNames);
 }
 
 void MainWindow::ChannelPrev()
@@ -334,6 +341,7 @@ void MainWindow::ChannelSelectFile()
 {
 	if (!document || currentChannel < 0)
 		return;
+	channelInfoView->SelectSourceFile();
 }
 
 void MainWindow::ChannelsNew(QList<QString> filePaths)
