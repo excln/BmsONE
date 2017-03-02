@@ -18,6 +18,7 @@ InfoView::InfoView(MainWindow *mainWindow)
 	layout->addRow(new QLabel(tr("Extra fields:")));
 	layout->addRow(editExtraFields = new QuasiModalMultiLineEdit());
 	editExtraFields->setAcceptRichText(false);
+	editExtraFields->setAcceptDrops(false);
 	editExtraFields->setTabStopWidth(24);
 	editExtraFields->setLineWrapMode(QTextEdit::WidgetWidth);
 	editExtraFields->setFixedHeight(120);

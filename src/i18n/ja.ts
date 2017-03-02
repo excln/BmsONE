@@ -129,7 +129,7 @@
 <context>
     <name>Document</name>
     <message>
-        <location filename="../Document.cpp" line="+50"/>
+        <location filename="../Document.cpp" line="+51"/>
         <location line="+82"/>
         <source>Failed to open file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
@@ -221,23 +221,33 @@
         <translation>新規作成</translation>
     </message>
     <message>
-        <location line="+280"/>
+        <location line="+100"/>
+        <source>Preview Source Sound</source>
+        <translation>ソースをプレビュー</translation>
+    </message>
+    <message>
+        <location line="+58"/>
+        <source>About Qt</source>
+        <translation>Qt について</translation>
+    </message>
+    <message>
+        <location line="+126"/>
         <source>Open</source>
         <translation>開く</translation>
     </message>
     <message>
-        <location line="-270"/>
-        <location line="+517"/>
+        <location line="-274"/>
+        <location line="+528"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location line="-196"/>
+        <location line="-203"/>
         <source>Save As</source>
         <translation>名前をつけて保存</translation>
     </message>
     <message>
-        <location line="-312"/>
+        <location line="-316"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
@@ -349,18 +359,19 @@
         <translation>ファイル選択</translation>
     </message>
     <message>
-        <location line="+361"/>
+        <location line="+9"/>
+        <location line="+363"/>
         <source>About BmsONE</source>
         <translation>BmsONE について</translation>
     </message>
     <message>
-        <location line="-352"/>
-        <location line="+61"/>
+        <location line="-360"/>
+        <location line="+62"/>
         <source>File</source>
         <translation>ファイル</translation>
     </message>
     <message>
-        <location line="-159"/>
+        <location line="-163"/>
         <source>Open...</source>
         <translation>開く...</translation>
     </message>
@@ -380,12 +391,11 @@
         <translation>ファイル選択...</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>About BmsONE...</source>
         <translation>BmsONE について...</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+20"/>
         <source>Edit</source>
         <translation>編集</translation>
     </message>
@@ -396,7 +406,7 @@
     </message>
     <message>
         <location line="+5"/>
-        <location line="+62"/>
+        <location line="+63"/>
         <source>Channel</source>
         <translation>チャンネル</translation>
     </message>
@@ -406,12 +416,11 @@
         <translation>ヘルプ</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>About Qt...</source>
         <translation>Qt について...</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>Status Bar</source>
         <translation>ステータスバー</translation>
     </message>
@@ -443,25 +452,25 @@
         <location line="+13"/>
         <location line="+21"/>
         <location line="+27"/>
-        <location line="+200"/>
+        <location line="+207"/>
         <location line="+108"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location line="-318"/>
-        <location line="+196"/>
+        <location line="-325"/>
+        <location line="+203"/>
         <source>bmson files (*.bmson);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location line="-185"/>
-        <location line="+200"/>
+        <location line="-192"/>
+        <location line="+207"/>
         <source>Failed to save file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
     </message>
     <message>
-        <location line="-164"/>
+        <location line="-171"/>
         <source>sound files (*.wav *.ogg);;all files (*.*)</source>
         <translation>音声ファイル (*.wav *.ogg);;すべてのファイル (*.*)</translation>
     </message>
@@ -471,7 +480,7 @@
         <translation>音声ファイル選択</translation>
     </message>
     <message>
-        <location line="+84"/>
+        <location line="+91"/>
         <source>untitled</source>
         <translation>無題</translation>
     </message>
@@ -494,7 +503,7 @@
 <context>
     <name>QScrollBar</name>
     <message>
-        <location filename="../main.cpp" line="+47"/>
+        <location filename="../main.cpp" line="+48"/>
         <source>Scroll here</source>
         <translation>ここにスクロール</translation>
     </message>
@@ -583,7 +592,7 @@
 <context>
     <name>SequenceViewCursor</name>
     <message>
-        <location filename="../SequenceView.cpp" line="+1587"/>
+        <location filename="../SequenceViewInternal.cpp" line="+72"/>
         <source>BGM</source>
         <translation>BGM</translation>
     </message>
@@ -688,7 +697,7 @@
         <translation>ソースをプレビュー</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Move Left</source>
         <translation>左に移動</translation>
     </message>

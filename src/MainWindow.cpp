@@ -130,7 +130,11 @@ MainWindow::MainWindow(QSettings *settings)
 	actionChannelSelectFile = new QAction(tr("Select File..."), this);
 	connect(actionChannelSelectFile, SIGNAL(triggered()), this, SLOT(ChannelSelectFile()));
 
-	actionHelpAbout = new QAction(tr("About BmsONE..."), this);
+	actionChannelPreviewSource = new QAction(tr("Preview Source Sound"), this);
+	actionChannelPreviewSource->setIcon(QIcon(":/images/sound.png"));
+	connect(actionChannelPreviewSource, SIGNAL(triggered(bool)), this, SLOT(ChannelPreviewSource()));
+
+	actionHelpAbout = new QAction(tr("About BmsONE"), this);
 	connect(actionHelpAbout, SIGNAL(triggered()), this, SLOT(HelpAbout()));
 
 	auto *menuFile = menuBar()->addMenu(tr("File"));
@@ -181,10 +185,11 @@ MainWindow::MainWindow(QSettings *settings)
 	menuChannel->addAction(actionChannelDestroy);
 	menuChannel->addSeparator();
 	menuChannel->addAction(actionChannelSelectFile);
+	menuChannel->addAction(actionChannelPreviewSource);
 
 	auto *menuHelp = menuBar()->addMenu(tr("Help"));
 	menuHelp->addAction(actionHelpAbout);
-	connect(menuHelp->addAction(tr("About Qt...")), SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+	connect(menuHelp->addAction(tr("About Qt")), SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
 	//setStatusBar(statusBar = new StatusBar(this));
 	auto *statusToolBar = new QToolBar(tr("Status Bar"));
@@ -466,6 +471,13 @@ void MainWindow::ChannelSelectFile()
 	channelInfoView->SelectSourceFile();
 }
 
+void MainWindow::ChannelPreviewSource()
+{
+	if (!document || currentChannel < 0)
+		return;
+	channelInfoView->PreviewSound();
+}
+
 void MainWindow::ChannelsNew(QList<QString> filePaths)
 {
 	if (!document)
@@ -479,7 +491,7 @@ void MainWindow::HelpAbout()
 			"<p>version " APP_VERSION_STRING " (" __DATE__ " " __TIME__ ")</p>"
 			"<p>Copyright 2015 <a href=\"" APP_URL "\">exclusion</a></p>"
 			"<hr>"
-			"Libraries:"
+			"Libraries Information:"
 			"<ul>"
 			"<li>" "<a href=\"" QT_URL "\">Qt</a> " QT_VERSION_STR
 			"<li>" "<a href=\"" OGG_URL "\">libogg</a> " OGG_VERSION_STRING
@@ -509,11 +521,13 @@ void MainWindow::OnCurrentChannelChanged(int ichannel)
 		actionChannelMoveRight->setEnabled(true);
 		actionChannelDestroy->setEnabled(true);
 		actionChannelSelectFile->setEnabled(true);
+		actionChannelPreviewSource->setEnabled(true);
 	}else{
 		actionChannelMoveLeft->setEnabled(false);
 		actionChannelMoveRight->setEnabled(false);
 		actionChannelDestroy->setEnabled(false);
 		actionChannelSelectFile->setEnabled(false);
+		actionChannelPreviewSource->setEnabled(false);
 	}
 }
 

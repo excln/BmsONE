@@ -2,6 +2,7 @@
 #include "UIDef.h"
 #include <QApplication>
 #include <QMetaType>
+#include "SoundChannelDef.h"
 
 
 static const char* SettingsLanguageKey = "Language";

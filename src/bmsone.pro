@@ -35,7 +35,9 @@ SOURCES += main.cpp\
     Bmson.cpp \
     BpmEditTool.cpp \
     SelectedObjectView.cpp \
-    JsonExtension.cpp
+    JsonExtension.cpp \
+    SoundChannelInternal.cpp \
+    SequenceViewInternal.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -54,7 +56,12 @@ HEADERS  += MainWindow.h \
     UIDef.h \
     BpmEditTool.h \
     SelectedObjectView.h \
-    JsonExtension.h
+    JsonExtension.h \
+    SoundChannel.h \
+    SoundChannelInternal.h \
+    DocumentDef.h \
+    SoundChannelDef.h \
+    SequenceViewInternal.h
 
 FORMS    +=
 

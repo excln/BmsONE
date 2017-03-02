@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include <QtWidgets>
+#include "Wave.h"
 #include "Document.h"
 #include "ScrollableForm.h"
 
@@ -45,13 +46,13 @@ private slots:
 	void OverallWaveformUpdated();
 	//void WaveDataUpdated();
 
-	void PreviewSound();
-
 	void OnChannelSourcePreviewerStopped();
 
 public slots:
 	void OnCurrentChannelChanged(int index);
 	void SelectSourceFile();
+
+	void PreviewSound();
 
 signals:
 	void CurrentChannelChanged(int index);

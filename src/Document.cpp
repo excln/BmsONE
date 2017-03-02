@@ -1,4 +1,5 @@
 #include "Document.h"
+#include "SoundChannel.h"
 #include <QFile>
 
 

@@ -4,6 +4,7 @@
 #include <QtCore>
 #include <QtWidgets>
 #include "Document.h"
+#include "SoundChannel.h"
 #include "AudioPlayer.h"
 #include "SequenceTools.h"
 
@@ -127,6 +128,7 @@ private:
 	QAction *actionChannelMoveRight;
 	QAction *actionChannelDestroy;
 	QAction *actionChannelSelectFile;
+	QAction *actionChannelPreviewSource;
 
 	QAction *actionHelpAbout;
 
@@ -153,6 +155,7 @@ private slots:
 	void ChannelMoveRight();
 	void ChannelDestroy();
 	void ChannelSelectFile();
+	void ChannelPreviewSource();
 	void ChannelsNew(QList<QString> filePaths);
 	void HelpAbout();
 

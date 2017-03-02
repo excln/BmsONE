@@ -91,7 +91,9 @@ void ChannelInfoView::Begin()
 void ChannelInfoView::SetCurrentChannel(int index)
 {
 	if (channelSourcePreviewer){
-		delete channelSourcePreviewer;
+		// release from ChannelInfoView's management and set up auto deletion
+		disconnect(channelSourcePreviewer, SIGNAL(Stopped()), this, SLOT(OnChannelSourcePreviewerStopped()));
+		connect(channelSourcePreviewer, SIGNAL(Stopped()), channelSourcePreviewer, SLOT(deleteLater()));
 		channelSourcePreviewer = nullptr;
 	}
 	if (channel){
