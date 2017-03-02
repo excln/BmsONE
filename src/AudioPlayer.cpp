@@ -67,9 +67,11 @@ AudioPlayer::~AudioPlayer()
 	}
 	settings->endGroup();
 
+	io->StopSourcesImmediately();
+	QMetaObject::invokeMethod(output, "Stop");
+	output->deleteLater(); // on Mac, this is necessary for terminating Mac's audio thread.
 	audioThread->exit();
 	audioThread->wait();
-	io->StopSourcesImmediately();
 }
 
 
