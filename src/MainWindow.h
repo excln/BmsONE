@@ -10,6 +10,60 @@
 class SequenceView;
 class InfoView;
 class ChannelInfoView;
+class MainWindow;
+
+
+class StatusBarSection : public QWidget
+{
+	Q_OBJECT
+
+public:
+	static const int BaseHeight;
+
+private:
+	QString name;
+	QIcon icon;
+	QString text;
+	int baseWidth;
+
+private:
+	virtual QSize minimumSizeHint() const;
+	virtual QSize sizeHint() const;
+	virtual void paintEvent(QPaintEvent *event);
+
+public:
+	StatusBarSection(QString name, QIcon icon, int baseWidth);
+	~StatusBarSection();
+
+	void SetIcon(QIcon icon=QIcon());
+	void SetText(QString text=QString());
+};
+
+
+class StatusBar : public QStatusBar
+{
+	Q_OBJECT
+
+private:
+	MainWindow *mainWindow;
+	StatusBarSection *objectSection;
+	StatusBarSection *absoluteLocationSection;
+	StatusBarSection *compositeLocationSection;
+	StatusBarSection *realTimeSection;
+	StatusBarSection *laneSection;
+
+public:
+	StatusBar(MainWindow *mainWindow);
+	~StatusBar();
+
+	StatusBarSection *GetObjectSection() const{ return objectSection; }
+	StatusBarSection *GetAbsoluteLocationSection() const{ return absoluteLocationSection; }
+	StatusBarSection *GetCompositeLocationSection() const{ return compositeLocationSection; }
+	StatusBarSection *GetRealTimeSection() const{ return realTimeSection; }
+	StatusBarSection *GetLaneSection() const{ return laneSection; }
+};
+
+
 
 
 class MainWindow : public QMainWindow
@@ -24,6 +78,7 @@ private:
 
 private:
 	QSettings *settings;
+	StatusBar *statusBar;
 	AudioPlayer *audioPlayer;
 	SequenceTools *sequenceTools;
 	SequenceView *sequenceView;
@@ -113,6 +168,7 @@ public:
 	virtual void dropEvent(QDropEvent *event);
 
 	QSettings *GetSettings() const{ return settings; }
+	StatusBar *GetStatusBar() const{ return statusBar; }
 	AudioPlayer *GetAudioPlayer() const{ return audioPlayer; }
 
 };

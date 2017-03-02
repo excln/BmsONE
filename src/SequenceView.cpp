@@ -31,9 +31,11 @@ SequenceView::SequenceView(MainWindow *parent)
 	, mainWindow(parent)
 	, document(nullptr)
 	, documentReady(false)
+	, cursor(this)
 {
 	qRegisterMetaType<SoundChannelView*>("SoundChannelView*");
 	qRegisterMetaType<GridSize>("GridSize");
+	connect(&cursor, SIGNAL(Changed()), this, SLOT(CursorChanged()));
 	{
 		const int lmargin = 5;
 		const int wscratch = 36;
@@ -82,11 +84,10 @@ SequenceView::SequenceView(MainWindow *parent)
 	setLineWidth(0);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-#ifndef Q_OS_MACX
-	QSizeGrip *grip = new QSizeGrip(this);
-	grip->setBackgroundRole(QPalette::Window);
-	setCornerWidget(grip);
-#endif
+//#ifndef Q_OS_MACX
+//	QSizeGrip *grip = new QSizeGrip(this);
+//	setCornerWidget(grip);
+//#endif
 	setViewport(nullptr);	// creates new viewport widget
 	setViewportMargins(timeLineWidth + playingWidth, headerHeight, 0, footerHeight);
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -94,7 +95,7 @@ SequenceView::SequenceView(MainWindow *parent)
 	QPalette palette;
 	palette.setBrush(QPalette::Background, QColor(102, 102, 102));
 	viewport()->setPalette(palette);
-	timeLine = NewWidget(&SequenceView::paintEventTimeLine);
+	timeLine = NewWidget(&SequenceView::paintEventTimeLine, &SequenceView::mouseEventTimeLine, &SequenceView::enterEventTimeLine);
 	playingPane = NewWidget(&SequenceView::paintEventPlayingPane, &SequenceView::mouseEventPlayingPane, &SequenceView::enterEventPlayingPane);
 	headerChannelsArea = NewWidget(&SequenceView::paintEventHeaderArea);
 	headerCornerEntry = NewWidget(&SequenceView::paintEventHeaderEntity);
@@ -102,6 +103,7 @@ SequenceView::SequenceView(MainWindow *parent)
 	footerChannelsArea = NewWidget(&SequenceView::paintEventFooterArea);
 	footerCornerEntry = NewWidget(&SequenceView::paintEventFooterEntity);
 	footerPlayingEntry = NewWidget(&SequenceView::paintEventPlayingFooter);
+	timeLine->setMouseTracking(true);
 	playingPane->setMouseTracking(true);
 #if 0
 	auto *tb = new QToolBar(headerPlayingEntry);
@@ -134,11 +136,8 @@ SequenceView::SequenceView(MainWindow *parent)
 	}
 	settings->endGroup();
 
-	currentLocation = 0;
 	currentChannel = 0;
 	playing = false;
-	cursorExistingNote = nullptr;
-	showCursorNewNote = false;
 }
 
 SequenceView::~SequenceView()
@@ -200,11 +199,9 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 
 		resolution = document->GetTimeBase();
 		viewLength = document->GetTotalVisibleLength();
-		currentLocation = 0;
 		currentChannel = -1;
 		playing = false;
-		cursorExistingNote = nullptr;
-		showCursorNewNote = false;
+		cursor.SetNothing();
 		OnViewportResize();
 		UpdateVerticalScrollBar(0.0); // daburi
 	}
@@ -317,7 +314,6 @@ QSet<int> SequenceView::CoarseGridsInRange(qreal tBegin, qreal tEnd)
 QMap<int, QPair<int, BarLine>> SequenceView::BarsInRange(qreal tBegin, qreal tEnd)
 {
 	const QMap<int, BarLine> &bars = document->GetBarLines();
-	const QMap<int, BarLine>::const_iterator ibar = bars.lowerBound(tBegin);
 	QMap<int, QPair<int, BarLine>> barLines;
 	int num = 0;
 	for (QMap<int, BarLine>::const_iterator i=bars.begin(); i!=bars.end() && i->Location<=(int)tEnd; i++, num++){
@@ -705,6 +701,42 @@ bool SequenceView::eventFilter(QObject *sender, QEvent *event)
 	}
 }
 
+bool SequenceView::enterEventTimeLine(QWidget *timeLine, QEvent *event)
+{
+	switch (event->type()){
+	case QEvent::Enter:
+		return true;
+	case QEvent::Leave:
+		cursor.SetNothing();
+		return true;
+	default:
+		return false;
+	}
+}
+
+bool SequenceView::mouseEventTimeLine(QWidget *timeLine, QMouseEvent *event)
+{
+	qreal time = Y2Time(event->y());
+	if (snapToGrid){
+		time = SnapToFineGrid(time);
+	}
+	switch (event->type()){
+	case QEvent::MouseMove: {
+		timeLine->setCursor(Qt::ArrowCursor);
+		cursor.SetTime(time);
+		return true;
+	}
+	case QEvent::MouseButtonPress:
+		return true;
+	case QEvent::MouseButtonRelease:
+		return true;
+	case QEvent::MouseButtonDblClick:
+		return false;
+	default:
+		return false;
+	}
+}
+
 bool SequenceView::paintEventTimeLine(QWidget *timeLine, QPaintEvent *event)
 {
 	static const int mx = 4, my = 4;
@@ -767,9 +799,9 @@ bool SequenceView::paintEventTimeLine(QWidget *timeLine, QPaintEvent *event)
 	painter.drawLine(0, rect.top(), 0, rect.bottom()+1);
 	painter.drawLine(timeLineMeasureWidth, rect.top(), timeLineMeasureWidth, rect.bottom()+1);
 
-	if (showCursorNewNote){
+	if (cursor.HasTime()){
 		painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
-		int y = Time2Y(cursorNewNote.location) - 1;
+		int y = Time2Y(cursor.GetTime()) - 1;
 		painter.drawLine(timeLineMeasureWidth, y, timeLineWidth, y);
 	}
 
@@ -870,7 +902,7 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 					continue;
 				}
 				if (note.lane > 0 && lanes.contains(note.lane)){
-					if (nview == cursorExistingNote){
+					if (cursor.GetState() == SequenceViewCursor::State::EXISTING_SOUND_NOTE && nview == cursor.GetExistingSoundNote()){
 						// hover
 						LaneDef &laneDef = lanes[note.lane];
 						QRect rect(laneDef.left+1, Time2Y(note.location + note.length) - 8, laneDef.width-1, TimeSpan2DY(note.length) + 8);
@@ -901,50 +933,52 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 	}
 
 	// horz. cursor line etc.
-	if (showCursorNewNote && currentChannel >= 0){
+	if (cursor.HasTime()){
 		painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
-		int y = Time2Y(cursorNewNote.location) - 1;
+		int y = Time2Y(cursor.GetTime()) - 1;
 		painter.drawLine(left, y, right, y);
 
-		if (soundChannels[currentChannel]->GetNotes().contains(cursorNewNote.location)){
-			SoundNoteView *nview = soundChannels[currentChannel]->GetNotes()[cursorNewNote.location];
-			SoundNote note = nview->GetNote();
-			if (note.lane > 0){
-				LaneDef &laneDef = lanes[note.lane];
-				int noteStartY = Time2Y(note.location);
-				int noteEndY = Time2Y(note.location + note.length);
-				switch (note.noteType){
-				case 0: {
-					painter.setBrush(Qt::NoBrush);
-					painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 1));
-					QPolygon polygon;
-					polygon.append(QPoint(laneDef.left, noteStartY));
-					polygon.append(QPoint(laneDef.left+laneDef.width, noteStartY));
-					polygon.append(QPoint(laneDef.left+laneDef.width/2, noteStartY - 8));
-					painter.drawPolygon(polygon);
-					if (note.length > 0){
+		if (cursor.IsNewSoundNote() && currentChannel >= 0){
+			if (soundChannels[currentChannel]->GetNotes().contains(cursor.GetTime())){
+				SoundNoteView *nview = soundChannels[currentChannel]->GetNotes()[cursor.GetTime()];
+				SoundNote note = nview->GetNote();
+				if (note.lane > 0){
+					LaneDef &laneDef = lanes[note.lane];
+					int noteStartY = Time2Y(note.location);
+					int noteEndY = Time2Y(note.location + note.length);
+					switch (note.noteType){
+					case 0: {
+						painter.setBrush(Qt::NoBrush);
+						painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 1));
+						QPolygon polygon;
+						polygon.append(QPoint(laneDef.left, noteStartY));
+						polygon.append(QPoint(laneDef.left+laneDef.width, noteStartY));
+						polygon.append(QPoint(laneDef.left+laneDef.width/2, noteStartY - 8));
+						painter.drawPolygon(polygon);
+						if (note.length > 0){
+							QRect rect(laneDef.left+1, noteEndY - 8, laneDef.width-2, noteStartY - noteEndY + 7);
+							painter.drawRect(rect);
+						}
+						break;
+					}
+					case 1: {
+						painter.setBrush(Qt::NoBrush);
+						painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 1));
 						QRect rect(laneDef.left+1, noteEndY - 8, laneDef.width-2, noteStartY - noteEndY + 7);
 						painter.drawRect(rect);
+						break;
 					}
-					break;
-				}
-				case 1: {
-					painter.setBrush(Qt::NoBrush);
-					painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 1));
-					QRect rect(laneDef.left+1, noteEndY - 8, laneDef.width-2, noteStartY - noteEndY + 7);
-					painter.drawRect(rect);
-					break;
-				}
-				default:
-					break;
+					default:
+						break;
+					}
 				}
 			}
 		}
 	}
 
 	// cursors
-	if (cursorExistingNote){
-		SoundNote note = cursorExistingNote->GetNote();
+	if (cursor.IsExistingSoundNote()){
+		SoundNote note = cursor.GetExistingSoundNote()->GetNote();
 		LaneDef &laneDef = lanes[note.lane];
 		int noteStartY = Time2Y(note.location);
 		int noteEndY = Time2Y(note.location + note.length);
@@ -973,11 +1007,12 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 		default:
 			break;
 		}
-	}else if (showCursorNewNote && lanes.contains(cursorNewNote.lane)){
-		LaneDef &laneDef = lanes[cursorNewNote.lane];
-		int noteStartY = Time2Y(cursorNewNote.location);
-		int noteEndY = Time2Y(cursorNewNote.location + cursorNewNote.length);
-		switch (cursorNewNote.noteType){
+	}else if (cursor.IsNewSoundNote() && lanes.contains(cursor.GetLane())){
+		SoundNote note = cursor.GetNewSoundNote();
+		LaneDef &laneDef = lanes[note.lane];
+		int noteStartY = Time2Y(note.location);
+		int noteEndY = Time2Y(note.location + note.length);
+		switch (note.noteType){
 		case 0: {
 			painter.setBrush(Qt::NoBrush);
 			painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
@@ -986,7 +1021,7 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 			polygon.append(QPoint(laneDef.left+laneDef.width-1, noteStartY - 1));
 			polygon.append(QPoint(laneDef.left+laneDef.width/2-1, noteStartY - 8));
 			painter.drawPolygon(polygon);
-			if (cursorNewNote.length > 0){
+			if (note.length > 0){
 				QRect rect(laneDef.left+1, noteEndY - 8, laneDef.width-2, noteStartY - noteEndY + 7);
 				painter.drawRect(rect);
 			}
@@ -1027,16 +1062,7 @@ bool SequenceView::enterEventPlayingPane(QWidget *playingPane, QEvent *event)
 	case QEvent::Enter:
 		return true;
 	case QEvent::Leave:
-		if (cursorExistingNote){
-			cursorExistingNote = nullptr;
-		}else if (showCursorNewNote){
-			showCursorNewNote = false;
-		}
-		timeLine->update();
-		playingPane->update();
-		for (auto cview : soundChannels){
-			cview->update();
-		}
+		cursor.SetNothing();
 		return true;
 	default:
 		return false;
@@ -1065,6 +1091,15 @@ SoundNoteView *SequenceView::HitTestPlayingPane(int lane, int y, int time)
 	return nviewT;
 }
 
+void SequenceView::CursorChanged()
+{
+	timeLine->update();
+	playingPane->update();
+	for (auto cview : soundChannels){
+		cview->update();
+	}
+}
+
 bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *event)
 {
 	qreal time = Y2Time(event->y());
@@ -1077,38 +1112,19 @@ bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *even
 	case QEvent::MouseMove: {
 		if (noteHit){
 			playingPane->setCursor(Qt::SizeAllCursor);
-			if (noteHit != cursorExistingNote){
-				cursorExistingNote = noteHit;
-				showCursorNewNote = false;
-			}
-		}else{
+			cursor.SetExistingSoundNote(noteHit);
+		}else if (lane >= 0){
 			if (currentChannel >= 0){
-				if (lane >= 0){
-					playingPane->setCursor(Qt::CrossCursor);
-					cursorNewNote.location = time;
-					cursorNewNote.lane = lane;
-					cursorNewNote.length = 0;
-					cursorNewNote.noteType = event->modifiers() & Qt::ShiftModifier ? 0 : 1;
-					showCursorNewNote = true;
-					cursorExistingNote = nullptr;
-				}else if (showCursorNewNote || cursorExistingNote){
-					playingPane->setCursor(Qt::ArrowCursor);
-					showCursorNewNote = false;
-					cursorExistingNote = nullptr;
-				}
+				playingPane->setCursor(Qt::CrossCursor);
+				cursor.SetNewSoundNote(SoundNote(time, lane, 0, event->modifiers() & Qt::ShiftModifier ? 0 : 1));
 			}else{
 				// no current channel
 				playingPane->setCursor(Qt::ArrowCursor);
-				if (showCursorNewNote || cursorExistingNote){
-					showCursorNewNote = false;
-					cursorExistingNote = nullptr;
-				}
+				cursor.SetTimeWithLane(time, lane);
 			}
-		}
-		timeLine->update();
-		playingPane->update();
-		for (auto cview : soundChannels){
-			cview->update();
+		}else{
+			playingPane->setCursor(Qt::ArrowCursor);
+			cursor.SetNothing();
 		}
 		return true;
 	}
@@ -1242,6 +1258,193 @@ bool SequenceView::paintEventFooterEntity(QWidget *widget, QPaintEvent *event)
 	return true;
 }
 
+
+
+SequenceViewCursor::SequenceViewCursor(SequenceView *sview)
+	: QObject(sview)
+	, sview(sview)
+	, statusBar(sview->mainWindow->GetStatusBar())
+	, state(State::NOTHING)
+{
+}
+
+SequenceViewCursor::~SequenceViewCursor()
+{
+}
+
+QString SequenceViewCursor::GetAbsoluteLocationString() const
+{
+	return QString("%0").arg(time);
+}
+
+QString SequenceViewCursor::GetCompositeLocationString() const
+{
+	int bar=-1, beat=0, ticks=0, tb=0, t;
+	const QMap<int, BarLine> &bars = sview->document->GetBarLines();
+	for (QMap<int, BarLine>::const_iterator ibar=bars.begin(); ibar!=bars.end() && ibar.key() <= time; ibar++, bar++){
+		tb = ibar.key();
+	}
+	for (beat=0; ; beat++){
+		t = tb + sview->coarseGrid.NthGrid(sview->resolution, beat);
+		if (t > time){
+			beat--;
+			t = tb + sview->coarseGrid.NthGrid(sview->resolution, beat);
+			break;
+		}
+	}
+	ticks = time - t;
+	return QString("%0 : %1 : %2")
+			.arg(bar,3,10,QChar('0'))
+			.arg(beat,2,10,QChar('0'))
+			.arg(ticks,QString::number(sview->resolution).length(),10,QChar('0'));
+}
+
+QString SequenceViewCursor::GetRealTimeString() const
+{
+	int t=0;
+	double seconds = 0;
+	const QMap<int, BpmEvent> bpmEvents = sview->document->GetBpmEvents();
+	double bpm = sview->document->GetInfo()->GetInitBpm();
+	for (QMap<int, BpmEvent>::const_iterator i=bpmEvents.begin(); i!=bpmEvents.end() && i.key() < time; i++){
+		seconds += (i.key() - t) * 60.0 / (bpm * sview->resolution);
+		t = i.key();
+		bpm = i->value;
+	}
+	seconds += (time - t) * 60.0 / (bpm * sview->resolution);
+	int min = seconds / 60.0;
+	double sec = seconds - (min * 60.0);
+	return QString("%0 : %1")
+			.arg(min,2,10,QChar('0'))
+			.arg(sec,6,'f',3,QChar('0'));
+}
+
+QString SequenceViewCursor::GetLaneString() const
+{
+	// TODO: Use play mode & skin settings
+	switch (lane){
+	case 0:
+		return tr("BGM");
+	case 1:
+		return tr("Key 1P 1");
+	case 2:
+		return tr("Key 1P 2");
+	case 3:
+		return tr("Key 1P 3");
+	case 4:
+		return tr("Key 1P 4");
+	case 5:
+		return tr("Key 1P 5");
+	case 6:
+		return tr("Key 1P 6");
+	case 7:
+		return tr("Key 1P 7");
+	case 8:
+		return tr("Key 1P S");
+	default:
+		return tr("?");
+	}
+}
+
+void SequenceViewCursor::SetNothing()
+{
+	if (state == State::NOTHING)
+		return;
+	state = State::NOTHING;
+	statusBar->GetObjectSection()->SetIcon();
+	statusBar->GetObjectSection()->SetText();
+	statusBar->GetAbsoluteLocationSection()->SetText();
+	statusBar->GetCompositeLocationSection()->SetText();
+	statusBar->GetRealTimeSection()->SetText();
+	statusBar->GetLaneSection()->SetText();
+	statusBar->clearMessage();
+	emit Changed();
+}
+
+void SequenceViewCursor::SetTime(int time)
+{
+	if (state == State::TIME && this->time == time)
+		return;
+	state = State::TIME;
+	this->time = time;
+	statusBar->GetObjectSection()->SetIcon();
+	statusBar->GetObjectSection()->SetText();
+	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
+	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
+	statusBar->GetRealTimeSection()->SetText(GetRealTimeString());
+	statusBar->GetLaneSection()->SetText();
+	statusBar->clearMessage();
+	emit Changed();
+}
+
+void SequenceViewCursor::SetTimeWithLane(int time, int lane)
+{
+	if (state == State::TIME_WITH_LANE && this->time == time && this->lane == lane)
+		return;
+	state = State::TIME_WITH_LANE;
+	this->time = time;
+	this->lane = lane;
+	statusBar->GetObjectSection()->SetIcon();
+	statusBar->GetObjectSection()->SetText();
+	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
+	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
+	statusBar->GetRealTimeSection()->SetText(GetRealTimeString());
+	statusBar->GetLaneSection()->SetText(GetLaneString());
+	statusBar->clearMessage();
+	emit Changed();
+}
+
+void SequenceViewCursor::SetNewSoundNote(SoundNote note)
+{
+	if (state == State::NEW_SOUND_NOTE && newSoundNote == note)
+		return;
+	time = note.location;
+	lane = note.lane;
+	state = State::NEW_SOUND_NOTE;
+	newSoundNote = note;
+	statusBar->GetObjectSection()->SetIcon(note.noteType == 0 ? QIcon(":/images/sound_note.png") : QIcon(":/images/cutting_sound_note.png"));
+	statusBar->GetObjectSection()->SetText(tr("Click to add a sound note"));
+	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
+	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
+	statusBar->GetRealTimeSection()->SetText(GetRealTimeString());
+	statusBar->GetLaneSection()->SetText(GetLaneString());
+	statusBar->clearMessage();
+	emit Changed();
+}
+
+void SequenceViewCursor::SetExistingSoundNote(SoundNoteView *note)
+{
+	if (state == State::EXISTING_SOUND_NOTE && existingSoundNote == note)
+		return;
+	time = note->GetNote().location;
+	lane = note->GetNote().lane;
+	state = State::EXISTING_SOUND_NOTE;
+	existingSoundNote = note;
+	statusBar->GetObjectSection()->SetIcon(note->GetNote().noteType == 0 ? QIcon(":/images/sound_note.png") : QIcon(":/images/cutting_sound_note.png"));
+	statusBar->GetObjectSection()->SetText(tr("Sound note"));
+	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
+	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
+	statusBar->GetRealTimeSection()->SetText(GetRealTimeString());
+	statusBar->GetLaneSection()->SetText(GetLaneString());
+	statusBar->clearMessage();
+	emit Changed();
+}
+
+bool SequenceViewCursor::HasTime() const
+{
+	return state != State::NOTHING;
+}
+
+bool SequenceViewCursor::HasLane() const
+{
+	switch (state){
+	case State::NOTHING:
+	case State::TIME:
+		return false;
+		return false;
+	default:
+		return true;
+	}
+}
 
 
 
@@ -1380,7 +1583,7 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 		int noteEndY = sview->Time2Y(note.location + note.length) - 1;
 
 		if (note.lane == 0){
-			if (sview->cursorExistingNote == nview){
+			if (sview->cursor.IsExistingSoundNote() && sview->cursor.GetExistingSoundNote() == nview){
 				painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 1));
 				painter.setBrush(Qt::NoBrush);
 				switch (note.noteType){
@@ -1442,19 +1645,41 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 	}
 
 	// horz. cursor line
-	if (sview->showCursorNewNote){
+	if (sview->cursor.HasTime()){
 		painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
-		int y = sview->Time2Y(sview->cursorNewNote.location) - 1;
+		int y = sview->Time2Y(sview->cursor.GetTime()) - 1;
 		painter.drawLine(left, y, right, y);
 
-		if (current && notes.contains(sview->cursorNewNote.location)){
-			SoundNoteView *nview = notes[sview->cursorNewNote.location];
-			const SoundNote &note = nview->GetNote();
-			if (note.lane == 0){
-				painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 1));
+		if (current && sview->cursor.IsNewSoundNote()){
+			SoundNote newSoundNote = sview->cursor.GetNewSoundNote();
+			if (notes.contains(newSoundNote.location)){
+				SoundNoteView *nview = notes[newSoundNote.location];
+				const SoundNote &note = nview->GetNote();
+				if (note.lane == 0){
+					painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 1));
+					painter.setBrush(Qt::NoBrush);
+					int noteStartY = sview->Time2Y(note.location) - 1;
+					switch (note.noteType){
+					case 0:{
+						QPolygon polygon;
+						polygon.append(QPoint(width()/2, noteStartY - 8));
+						polygon.append(QPoint(6, noteStartY));
+						polygon.append(QPoint(width()-7, noteStartY));
+						painter.drawPolygon(polygon);
+						break;
+					}
+					case 1:
+						QRect rect(6, noteStartY - 4, width() - 12, 4); // don't show as long notes
+						painter.drawRect(rect);
+						break;
+					}
+				}
+			}
+			if (newSoundNote.lane == 0){
+				painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
 				painter.setBrush(Qt::NoBrush);
-				int noteStartY = sview->Time2Y(note.location) - 1;
-				switch (note.noteType){
+				int noteStartY = sview->Time2Y(newSoundNote.location) - 1;
+				switch (newSoundNote.noteType){
 				case 0:{
 					QPolygon polygon;
 					polygon.append(QPoint(width()/2, noteStartY - 8));
@@ -1468,25 +1693,6 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 					painter.drawRect(rect);
 					break;
 				}
-			}
-		}
-		if (current && sview->cursorNewNote.lane == 0){
-			painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
-			painter.setBrush(Qt::NoBrush);
-			int noteStartY = sview->Time2Y(sview->cursorNewNote.location) - 1;
-			switch (sview->cursorNewNote.noteType){
-			case 0:{
-				QPolygon polygon;
-				polygon.append(QPoint(width()/2, noteStartY - 8));
-				polygon.append(QPoint(6, noteStartY));
-				polygon.append(QPoint(width()-7, noteStartY));
-				painter.drawPolygon(polygon);
-				break;
-			}
-			case 1:
-				QRect rect(6, noteStartY - 4, width() - 12, 4); // don't show as long notes
-				painter.drawRect(rect);
-				break;
 			}
 		}
 	}
@@ -1673,8 +1879,8 @@ void SoundChannelView::OnChannelMenu(QContextMenuEvent *event)
 
 void SoundChannelView::mouseMoveEvent(QMouseEvent *event)
 {
+	qreal time = sview->Y2Time(event->y());
 	if (current){
-		qreal time = sview->Y2Time(event->y());
 		if (sview->snapToGrid){
 			time = sview->SnapToFineGrid(time);
 		}
@@ -1682,35 +1888,14 @@ void SoundChannelView::mouseMoveEvent(QMouseEvent *event)
 
 		if (noteHit){
 			setCursor(Qt::SizeAllCursor);
-			if (noteHit != sview->cursorExistingNote){
-				sview->cursorExistingNote = noteHit;
-				sview->showCursorNewNote = false;
-			}
+			sview->cursor.SetExistingSoundNote(noteHit);
 		}else{
 			setCursor(Qt::CrossCursor);
-			sview->cursorNewNote.location = time;
-			sview->cursorNewNote.lane = 0;
-			sview->cursorNewNote.length = 0;
-			sview->cursorNewNote.noteType = event->modifiers() & Qt::ShiftModifier ? 0 : 1;
-			sview->showCursorNewNote = true;
-			sview->cursorExistingNote = nullptr;
-		}
-		sview->timeLine->update();
-		sview->playingPane->update();
-		for (auto cview : sview->soundChannels){
-			cview->update();
+			sview->cursor.SetNewSoundNote(SoundNote(time, 0, 0, event->modifiers() & Qt::ShiftModifier ? 0 : 1));
 		}
 	}else{
 		setCursor(Qt::ArrowCursor);
-		if (sview->showCursorNewNote || sview->cursorExistingNote!=nullptr){
-			sview->showCursorNewNote = false;
-			sview->cursorExistingNote = nullptr;
-			sview->timeLine->update();
-			sview->playingPane->update();
-			for (auto cview : sview->soundChannels){
-				cview->update();
-			}
-		}
+		sview->cursor.SetNothing();
 	}
 }
 
@@ -1799,16 +1984,7 @@ void SoundChannelView::enterEvent(QEvent *event)
 
 void SoundChannelView::leaveEvent(QEvent *event)
 {
-	if (sview->cursorExistingNote){
-		sview->cursorExistingNote = nullptr;
-	}else if (sview->showCursorNewNote){
-		sview->showCursorNewNote = false;
-	}
-	sview->timeLine->update();
-	sview->playingPane->update();
-	for (auto cview : sview->soundChannels){
-		cview->update();
-	}
+	sview->cursor.SetNothing();
 }
 
 

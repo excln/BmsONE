@@ -4,12 +4,12 @@
 <context>
     <name>AudioPlayer</name>
     <message>
-        <location filename="../AudioPlayer.cpp" line="+15"/>
+        <location filename="../AudioPlayer.cpp" line="+21"/>
         <source>Mute</source>
         <translation>ミュート</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Volume</source>
         <translation>音量</translation>
     </message>
@@ -22,7 +22,7 @@
 <context>
     <name>AudioPlayerIndicator</name>
     <message>
-        <location line="+394"/>
+        <location line="+418"/>
         <source>Output Level Meter</source>
         <translation>出力レベルメーター</translation>
     </message>
@@ -166,28 +166,28 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../MainWindow.cpp" line="+24"/>
+        <location filename="../MainWindow.cpp" line="+30"/>
         <source>New</source>
         <translation>新規作成</translation>
     </message>
     <message>
-        <location line="+236"/>
+        <location line="+259"/>
         <source>Open</source>
         <translation>開く</translation>
     </message>
     <message>
-        <location line="-226"/>
-        <location line="+459"/>
+        <location line="-249"/>
+        <location line="+484"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location line="-182"/>
+        <location line="-184"/>
         <source>Save As</source>
         <translation>名前をつけて保存</translation>
     </message>
     <message>
-        <location line="-268"/>
+        <location line="-291"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
@@ -299,18 +299,18 @@
         <translation>ファイル選択</translation>
     </message>
     <message>
-        <location line="+313"/>
+        <location line="+338"/>
         <source>About BmsONE</source>
         <translation>BmsONE について</translation>
     </message>
     <message>
-        <location line="-304"/>
-        <location line="+53"/>
+        <location line="-329"/>
+        <location line="+55"/>
         <source>File</source>
         <translation>ファイル</translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-153"/>
         <source>Open...</source>
         <translation>開く...</translation>
     </message>
@@ -346,12 +346,12 @@
     </message>
     <message>
         <location line="+5"/>
-        <location line="+46"/>
+        <location line="+48"/>
         <source>Channel</source>
         <translation>チャンネル</translation>
     </message>
     <message>
-        <location line="-33"/>
+        <location line="-35"/>
         <source>Help</source>
         <translation>ヘルプ</translation>
     </message>
@@ -361,7 +361,7 @@
         <translation>Qt について...</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+13"/>
         <source>Sequence Tools</source>
         <translation>シーケンスツール</translation>
     </message>
@@ -376,22 +376,22 @@
         <translation>情報</translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location line="+75"/>
         <source>bmson files (*.bmson);;old bms files (*.bms *.bme *.bml *.pms);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;旧BMSファイル (*.bms *.bme *.bml *.pms);;すべてのファイル (*.*)</translation>
     </message>
     <message>
         <location line="+13"/>
         <location line="+21"/>
-        <location line="+25"/>
+        <location line="+27"/>
         <location line="+188"/>
         <location line="+108"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location line="-304"/>
-        <location line="+182"/>
+        <location line="-306"/>
+        <location line="+184"/>
         <source>bmson files (*.bmson);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;すべてのファイル (*.*)</translation>
     </message>
@@ -435,7 +435,7 @@
 <context>
     <name>QScrollBar</name>
     <message>
-        <location filename="../main.cpp" line="+27"/>
+        <location filename="../main.cpp" line="+47"/>
         <source>Scroll here</source>
         <translation>ここにスクロール</translation>
     </message>
@@ -514,9 +514,76 @@
     </message>
 </context>
 <context>
+    <name>SequenceViewCursor</name>
+    <message>
+        <location filename="../SequenceView.cpp" line="+1326"/>
+        <source>BGM</source>
+        <translation>BGM</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Key 1P 1</source>
+        <translation>キー 1P 1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Key 1P 2</source>
+        <translation>キー 1P 2</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Key 1P 3</source>
+        <translation>キー 1P 3</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Key 1P 4</source>
+        <translation>キー 1P 4</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Key 1P 5</source>
+        <translation>キー 1P 5</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Key 1P 6</source>
+        <translation>キー 1P 6</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Key 1P 7</source>
+        <translation>キー 1P 7</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Key 1P S</source>
+        <translation>キー 1P S</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>?</source>
+        <translation>?</translation>
+    </message>
+    <message>
+        <location line="+61"/>
+        <source>Click to add a sound note</source>
+        <translation>クリックで音声ノート追加</translation>
+    </message>
+    <message>
+        <source>Click to add new sound note</source>
+        <translation>クリックで音声ノート追加</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Sound note</source>
+        <translation>音声ノート</translation>
+    </message>
+</context>
+<context>
     <name>SoundChannelView</name>
     <message>
-        <location filename="../SequenceView.cpp" line="+1237"/>
+        <location line="+42"/>
         <source>Preview Source Sound</source>
         <translation>ソースをプレビュー</translation>
     </message>
@@ -534,6 +601,29 @@
         <location line="+2"/>
         <source>Delete</source>
         <translation>削除</translation>
+    </message>
+</context>
+<context>
+    <name>StatusBar</name>
+    <message>
+        <location filename="../MainWindow.cpp" line="+18"/>
+        <source>Absolute Location</source>
+        <translation>絶対位置</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Location</source>
+        <translation>位置</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Real Time</source>
+        <translation>実時間</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Lane</source>
+        <translation>レーン</translation>
     </message>
 </context>
 </TS>

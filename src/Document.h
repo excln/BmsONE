@@ -79,6 +79,9 @@ struct SoundNote
 	int noteType;
 	SoundNote(){}
 	SoundNote(int location, int lane, int length, int noteType) : location(location), lane(lane), length(length), noteType(noteType){}
+	bool operator ==(const SoundNote &r) const{
+		return location == r.location && lane == r.lane && length == r.length && noteType == r.noteType;
+	}
 };
 
 

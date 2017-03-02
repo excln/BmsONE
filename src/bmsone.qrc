@@ -9,5 +9,11 @@
         <file>images/new.png</file>
         <file>images/stop.png</file>
         <file>images/bmsone64.png</file>
+        <file>images/time.png</file>
+        <file>images/lane.png</file>
+        <file>images/location.png</file>
+        <file>images/cutting_sound_note.png</file>
+        <file>images/sound_note.png</file>
+        <file>images/event.png</file>
     </qresource>
 </RCC>

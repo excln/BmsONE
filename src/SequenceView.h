@@ -9,6 +9,7 @@
 
 
 class MainWindow;
+class StatusBar;
 class SequenceView;
 class SoundChannelView;
 class SoundChannelHeader;
@@ -142,10 +143,69 @@ public:
 
 
 
+class SequenceViewCursor : public QObject
+{
+	Q_OBJECT
+
+public:
+	enum class State{
+		NOTHING,
+		TIME,
+		TIME_WITH_LANE,
+		NEW_SOUND_NOTE,
+		EXISTING_SOUND_NOTE,
+	};
+
+private:
+	SequenceView *sview;
+	StatusBar *statusBar;
+	State state;
+	int time;
+	int lane;
+	SoundNote newSoundNote;
+	SoundNoteView *existingSoundNote;
+
+private:
+	QString GetAbsoluteLocationString() const;
+	QString GetCompositeLocationString() const;
+	QString GetRealTimeString() const;
+	QString GetLaneString() const;
+
+public:
+	SequenceViewCursor(SequenceView *sview);
+	~SequenceViewCursor();
+
+	State GetState() const{ return state; }
+	int GetTime() const{ return time; }
+	int GetLane() const{ return lane; }
+	SoundNote GetNewSoundNote() const{ return newSoundNote; }
+	SoundNoteView *GetExistingSoundNote() const{ return existingSoundNote; }
+
+	void SetNothing();
+	void SetTime(int time);
+	void SetTimeWithLane(int time, int lane);
+	void SetNewSoundNote(SoundNote note);
+	void SetExistingSoundNote(SoundNoteView *note);
+
+	bool IsNothing() const{ return state == State::NOTHING; }
+	bool IsTimeWithLane() const{ return state == State::TIME_WITH_LANE; }
+	bool IsNewSoundNote() const{ return state == State::NEW_SOUND_NOTE; }
+	bool IsExistingSoundNote() const{ return state == State::EXISTING_SOUND_NOTE; }
+
+	bool HasTime() const;
+	bool HasLane() const;
+
+signals:
+	void Changed();
+};
+
+
+
 class SequenceView : public QAbstractScrollArea
 {
 	Q_OBJECT
 
+	friend class SequenceViewCursor;
 	friend class SoundChannelView;
 	friend class SoundChannelHeader;
 	friend class SoundChannelFooter;
@@ -242,11 +302,8 @@ private:
 	qreal zoomXBgm;	// 1 = default
 
 	int currentChannel;
-	int currentLocation;
-	SoundNoteView *cursorExistingNote;
-	bool showCursorNewNote;
-	SoundNote cursorNewNote;
 	QSet<SoundNoteView*> selectedNotes;
+	SequenceViewCursor cursor;
 
 private:
 	qreal Time2Y(qreal time) const;
@@ -275,6 +332,8 @@ private:
 	void wheelEventVp(QWheelEvent *event);
 	void OnViewportResize();
 
+	bool enterEventTimeLine(QWidget *timeLine, QEvent *event);
+	bool mouseEventTimeLine(QWidget *timeLine, QMouseEvent *event);
 	bool paintEventTimeLine(QWidget *timeLine, QPaintEvent *event);
 	bool paintEventPlayingPane(QWidget *playingPane, QPaintEvent *event);
 	bool paintEventHeaderEntity(QWidget *widget, QPaintEvent *event);
@@ -294,6 +353,7 @@ private slots:
 	void DestroySoundChannel(SoundChannelView *cview);
 	void MoveSoundChannelLeft(SoundChannelView *cview);
 	void MoveSoundChannelRight(SoundChannelView *cview);
+	void CursorChanged();
 
 public slots:
 	void OnCurrentChannelChanged(int index);
