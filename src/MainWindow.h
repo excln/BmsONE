@@ -131,6 +131,9 @@ private:
 	QAction *actionChannelPreviewSource;
 
 	QAction *actionHelpAbout;
+	QAction *actionHelpAboutQt;
+
+	bool closing;
 
 private:
 	void ReplaceDocument(Document *newDocument);

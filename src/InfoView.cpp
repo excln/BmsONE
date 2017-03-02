@@ -3,7 +3,7 @@
 #include "JsonExtension.h"
 
 InfoView::InfoView(MainWindow *mainWindow)
-	: ScrollableForm(mainWindow)
+	: QWidget(mainWindow)
 	, mainWindow(mainWindow)
 	, document(nullptr)
 {
@@ -17,12 +17,17 @@ InfoView::InfoView(MainWindow *mainWindow)
 	layout->addRow(tr("Level:"), editLevel = new QuasiModalEdit());
 	layout->addRow(new QLabel(tr("Extra fields:")));
 	layout->addRow(editExtraFields = new QuasiModalMultiLineEdit());
+	layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+	layout->setSizeConstraint(QLayout::SetNoConstraint);
 	editExtraFields->setAcceptRichText(false);
 	editExtraFields->setAcceptDrops(false);
 	editExtraFields->setTabStopWidth(24);
 	editExtraFields->setLineWrapMode(QTextEdit::WidgetWidth);
-	editExtraFields->setFixedHeight(120);
-	Initialize(layout);
+	editExtraFields->setMinimumHeight(24);
+	editExtraFields->setMaximumHeight(999999); // (チート)
+	editExtraFields->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	editExtraFields->SetSizeHint(QSize(999999, 999999)); // (チート)
+	setLayout(layout);
 
 	connect(editTitle, &QLineEdit::editingFinished, this, &InfoView::TitleEdited);
 	connect(editGenre, &QLineEdit::editingFinished, this, &InfoView::GenreEdited);

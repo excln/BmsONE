@@ -32,6 +32,9 @@ class QuasiModalMultiLineEdit : public QTextEdit, public IEdit
 {
 	Q_OBJECT
 
+private:
+	QSize sh;
+
 private slots:
 	void OnTextChanged();
 
@@ -39,10 +42,13 @@ private:
 	virtual void keyPressEvent(QKeyEvent *event);
 	virtual void focusOutEvent(QFocusEvent *event);
 	virtual void Commit();
+	virtual QSize sizeHint() const;
 
 public:
 	QuasiModalMultiLineEdit(QWidget *parent=nullptr);
 	~QuasiModalMultiLineEdit();
+
+	void SetSizeHint(QSize sizeHint);
 
 signals:
 	void EditingFinished();

@@ -51,6 +51,11 @@ QuasiModalMultiLineEdit::~QuasiModalMultiLineEdit()
 {
 }
 
+void QuasiModalMultiLineEdit::SetSizeHint(QSize sizeHint)
+{
+	this->sh = sizeHint;
+}
+
 void QuasiModalMultiLineEdit::OnTextChanged()
 {
 	SharedUIHelper::SetGloballyDirtyEdit(this);
@@ -74,5 +79,13 @@ void QuasiModalMultiLineEdit::focusOutEvent(QFocusEvent *event)
 void QuasiModalMultiLineEdit::Commit()
 {
 	emit EditingFinished();
+}
+
+QSize QuasiModalMultiLineEdit::sizeHint() const
+{
+	if (sh.isNull()){
+		return QTextEdit::sizeHint();
+	}
+	return sh;
 }
 

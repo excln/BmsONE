@@ -9,8 +9,9 @@
 
 
 class MainWindow;
+class OverallWaveformLabel;
 
-class ChannelInfoView : public ScrollableForm
+class ChannelInfoView : public QWidget
 {
 	Q_OBJECT
 
@@ -21,7 +22,7 @@ private:
 	QLabel *labelFormat;
 	QLabel *labelLength;
 	//QLineEdit *editAdjustment;
-	QLabel *labelImage;
+	OverallWaveformLabel *labelImage;
 	QToolButton *buttonPreview;
 
 	Document *document;
@@ -65,6 +66,16 @@ public:
 
 	void Begin();
 
+};
+
+class OverallWaveformLabel : public QLabel
+{
+	Q_OBJECT
+
+public:
+	OverallWaveformLabel();
+
+	virtual QSize sizeHint() const;
 };
 
 

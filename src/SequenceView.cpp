@@ -290,6 +290,11 @@ void SequenceView::ToggleBpmEventSelection(BpmEvent event)
 	BpmEventsSelectionUpdated();
 }
 
+QSize SequenceView::sizeHint() const
+{
+	return QSize(999999, 999999); // (チート)
+}
+
 bool SequenceView::event(QEvent *e)
 {
 	switch (e->type()){

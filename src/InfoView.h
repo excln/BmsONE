@@ -10,7 +10,7 @@
 class MainWindow;
 
 
-class InfoView : public ScrollableForm
+class InfoView : public QWidget
 {
 	Q_OBJECT
 

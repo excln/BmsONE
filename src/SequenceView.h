@@ -153,6 +153,7 @@ private:
 	void SelectSingleBpmEvent(BpmEvent event);
 	void ToggleBpmEventSelection(BpmEvent event);
 
+	virtual QSize sizeHint() const;
 	virtual bool event(QEvent *e);
 	virtual bool viewportEvent(QEvent *event);
 	virtual void scrollContentsBy(int dx, int dy);

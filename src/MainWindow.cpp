@@ -22,6 +22,7 @@ MainWindow::MainWindow(QSettings *settings)
 	, settings(settings)
 	, document(nullptr)
 	, currentChannel(-1)
+	, closing(false)
 {
 #ifdef Q_OS_WIN
 	setFont(QFont("Meiryo"));
@@ -138,8 +139,14 @@ MainWindow::MainWindow(QSettings *settings)
 	actionChannelPreviewSource->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Sound));
 	connect(actionChannelPreviewSource, SIGNAL(triggered(bool)), this, SLOT(ChannelPreviewSource()));
 
-	actionHelpAbout = new QAction(tr("About BmsONE"), this);
+	actionHelpAbout = new QAction(tr("About BmsONE..."), this);
 	connect(actionHelpAbout, SIGNAL(triggered()), this, SLOT(HelpAbout()));
+#ifdef Q_OS_MACX
+	actionHelpAboutQt = new QAction(tr("Qt..."), this);
+#else
+	actionHelpAboutQt = new QAction(tr("About Qt..."), this);
+#endif
+	connect(actionHelpAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
 	auto *menuFile = menuBar()->addMenu(tr("File"));
 	menuFile->addAction(actionFileNew);
@@ -196,7 +203,7 @@ MainWindow::MainWindow(QSettings *settings)
 
 	auto *menuHelp = menuBar()->addMenu(tr("Help"));
 	menuHelp->addAction(actionHelpAbout);
-	connect(menuHelp->addAction(tr("About Qt")), SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+	menuHelp->addAction(actionHelpAboutQt);
 
 	//setStatusBar(statusBar = new StatusBar(this));
 	auto *statusToolBar = new QToolBar(tr("Status Bar"));
@@ -398,10 +405,15 @@ void MainWindow::FileSaveAs()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+	if (closing){
+		event->accept();
+		return;
+	}
 	if (!EnsureClosingFile()){
 		event->ignore();
 		return;
 	}
+	closing = true;
 	event->accept();
 }
 

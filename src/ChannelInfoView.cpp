@@ -3,7 +3,7 @@
 #include "SymbolIconManager.h"
 
 ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
-	: ScrollableForm(mainWindow)
+	: QWidget(mainWindow)
 	, mainWindow(mainWindow)
 	, document(nullptr)
 	, channelSourcePreviewer(nullptr)
@@ -12,12 +12,15 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	layout->addRow(channelList = new QComboBox());
 	auto imageBox = new QFrame();
 	imageBox->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+	imageBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	layout->addRow(imageBox);
 	//layout->addRow(tr("Timing Adjustment:"), editAdjustment = new QLineEdit());
 	channelList->setMinimumWidth(34);
-	labelImage = new QLabel();
-	labelImage->setGeometry(0, 16, 180, 120);
-	labelImage->setFixedHeight(120);
+	labelImage = new OverallWaveformLabel();
+	labelImage->setMinimumWidth(48);
+	labelImage->setMinimumHeight(48);
+	labelImage->setMaximumHeight(999999);
+	labelImage->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	labelImage->setScaledContents(true);
 	buttonPreview = new QToolButton();
 	connect(buttonPreview, SIGNAL(clicked()), this, SLOT(PreviewSound()));
@@ -60,13 +63,12 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	auto boxLayout = new QVBoxLayout();
 	boxLayout->setSpacing(0);
 	boxLayout->setMargin(0);
-	boxLayout->addWidget(header);
-	boxLayout->addWidget(labelImage);
-	boxLayout->addWidget(footer);
+	boxLayout->addWidget(header, 0);
+	boxLayout->addWidget(labelImage, 1);
+	boxLayout->addWidget(footer, 0);
 	imageBox->setLayout(boxLayout);
 
-
-	Initialize(layout);
+	setLayout(layout);
 
 	connect(channelList, SIGNAL(currentIndexChanged(int)), this, SLOT(ChannelListSelectChanged(int)));
 }
@@ -311,3 +313,13 @@ void ChannelInfoView::OnCurrentChannelChanged(int index)
 }
 
 
+
+OverallWaveformLabel::OverallWaveformLabel()
+	: QLabel()
+{
+}
+
+QSize OverallWaveformLabel::sizeHint() const
+{
+	return QSize(999999, 999999); // (チート)
+}
