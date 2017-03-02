@@ -1,6 +1,6 @@
 #include "BpmEditTool.h"
 #include "MainWindow.h"
-
+#include "SymbolIconManager.h"
 
 BpmEditView::BpmEditView(SelectedObjectView *view)
 	: QWidget(view)
@@ -8,7 +8,7 @@ BpmEditView::BpmEditView(SelectedObjectView *view)
 {
 	auto *layout = new QHBoxLayout();
 	auto *icon = new QLabel();
-	icon->setPixmap(QIcon(":/images/event.png").pixmap(view->iconSize(), QIcon::Normal));
+	icon->setPixmap(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Event).pixmap(view->iconSize(), QIcon::Normal));
 	layout->addWidget(icon);
 	layout->addWidget(message = new QLabel());
 	layout->addWidget(edit = new QuasiModalEdit());

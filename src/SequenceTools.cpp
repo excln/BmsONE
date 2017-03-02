@@ -1,6 +1,7 @@
 #include "SequenceTools.h"
 #include "MainWindow.h"
 #include "SequenceView.h"
+#include "SymbolIconManager.h"
 
 QString SequenceTools::TextForGridSize(GridSize grid)
 {
@@ -19,7 +20,7 @@ SequenceTools::SequenceTools(const QString &objectName, const QString &windowTit
 	setObjectName(objectName);
 	setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 
-	snapToGrid = addAction(QIcon(":/images/snap.png"), tr("Snap to Grid"));
+	snapToGrid = addAction(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Snap), tr("Snap to Grid"));
 	snapToGrid->setCheckable(true);
 	connect(snapToGrid, SIGNAL(toggled(bool)), this, SLOT(SnapToGrid(bool)));
 

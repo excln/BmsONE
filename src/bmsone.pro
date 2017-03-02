@@ -40,7 +40,8 @@ SOURCES += main.cpp\
 	SequenceViewInternal.cpp \
     HistoryUtil.cpp \
 	DocumentInfo.cpp \
-	QOggVorbisAdapter.cpp
+	QOggVorbisAdapter.cpp \
+    SymbolIconManager.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -67,7 +68,8 @@ HEADERS  += MainWindow.h \
 	SequenceViewInternal.h \
 	HistoryUtil.h \
 	QOggVorbisAdapter.h \
-    DocumentAux.h
+    DocumentAux.h \
+    SymbolIconManager.h
 
 FORMS    +=
 

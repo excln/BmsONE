@@ -1,5 +1,6 @@
 #include "AudioPlayer.h"
 #include "MainWindow.h"
+#include "SymbolIconManager.h"
 #include <cmath>
 
 const char* AudioPlayer::SettingsGroup = "AudioPlayer";
@@ -18,7 +19,7 @@ AudioPlayer::AudioPlayer(MainWindow *mainWindow, const QString &objectName, cons
 	setObjectName(objectName);
 	setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 
-	actionMute = addAction(QIcon(":/images/mute.png"), tr("Mute"));
+	actionMute = addAction(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Mute), tr("Mute"));
 	actionMute->setCheckable(true);
 	connect(actionMute, SIGNAL(toggled(bool)), this, SLOT(ToggleMute(bool)));
 	sliderVolume = new QSlider(Qt::Horizontal);
@@ -29,7 +30,7 @@ AudioPlayer::AudioPlayer(MainWindow *mainWindow, const QString &objectName, cons
 	addWidget(sliderVolume);
 	indicator = new AudioPlayerIndicator(this);
 	addWidget(indicator);
-	QAction *actionStop = addAction(QIcon(":/images/stop.png"), tr("Stop"));
+	QAction *actionStop = addAction(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Stop), tr("Stop"));
 	connect(actionStop, SIGNAL(triggered()), this, SLOT(Stop()));
 
 	output = new AudioPlayerOutput();

@@ -1,24 +1,24 @@
 <RCC>
     <qresource prefix="/">
         <file>i18n/ja.qm</file>
-        <file>images/open.png</file>
-        <file>images/save.png</file>
-        <file>images/mute.png</file>
-        <file>images/snap.png</file>
-        <file>images/sound.png</file>
-        <file>images/new.png</file>
-        <file>images/stop.png</file>
         <file>images/bmsone64.png</file>
-        <file>images/time.png</file>
-        <file>images/lane.png</file>
-        <file>images/location.png</file>
-        <file>images/cutting_sound_note.png</file>
-        <file>images/sound_note.png</file>
-        <file>images/event.png</file>
         <file>images/keys/scratch.png</file>
         <file>images/keys/wkey.png</file>
         <file>images/keys/bkey.png</file>
-        <file>images/redo.png</file>
-        <file>images/undo.png</file>
+        <file>images/symbols/event.png</file>
+        <file>images/symbols/lane.png</file>
+        <file>images/symbols/location.png</file>
+        <file>images/symbols/mute.png</file>
+        <file>images/symbols/new.png</file>
+        <file>images/symbols/open.png</file>
+        <file>images/symbols/redo.png</file>
+        <file>images/symbols/save.png</file>
+        <file>images/symbols/slicing_sound_note.png</file>
+        <file>images/symbols/snap.png</file>
+        <file>images/symbols/sound.png</file>
+        <file>images/symbols/sound_note.png</file>
+        <file>images/symbols/stop.png</file>
+        <file>images/symbols/time.png</file>
+        <file>images/symbols/undo.png</file>
     </qresource>
 </RCC>

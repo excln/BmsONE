@@ -7,6 +7,7 @@
 #include "History.h"
 #include <QtMultimedia/QMediaPlayer>
 #include "UIDef.h"
+#include "SymbolIconManager.h"
 
 const char* MainWindow::SettingsGroup = "MainWindow";
 const char* MainWindow::SettingsGeometryKey = "Geometry";
@@ -32,17 +33,17 @@ MainWindow::MainWindow(QSettings *settings)
 	setAcceptDrops(true);
 
 	actionFileNew = new QAction(tr("New"), this);
-	actionFileNew->setIcon(QIcon(":/images/new.png"));
+	actionFileNew->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::New));
 	actionFileNew->setShortcut(QKeySequence::New);
 	QObject::connect(actionFileNew, SIGNAL(triggered()), this, SLOT(FileNew()));
 
 	actionFileOpen = new QAction(tr("Open..."), this);
-	actionFileOpen->setIcon(QIcon(":/images/open.png"));
+	actionFileOpen->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Open));
 	actionFileOpen->setShortcut(QKeySequence::Open);
 	QObject::connect(actionFileOpen, SIGNAL(triggered()), this, SLOT(FileOpen()));
 
 	actionFileSave = new QAction(tr("Save"), this);
-	actionFileSave->setIcon(QIcon(":/images/save.png"));
+	actionFileSave->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Save));
 	actionFileSave->setShortcut(QKeySequence::Save);
 	QObject::connect(actionFileSave, SIGNAL(triggered()), this, SLOT(FileSave()));
 
@@ -57,12 +58,12 @@ MainWindow::MainWindow(QSettings *settings)
 	QObject::connect(actionFileQuit, SIGNAL(triggered()), this, SLOT(close()));
 
 	actionEditUndo = new QAction(tr("Undo"), this);
-	actionEditUndo->setIcon(QIcon(":/images/undo.png"));
+	actionEditUndo->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Undo));
 	actionEditUndo->setShortcut(QKeySequence::Undo);
 	QObject::connect(actionEditUndo, SIGNAL(triggered()), this, SLOT(EditUndo()));
 
 	actionEditRedo = new QAction(tr("Redo"), this);
-	actionEditRedo->setIcon(QIcon(":/images/redo.png"));
+	actionEditRedo->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Redo));
 	actionEditRedo->setShortcut(QKeySequence::Redo);
 	QObject::connect(actionEditRedo, SIGNAL(triggered()), this, SLOT(EditRedo()));
 
@@ -134,7 +135,7 @@ MainWindow::MainWindow(QSettings *settings)
 	connect(actionChannelSelectFile, SIGNAL(triggered()), this, SLOT(ChannelSelectFile()));
 
 	actionChannelPreviewSource = new QAction(tr("Preview Source Sound"), this);
-	actionChannelPreviewSource->setIcon(QIcon(":/images/sound.png"));
+	actionChannelPreviewSource->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Sound));
 	connect(actionChannelPreviewSource, SIGNAL(triggered(bool)), this, SLOT(ChannelPreviewSource()));
 
 	actionHelpAbout = new QAction(tr("About BmsONE"), this);
@@ -172,8 +173,11 @@ MainWindow::MainWindow(QSettings *settings)
 	menuEdit->addAction(actionEditPlay);
 #endif
 	auto *menuView = menuBar()->addMenu(tr("View"));
-	actionViewTbSeparator = menuView->addSeparator();
-	actionViewDockSeparator = menuView->addSeparator();
+	auto *menuViewDockBars = menuView->addMenu(tr("Views"));
+	actionViewDockSeparator = menuViewDockBars->addSeparator();
+	auto *menuViewToolBars = menuView->addMenu(tr("Toolbars"));
+	actionViewTbSeparator = menuViewToolBars->addSeparator();
+	menuView->addSeparator();
 	menuView->addAction(actionViewFullScreen);
 
 	auto *menuChannel = menuBar()->addMenu(tr("Channel"));
@@ -200,7 +204,7 @@ MainWindow::MainWindow(QSettings *settings)
 	statusToolBar->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 	statusToolBar->addWidget(statusBar = new StatusBar(this));
 	addToolBar(Qt::BottomToolBarArea, statusToolBar);
-	menuView->insertAction(actionViewTbSeparator, statusToolBar->toggleViewAction());
+	menuViewToolBars->insertAction(actionViewTbSeparator, statusToolBar->toggleViewAction());
 
 	auto *fileTools = new QToolBar(tr("File"));
 	fileTools->setObjectName("File Tools");
@@ -209,7 +213,7 @@ MainWindow::MainWindow(QSettings *settings)
 	fileTools->addAction(actionFileSave);
 	fileTools->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(fileTools);
-	menuView->insertAction(actionViewTbSeparator, fileTools->toggleViewAction());
+	menuViewToolBars->insertAction(actionViewTbSeparator, fileTools->toggleViewAction());
 
 	auto *editTools = new QToolBar(tr("Edit"));
 	editTools->setObjectName("Edit Tools");
@@ -217,22 +221,22 @@ MainWindow::MainWindow(QSettings *settings)
 	editTools->addAction(actionEditRedo);
 	editTools->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(editTools);
-	menuView->insertAction(actionViewTbSeparator, editTools->toggleViewAction());
+	menuViewToolBars->insertAction(actionViewTbSeparator, editTools->toggleViewAction());
 
 	sequenceTools = new SequenceTools("Sequence Tools", tr("Sequence Tools"), this);
 	sequenceTools->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(sequenceTools);
-	menuView->insertAction(actionViewTbSeparator, sequenceTools->toggleViewAction());
+	menuViewToolBars->insertAction(actionViewTbSeparator, sequenceTools->toggleViewAction());
 
 	audioPlayer = new AudioPlayer(this, "Sound Output", tr("Sound Output"));
 	audioPlayer->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(audioPlayer);
-	menuView->insertAction(actionViewTbSeparator, audioPlayer->toggleViewAction());
+	menuViewToolBars->insertAction(actionViewTbSeparator, audioPlayer->toggleViewAction());
 
 	selectedObjectView = new SelectedObjectView(this);
-	selectedObjectView->setObjectName("Selected Objects3");
+	selectedObjectView->setObjectName("Selected Objects");
 	addToolBar(selectedObjectView);
-	menuView->insertAction(actionViewTbSeparator, selectedObjectView->toggleViewAction());
+	menuViewToolBars->insertAction(actionViewTbSeparator, selectedObjectView->toggleViewAction());
 
 	bpmEditView = new BpmEditView(selectedObjectView);
 	connect(bpmEditView, SIGNAL(Updated()), this, SLOT(OnBpmEdited()));
@@ -245,14 +249,14 @@ MainWindow::MainWindow(QSettings *settings)
 	dock->setObjectName("Info");
 	dock->setWidget(infoView = new InfoView(this));
 	addDockWidget(Qt::LeftDockWidgetArea, dock);
-	menuView->insertAction(actionViewDockSeparator, dock->toggleViewAction());
+	menuViewDockBars->insertAction(actionViewDockSeparator, dock->toggleViewAction());
 
 	auto dock2 = new QDockWidget(tr("Channel"));
 	dock2->setObjectName("Channel");
 	dock2->setWidget(channelInfoView = new ChannelInfoView(this));
 	addDockWidget(Qt::LeftDockWidgetArea, dock2);
 	dock2->resize(334, dock2->height());
-	menuView->insertAction(actionViewDockSeparator, dock2->toggleViewAction());
+	menuViewDockBars->insertAction(actionViewDockSeparator, dock2->toggleViewAction());
 
 
 	// Current Channel Binding
@@ -770,13 +774,13 @@ StatusBar::StatusBar(MainWindow *mainWindow)
 	: QStatusBar(mainWindow)
 	, mainWindow(mainWindow)
 {
-	absoluteLocationSection = new StatusBarSection(tr("Absolute Location"), QIcon(":/images/location.png"), 80);
+	absoluteLocationSection = new StatusBarSection(tr("Absolute Location"), SymbolIconManager::GetIcon(SymbolIconManager::Icon::Location), 80);
 	addWidget(absoluteLocationSection, 0);
-	compositeLocationSection = new StatusBarSection(tr("Location"), QIcon(":/images/location.png"), 120);
+	compositeLocationSection = new StatusBarSection(tr("Location"), SymbolIconManager::GetIcon(SymbolIconManager::Icon::Location), 120);
 	addWidget(compositeLocationSection, 0);
-	realTimeSection = new StatusBarSection(tr("Real Time"), QIcon(":/images/time.png"), 120);
+	realTimeSection = new StatusBarSection(tr("Real Time"), SymbolIconManager::GetIcon(SymbolIconManager::Icon::Time), 120);
 	addWidget(realTimeSection, 0);
-	laneSection = new StatusBarSection(tr("Lane"), QIcon(":/images/lane.png"), 100);
+	laneSection = new StatusBarSection(tr("Lane"), SymbolIconManager::GetIcon(SymbolIconManager::Icon::Lane), 100);
 	addWidget(laneSection, 0);
 	objectSection = new StatusBarSection(QString(), QIcon(), 320);
 	addWidget(objectSection, 1);

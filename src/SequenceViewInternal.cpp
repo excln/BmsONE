@@ -2,6 +2,7 @@
 #include "SequenceViewInternal.h"
 #include "MainWindow.h"
 #include "BpmEditTool.h"
+#include "SymbolIconManager.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -147,7 +148,7 @@ void SequenceViewCursor::SetNewSoundNote(SoundNote note)
 	lane = note.lane;
 	state = State::NEW_SOUND_NOTE;
 	newSoundNote = note;
-	statusBar->GetObjectSection()->SetIcon(note.noteType == 0 ? QIcon(":/images/sound_note.png") : QIcon(":/images/cutting_sound_note.png"));
+	statusBar->GetObjectSection()->SetIcon(SymbolIconManager::GetIcon(note.noteType == 0 ? SymbolIconManager::Icon::SoundNote : SymbolIconManager::Icon::SlicingSoundNote));
 	statusBar->GetObjectSection()->SetText(tr("Click to add a sound note"));
 	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
 	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
@@ -165,7 +166,7 @@ void SequenceViewCursor::SetExistingSoundNote(SoundNoteView *note)
 	lane = note->GetNote().lane;
 	state = State::EXISTING_SOUND_NOTE;
 	existingSoundNote = note;
-	statusBar->GetObjectSection()->SetIcon(note->GetNote().noteType == 0 ? QIcon(":/images/sound_note.png") : QIcon(":/images/cutting_sound_note.png"));
+	statusBar->GetObjectSection()->SetIcon(SymbolIconManager::GetIcon(note->GetNote().noteType == 0 ? SymbolIconManager::Icon::SoundNote : SymbolIconManager::Icon::SlicingSoundNote));
 	statusBar->GetObjectSection()->SetText(tr("Sound note"));
 	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
 	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
@@ -182,7 +183,7 @@ void SequenceViewCursor::SetNewBpmEvent(BpmEvent event)
 	time = event.location;
 	state = State::NEW_BPM_EVENT;
 	bpmEvent = event;
-	statusBar->GetObjectSection()->SetIcon(QIcon(":/images/event.png"));
+	statusBar->GetObjectSection()->SetIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Event));
 	statusBar->GetObjectSection()->SetText(tr("Click to add a BPM event: %1").arg(event.value));
 	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
 	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
@@ -199,7 +200,7 @@ void SequenceViewCursor::SetExistingBpmEvent(BpmEvent event)
 	time = event.location;
 	state = State::EXISTING_BPM_EVENT;
 	bpmEvent = event;
-	statusBar->GetObjectSection()->SetIcon(QIcon(":/images/event.png"));
+	statusBar->GetObjectSection()->SetIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Event));
 	statusBar->GetObjectSection()->SetText(tr("BPM event: %1").arg(event.value));
 	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
 	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
@@ -216,7 +217,7 @@ void SequenceViewCursor::SetNewBarLine(BarLine bar)
 	time = bar.Location;
 	state = State::NEW_BAR_LINE;
 	barLine = bar;
-	statusBar->GetObjectSection()->SetIcon(QIcon(":/images/event.png"));
+	statusBar->GetObjectSection()->SetIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Event));
 	statusBar->GetObjectSection()->SetText(tr("Click to add a bar line"));
 	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
 	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
@@ -233,7 +234,7 @@ void SequenceViewCursor::SetExistingBarLine(BarLine bar)
 	time = bar.Location;
 	state = State::EXISTING_BAR_LINE;
 	barLine = bar;
-	statusBar->GetObjectSection()->SetIcon(QIcon(":/images/event.png"));
+	statusBar->GetObjectSection()->SetIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Event));
 	statusBar->GetObjectSection()->SetText(bar.Ephemeral ? tr("Temporary bar line") : tr("Bar line"));
 	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
 	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
@@ -280,7 +281,7 @@ SoundChannelView::SoundChannelView(SequenceView *sview, SoundChannel *channel)
 	setMouseTracking(true);
 
 	actionPreview = new QAction(tr("Preview Source Sound"), this);
-	actionPreview->setIcon(QIcon(":/images/sound.png"));
+	actionPreview->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Sound));
 	connect(actionPreview, SIGNAL(triggered()), this, SLOT(Preview()));
 	actionMoveLeft = new QAction(tr("Move Left"), this);
 	connect(actionMoveLeft, SIGNAL(triggered()), this, SLOT(MoveLeft()));

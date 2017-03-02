@@ -1,5 +1,6 @@
 #include "ChannelInfoView.h"
 #include "MainWindow.h"
+#include "SymbolIconManager.h"
 
 ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	: ScrollableForm(mainWindow)
@@ -26,7 +27,7 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 
 	buttonPreview = new QToolButton(labelImage);
 	connect(buttonPreview, SIGNAL(clicked()), this, SLOT(PreviewSound()));
-	buttonPreview->setIcon(QIcon(":/images/sound.png"));
+	buttonPreview->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Sound));
 	buttonPreview->setToolTip(tr("Preview"));
 
 	Initialize(layout);
