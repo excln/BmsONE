@@ -28,11 +28,10 @@ Dragging and dropping sound files also works.
 First select a sound channel in which notes are located by clicking on the corresponding BGM lane.
 Then Shift+Click on a (playing or BGM) lane to locate a new note which plays sound from beginning.
 You can locate a note which slices sound by just clicking on the lane.
-Right-clicking on an existing note will delete the note.
+Right-clicking on an existing note will delete it.
 
 Waveforms drawn in a BGM lane stand for the sound played at the time.
 Colors of waveforms tell you the sound is played by key notes or BGM notes.
-Note that waveform drawing functions have a lot of bugs.
 
 
 2.4 Other Features
@@ -40,11 +39,19 @@ Note that waveform drawing functions have a lot of bugs.
 In [Info] window, you can input basic information of the song.
 Initial BPM should be set before notes are located because it affects waveforms and preview sounds.
 
-Currently, the functionalities on BPM events, long notes and bar lines are passive, that is,
-these objects cannot be edited but can be shown if the file already contains them.
-Bar lines are automatically added every four beats.
+To edit bar lines, Ctrl+Click on measures bar, the leftmost lane of the sequence view,
+where measure numbers are displayed. Bar lines with gray numbers are temporary, that is,
+they are added automatically every four beats and can move or become permanent
+when another bar line is inserted or removed manually.
 
-BGA data cannot even be loaded. Thus existing BGA data will be lost if edited by this application.
+To edit BPM events, click on the lane next to measures bar.
+After placing or selecting a BPM event, a small tool bar to input BPM appears.
+
+BGA data and most extra data cannot be edited, but they will not be lost by this application.
+
+A configuration file is stored in a directory such as:
+  [Windows] C:\Users\<USER>\AppData\Local\BmsONE
+  [Mac OS X] ~/Library/Preferences/BmsONE
 
 This application has two locales: English and Japanese.
 The language is determined by system settings.
@@ -69,11 +76,11 @@ Contact me for questions. I will consider supplying source codes if you want.
 
 [Windows]
 Windows 10 Pro
-Desktop Qt 5.4.1 MSVC2012 OpenGL 32bit
+Desktop Qt 5.5.0 MSVC2012 OpenGL 32bit
 
-[Mac]
-Mac OS X 10.9.5
-Desktop Qt 5.4.1 clang 64bit
+[Mac OS X]
+Mac OS X 10.10.5
+Desktop Qt 5.5.0 clang 64bit
 
 [Common]
 Using Xiph.org's libogg 1.3.2 and libvorbis 1.3.5.
@@ -98,5 +105,15 @@ BMSまとめ @wiki - bmson開発部 http://www40.atwiki.jp/laser_bm/pages/104.ht
 
 7. History
 
+Sep 26 2015 alpha 0.0.3
+  - Upgraded Qt from 5.4.1 to 5.5.0.
+  - Implemented some additional UI features.
+  - Fixed major known factors of crashes on Mac.
+  - Bar lines and BPM events can now be edited.
+  - Modified the way to store data so that unsupported data will not be lost.
+  - Fixed most wrong behaviors in drawing waveforms.
+  - BmsONE now uses a configuration file.
+
 Sep 17 2015 alpha 0.0.2
+
 Sep 12 2015 alpha 0.0.1
