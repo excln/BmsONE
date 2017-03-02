@@ -64,7 +64,7 @@ SequenceView::SequenceView(MainWindow *parent)
 		timeLineBpmWidth = 34;
 		timeLineWidth = timeLineMeasureWidth + timeLineBpmWidth;
 		headerHeight = 0;
-		footerHeight = 48;
+		footerHeight = 52;
 
 		penBigV = QPen(QBrush(QColor(180, 180, 180)), 1);
 		penBigV.setCosmetic(true);
@@ -111,7 +111,7 @@ SequenceView::SequenceView(MainWindow *parent)
 	{
 		for (auto lane : lanes){
 			QLabel *label = new QLabel(footerPlayingEntry);
-			label->setGeometry(lane.left, 0, lane.width, footerHeight);
+			label->setGeometry(lane.left, (footerHeight-48)/2, lane.width, 48);
 			label->setPixmap(QPixmap(":/images/keys/" + lane.keyImageName));
 		}
 	}

@@ -797,9 +797,9 @@ App::App(int argc, char *argv[])
 		settings = new QSettings(QDir(settingsDir).filePath("Settings.ini"), QSettings::IniFormat);
 	}
 
-	QTranslator translator;
-	translator.load(":/i18n/" + settings->value(SettingsLanguageKey, QLocale::system().name()).toString());
-	qApp->installTranslator(&translator);
+	QTranslator *translator = new QTranslator(this);
+	translator->load(":/i18n/" + settings->value(SettingsLanguageKey, QLocale::system().name()).toString());
+	installTranslator(translator);
 
 	mainWindow = new MainWindow(settings);
 	if (arguments().size() > 1){

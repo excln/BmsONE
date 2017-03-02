@@ -884,6 +884,7 @@ void SoundChannelHeader::contextMenuEvent(QContextMenuEvent *event)
 
 
 
+int SoundChannelFooter::FontSize = -1;
 
 SoundChannelFooter::SoundChannelFooter(SequenceView *sview, SoundChannelView *cview)
 	: QWidget(sview)
@@ -892,7 +893,14 @@ SoundChannelFooter::SoundChannelFooter(SequenceView *sview, SoundChannelView *cv
 {
 	setContextMenuPolicy(Qt::DefaultContextMenu);
 	QFont f = font();
-	f.setPixelSize((height()-10)/2);
+	if (FontSize <= 0){
+		FontSize = (sview->footerHeight-4)/3+1;
+		do{
+			f.setPixelSize(--FontSize);
+		} while (QFontMetrics(f).height() > (sview->footerHeight-4)/3);
+	}else{
+		f.setPixelSize(FontSize);
+	}
 	setFont(f);
 }
 
@@ -908,7 +916,7 @@ void SoundChannelFooter::paintEvent(QPaintEvent *event)
 	painter.setPen(palette().dark().color());
 	painter.drawRect(rect.adjusted(0, 0, -1, -1));
 
-	QRect rectText = rect.marginsRemoved(QMargins(4, 4, 4, 4));
+	QRect rectText = rect.marginsRemoved(QMargins(2, 2, 2, 2));
 	QString name = cview->GetName();
 	static const QString prefix = "...";
 	bool prefixed = false;

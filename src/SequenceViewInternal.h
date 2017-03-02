@@ -69,6 +69,8 @@ private:
 	SequenceView *sview;
 	SoundChannelView *cview;
 
+	static int FontSize;
+
 public:
 	SoundChannelFooter(SequenceView *sview, SoundChannelView *cview);
 	~SoundChannelFooter();
