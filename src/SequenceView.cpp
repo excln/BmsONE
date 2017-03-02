@@ -1143,24 +1143,31 @@ bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *even
 					selectedNotes.clear();
 					selectedNotes.insert(noteHit);
 				}
+				cursor.SetExistingSoundNote(noteHit);
 				SelectSoundChannel(noteHit->GetChannelView());
 				PreviewSingleNote(noteHit);
 				break;
 			case Qt::RightButton:
+			{
 				// delete note
+				SoundNote note = noteHit->GetNote();
 				if (soundChannels[currentChannel]->GetNotes().contains(noteHit->GetNote().location)
-					&& soundChannels[currentChannel]->GetChannel()->RemoveNote(noteHit->GetNote()))
+					&& soundChannels[currentChannel]->GetChannel()->RemoveNote(note))
 				{
 					selectedNotes.clear();
+					cursor.SetNewSoundNote(note);
 				}else{
 					// noteHit was in inactive channel, or failed to delete note
 					selectedNotes.clear();
 					selectedNotes.insert(noteHit);
+					cursor.SetExistingSoundNote(noteHit);
 				}
 				SelectSoundChannel(noteHit->GetChannelView());
 				break;
+			}
 			case Qt::MidButton:
 				selectedNotes.clear();
+				selectedNotes.insert(noteHit);
 				SelectSoundChannel(noteHit->GetChannelView());
 				break;
 			}
@@ -1172,10 +1179,9 @@ bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *even
 				if (soundChannels[currentChannel]->GetChannel()->InsertNote(note)){
 					// select the note
 					const QMap<int, SoundNoteView*> &notes = soundChannels[currentChannel]->GetNotes();
-					if (notes.contains(time)){
-						selectedNotes.insert(notes[time]);
-						PreviewSingleNote(notes[time]);
-					}
+					selectedNotes.insert(notes[time]);
+					PreviewSingleNote(notes[time]);
+					cursor.SetExistingSoundNote(notes[time]);
 					timeLine->update();
 					playingPane->update();
 					for (auto cview : soundChannels){
@@ -1183,6 +1189,7 @@ bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *even
 					}
 				}else{
 					// note was not created
+					cursor.SetNewSoundNote(note);
 				}
 			}
 		}
@@ -1922,23 +1929,30 @@ void SoundChannelView::mousePressEvent(QMouseEvent *event)
 					sview->selectedNotes.clear();
 					sview->selectedNotes.insert(noteHit);
 				}
+				sview->cursor.SetExistingSoundNote(noteHit);
 				sview->PreviewSingleNote(noteHit);
 				break;
 			case Qt::RightButton:
+			{
 				// delete note
+				SoundNote note = noteHit->GetNote();
 				if (channel->GetNotes().contains(noteHit->GetNote().location)
-					&& channel->RemoveNote(noteHit->GetNote()))
+					&& channel->RemoveNote(note))
 				{
 					sview->selectedNotes.clear();
+					sview->cursor.SetNewSoundNote(note);
 				}else{
 					// noteHit was in inactive channel, or failed to delete note
 					sview->selectedNotes.clear();
 					sview->selectedNotes.insert(noteHit);
+					sview->cursor.SetExistingSoundNote(noteHit);
 					sview->PreviewSingleNote(noteHit);
 				}
 				break;
+			}
 			case Qt::MidButton:
 				sview->selectedNotes.clear();
+				sview->cursor.SetExistingSoundNote(noteHit);
 				break;
 			}
 		}else{
@@ -1948,10 +1962,9 @@ void SoundChannelView::mousePressEvent(QMouseEvent *event)
 				SoundNote note(time, 0, 0, event->modifiers() & Qt::ShiftModifier ? 0 : 1);
 				if (channel->InsertNote(note)){
 					// select the note
-					if (notes.contains(time)){
-						sview->selectedNotes.insert(notes[time]);
-						sview->PreviewSingleNote(notes[time]);
-					}
+					sview->selectedNotes.insert(notes[time]);
+					sview->PreviewSingleNote(notes[time]);
+					sview->cursor.SetExistingSoundNote(notes[time]);
 					sview->timeLine->update();
 					sview->playingPane->update();
 					for (auto cview : sview->soundChannels){
@@ -1959,6 +1972,7 @@ void SoundChannelView::mousePressEvent(QMouseEvent *event)
 					}
 				}else{
 					// note was not created
+					sview->cursor.SetNewSoundNote(note);
 				}
 			}
 		}
