@@ -8,7 +8,6 @@
 #include <functional>
 #include "Wave.h"
 #include "Bmson.h"
-#include "BmsonIo.h"
 #include "History.h"
 
 class Document;
@@ -18,8 +17,8 @@ struct SoundNote;
 class SoundLoader;
 
 
-
-class BmsConsts{
+class BmsConsts
+{
 public:
 
 	static const double MinBpm;
@@ -30,6 +29,15 @@ public:
 
 };
 
+class BmsonObject
+{
+protected:
+	QJsonObject bmsonFields;
+public:
+	BmsonObject(){}
+	BmsonObject(const QJsonValue &json) : bmsonFields(json.toObject()){}
+	BmsonObject(const QJsonObject &json) : bmsonFields(json){}
+};
 
 
 
@@ -49,7 +57,7 @@ struct WaveSummary
  */
 
 
-struct BarLine
+struct BarLine : public BmsonObject
 {
 	int Location;
 	int Kind;
@@ -58,20 +66,27 @@ struct BarLine
 
 	BarLine() : Ephemeral(false){}
 	BarLine(int location, int kind, bool ephemeral=false) : Location(location), Kind(kind), Ephemeral(ephemeral){}
+
+	BarLine(const QJsonValue &json);
+	QJsonValue SaveBmson();
 };
 
 
-struct BpmEvent
+struct BpmEvent : public BmsonObject
 {
 	int location;
 	qreal value;
+
 	BpmEvent(){}
 	BpmEvent(int location, qreal value) : location(location), value(value){}
+
+	BpmEvent(const QJsonValue &json);
+	QJsonValue SaveBmson();
 };
 
 
 
-struct SoundNote
+struct SoundNote : public BmsonObject
 {
 	int location;
 	int lane;
@@ -79,6 +94,10 @@ struct SoundNote
 	int noteType;
 	SoundNote(){}
 	SoundNote(int location, int lane, int length, int noteType) : location(location), lane(lane), length(length), noteType(noteType){}
+
+	SoundNote(const QJsonValue &json);
+	QJsonValue SaveBmson();
+
 	bool operator ==(const SoundNote &r) const{
 		return location == r.location && lane == r.lane && length == r.length && noteType == r.noteType;
 	}
@@ -212,7 +231,7 @@ public:
 
 
 
-class SoundChannel : public QObject
+class SoundChannel : public QObject, public BmsonObject
 {
 	Q_OBJECT
 
@@ -264,9 +283,9 @@ public:
 	SoundChannel(Document *document);
 	~SoundChannel();
 	void LoadSound(const QString &filePath); // for initialization
-	void LoadBmson(Bmson::SoundChannel &source); // for initialization
+	void LoadBmson(const QJsonValue &json); // for initialization
 
-	void SaveBmson(Bmson::SoundChannel &source);
+	QJsonValue SaveBmson();
 
 	void SetSourceFile(const QString &absolutePath);
 	bool InsertNote(SoundNote note);
@@ -330,7 +349,7 @@ public:
 
 
 
-class DocumentInfo : public QObject
+class DocumentInfo : public QObject, public BmsonObject
 {
 	Q_OBJECT
 
@@ -349,9 +368,9 @@ public:
 	DocumentInfo(Document *document);
 	~DocumentInfo();
 	void Initialize(); // for initialization
-	void LoadBmson(Bmson::BmsInfo &info); // for initialization
+	void LoadBmson(QJsonValue json); // for initialization
 
-	void SaveBmson(Bmson::BmsInfo &info);
+	QJsonValue SaveBmson();
 
 	QString GetTitle() const{ return title; }
 	QString GetGenre() const{ return genre; }
@@ -382,7 +401,7 @@ signals:
 
 
 
-class Document : public QObject
+class Document : public QObject, public BmsonObject
 {
 	Q_OBJECT
 	friend class SoundLoader;
@@ -411,7 +430,7 @@ public:
 	Document(QObject *parent=nullptr);
 	~Document();
 	void Initialize(); // for initialization
-	void LoadFile(QString filePath) throw(Bmson::BmsonIoException); // for initialization
+	void LoadFile(QString filePath); // for initialization
 
 	EditHistory *GetHistory(){ return history; }
 
@@ -419,7 +438,7 @@ public:
 	QString GetFilePath() const { return filePath; }
 	QString GetRelativePath(QString filePath);
 	QString GetAbsolutePath(QString fileName) const;
-	void Save() throw(Bmson::BmsonIoException);
+	void Save();
 	void SaveAs(const QString &filePath);
 
 	int GetTimeBase() const{ return timeBase; }

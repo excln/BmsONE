@@ -299,11 +299,11 @@ void MainWindow::FileOpen()
 		Document *newEditor = new Document(this);
 		newEditor->LoadFile(fileName);
 		ReplaceDocument(newEditor);
-	}catch(Bmson::BmsonIoException e){
+	}catch(QString message){
 		QMessageBox *msgbox = new QMessageBox(
 					QMessageBox::Warning,
 					tr("Error"),
-					e.message,
+					message,
 					QMessageBox::Ok,
 					this);
 		msgbox->show();
@@ -320,11 +320,11 @@ void MainWindow::FileOpen(QString path)
 		Document *newEditor = new Document(this);
 		newEditor->LoadFile(path);
 		ReplaceDocument(newEditor);
-	}catch(Bmson::BmsonIoException e){
+	}catch(QString message){
 		QMessageBox *msgbox = new QMessageBox(
 					QMessageBox::Warning,
 					tr("Error"),
-					e.message,
+					message,
 					QMessageBox::Ok,
 					this);
 		msgbox->show();

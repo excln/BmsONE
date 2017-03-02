@@ -857,12 +857,14 @@ void SoundChannel::LoadSound(const QString &filePath)
 	resource.UpdateWaveData(filePath);
 }
 
-void SoundChannel::LoadBmson(Bmson::SoundChannel &source)
+void SoundChannel::LoadBmson(const QJsonValue &json)
 {
-	fileName = source.name;
+	bmsonFields = json.toObject();
+	fileName = bmsonFields[Bmson::SoundChannel::NameKey].toString();
 	//adjustment = 0.;
-	for (Bmson::SoundNote soundNote : source.notes){
-		notes.insert(soundNote.location, SoundNote(soundNote.location, soundNote.lane, soundNote.length, soundNote.cut ? 1 : 0));
+	for (QJsonValue jsonNote : bmsonFields[Bmson::SoundChannel::NotesKey].toArray()){
+		SoundNote note(jsonNote);
+		notes.insert(note.location, note);
 	}
 
 	// temporary length (exact totalLength is calculated in UpdateCache() when whole sound data is available)
@@ -875,17 +877,15 @@ void SoundChannel::LoadBmson(Bmson::SoundChannel &source)
 	resource.UpdateWaveData(document->GetAbsolutePath(fileName));
 }
 
-void SoundChannel::SaveBmson(Bmson::SoundChannel &source)
+QJsonValue SoundChannel::SaveBmson()
 {
-	source.name = fileName;
+	bmsonFields[Bmson::SoundChannel::NameKey] = fileName;
+	QJsonArray jsonNotes;
 	for (SoundNote note : notes){
-		Bmson::SoundNote n;
-		n.location = note.location;
-		n.lane = note.lane;
-		n.length = note.length;
-		n.cut = note.noteType != 0;
-		source.notes.append(n);
+		jsonNotes.append(note.SaveBmson());
 	}
+	bmsonFields[Bmson::SoundChannel::NotesKey] = jsonNotes;
+	return bmsonFields;
 }
 
 void SoundChannel::SetSourceFile(const QString &absolutePath)
@@ -1319,4 +1319,21 @@ void SoundChannel::UpdateCache()
 }
 
 
+SoundNote::SoundNote(const QJsonValue &json)
+	: BmsonObject(json)
+{
+	lane = bmsonFields[Bmson::SoundNote::LaneKey].toInt();
+	location = bmsonFields[Bmson::SoundNote::LocationKey].toInt();
+	length = bmsonFields[Bmson::SoundNote::LengthKey].toInt();
+	noteType = bmsonFields[Bmson::SoundNote::CutKey].toBool() ? 1 : 0;
+}
+
+QJsonValue SoundNote::SaveBmson()
+{
+	bmsonFields[Bmson::SoundNote::LaneKey] = lane;
+	bmsonFields[Bmson::SoundNote::LocationKey] = location;
+	bmsonFields[Bmson::SoundNote::LengthKey] = length;
+	bmsonFields[Bmson::SoundNote::CutKey] = noteType > 0;
+	return bmsonFields;
+}
 

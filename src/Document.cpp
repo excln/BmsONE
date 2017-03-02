@@ -42,26 +42,42 @@ void Document::Initialize()
 }
 
 void Document::LoadFile(QString filePath)
-	throw(Bmson::BmsonIoException)
 {
 	directory = QFileInfo(filePath).absoluteDir();
 
-	Bmson::Bms bms;
-	Bmson::BmsonIo::LoadFile(bms, filePath);
+	QFile file(filePath);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+		throw tr("Failed to open file.");
+	}
+	if (file.size() >= 0x40000000){
+		throw tr("Malformed bmson file.");
+	}
+	QJsonParseError jsonError;
+	QJsonDocument json = QJsonDocument::fromJson(file.readAll(), &jsonError);
+	if (jsonError.error != QJsonParseError::NoError){
+		throw tr("Malformed bmson file.");
+	}
+	if (!json.isObject()){
+		throw tr("Malformed bmson file.");
+	}
+	bmsonFields = json.object();
 	timeBase = 240;
 	actualLength = 0;
 	totalLength = 0;
-	info.LoadBmson(bms.info);
+	info.LoadBmson(bmsonFields[Bmson::Bms::InfoKey]);
 	barLines.insert(0, BarLine(0, 0)); // make sure BarLine at 0, even if bms.barLines is empty.
-	for (Bmson::BarLine bar : bms.barLines){
-		barLines.insert(bar.location, BarLine(bar.location, bar.kind));
+	for (QJsonValue jsonBar : bmsonFields[Bmson::Bms::BarLinesKey].toArray()){
+		BarLine barLine(jsonBar);
+		barLines.insert(barLine.Location, barLine);
 	}
-	for (Bmson::EventNote event : bms.bpmNotes){
-		bpmEvents.insert(event.location, BpmEvent(event.location, event.value));
+	for (QJsonValue jsonEvent : bmsonFields[Bmson::Bms::BpmNotesKey].toArray()){
+		BpmEvent event(jsonEvent);
+		bpmEvents.insert(event.location, event);
 	}
-	for (size_t i=0; i<bms.soundChannels.size(); i++){
+	QJsonArray soundChannelsJson = bmsonFields[Bmson::Bms::SoundChannelsKey].toArray();
+	for (size_t i=0; i<soundChannelsJson.size(); i++){
 		auto *channel = new SoundChannel(this);
-		channel->LoadBmson(bms.soundChannels[i]);
+		channel->LoadBmson(soundChannelsJson[i]);
 		soundChannelLength.insert(channel, channel->GetLength());
 		soundChannels.push_back(channel);
 	}
@@ -92,30 +108,30 @@ QString Document::GetAbsolutePath(QString fileName) const
 
 
 void Document::Save()
-	throw(Bmson::BmsonIoException)
 {
-	Bmson::Bms bms;
-	info.SaveBmson(bms.info);
+	bmsonFields[Bmson::Bms::InfoKey] = info.SaveBmson();
+	QJsonArray jsonBarLines;
 	for (BarLine barLine : barLines){
 		if (!barLine.Ephemeral || barLine.Location <= actualLength){
-			Bmson::BarLine bar;
-			bar.location = barLine.Location;
-			bar.kind = barLine.Kind;
-			bms.barLines.append(bar);
+			jsonBarLines.append(barLine.SaveBmson());
 		}
 	}
+	bmsonFields[Bmson::Bms::BarLinesKey] = jsonBarLines;
+	QJsonArray jsonBpmEvents;
 	for (BpmEvent event : bpmEvents){
-		Bmson::EventNote e;
-		e.location = event.location;
-		e.value = event.value;
-		bms.bpmNotes.append(e);
+		jsonBpmEvents.append(event.SaveBmson());
 	}
+	bmsonFields[Bmson::Bms::BpmNotesKey] = jsonBpmEvents;
+	QJsonArray jsonSoundChannels;
 	for (SoundChannel *channel : soundChannels){
-		Bmson::SoundChannel sc;
-		channel->SaveBmson(sc);
-		bms.soundChannels.append(sc);
+		jsonSoundChannels.append(channel->SaveBmson());
 	}
-	Bmson::BmsonIo::SaveFile(bms, filePath);
+	bmsonFields[Bmson::Bms::SoundChannelsKey] = jsonSoundChannels;
+	QFile file(filePath);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
+		throw tr("Failed to open file.");
+	}
+	file.write(QJsonDocument(bmsonFields).toJson());
 	history->MarkClean();
 }
 
@@ -255,26 +271,29 @@ void DocumentInfo::Initialize()
 	level = 1;
 }
 
-void DocumentInfo::LoadBmson(Bmson::BmsInfo &info)
+void DocumentInfo::LoadBmson(QJsonValue json)
 {
-	title = info.title;
-	genre = info.genre;
-	artist = info.artist;
-	judgeRank = info.judgeRank;
-	total = info.total;
-	initBpm = info.initBpm;
-	level = info.level;
+	QJsonObject jsonInfo = json.toObject();
+	title = jsonInfo[Bmson::BmsInfo::TitleKey].toString();
+	genre = jsonInfo[Bmson::BmsInfo::GenreKey].toString();
+	artist = jsonInfo[Bmson::BmsInfo::ArtistKey].toString();
+	judgeRank = jsonInfo[Bmson::BmsInfo::JudgeRankKey].toInt();
+	total = jsonInfo[Bmson::BmsInfo::TotalKey].toDouble();
+	initBpm = jsonInfo[Bmson::BmsInfo::InitBpmKey].toDouble();
+	level = jsonInfo[Bmson::BmsInfo::LevelKey].toInt();
 }
 
-void DocumentInfo::SaveBmson(Bmson::BmsInfo &info)
+QJsonValue DocumentInfo::SaveBmson()
 {
-	info.title = title;
-	info.genre = genre;
-	info.artist = artist;
-	info.judgeRank = judgeRank;
-	info.total = total;
-	info.initBpm = initBpm;
-	info.level = level;
+	QJsonObject jsonInfo;
+	jsonInfo[Bmson::BmsInfo::TitleKey] = title;
+	jsonInfo[Bmson::BmsInfo::GenreKey] = genre;
+	jsonInfo[Bmson::BmsInfo::ArtistKey] = artist;
+	jsonInfo[Bmson::BmsInfo::JudgeRankKey] = judgeRank;
+	jsonInfo[Bmson::BmsInfo::TotalKey] = total;
+	jsonInfo[Bmson::BmsInfo::InitBpmKey] = initBpm;
+	jsonInfo[Bmson::BmsInfo::LevelKey] = level;
+	return jsonInfo;
 }
 
 void DocumentInfo::SetInitBpm(double value)
@@ -302,3 +321,32 @@ void DocumentInfo::SetInitBpm(double value)
 
 
 
+
+BarLine::BarLine(const QJsonValue &json)
+	: BmsonObject(json)
+	, Ephemeral(false)
+{
+	Location = bmsonFields[Bmson::BarLine::LocationKey].toInt();
+	Kind = bmsonFields[Bmson::BarLine::KindKey].toInt();
+}
+
+QJsonValue BarLine::SaveBmson()
+{
+	bmsonFields[Bmson::BarLine::LocationKey] = Location;
+	bmsonFields[Bmson::BarLine::KindKey] = Kind;
+	return bmsonFields;
+}
+
+BpmEvent::BpmEvent(const QJsonValue &json)
+	: BmsonObject(json)
+{
+	location = bmsonFields[Bmson::EventNote::LocationKey].toInt();
+	value = bmsonFields[Bmson::EventNote::ValueKey].toDouble();
+}
+
+QJsonValue BpmEvent::SaveBmson()
+{
+	bmsonFields[Bmson::EventNote::LocationKey] = location;
+	bmsonFields[Bmson::EventNote::ValueKey] = value;
+	return bmsonFields;
+}

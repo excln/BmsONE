@@ -16,7 +16,6 @@ QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
 SOURCES += main.cpp\
         MainWindow.cpp \
     History.cpp \
-    BmsonIo.cpp \
     SequenceView.cpp \
     Document.cpp \
     InfoView.cpp \
@@ -29,12 +28,12 @@ SOURCES += main.cpp\
     WaveData.cpp \
     WaveStream.cpp \
     ScrollableForm.cpp \
-    Util.cpp
+    Util.cpp \
+    Bmson.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
     Bmson.h \
-    BmsonIo.h \
     SequenceView.h \
     Document.h \
     InfoView.h \

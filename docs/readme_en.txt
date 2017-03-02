@@ -28,7 +28,7 @@ Dragging and dropping sound files also works.
 First select a sound channel in which notes are located by clicking on the corresponding BGM lane.
 Then Shift+Click on a (playing or BGM) lane to locate a new note which plays sound from beginning.
 You can locate a note which slices sound by just clicking on the lane.
-Right-clicking on a existing note will delete the note.
+Right-clicking on an existing note will delete the note.
 
 Waveforms drawn in a BGM lane stand for the sound played at the time.
 Colors of waveforms tell you the sound is played by key notes or BGM notes.

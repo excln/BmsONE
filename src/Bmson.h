@@ -1,91 +1,76 @@
 #ifndef BMSON_H
 #define BMSON_H
 
-#include <QString>
-#include <QVector>
+#include <QtCore>
 
 namespace Bmson
 {
-
-	struct Bms;
-	struct BmsInfo;
-	struct BarLine;
-	struct SoundChannel;
-	struct SoundNote;
-	struct EventNote;
-	struct Bga;
-	struct BgaDefinition;
-	struct BgaNote;
-
-
-
 	struct BmsInfo
 	{
-		QString title;
-		QString genre;
-		QString artist;
-		int judgeRank;
-		double total;
-		double initBpm;
-		int level;
+		static const char* TitleKey;
+		static const char* GenreKey;
+		static const char* ArtistKey;
+		static const char* JudgeRankKey;
+		static const char* TotalKey;
+		static const char* InitBpmKey;
+		static const char* LevelKey;
 	};
 
 	struct SoundNote
 	{
-		int lane;
-		int location;
-		int length;
-		bool cut;
+		static const char* LaneKey;
+		static const char* LocationKey;
+		static const char* LengthKey;
+		static const char* CutKey;
 	};
 
 	struct SoundChannel
 	{
-		QString name;
-		QVector<SoundNote> notes;
+		static const char* NameKey;
+		static const char* NotesKey;
 	};
 
 	struct EventNote
 	{
-		int location;
-		double value;
+		static const char* LocationKey;
+		static const char* ValueKey;
 	};
 
 	struct BgaDefinition
 	{
-		int Id;
-		QString name;
+		static const char* IdKey;
+		static const char* NameKey;
 	};
 
 	struct BgaNote
 	{
-		int Id;
-		int location;
+		static const char* IdKey;
+		static const char* LocationKey;
 	};
 
 	struct Bga
 	{
-		QVector<BgaDefinition> definitions;
-		QVector<BgaNote> bgaNotes;
-		QVector<BgaNote> layerNotes;
-		QVector<BgaNote> missNotes;
+		static const char* DefinitionsKey;
+		static const char* BgaNotesKey;
+		static const char* LayerNotesKey;
+		static const char* MissNotesKey;
 	};
 
 	struct BarLine
 	{
-		int location;
-		int kind;
+		static const char* LocationKey;
+		static const char* KindKey;
 	};
 
 	struct Bms
 	{
-		BmsInfo info;
-		QVector<BarLine> barLines;
-		QVector<EventNote> bpmNotes;
-		QVector<SoundChannel> soundChannels;
-		Bga bga;
+		static const char* InfoKey;
+		static const char* BarLinesKey;
+		static const char* BpmNotesKey;
+		static const char* SoundChannelsKey;
+		static const char* BgaKey;
 	};
 }
-
 
 
 
