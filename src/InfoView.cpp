@@ -106,26 +106,50 @@ void InfoView::ArtistEdited()
 
 void InfoView::JudgeRankEdited()
 {
-	int val = editJudgeRank->text().toInt();
+	bool ok;
+	int val = editJudgeRank->text().toInt(&ok);
+	if (!ok){
+		qApp->beep();
+		JudgeRankEditCanceled();
+		return;
+	}
 	document->GetInfo()->SetJudgeRank(val);
 }
 
 void InfoView::InitBpmEdited()
 {
 	// if invalid, reverted to old value.
-	double bpm = editInitBpm->text().toDouble();
+	bool ok;
+	double bpm = editInitBpm->text().toDouble(&ok);
+	if (!ok){
+		qApp->beep();
+		InitBpmEditCanceled();
+		return;
+	}
 	document->GetInfo()->SetInitBpm(bpm);
 }
 
 void InfoView::TotalEdited()
 {
-	double val = editTotal->text().toDouble();
+	bool ok;
+	double val = editTotal->text().toDouble(&ok);
+	if (!ok){
+		qApp->beep();
+		TotalEditCanceled();
+		return;
+	}
 	document->GetInfo()->SetTotal(val);
 }
 
 void InfoView::LevelEdited()
 {
-	int val = editLevel->text().toInt();
+	bool ok;
+	int val = editLevel->text().toInt(&ok);
+	if (!ok){
+		qApp->beep();
+		LevelEditCanceled();
+		return;
+	}
 	document->GetInfo()->SetLevel(val);
 }
 
@@ -140,7 +164,7 @@ void InfoView::ExtraFieldsEdited()
 	QJsonObject json = QJsonDocument::fromJson(text.toUtf8(), &err).object();
 	if (err.error != QJsonParseError::NoError){
 		qApp->beep();
-		SetExtraFields(document->GetInfo()->GetExtraFields());
+		ExtraFieldsEditCanceled();
 		return;
 	}
 	QMap<QString, QJsonValue> fields;

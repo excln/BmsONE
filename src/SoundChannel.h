@@ -113,6 +113,9 @@ signals:
 	void WaveSummaryUpdated();
 	void OverallWaveformUpdated();
 	void RmsUpdated();
+
+	void Show();
+	void ShowNoteLocation(int location);
 };
 
 

@@ -193,6 +193,7 @@ private slots:
 	void CursorChanged();
 
 public slots:
+	void ShowLocation(int location);
 	void OnCurrentChannelChanged(int index);
 	void SetSnapToGrid(bool snap);
 	void SetSmallGrid(GridSize grid);

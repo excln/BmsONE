@@ -2,8 +2,7 @@
 #define HISTORY_H
 
 #include <QtCore>
-#include <string>
-#include <stack>
+#include <QtWidgets>
 
 
 class EditActionException
@@ -17,8 +16,10 @@ class EditAction
 {
 public:
 	virtual ~EditAction(){}
-	virtual void Undo() throw(EditActionException){} // [DONE >> UNDONE]
-	virtual void Redo() throw(EditActionException){} // [UNDONE >> DONE]
+	virtual void Undo(){} // [DONE >> UNDONE]
+	virtual void Redo(){} // [UNDONE >> DONE]
+	virtual QString GetName(){ return QString(); }
+	virtual void Show(){}
 };
 
 
@@ -29,9 +30,12 @@ class EditHistory : public QObject
 	Q_OBJECT
 
 private:
-	std::stack<EditAction*> undoActions;
-	std::stack<EditAction*> redoActions;
+	QStack<EditAction*> undoActions;
+	QStack<EditAction*> redoActions;
 	EditAction *savedAction;
+
+	void ClearFutureActions();
+	void ClearPastActions();
 
 public:
 	EditHistory(QObject *parent=nullptr);
@@ -40,13 +44,13 @@ public:
 	void Clear();
 	void MarkClean();
 	bool IsDirty() const;
-	void ClearFutureActions();
-	void ClearPastActions();
 	void Add(EditAction *action); // `action` must be in DONE state
-	bool CanUndo() const;
-	bool CanRedo() const;
-	void Undo(); // called only if CanUndo()
-	void Redo(); // called only if CanRedo()
+	bool CanUndo(QString *out_name=nullptr) const;
+	bool CanRedo(QString *out_name=nullptr) const;
+
+public slots:
+	void Undo();
+	void Redo();
 
 signals:
 	void OnHistoryChanged();

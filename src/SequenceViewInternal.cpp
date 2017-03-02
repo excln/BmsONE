@@ -298,6 +298,9 @@ SoundChannelView::SoundChannelView(SequenceView *sview, SoundChannel *channel)
 	connect(channel, &SoundChannel::NoteRemoved, this, &SoundChannelView::NoteRemoved);
 	connect(channel, &SoundChannel::NoteChanged, this, &SoundChannelView::NoteChanged);
 	connect(channel, &SoundChannel::RmsUpdated, this, &SoundChannelView::RmsUpdated);
+	connect(channel, &SoundChannel::NameChanged, this, &SoundChannelView::NameChanged);
+	connect(channel, &SoundChannel::Show, this, &SoundChannelView::Show);
+	connect(channel, &SoundChannel::ShowNoteLocation, this, &SoundChannelView::ShowNoteLocation);
 }
 
 SoundChannelView::~SoundChannelView()
@@ -336,6 +339,33 @@ void SoundChannelView::RmsUpdated()
 	UpdateWholeBackBuffer();
 	update();
 	//sview->playingPane->update();
+}
+
+void SoundChannelView::NameChanged()
+{
+	UpdateWholeBackBuffer();
+	update();
+	for (int i=0; i<sview->soundChannels.size(); i++){
+		if (sview->soundChannels[i] == this){
+			sview->soundChannelFooters[i]->update();
+			break;
+		}
+	}
+}
+
+void SoundChannelView::Show()
+{
+	if (!current){
+		sview->SelectSoundChannel(this);
+	}
+}
+
+void SoundChannelView::ShowNoteLocation(int location)
+{
+	if (!current){
+		sview->SelectSoundChannel(this);
+	}
+	sview->ShowLocation(location);
 }
 
 void SoundChannelView::Preview()

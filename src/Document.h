@@ -8,14 +8,13 @@
 #include <functional>
 #include "Bmson.h"
 #include "DocumentDef.h"
-#include "History.h"
 
 class Document;
 class DocumentInfo;
 class SoundChannel;
 struct SoundNote;
 class SoundLoader;
-
+class EditHistory;
 
 
 
@@ -37,6 +36,15 @@ private:
 
 	static QSet<QString> SupportedKeys;
 
+	void SetTitleInternal(QString value);
+	void SetGenreInternal(QString value);
+	void SetArtistInternal(QString value);
+	void SetJudgeRankInternal(int value);
+	void SetTotalInternal(double value);
+	void SetInitBpmInternal(double value);
+	void SetLevelInternal(int value);
+	void SetExtraFieldsInternal(QJsonObject value);
+
 public:
 	DocumentInfo(Document *document);
 	~DocumentInfo();
@@ -53,13 +61,13 @@ public:
 	double GetInitBpm() const{ return initBpm; }
 	int GetLevel() const{ return level; }
 
-	void SetTitle(QString value){ title = value; emit TitleChanged(title); }
-	void SetGenre(QString value){ genre = value; emit GenreChanged(genre); }
-	void SetArtist(QString value){ artist = value; emit ArtistChanged(artist); }
-	void SetJudgeRank(int value){ judgeRank = value; emit JudgeRankChanged(judgeRank); }
-	void SetTotal(double value){ total = value; emit TotalChanged(total); }
+	void SetTitle(QString value);
+	void SetGenre(QString value);
+	void SetArtist(QString value);
+	void SetJudgeRank(int value);
+	void SetTotal(double value);
 	void SetInitBpm(double value);
-	void SetLevel(int value){ level = value; emit LevelChanged(level); }
+	void SetLevel(int value);
 
 	QMap<QString, QJsonValue> GetExtraFields() const;
 	void SetExtraFields(const QMap<QString, QJsonValue> &fields);
@@ -82,6 +90,11 @@ class Document : public QObject, public BmsonObject
 {
 	Q_OBJECT
 	friend class SoundLoader;
+	friend class AddBpmEventAction;
+	friend class RemoveBpmEventAction;
+	friend class UpdateBpmEventAction;
+	friend class InsertSoundChannelAction;
+	friend class RemoveSoundChannelAction;
 
 private:
 	QDir directory;
@@ -99,6 +112,10 @@ private:
 	// utility
 	int actualLength;
 	int totalLength;
+
+private:
+	void InsertSoundChannelInternal(SoundChannel *channel, int index);
+	void RemoveSoundChannelInternal(SoundChannel *channel, int index);
 
 private slots:
 	void OnInitBpmChanged();
@@ -140,6 +157,7 @@ public:
 
 	bool InsertBpmEvent(BpmEvent event);
 	bool RemoveBpmEvent(int location);
+	void UpdateBpmEvents(QList<BpmEvent> events);
 
 signals:
 	void FilePathChanged();
@@ -155,7 +173,11 @@ signals:
 	void TotalLengthChanged(int length);
 
 	void BarLinesChanged();
+
+	void ShowBpmEventLocation(int location);
 };
+
+
 
 
 #endif // DOCUMENT_H

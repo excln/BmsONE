@@ -1,5 +1,8 @@
 #include "Document.h"
+#include "DocumentAux.h"
 #include "SoundChannel.h"
+#include "History.h"
+#include "HistoryUtil.h"
 #include <QFile>
 
 
@@ -87,6 +90,7 @@ void Document::LoadFile(QString filePath)
 	emit FilePathChanged();
 }
 
+// This function may modify document, but the change is not recorded in undo buffer
 QString Document::GetRelativePath(QString filePath)
 {
 	QFileInfo fi(filePath);
@@ -169,28 +173,54 @@ QList<QPair<int, int> > Document::FindConflictingNotes(SoundNote note) const
 	return noteRefs;
 }
 
+
+void Document::InsertSoundChannelInternal(SoundChannel *channel, int index)
+{
+	soundChannelLength.insert(channel, channel->GetLength());
+	soundChannels.insert(index, channel);
+	emit SoundChannelInserted(index, channel);
+	emit AfterSoundChannelsChange();
+}
+
+void Document::RemoveSoundChannelInternal(SoundChannel *channel, int index)
+{
+	if (soundChannels.size() <= index || soundChannels[index] != channel){
+		qDebug() << "Sound channels don't match!";
+		// insurance (try to behave as likely as possible)
+		int correctIndex = soundChannels.indexOf(channel);
+		if (correctIndex < 0)
+			return;
+		soundChannels.removeAt(correctIndex);
+		soundChannelLength.remove(channel);
+		SoundChannelRemoved(correctIndex, channel);
+		emit AfterSoundChannelsChange();
+		return;
+	}
+	soundChannels.removeAt(index);
+	soundChannelLength.remove(channel);
+	emit SoundChannelRemoved(index, channel);
+	emit AfterSoundChannelsChange();
+}
+
+
+
 void Document::InsertNewSoundChannels(const QList<QString> &soundFilePaths, int index)
 {
 	for (size_t i=0; i<soundFilePaths.size(); i++){
 		auto *channel = new SoundChannel(this);
 		channel->LoadSound(soundFilePaths[i]);
-		soundChannelLength.insert(channel, channel->GetLength());
-		int ix = index < 0 ? soundChannels.size() : index+i;
-		soundChannels.insert(ix, channel);
-		emit SoundChannelInserted(ix, channel);
+
+		auto *action = new InsertSoundChannelAction(this, channel, index < 0 ? soundChannels.size() : index+i);
+		history->Add(action);
 	}
-	emit AfterSoundChannelsChange();
 }
 
 void Document::DestroySoundChannel(int index)
 {
 	if (index < 0 || index >= (int)soundChannels.size())
 		return;
-	auto *channel = soundChannels.takeAt(index);
-	soundChannelLength.remove(channel);
-	emit SoundChannelRemoved(index, channel);
-	delete channel;
-	emit AfterSoundChannelsChange();
+	auto *action = new RemoveSoundChannelAction(this, soundChannels.at(index), index);
+	history->Add(action);
 }
 
 void Document::MoveSoundChannel(int indexBefore, int indexAfter)
@@ -200,10 +230,14 @@ void Document::MoveSoundChannel(int indexBefore, int indexAfter)
 	indexAfter = std::max(0, std::min(soundChannels.size()-1, indexAfter));
 	if (indexBefore == indexAfter)
 		return;
-	auto *channel = soundChannels.takeAt(indexBefore);
-	soundChannels.insert(indexAfter, channel);
-	emit SoundChannelMoved(indexBefore, indexAfter);
-	emit AfterSoundChannelsChange();
+	auto updater = [this](int indexOld, int indexNew){
+		auto *channel = soundChannels.takeAt(indexOld);
+		soundChannels.insert(indexNew, channel);
+		emit SoundChannelMoved(indexOld, indexNew);
+		emit AfterSoundChannelsChange();
+	};
+	auto *action = new BiEditValueAction<int>(updater, indexBefore, indexAfter, tr("move sound channel"), true);
+	history->Add(action);
 }
 
 void Document::ChannelLengthChanged(SoundChannel *channel, int length)
@@ -249,7 +283,9 @@ void Document::OnInitBpmChanged()
 
 bool Document::InsertBarLine(BarLine bar)
 {
-	// if (barLines.contains(bar.Location)) return false; // don't filter (due to ephemeral bars)
+	if (barLines.contains(bar.Location) && barLines[bar.Location] == bar)
+		return false;
+	QMap<int, BarLine> oldBarLines = barLines; // zeitaku!!!!!!!
 	auto wh = barLines.insert(bar.Location, bar);
 	for (auto i=barLines.begin(); i!=wh; i++){
 		if (i->Ephemeral){
@@ -258,133 +294,117 @@ bool Document::InsertBarLine(BarLine bar)
 	}
 	UpdateTotalLength(); // update ephemeral bars after `bar`
 	emit BarLinesChanged();
+	auto updater = [this](QMap<int, BarLine> value){
+		barLines = value;
+		emit BarLinesChanged();
+	};
+	history->Add(new EditValueAction<QMap<int, BarLine>>(updater, oldBarLines, barLines, tr("add bar line"), false));
 	return true;
 }
 
 bool Document::RemoveBarLine(int location)
 {
 	if (!barLines.contains(location)) return false;
+	QMap<int, BarLine> oldBarLines = barLines;
 	barLines.remove(location);
 	UpdateTotalLength(); // update ephemeral bars after `bar`
 	emit BarLinesChanged();
+	auto updater = [this](QMap<int, BarLine> value){
+		barLines = value;
+		emit BarLinesChanged();
+	};
+	history->Add(new EditValueAction<QMap<int, BarLine>>(updater, oldBarLines, barLines, tr("remove bar line"), false));
 	return true;
 }
 
+
+
 bool Document::InsertBpmEvent(BpmEvent event)
 {
-	//if (bpmEvents.contains(event.location)) return false; // don't filter (for editing)
-	bpmEvents.insert(event.location, event);
-	emit TimeMappingChanged();
-	return true;
+	auto shower = [=](){
+		emit ShowBpmEventLocation(event.location);
+	};
+	if (bpmEvents.contains(event.location)){
+		if (bpmEvents[event.location] == event){
+			return false;
+		}
+		auto updater = [this](BpmEvent value){
+			bpmEvents.insert(value.location, value);
+			emit TimeMappingChanged();
+		};
+		history->Add(new EditValueAction<BpmEvent>(updater, bpmEvents[event.location], event, tr("update BPM event"), true, shower));
+		return true;
+	}else{
+		auto adder = [this](BpmEvent value){
+			bpmEvents.insert(value.location, value);
+			emit TimeMappingChanged();
+		};
+		auto remover = [this](BpmEvent value){
+			bpmEvents.remove(value.location);
+			emit TimeMappingChanged();
+		};
+		history->Add(new AddValueAction<BpmEvent>(adder, remover, event, tr("add BPM event"), true, shower));
+		return true;
+	}
 }
 
 bool Document::RemoveBpmEvent(int location)
 {
+	auto shower = [=](){
+		emit ShowBpmEventLocation(location);
+	};
 	if (!bpmEvents.contains(location)) return false;
-	bpmEvents.remove(location);
-	emit TimeMappingChanged();
+	BpmEvent event = bpmEvents.take(location);
+	auto adder = [this](BpmEvent value){
+		bpmEvents.insert(value.location, value);
+		emit TimeMappingChanged();
+	};
+	auto remover = [this](BpmEvent value){
+		bpmEvents.remove(value.location);
+		emit TimeMappingChanged();
+	};
+	history->Add(new RemoveValueAction<BpmEvent>(adder, remover, event, tr("remove BPM event"), true, shower));
 	return true;
 }
 
-
-
-
-QSet<QString> DocumentInfo::SupportedKeys;
-
-DocumentInfo::DocumentInfo(Document *document)
-	: QObject(document)
-	, document(document)
+void Document::UpdateBpmEvents(QList<BpmEvent> events)
 {
-	if (SupportedKeys.isEmpty()){
-		SupportedKeys.insert(Bmson::BmsInfo::TitleKey);
-		SupportedKeys.insert(Bmson::BmsInfo::GenreKey);
-		SupportedKeys.insert(Bmson::BmsInfo::ArtistKey);
-		SupportedKeys.insert(Bmson::BmsInfo::JudgeRankKey);
-		SupportedKeys.insert(Bmson::BmsInfo::TotalKey);
-		SupportedKeys.insert(Bmson::BmsInfo::InitBpmKey);
-		SupportedKeys.insert(Bmson::BmsInfo::LevelKey);
-	}
-}
-
-DocumentInfo::~DocumentInfo()
-{
-}
-
-void DocumentInfo::Initialize()
-{
-	title = QString();
-	genre = QString();
-	artist = QString();
-	judgeRank = 100;
-	total = 400.;
-	initBpm = 120.;
-	level = 1;
-}
-
-void DocumentInfo::LoadBmson(QJsonValue json)
-{
-	bmsonFields = json.toObject();
-	title = bmsonFields[Bmson::BmsInfo::TitleKey].toString();
-	genre = bmsonFields[Bmson::BmsInfo::GenreKey].toString();
-	artist = bmsonFields[Bmson::BmsInfo::ArtistKey].toString();
-	judgeRank = bmsonFields[Bmson::BmsInfo::JudgeRankKey].toInt();
-	total = bmsonFields[Bmson::BmsInfo::TotalKey].toDouble();
-	initBpm = bmsonFields[Bmson::BmsInfo::InitBpmKey].toDouble();
-	level = bmsonFields[Bmson::BmsInfo::LevelKey].toInt();
-}
-
-QJsonValue DocumentInfo::SaveBmson()
-{
-	bmsonFields[Bmson::BmsInfo::TitleKey] = title;
-	bmsonFields[Bmson::BmsInfo::GenreKey] = genre;
-	bmsonFields[Bmson::BmsInfo::ArtistKey] = artist;
-	bmsonFields[Bmson::BmsInfo::JudgeRankKey] = judgeRank;
-	bmsonFields[Bmson::BmsInfo::TotalKey] = total;
-	bmsonFields[Bmson::BmsInfo::InitBpmKey] = initBpm;
-	bmsonFields[Bmson::BmsInfo::LevelKey] = level;
-	return bmsonFields;
-}
-
-void DocumentInfo::SetInitBpm(double value)
-{
-	// caller of this function should check value is valid.
-	// default behavior is to retain old value if new value is invalid.
-
-	if (BmsConsts::IsBpmValid(value)){
-
-		// TODO: undo
-
-		initBpm = value;
-	}
-	// initBpm = std::max(BmsConsts::MinBpm, std::min(BmsConsts::MaxBpm, value));
-	emit InitBpmChanged(initBpm);
-}
-
-QMap<QString, QJsonValue> DocumentInfo::GetExtraFields() const
-{
-	QMap<QString, QJsonValue> fields;
-	for (QJsonObject::const_iterator i=bmsonFields.begin(); i!=bmsonFields.end(); i++){
-		if (!SupportedKeys.contains(i.key())){
-			fields.insert(i.key(), i.value());
+	for (auto event : events){
+		if (bpmEvents.contains(event.location)){
+			if (!(bpmEvents[event.location] == event))
+				goto changed;
+		}else{
+			goto changed;
 		}
 	}
-	return fields;
-}
-
-void DocumentInfo::SetExtraFields(const QMap<QString, QJsonValue> &fields)
-{
-	for (QMap<QString, QJsonValue>::const_iterator i=fields.begin(); i!=fields.end(); i++){
-		if (!SupportedKeys.contains(i.key())){
-			bmsonFields.insert(i.key(), i.value());
+	return;
+changed:
+	auto shower = [=](){
+		emit ShowBpmEventLocation(events.first().location);
+	};
+	auto *actions = new MultiAction(tr("update BPM events"), shower);
+	for (auto event : events){
+		if (bpmEvents.contains(event.location)){
+			auto updater = [this](BpmEvent value){
+				bpmEvents.insert(value.location, value);
+				emit TimeMappingChanged();
+			};
+			actions->AddAction(new EditValueAction<BpmEvent>(updater, bpmEvents[event.location], event, QString(), true));
+		}else{
+			auto adder = [this](BpmEvent value){
+				bpmEvents.insert(value.location, value);
+				emit TimeMappingChanged();
+			};
+			auto remover = [this](BpmEvent value){
+				bpmEvents.remove(value.location);
+				emit TimeMappingChanged();
+			};
+			actions->AddAction(new AddValueAction<BpmEvent>(adder, remover, event, QString(), true));
 		}
 	}
-	emit ExtraFieldsChanged();
+	actions->Finish();
+	history->Add(actions);
 }
-
-
-
-
-
 
 
 

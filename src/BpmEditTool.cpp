@@ -82,9 +82,13 @@ void BpmEditView::Update()
 
 void BpmEditView::Edited()
 {
+	if (bpmEvents.empty()){
+		return;
+	}
 	bool isOk;
 	double bpm = edit->text().toDouble(&isOk);
-	if (!isOk && !BmsConsts::IsBpmValid(bpm)){
+	if (!isOk || !BmsConsts::IsBpmValid(bpm)){
+		qApp->beep();
 		Update();
 		return;
 	}

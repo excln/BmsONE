@@ -4,6 +4,7 @@
 #include "ChannelInfoView.h"
 #include "BpmEditTool.h"
 #include "SelectedObjectView.h"
+#include "History.h"
 #include <QtMultimedia/QMediaPlayer>
 #include "UIDef.h"
 
@@ -56,10 +57,12 @@ MainWindow::MainWindow(QSettings *settings)
 	QObject::connect(actionFileQuit, SIGNAL(triggered()), this, SLOT(close()));
 
 	actionEditUndo = new QAction(tr("Undo"), this);
+	actionEditUndo->setIcon(QIcon(":/images/undo.png"));
 	actionEditUndo->setShortcut(QKeySequence::Undo);
 	QObject::connect(actionEditUndo, SIGNAL(triggered()), this, SLOT(EditUndo()));
 
 	actionEditRedo = new QAction(tr("Redo"), this);
+	actionEditRedo->setIcon(QIcon(":/images/redo.png"));
 	actionEditRedo->setShortcut(QKeySequence::Redo);
 	QObject::connect(actionEditRedo, SIGNAL(triggered()), this, SLOT(EditRedo()));
 
@@ -147,10 +150,10 @@ MainWindow::MainWindow(QSettings *settings)
 	menuFile->addSeparator();
 	menuFile->addAction(actionFileQuit);
 #endif
-#if 0
 	auto *menuEdit = menuBar()->addMenu(tr("Edit"));
 	menuEdit->addAction(actionEditUndo);
 	menuEdit->addAction(actionEditRedo);
+#if 0
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditCut);
 	menuEdit->addAction(actionEditCopy);
@@ -207,6 +210,14 @@ MainWindow::MainWindow(QSettings *settings)
 	fileTools->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(fileTools);
 	menuView->insertAction(actionViewTbSeparator, fileTools->toggleViewAction());
+
+	auto *editTools = new QToolBar(tr("Edit"));
+	editTools->setObjectName("Edit Tools");
+	editTools->addAction(actionEditUndo);
+	editTools->addAction(actionEditRedo);
+	editTools->setIconSize(UIUtil::ToolBarIconSize);
+	addToolBar(editTools);
+	menuView->insertAction(actionViewTbSeparator, editTools->toggleViewAction());
 
 	sequenceTools = new SequenceTools("Sequence Tools", tr("Sequence Tools"), this);
 	sequenceTools->setIconSize(UIUtil::ToolBarIconSize);
@@ -381,6 +392,15 @@ void MainWindow::FileSaveAs()
 	}
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	if (!EnsureClosingFile()){
+		event->ignore();
+		return;
+	}
+	event->accept();
+}
+
 void MainWindow::EditUndo()
 {
 	SharedUIHelper::CommitDirtyEdit();
@@ -505,12 +525,36 @@ void MainWindow::FilePathChanged()
 	QString title = document->GetFilePath();
 	if (title.isEmpty()){
 		title = tr("untitled");
+	}else{
+		title = QDir::toNativeSeparators(title);
 	}
 	if (document->GetHistory()->IsDirty()){
 		title += " *";
 	}
 	title += " - " APP_NAME;
 	this->setWindowTitle(title);
+}
+
+void MainWindow::HistoryChanged()
+{
+	if (!document)
+		return;
+	QString undoName, redoName;
+	if (document->GetHistory()->CanUndo(&undoName)){
+		actionEditUndo->setEnabled(true);
+		actionEditUndo->setText(tr("Undo - ") + undoName);
+	}else{
+		actionEditUndo->setEnabled(false);
+		actionEditUndo->setText(tr("Undo"));
+	}
+	if (document->GetHistory()->CanRedo(&redoName)){
+		actionEditRedo->setEnabled(true);
+		actionEditRedo->setText(tr("Redo - ") + redoName);
+	}else{
+		actionEditRedo->setEnabled(false);
+		actionEditRedo->setText(tr("Redo"));
+	}
+	FilePathChanged();
 }
 
 void MainWindow::OnCurrentChannelChanged(int ichannel)
@@ -531,32 +575,47 @@ void MainWindow::OnCurrentChannelChanged(int ichannel)
 	}
 }
 
+void MainWindow::OnTimeMappingChanged()
+{
+	if (!document)
+		return;
+	auto allBpmEvents = document->GetBpmEvents();
+	auto selectedBpmEvents = bpmEditView->GetBpmEvents();
+	for (auto event : selectedBpmEvents){
+		if (!allBpmEvents.contains(event.location)){
+			bpmEditView->UnsetBpmEvents();
+			return;
+		}
+	}
+}
+
 void MainWindow::OnBpmEdited()
 {
 	if (!document)
 		return;
 	auto bpmEvents = bpmEditView->GetBpmEvents();
-	for (auto event : bpmEvents){
-		document->InsertBpmEvent(event);
-	}
+	document->UpdateBpmEvents(bpmEvents);
 }
 
 void MainWindow::ReplaceDocument(Document *newDocument)
 {
 	if (document){
+		bpmEditView->UnsetBpmEvents();
 		delete document;
 	}
 	document = newDocument;
 	if (!document)
 		return;
 
-	QObject::connect(document, &Document::FilePathChanged, this, &MainWindow::FilePathChanged);
+	connect(document, &Document::FilePathChanged, this, &MainWindow::FilePathChanged);
+	connect(document, &Document::TimeMappingChanged, this, &MainWindow::OnTimeMappingChanged);
+	connect(document->GetHistory(), &EditHistory::OnHistoryChanged, this, &MainWindow::HistoryChanged);
 
 	infoView->ReplaceDocument(document);
 	channelInfoView->ReplaceDocument(document);
 	sequenceView->ReplaceDocument(document);
 
-	FilePathChanged();
+	HistoryChanged(); // calls FilePathChanged()
 	OnCurrentChannelChanged(-1);
 
 	// begin interaction
@@ -595,14 +654,13 @@ bool MainWindow::EnsureClosingFile()
 {
 	if (!document->GetHistory()->IsDirty())
 		return true;
-	QMessageBox *msgbox = new QMessageBox(
-				QMessageBox::Warning,
+	QMessageBox::StandardButton res = QMessageBox::question(
+				this,
 				tr("Confirmation"),
 				tr("Save changes before closing?"),
 				QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-				this);
-	msgbox->show();
-	switch (msgbox->result()){
+				QMessageBox::Save);
+	switch (res){
 	case QMessageBox::Save:
 		return Save();
 	case QMessageBox::Discard:
@@ -796,10 +854,22 @@ App::App(int argc, char *argv[])
 	}else{
 		settings = new QSettings(QDir(settingsDir).filePath("Settings.ini"), QSettings::IniFormat);
 	}
+	QString locale = settings->value(SettingsLanguageKey, QLocale::system().name()).toString();
 
 	QTranslator *translator = new QTranslator(this);
-	translator->load(":/i18n/" + settings->value(SettingsLanguageKey, QLocale::system().name()).toString());
-	installTranslator(translator);
+	if (translator->load(":/i18n/" + locale)){
+		installTranslator(translator);
+	}
+
+	QTranslator *qtTranslator = new QTranslator(this);
+	if (qtTranslator->load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath))){
+		installTranslator(qtTranslator);
+	}
+
+	QTranslator *qtBaseTranslator = new QTranslator(this);
+	if (qtBaseTranslator->load("qtbase_" + locale, QLibraryInfo::location(QLibraryInfo::TranslationsPath))){
+		installTranslator(qtBaseTranslator);
+	}
 
 	mainWindow = new MainWindow(settings);
 	if (arguments().size() > 1){

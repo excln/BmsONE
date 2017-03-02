@@ -33,6 +33,10 @@ void dummy4tr(){
 	QScrollBar::tr("Scroll right");
 	QScrollBar::tr("Page left");
 	QScrollBar::tr("Page right");
+
+	QMessageBox::tr("Save");
+	QMessageBox::tr("Discard");
+	QMessageBox::tr("Cancel");
 }
 
 #endif

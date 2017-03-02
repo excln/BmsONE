@@ -116,6 +116,10 @@ private slots:
 
 	void RmsUpdated();
 
+	void NameChanged();
+	void Show();
+	void ShowNoteLocation(int location);
+
 	void Preview();
 	void MoveLeft();
 	void MoveRight();

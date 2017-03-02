@@ -18,5 +18,7 @@
         <file>images/keys/scratch.png</file>
         <file>images/keys/wkey.png</file>
         <file>images/keys/bkey.png</file>
+        <file>images/redo.png</file>
+        <file>images/undo.png</file>
     </qresource>
 </RCC>

@@ -1,6 +1,8 @@
 #include "Document.h"
 #include "SoundChannel.h"
 #include "SoundChannelInternal.h"
+#include "HistoryUtil.h"
+#include "History.h"
 #include <cstdlib>
 #include <cmath>
 
@@ -69,9 +71,17 @@ QJsonValue SoundChannel::SaveBmson()
 
 void SoundChannel::SetSourceFile(const QString &absolutePath)
 {
-	fileName = document->GetRelativePath(absolutePath);
-	emit NameChanged();
-	resource->UpdateWaveData(absolutePath);
+	QString newFileName = document->GetRelativePath(absolutePath);
+	auto setter = [this](QString value){
+		fileName = value;
+		resource->UpdateWaveData(document->GetAbsolutePath(fileName));
+		emit NameChanged();
+	};
+	auto shower = [this](){
+		emit Show();
+	};
+	auto *action = new EditValueAction<QString>(setter, fileName, newFileName, tr("select sound channel source file"), true, shower);
+	document->GetHistory()->Add(action);
 }
 
 void SoundChannel::OnWaveSummaryReady(const WaveSummary *summary)
@@ -120,6 +130,7 @@ void SoundChannel::OnTimeMappingChanged()
 	UpdateVisibleRegionsInternal();
 }
 
+
 bool SoundChannel::InsertNote(SoundNote note)
 {
 	// check lane conflict
@@ -132,21 +143,39 @@ bool SoundChannel::InsertNote(SoundNote note)
 			return false;
 		}
 	}
+	auto shower = [=](){
+		emit ShowNoteLocation(note.location);
+	};
 	if (notes.contains(note.location)){
 		// move
-		notes[note.location] = note;
-		UpdateCache();
-		UpdateVisibleRegionsInternal();
-		emit NoteChanged(note.location, note);
-		document->ChannelLengthChanged(this, totalLength);
+		auto setter = [this](SoundNote note){
+			notes[note.location] = note;
+			UpdateCache();
+			UpdateVisibleRegionsInternal();
+			emit NoteChanged(note.location, note);
+			document->ChannelLengthChanged(this, totalLength);
+		};
+		auto *action = new EditValueAction<SoundNote>(setter, notes[note.location], note, tr("modify sound note"), true, shower);
+		document->GetHistory()->Add(action);
 		return true;
 	}else{
 		// new
-		notes.insert(note.location, note);
-		UpdateCache();
-		UpdateVisibleRegionsInternal();
-		emit NoteInserted(note);
-		document->ChannelLengthChanged(this, totalLength);
+		auto adder = [this](SoundNote note){
+			notes.insert(note.location, note);
+			UpdateCache();
+			UpdateVisibleRegionsInternal();
+			emit NoteInserted(note);
+			document->ChannelLengthChanged(this, totalLength);
+		};
+		auto remover = [this](SoundNote note){
+			SoundNote actualNote = notes.take(note.location);
+			UpdateCache();
+			UpdateVisibleRegionsInternal();
+			emit NoteRemoved(actualNote);
+			document->ChannelLengthChanged(this, totalLength);
+		};
+		auto *action = new AddValueAction<SoundNote>(adder, remover, note, tr("add sound note"), true, shower);
+		document->GetHistory()->Add(action);
 		return true;
 	}
 }
@@ -154,11 +183,25 @@ bool SoundChannel::InsertNote(SoundNote note)
 bool SoundChannel::RemoveNote(SoundNote note)
 {
 	if (notes.contains(note.location)){
-		SoundNote actualNote = notes.take(note.location);
-		UpdateCache();
-		UpdateVisibleRegionsInternal();
-		emit NoteRemoved(actualNote);
-		document->ChannelLengthChanged(this, totalLength);
+		auto shower = [=](){
+			emit ShowNoteLocation(note.location);
+		};
+		auto adder = [this](SoundNote note){
+			notes.insert(note.location, note);
+			UpdateCache();
+			UpdateVisibleRegionsInternal();
+			emit NoteInserted(note);
+			document->ChannelLengthChanged(this, totalLength);
+		};
+		auto remover = [this](SoundNote note){
+			SoundNote actualNote = notes.take(note.location);
+			UpdateCache();
+			UpdateVisibleRegionsInternal();
+			emit NoteRemoved(actualNote);
+			document->ChannelLengthChanged(this, totalLength);
+		};
+		auto *action = new RemoveValueAction<SoundNote>(adder, remover, note, tr("remove sound note"), true, shower);
+		document->GetHistory()->Add(action);
 		return true;
 	}
 	return false;

@@ -160,9 +160,10 @@ private slots:
 	void HelpAbout();
 
 	void FilePathChanged();
+	void HistoryChanged();
 
 	void OnCurrentChannelChanged(int ichannel);
-
+	void OnTimeMappingChanged();
 	void OnBpmEdited();
 
 signals:
@@ -177,6 +178,7 @@ public:
 	virtual void dragMoveEvent(QDragMoveEvent *event);
 	virtual void dragLeaveEvent(QDragLeaveEvent *event);
 	virtual void dropEvent(QDropEvent *event);
+	virtual void closeEvent(QCloseEvent *event);
 
 	QSettings *GetSettings() const{ return settings; }
 	StatusBar *GetStatusBar() const{ return statusBar; }

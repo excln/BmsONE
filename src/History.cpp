@@ -42,7 +42,6 @@ void EditHistory::ClearFutureActions()
 		delete redoActions.top();
 		redoActions.pop();
 	}
-	emit OnHistoryChanged();
 }
 
 void EditHistory::ClearPastActions()
@@ -51,7 +50,6 @@ void EditHistory::ClearPastActions()
 		delete undoActions.top();
 		undoActions.pop();
 	}
-	emit OnHistoryChanged();
 }
 
 void EditHistory::Add(EditAction *action)
@@ -61,22 +59,34 @@ void EditHistory::Add(EditAction *action)
 	emit OnHistoryChanged();
 }
 
-bool EditHistory::CanUndo() const
+bool EditHistory::CanUndo(QString *out_name) const
 {
-	return !undoActions.empty();
+	if (undoActions.empty())
+		return false;
+	if (out_name){
+		*out_name = undoActions.top()->GetName();
+	}
+	return true;
 }
 
-bool EditHistory::CanRedo() const
+bool EditHistory::CanRedo(QString *out_name) const
 {
-	return !redoActions.empty();
+	if (redoActions.empty())
+		return false;
+	if (out_name){
+		*out_name = redoActions.top()->GetName();
+	}
+	return true;
 }
 
 void EditHistory::Undo()
 {
-	qDebug() << "Undo";
+	if (undoActions.empty())
+		return;
 	try{
 		auto *action = undoActions.top();
 		action->Undo();
+		action->Show();
 		undoActions.pop();
 		redoActions.push(action);
 		emit OnHistoryChanged();
@@ -88,10 +98,12 @@ void EditHistory::Undo()
 
 void EditHistory::Redo()
 {
-	qDebug() << "Redo";
+	if (redoActions.empty())
+		return;
 	try{
 		auto *action = redoActions.top();
 		action->Redo();
+		action->Show();
 		redoActions.pop();
 		undoActions.push(action);
 		emit OnHistoryChanged();

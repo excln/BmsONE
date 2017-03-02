@@ -168,6 +168,7 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 	documentReady = false;
 	// unload document
 	{
+		selectedBpmEvents.clear();
 		selectedNotes.clear();
 		/*for (auto *header : soundChannelHeaders){
 			delete header;
@@ -208,6 +209,7 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 		connect(document, &Document::TotalLengthChanged, this, &SequenceView::TotalLengthChanged);
 		connect(document, &Document::BarLinesChanged, this, &SequenceView::BarLinesChanged);
 		connect(document, &Document::TimeMappingChanged, this, &SequenceView::TimeMappingChanged);
+		connect(document, &Document::ShowBpmEventLocation, this, &SequenceView::ShowLocation);
 
 		resolution = document->GetTimeBase();
 		viewLength = document->GetTotalVisibleLength();
@@ -218,6 +220,12 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 		UpdateVerticalScrollBar(0.0); // daburi
 	}
 	documentReady = true;
+
+	timeLine->update();
+	playingPane->update();
+	for (auto cview : soundChannels){
+		cview->update();
+	}
 }
 
 void SequenceView::ClearNotesSelection()
@@ -675,6 +683,18 @@ void SequenceView::BarLinesChanged()
 void SequenceView::TimeMappingChanged()
 {
 	if (documentReady){
+		auto allBpmEvents = document->GetBpmEvents();
+		auto selectedBpmEvents = mainWindow->GetBpmEditTool()->GetBpmEvents();
+		for (auto event : selectedBpmEvents){
+			if (!allBpmEvents.contains(event.location)){
+				mainWindow->GetBpmEditTool()->UnsetBpmEvents();
+				break;
+			}
+		}
+		this->selectedBpmEvents.clear();
+		for (auto event : mainWindow->GetBpmEditTool()->GetBpmEvents()){
+			this->selectedBpmEvents.insert(event.location, event);
+		}
 		timeLine->update();
 		// update of each channel view is triggered by each channel
 	}
@@ -1137,7 +1157,6 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 	QRect rect = event->rect();
 	painter.fillRect(playingPane->rect(), palette().window());
 
-	int scrollX = horizontalScrollBar()->value();
 	int scrollY = verticalScrollBar()->value();
 
 	int left = rect.x() - mx;
@@ -1406,6 +1425,17 @@ void SequenceView::CursorChanged()
 	playingPane->update();
 	for (auto cview : soundChannels){
 		cview->update();
+	}
+}
+
+void SequenceView::ShowLocation(int location)
+{
+	int my = 4;
+	int y = Time2Y(location);
+	if (y < my || y > timeLine->height() - my){
+		int centerY = timeLine->height()/2;
+		int scrollY = (viewLength - location)*zoomY - centerY;
+		verticalScrollBar()->setValue(scrollY);
 	}
 }
 
