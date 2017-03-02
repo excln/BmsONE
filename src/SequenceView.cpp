@@ -40,7 +40,7 @@ SequenceView::SequenceView(MainWindow *parent)
 	connect(cursor, SIGNAL(Changed()), this, SLOT(CursorChanged()));
 	{
 		const int lmargin = 5;
-		const int wscratch = 36;
+		const int wscratch = 32;
 		const int wwhite = 24;
 		const int wblack = 24;
 		QColor cscratch(60, 26, 26);
@@ -51,19 +51,19 @@ SequenceView::SequenceView(MainWindow *parent)
 		QColor ncwhite(210, 210, 210);
 		QColor ncblack(150, 150, 240);
 		QColor ncscratch(240, 150, 150);
-		lanes.insert(8, LaneDef(8, lmargin, wscratch, cscratch, ncscratch, cbigv));
-		lanes.insert(1, LaneDef(1, lmargin+wscratch+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, csmallv));
-		lanes.insert(2, LaneDef(2, lmargin+wscratch+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv));
-		lanes.insert(3, LaneDef(3, lmargin+wscratch+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv));
-		lanes.insert(4, LaneDef(4, lmargin+wscratch+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv));
-		lanes.insert(5, LaneDef(5, lmargin+wscratch+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv));
-		lanes.insert(6, LaneDef(6, lmargin+wscratch+wwhite*3+wblack*2, wblack, cblack, ncblack, csmallv));
-		lanes.insert(7, LaneDef(7, lmargin+wscratch+wwhite*3+wblack*3, wwhite, cwhite, ncwhite, csmallv, cbigv));
+		lanes.insert(8, LaneDef(8, "scratch", lmargin, wscratch, cscratch, ncscratch, cbigv));
+		lanes.insert(1, LaneDef(1, "wkey", lmargin+wscratch+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, csmallv));
+		lanes.insert(2, LaneDef(2, "bkey", lmargin+wscratch+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv));
+		lanes.insert(3, LaneDef(3, "wkey", lmargin+wscratch+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv));
+		lanes.insert(4, LaneDef(4, "bkey", lmargin+wscratch+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv));
+		lanes.insert(5, LaneDef(5, "wkey", lmargin+wscratch+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv));
+		lanes.insert(6, LaneDef(6, "bkey", lmargin+wscratch+wwhite*3+wblack*2, wblack, cblack, ncblack, csmallv));
+		lanes.insert(7, LaneDef(7, "wkey", lmargin+wscratch+wwhite*3+wblack*3, wwhite, cwhite, ncwhite, csmallv, cbigv));
 
 		timeLineMeasureWidth = 20;
 		timeLineBpmWidth = 34;
 		timeLineWidth = timeLineMeasureWidth + timeLineBpmWidth;
-		headerHeight = 48;
+		headerHeight = 0;
 		footerHeight = 48;
 
 		penBigV = QPen(QBrush(QColor(180, 180, 180)), 1);
@@ -100,14 +100,21 @@ SequenceView::SequenceView(MainWindow *parent)
 	grabGesture(Qt::PinchGesture);
 	timeLine = NewWidget(&SequenceView::paintEventTimeLine, &SequenceView::mouseEventTimeLine, &SequenceView::enterEventTimeLine);
 	playingPane = NewWidget(&SequenceView::paintEventPlayingPane, &SequenceView::mouseEventPlayingPane, &SequenceView::enterEventPlayingPane);
-	headerChannelsArea = NewWidget(&SequenceView::paintEventHeaderArea);
-	headerCornerEntry = NewWidget(&SequenceView::paintEventHeaderEntity);
-	headerPlayingEntry = NewWidget(&SequenceView::paintEventPlayingHeader);
+	//headerChannelsArea = NewWidget(&SequenceView::paintEventHeaderArea);
+	//headerCornerEntry = NewWidget(&SequenceView::paintEventHeaderEntity);
+	//headerPlayingEntry = NewWidget(&SequenceView::paintEventPlayingHeader);
 	footerChannelsArea = NewWidget(&SequenceView::paintEventFooterArea);
 	footerCornerEntry = NewWidget(&SequenceView::paintEventFooterEntity);
 	footerPlayingEntry = NewWidget(&SequenceView::paintEventPlayingFooter);
 	timeLine->setMouseTracking(true);
 	playingPane->setMouseTracking(true);
+	{
+		for (auto lane : lanes){
+			QLabel *label = new QLabel(footerPlayingEntry);
+			label->setGeometry(lane.left, 0, lane.width, footerHeight);
+			label->setPixmap(QPixmap(":/images/keys/" + lane.keyImageName));
+		}
+	}
 #if 0
 	auto *tb = new QToolBar(headerPlayingEntry);
 	tb->addAction("L");
@@ -162,10 +169,10 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 	// unload document
 	{
 		selectedNotes.clear();
-		for (auto *header : soundChannelHeaders){
+		/*for (auto *header : soundChannelHeaders){
 			delete header;
 		}
-		soundChannelHeaders.clear();
+		soundChannelHeaders.clear();*/
 		for (auto *footer : soundChannelFooters){
 			delete footer;
 		}
@@ -185,10 +192,10 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 			cview->setParent(viewport());
 			cview->setVisible(true);
 			soundChannels.push_back(cview);
-			auto *header = new SoundChannelHeader(this, cview);
-			header->setParent(headerChannelsArea);
-			header->setVisible(true);
-			soundChannelHeaders.push_back(header);
+			//auto *header = new SoundChannelHeader(this, cview);
+			//header->setParent(headerChannelsArea);
+			//header->setVisible(true);
+			//soundChannelHeaders.push_back(header);
 			auto *footer = new SoundChannelFooter(this, cview);
 			footer->setParent(footerChannelsArea);
 			footer->setVisible(true);
@@ -476,7 +483,7 @@ void SequenceView::wheelEventVp(QWheelEvent *event)
 		UpdateVerticalScrollBar(tOld);
 		timeLine->update();
 		playingPane->update();
-		headerChannelsArea->update();
+		//headerChannelsArea->update();
 		footerChannelsArea->update();
 		for (SoundChannelView *cview : soundChannels){
 			cview->UpdateWholeBackBuffer();
@@ -504,7 +511,7 @@ void SequenceView::pinchEvent(QPinchGesture *pinch)
 	UpdateVerticalScrollBar(tOld);
 	timeLine->update();
 	playingPane->update();
-	headerChannelsArea->update();
+	//headerChannelsArea->update();
 	footerChannelsArea->update();
 	for (SoundChannelView *cview : soundChannels){
 		cview->UpdateWholeBackBuffer();
@@ -557,7 +564,7 @@ void SequenceView::scrollContentsBy(int dx, int dy)
 	}
 	if (dx){
 		viewport()->scroll(dx, 0);
-		headerChannelsArea->scroll(dx, 0);
+		//headerChannelsArea->scroll(dx, 0);
 		footerChannelsArea->scroll(dx, 0);
 	}
 	VisibleRangeChanged();
@@ -578,9 +585,9 @@ void SequenceView::OnViewportResize()
 	QRect vr = viewport()->geometry();
 	timeLine->setGeometry(0, headerHeight, timeLineWidth, vr.height());
 	playingPane->setGeometry(timeLineWidth, headerHeight, playingWidth, vr.height());
-	headerChannelsArea->setGeometry(timeLineWidth + playingWidth, 0, vr.width(), headerHeight);
-	headerCornerEntry->setGeometry(0, 0, timeLineWidth, headerHeight);
-	headerPlayingEntry->setGeometry(timeLineWidth, 0, playingWidth, headerHeight);
+	//headerChannelsArea->setGeometry(timeLineWidth + playingWidth, 0, vr.width(), headerHeight);
+	//headerCornerEntry->setGeometry(0, 0, timeLineWidth, headerHeight);
+	//headerPlayingEntry->setGeometry(timeLineWidth, 0, playingWidth, headerHeight);
 	footerChannelsArea->setGeometry(timeLineWidth + playingWidth, vr.bottom()+1, vr.width(), footerHeight);
 	footerCornerEntry->setGeometry(0, vr.bottom()+1, timeLineWidth, footerHeight);
 	footerPlayingEntry->setGeometry(timeLineWidth, vr.bottom()+1, playingWidth, footerHeight);
@@ -588,7 +595,7 @@ void SequenceView::OnViewportResize()
 		int x = i * 64 - horizontalScrollBar()->value();
 		soundChannels[i]->setGeometry(x, 0, 64, vr.height());
 		soundChannels[i]->RemakeBackBuffer();
-		soundChannelHeaders[i]->setGeometry(x, 0, 64, headerHeight);
+		//soundChannelHeaders[i]->setGeometry(x, 0, 64, headerHeight);
 		soundChannelFooters[i]->setGeometry(x, 0, 64, footerHeight);
 	}
 
@@ -608,10 +615,10 @@ void SequenceView::SoundChannelInserted(int index, SoundChannel *channel)
 	cview->setParent(viewport());
 	cview->setVisible(true);
 	soundChannels.insert(index, cview);
-	auto *header = new SoundChannelHeader(this, cview);
-	header->setParent(headerChannelsArea);
-	header->setVisible(true);
-	soundChannelHeaders.insert(index, header);
+	//auto *header = new SoundChannelHeader(this, cview);
+	//header->setParent(headerChannelsArea);
+	//header->setVisible(true);
+	//soundChannelHeaders.insert(index, header);
 	auto *footer = new SoundChannelFooter(this, cview);
 	footer->setParent(footerChannelsArea);
 	footer->setVisible(true);
@@ -622,7 +629,7 @@ void SequenceView::SoundChannelInserted(int index, SoundChannel *channel)
 void SequenceView::SoundChannelRemoved(int index, SoundChannel *channel)
 {
 	OnCurrentChannelChanged(-1);
-	delete soundChannelHeaders.takeAt(index);
+	//delete soundChannelHeaders.takeAt(index);
 	delete soundChannelFooters.takeAt(index);
 	delete soundChannels.takeAt(index);
 	OnViewportResize();
@@ -632,7 +639,7 @@ void SequenceView::SoundChannelMoved(int indexBefore, int indexAfter)
 {
 	OnCurrentChannelChanged(-1);
 	soundChannels.insert(indexAfter, soundChannels.takeAt(indexBefore));
-	soundChannelHeaders.insert(indexAfter, soundChannelHeaders.takeAt(indexBefore));
+	//soundChannelHeaders.insert(indexAfter, soundChannelHeaders.takeAt(indexBefore));
 	soundChannelFooters.insert(indexAfter, soundChannelFooters.takeAt(indexBefore));
 	OnViewportResize();
 }
@@ -1343,14 +1350,14 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 
 	return true;
 }
-
+/*
 bool SequenceView::paintEventHeaderArea(QWidget *header, QPaintEvent *event)
 {
 	QPainter painter(header);
 	painter.fillRect(event->rect(), QColor(102, 102, 102));
 	return true;
 }
-
+*/
 bool SequenceView::paintEventFooterArea(QWidget *footer, QPaintEvent *event)
 {
 	QPainter painter(footer);
@@ -1497,7 +1504,7 @@ bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *even
 		return false;
 	}
 }
-
+/*
 bool SequenceView::paintEventPlayingHeader(QWidget *widget, QPaintEvent *event)
 {
 	QPainter painter(widget);
@@ -1507,7 +1514,7 @@ bool SequenceView::paintEventPlayingHeader(QWidget *widget, QPaintEvent *event)
 	painter.drawRect(rect.adjusted(0, 0, -1, -1));
 	return true;
 }
-
+*/
 bool SequenceView::paintEventPlayingFooter(QWidget *widget, QPaintEvent *event)
 {
 	QPainter painter(widget);
@@ -1539,7 +1546,7 @@ void SequenceView::PreviewSingleNote(SoundNoteView *nview)
 	connect(previewer, SIGNAL(Stopped()), previewer, SLOT(deleteLater()));
 	mainWindow->GetAudioPlayer()->Play(previewer);
 }
-
+/*
 bool SequenceView::paintEventHeaderEntity(QWidget *widget, QPaintEvent *event)
 {
 	QPainter painter(widget);
@@ -1549,7 +1556,7 @@ bool SequenceView::paintEventHeaderEntity(QWidget *widget, QPaintEvent *event)
 	painter.drawRect(rect.adjusted(0, 0, -1, -1));
 	return true;
 }
-
+*/
 bool SequenceView::paintEventFooterEntity(QWidget *widget, QPaintEvent *event)
 {
 	QPainter painter(widget);

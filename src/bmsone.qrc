@@ -15,5 +15,8 @@
         <file>images/cutting_sound_note.png</file>
         <file>images/sound_note.png</file>
         <file>images/event.png</file>
+        <file>images/keys/scratch.png</file>
+        <file>images/keys/wkey.png</file>
+        <file>images/keys/bkey.png</file>
     </qresource>
 </RCC>

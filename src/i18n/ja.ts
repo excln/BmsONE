@@ -58,12 +58,12 @@
     <message>
         <location filename="../BpmEditTool.cpp" line="+59"/>
         <source>%1 selected BPM events</source>
-        <translation>%1 個の選択されたBPMイベント</translation>
+        <translation>%1 個のBPMイベント</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>1 selected BPM event</source>
-        <translation>1 個の選択されたBPMイベント</translation>
+        <translation type="unfinished">1 個のBPMイベント</translation>
     </message>
     <message>
         <location line="+16"/>
@@ -106,7 +106,7 @@
         <translation>プレビュー</translation>
     </message>
     <message>
-        <location line="+188"/>
+        <location line="+190"/>
         <source>sound files (*.wav *.ogg);;all files (*.*)</source>
         <translation>音声ファイル (*.wav *.ogg);;すべてのファイル (*.*)</translation>
     </message>
@@ -129,7 +129,7 @@
 <context>
     <name>Document</name>
     <message>
-        <location filename="../Document.cpp" line="+51"/>
+        <location filename="../Document.cpp" line="+52"/>
         <location line="+82"/>
         <source>Failed to open file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
@@ -216,7 +216,7 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../MainWindow.cpp" line="+33"/>
+        <location filename="../MainWindow.cpp" line="+34"/>
         <source>New</source>
         <translation>新規作成</translation>
     </message>
@@ -226,7 +226,7 @@
         <translation>ソースをプレビュー</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+59"/>
         <source>About Qt</source>
         <translation>Qt について</translation>
     </message>
@@ -236,18 +236,18 @@
         <translation>開く</translation>
     </message>
     <message>
-        <location line="-274"/>
-        <location line="+528"/>
+        <location line="-275"/>
+        <location line="+541"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location line="-203"/>
+        <location line="-215"/>
         <source>Save As</source>
         <translation>名前をつけて保存</translation>
     </message>
     <message>
-        <location line="-316"/>
+        <location line="-317"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
@@ -359,7 +359,7 @@
         <translation>ファイル選択</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+10"/>
         <location line="+363"/>
         <source>About BmsONE</source>
         <translation>BmsONE について</translation>
@@ -371,7 +371,7 @@
         <translation>ファイル</translation>
     </message>
     <message>
-        <location line="-163"/>
+        <location line="-164"/>
         <source>Open...</source>
         <translation>開く...</translation>
     </message>
@@ -400,7 +400,7 @@
         <translation>編集</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+21"/>
         <source>View</source>
         <translation>表示</translation>
     </message>
@@ -452,25 +452,25 @@
         <location line="+13"/>
         <location line="+21"/>
         <location line="+27"/>
-        <location line="+207"/>
+        <location line="+219"/>
         <location line="+108"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location line="-325"/>
-        <location line="+203"/>
+        <location line="-337"/>
+        <location line="+215"/>
         <source>bmson files (*.bmson);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location line="-192"/>
-        <location line="+207"/>
+        <location line="-204"/>
+        <location line="+219"/>
         <source>Failed to save file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
     </message>
     <message>
-        <location line="-171"/>
+        <location line="-183"/>
         <source>sound files (*.wav *.ogg);;all files (*.*)</source>
         <translation>音声ファイル (*.wav *.ogg);;すべてのファイル (*.*)</translation>
     </message>
@@ -485,7 +485,7 @@
         <translation>無題</translation>
     </message>
     <message>
-        <location line="+91"/>
+        <location line="+103"/>
         <source>Confirmation</source>
         <translation>確認</translation>
     </message>

@@ -828,7 +828,7 @@ void SoundNoteView::UpdateNote(SoundNote note)
 
 
 
-
+/*
 SoundChannelHeader::SoundChannelHeader(SequenceView *sview, SoundChannelView *cview)
 	: QWidget(sview)
 	, sview(sview)
@@ -879,7 +879,7 @@ void SoundChannelHeader::contextMenuEvent(QContextMenuEvent *event)
 {
 	cview->OnChannelMenu(event);
 }
-
+*/
 
 
 

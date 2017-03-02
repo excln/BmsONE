@@ -12,7 +12,7 @@
 class MainWindow;
 class StatusBar;
 class SoundNoteView;
-class SoundChannelHeader;
+//class SoundChannelHeader;
 class SoundChannelFooter;
 class SoundChannelView;
 class SequenceViewCursor;
@@ -43,11 +43,12 @@ public:
 		QColor noteColor;
 		QColor leftLine;
 		QColor rightLine;
+		QString keyImageName;
 		LaneDef(){}
-		LaneDef(int lane, qreal left, qreal width, QColor color, QColor noteColor,
+		LaneDef(int lane, QString nm, qreal left, qreal width, QColor color, QColor noteColor,
 				QColor leftLine=QColor(0,0,0,0), QColor rightLine=QColor(0,0,0,0))
 			: lane(lane), left(left), width(width), color(color), noteColor(noteColor)
-			, leftLine(leftLine), rightLine(rightLine)
+			, leftLine(leftLine), rightLine(rightLine), keyImageName(nm)
 		{}
 	};
 
@@ -61,9 +62,9 @@ private:
 private:
 	MainWindow *mainWindow;
 
-	QWidget *headerCornerEntry;
-	QWidget *headerPlayingEntry;
-	QWidget *headerChannelsArea;
+	//QWidget *headerCornerEntry;
+	//QWidget *headerPlayingEntry;
+	//QWidget *headerChannelsArea;
 	QWidget *footerCornerEntry;
 	QWidget *footerPlayingEntry;
 	QWidget *footerChannelsArea;
@@ -102,7 +103,7 @@ private:
 	int viewLength;	// visible height (in ticks)
 
 	QList<SoundChannelView*> soundChannels;
-	QList<SoundChannelHeader*> soundChannelHeaders;
+	//QList<SoundChannelHeader*> soundChannelHeaders;
 	QList<SoundChannelFooter*> soundChannelFooters;
 
 	// editor states
@@ -170,13 +171,13 @@ private:
 	bool mouseEventTimeLine(QWidget *timeLine, QMouseEvent *event);
 	bool paintEventTimeLine(QWidget *timeLine, QPaintEvent *event);
 	bool paintEventPlayingPane(QWidget *playingPane, QPaintEvent *event);
-	bool paintEventHeaderEntity(QWidget *widget, QPaintEvent *event);
+	//bool paintEventHeaderEntity(QWidget *widget, QPaintEvent *event);
 	bool paintEventFooterEntity(QWidget *widget, QPaintEvent *event);
-	bool paintEventHeaderArea(QWidget *widget, QPaintEvent *event);
+	//bool paintEventHeaderArea(QWidget *widget, QPaintEvent *event);
 	bool paintEventFooterArea(QWidget *widget, QPaintEvent *event);
 	bool enterEventPlayingPane(QWidget *playingPane, QEvent *event);
 	bool mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *event);
-	bool paintEventPlayingHeader(QWidget *widget, QPaintEvent *event);
+	//bool paintEventPlayingHeader(QWidget *widget, QPaintEvent *event);
 	bool paintEventPlayingFooter(QWidget *widget, QPaintEvent *event);
 
 private slots:

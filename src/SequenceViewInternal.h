@@ -39,7 +39,7 @@ public:
 
 };
 
-
+/*
 class SoundChannelHeader : public QWidget
 {
 	Q_OBJECT
@@ -59,7 +59,7 @@ public:
 	virtual void mouseDoubleClickEvent(QMouseEvent *event);
 	virtual void contextMenuEvent(QContextMenuEvent * event);
 };
-
+*/
 
 class SoundChannelFooter : public QWidget
 {
