@@ -1194,7 +1194,7 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 		}
 	}
 	painter.setClipping(false);
-	painter.setPen(palette().dark().color());
+	painter.setPen(QPen(palette().dark(), 1));
 	painter.drawLine(0, 0, 0, playingPane->height());
 	painter.drawLine(playingPane->width()-1, 0, playingPane->width()-1, playingPane->height());
 
@@ -1286,9 +1286,9 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 	}
 
 	// cursors
-	if (cursor->IsExistingSoundNote()){
+	if (cursor->IsExistingSoundNote() && lanes.contains(cursor->GetExistingSoundNote()->GetNote().lane)){
 		SoundNote note = cursor->GetExistingSoundNote()->GetNote();
-		LaneDef &laneDef = lanes[note.lane];
+		const LaneDef &laneDef = lanes[note.lane];
 		int noteStartY = Time2Y(note.location);
 		int noteEndY = Time2Y(note.location + note.length);
 		switch (note.noteType){
