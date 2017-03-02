@@ -1,5 +1,5 @@
 #include "Wave.h"
-
+#include "QOggVorbisAdapter.h"
 
 
 
@@ -190,8 +190,7 @@ void WaveData::LoadWav(const QString &srcPath)
 void WaveData::LoadOgg(const QString &srcPath)
 {
 	OggVorbis_File file;
-	QByteArray path = QDir::toNativeSeparators(srcPath).toLocal8Bit();
-	int e = ov_fopen(path.data(), &file);
+	int e = QOggVorbisAdapter::Open(QDir::toNativeSeparators(srcPath), &file);
 	if (e != 0){
 		switch (e){
 		case OV_EREAD:

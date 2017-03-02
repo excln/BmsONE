@@ -37,7 +37,8 @@ SOURCES += main.cpp\
     SelectedObjectView.cpp \
     JsonExtension.cpp \
     SoundChannelInternal.cpp \
-    SequenceViewInternal.cpp
+    SequenceViewInternal.cpp \
+    QOggVorbisAdapter.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -61,7 +62,8 @@ HEADERS  += MainWindow.h \
     SoundChannelInternal.h \
     DocumentDef.h \
     SoundChannelDef.h \
-    SequenceViewInternal.h
+    SequenceViewInternal.h \
+    QOggVorbisAdapter.h
 
 FORMS    +=
 

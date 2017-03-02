@@ -137,7 +137,7 @@ void InfoView::ExtraFieldsEdited()
 	}
 	text.prepend('{').append('}');
 	QJsonParseError err;
-	QJsonObject json = QJsonDocument::fromJson(text.toLocal8Bit(), &err).object();
+	QJsonObject json = QJsonDocument::fromJson(text.toUtf8(), &err).object();
 	if (err.error != QJsonParseError::NoError){
 		qApp->beep();
 		SetExtraFields(document->GetInfo()->GetExtraFields());

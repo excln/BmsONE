@@ -1,4 +1,5 @@
 #include "Wave.h"
+#include "QOggVorbisAdapter.h"
 
 
 WaveStreamSource::WaveStreamSource(const QString &srcPath, QObject *parent)
@@ -184,8 +185,7 @@ int OggStreamSource::Open()
 {
 	error = NoError;
 	file = new OggVorbis_File;
-	QByteArray path = QDir::toNativeSeparators(srcPath).toLocal8Bit();
-	int e = ov_fopen(path.data(), file);
+	int e = QOggVorbisAdapter::Open(QDir::toNativeSeparators(srcPath), file);
 	if (e != 0){
 		switch (e){
 		case OV_EREAD:
