@@ -676,28 +676,31 @@ void MainWindow::dropEvent(QDropEvent *event)
 {
 	const QMimeData* mimeData = event->mimeData();
 	if (mimeData->hasUrls()){
-		QList<QUrl> urls = mimeData->urls();
-		QString filePath = urls[0].toLocalFile();
-		QString ext = QFileInfo(filePath).suffix().toLower();
-		if (IsBmsFileExtension(ext)){
-			QMetaObject::invokeMethod(this, "FileOpen", Qt::QueuedConnection, Q_ARG(QString, filePath));
-		}else if (IsSoundFileExtension(ext)){
-			QList<QString> filePaths;
-			for (auto url : urls){
-				filePaths.append(url.toLocalFile());
-			}
-			QMetaObject::invokeMethod(this, "ChannelsNew", Qt::QueuedConnection, Q_ARG(QList<QString>, filePaths));
-		}else{
-			QMessageBox *msgbox = new QMessageBox(
-						QMessageBox::Warning,
-						tr("Error"),
-						tr("Unknown File Type"),
-						QMessageBox::Ok,
-						this);
-			msgbox->show();
+		QStringList filePaths;
+		for (auto url : mimeData->urls()){
+			filePaths.append(url.toLocalFile());
 		}
+		OpenFiles(filePaths);
 		event->setDropAction(Qt::CopyAction);
 		event->accept();
+	}
+}
+
+void MainWindow::OpenFiles(QStringList filePaths)
+{
+	QString ext = QFileInfo(filePaths[0]).suffix().toLower();
+	if (IsBmsFileExtension(ext)){
+		QMetaObject::invokeMethod(this, "FileOpen", Qt::QueuedConnection, Q_ARG(QString, filePaths[0]));
+	}else if (IsSoundFileExtension(ext)){
+		QMetaObject::invokeMethod(this, "ChannelsNew", Qt::QueuedConnection, Q_ARG(QList<QString>, filePaths));
+	}else{
+		QMessageBox *msgbox = new QMessageBox(
+					QMessageBox::Warning,
+					tr("Error"),
+					tr("Unknown File Type"),
+					QMessageBox::Ok,
+					this);
+		msgbox->show();
 	}
 }
 
@@ -777,5 +780,50 @@ void StatusBarSection::paintEvent(QPaintEvent *event)
 	}
 	painter.setPen(palette().windowText().color());
 	painter.drawText(x, 0, width()-x, height(), 0, text);
+}
+
+
+const char* App::SettingsLanguageKey = "Language";
+
+App::App(int argc, char *argv[])
+	: QApplication(argc, argv)
+	, settings(nullptr)
+	, mainWindow(nullptr)
+{
+	QString settingsDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+	if (settingsDir.isEmpty()){
+		settings = new QSettings(ORGANIZATION_NAME, APP_NAME);
+	}else{
+		settings = new QSettings(QDir(settingsDir).filePath("Settings.ini"), QSettings::IniFormat);
+	}
+
+	QTranslator translator;
+	translator.load(":/i18n/" + settings->value(SettingsLanguageKey, QLocale::system().name()).toString());
+	qApp->installTranslator(&translator);
+
+	mainWindow = new MainWindow(settings);
+	if (arguments().size() > 1){
+		QStringList filePaths = arguments().mid(1);
+		mainWindow->OpenFiles(filePaths);
+	}
+	mainWindow->show();
+}
+
+App::~App()
+{
+	if (mainWindow) delete mainWindow;
+	if (settings) delete settings;
+}
+
+bool App::event(QEvent *e)
+{
+	if (e->type() == QEvent::FileOpen){
+		QFileOpenEvent *fileOpenEvent = dynamic_cast<QFileOpenEvent*>(e);
+		QStringList filePaths;
+		filePaths.append(fileOpenEvent->file());
+		mainWindow->OpenFiles(filePaths);
+		return true;
+	}
+	return QApplication::event(e);
 }
 

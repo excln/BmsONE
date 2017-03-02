@@ -183,6 +183,25 @@ public:
 	AudioPlayer *GetAudioPlayer() const{ return audioPlayer; }
 	BpmEditView *GetBpmEditTool() const{ return bpmEditView; }
 
+	void OpenFiles(QStringList filePaths);
+
+};
+
+
+class App : public QApplication
+{
+	Q_OBJECT
+
+private:
+	static const char* SettingsLanguageKey;
+
+	QSettings *settings;
+	MainWindow *mainWindow;
+	virtual bool event(QEvent *e);
+
+public:
+	App(int argc, char *argv[]);
+	virtual ~App();
 };
 
 
