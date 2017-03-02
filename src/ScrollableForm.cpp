@@ -23,7 +23,7 @@ void ScrollableForm::Initialize(QFormLayout *layout)
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	setWidget(form);
-	setMinimumHeight(40);
+	setMinimumHeight(1);
 }
 
 bool ScrollableForm::viewportEvent(QEvent *event)

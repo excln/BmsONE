@@ -32,7 +32,9 @@ SOURCES += main.cpp\
     WaveStream.cpp \
     ScrollableForm.cpp \
     Util.cpp \
-    Bmson.cpp
+    Bmson.cpp \
+    BpmEditTool.cpp \
+    SelectedObjectView.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -48,7 +50,9 @@ HEADERS  += MainWindow.h \
     Stabilizer.h \
     SequenceDef.h \
     ScrollableForm.h \
-    UIDef.h
+    UIDef.h \
+    BpmEditTool.h \
+    SelectedObjectView.h
 
 FORMS    +=
 

@@ -1,5 +1,6 @@
 #include "SequenceView.h"
 #include "MainWindow.h"
+#include "BpmEditTool.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -196,6 +197,8 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 		connect(document, &Document::SoundChannelRemoved, this, &SequenceView::SoundChannelRemoved);
 		connect(document, &Document::SoundChannelMoved, this, &SequenceView::SoundChannelMoved);
 		connect(document, &Document::TotalLengthChanged, this, &SequenceView::TotalLengthChanged);
+		connect(document, &Document::BarLinesChanged, this, &SequenceView::BarLinesChanged);
+		connect(document, &Document::TimeMappingChanged, this, &SequenceView::TimeMappingChanged);
 
 		resolution = document->GetTimeBase();
 		viewLength = document->GetTotalVisibleLength();
@@ -206,6 +209,68 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 		UpdateVerticalScrollBar(0.0); // daburi
 	}
 	documentReady = true;
+}
+
+void SequenceView::ClearNotesSelection()
+{
+	selectedNotes.clear();
+	playingPane->update();
+	for (auto cview : soundChannels){
+		cview->update();
+	}
+}
+
+void SequenceView::SelectSingleNote(SoundNoteView *nview)
+{
+	ClearBpmEventsSelection();
+	selectedNotes.clear();
+	selectedNotes.insert(nview);
+	playingPane->update();
+	for (auto cview : soundChannels){
+		cview->update();
+	}
+}
+
+void SequenceView::ToggleNoteSelection(SoundNoteView *nview)
+{
+	ClearBpmEventsSelection();
+	if (selectedNotes.contains(nview)){
+		selectedNotes.remove(nview);
+	}else{
+		selectedNotes.insert(nview);
+	}
+	playingPane->update();
+	for (auto cview : soundChannels){
+		cview->update();
+	}
+}
+
+void SequenceView::ClearBpmEventsSelection()
+{
+	selectedBpmEvents.clear();
+	timeLine->update();
+	BpmEventsSelectionUpdated();
+}
+
+void SequenceView::SelectSingleBpmEvent(BpmEvent event)
+{
+	ClearNotesSelection();
+	selectedBpmEvents.clear();
+	selectedBpmEvents.insert(event.location, event);
+	timeLine->update();
+	BpmEventsSelectionUpdated();
+}
+
+void SequenceView::ToggleBpmEventSelection(BpmEvent event)
+{
+	ClearNotesSelection();
+	if (selectedBpmEvents.contains(event.location)){
+		selectedBpmEvents.remove(event.location);
+	}else{
+		selectedBpmEvents.insert(event.location, event);
+	}
+	timeLine->update();
+	BpmEventsSelectionUpdated();
 }
 
 
@@ -550,6 +615,25 @@ void SequenceView::TotalLengthChanged(int totalLength)
 	}
 }
 
+void SequenceView::BarLinesChanged()
+{
+	if (documentReady){
+		update();
+		for (auto *cv : soundChannels){
+			cv->UpdateWholeBackBuffer();
+			cv->update();
+		}
+	}
+}
+
+void SequenceView::TimeMappingChanged()
+{
+	if (documentReady){
+		timeLine->update();
+		// update of each channel view is triggered by each channel
+	}
+}
+
 void SequenceView::DestroySoundChannel(SoundChannelView *cview)
 {
 	int ichannel = 0;
@@ -607,6 +691,21 @@ void SequenceView::MakeVisibleCurrentChannel()
 		scrollX = (currentChannel+1)*64 - viewport()->width();
 	}
 	horizontalScrollBar()->setValue(scrollX);
+}
+
+void SequenceView::BpmEventsSelectionUpdated()
+{
+	// validate existence & update current value
+	auto bpmEvents = document->GetBpmEvents();
+	for (auto i=selectedBpmEvents.begin(); i!=selectedBpmEvents.end(); ){
+		if (!bpmEvents.contains(i.key())){
+			i = selectedBpmEvents.erase(i);
+			continue;
+		}
+		i->value = bpmEvents[i.key()].value;
+		i++;
+	}
+	mainWindow->GetBpmEditTool()->SetBpmEvents(selectedBpmEvents.values());
 }
 
 void SequenceView::OnCurrentChannelChanged(int index)
@@ -722,22 +821,22 @@ bool SequenceView::mouseEventTimeLine(QWidget *timeLine, QMouseEvent *event)
 	}
 	if (event->x() < timeLineMeasureWidth){
 		// on measure area
-		const auto bars = document->GetBarLines();
-		int hitTime = time;
-		if ((event->modifiers() & Qt::AltModifier) == 0){
-			// Alt to bypass absorption
-			auto i = bars.upperBound(time);
-			if (i != bars.begin()){
-				i--;
-				if (i != bars.end() && Time2Y(i.key()) - 16 <= event->y()){
-					hitTime = i.key();
+		if (event->modifiers() & Qt::ControlModifier){
+			// edit bar lines
+			const auto bars = document->GetBarLines();
+			int hitTime = time;
+			if ((event->modifiers() & Qt::AltModifier) == 0){
+				// Alt to bypass absorption
+				auto i = bars.upperBound(time);
+				if (i != bars.begin()){
+					i--;
+					if (i != bars.end() && Time2Y(i.key()) - 16 <= event->y()){
+						hitTime = i.key();
+					}
 				}
 			}
-		}
-		switch (event->type()){
-		case QEvent::MouseMove: {
-			if (event->modifiers() & Qt::ControlModifier){
-				// edit bar lines
+			switch (event->type()){
+			case QEvent::MouseMove:
 				if (bars.contains(hitTime)){
 					timeLine->setCursor(Qt::ArrowCursor);
 					cursor.SetExistingBarLine(bars[hitTime]);
@@ -745,21 +844,60 @@ bool SequenceView::mouseEventTimeLine(QWidget *timeLine, QMouseEvent *event)
 					timeLine->setCursor(Qt::ArrowCursor);
 					cursor.SetNewBarLine(BarLine(time, 0));
 				}
-			}else{
-				// just show time
+				return true;
+			case QEvent::MouseButtonPress:
+				ClearNotesSelection();
+				ClearBpmEventsSelection();
+				if (bars.contains(hitTime)){
+					switch (event->button()){
+					case Qt::LeftButton: {
+						// update one
+						BarLine bar = bars[hitTime];
+						bar.Ephemeral = false;
+						document->InsertBarLine(bar);
+						cursor.SetExistingBarLine(bar);
+						break;
+					}
+					case Qt::RightButton: {
+						// delete one
+						document->RemoveBarLine(hitTime);
+						//cursor.SetNewBarLine(BarLine(time, 0));
+						cursor.SetTime(time);
+						break;
+					}
+					default:
+						break;
+					}
+				}else{
+					if (event->button() == Qt::LeftButton){
+						// insert one
+						document->InsertBarLine(BarLine(time, 0));
+					}
+				}
+				return true;
+			case QEvent::MouseButtonRelease:
+				return true;
+			case QEvent::MouseButtonDblClick:
+				return false;
+			default:
+				return false;
+			}
+		}else{
+			// just show time
+			switch (event->type()){
+			case QEvent::MouseMove:
 				timeLine->setCursor(Qt::ArrowCursor);
 				cursor.SetTime(time);
+				return true;
+			case QEvent::MouseButtonPress:
+				ClearNotesSelection();
+				ClearBpmEventsSelection();
+				return true;
+			case QEvent::MouseButtonRelease:
+			case QEvent::MouseButtonDblClick:
+				return false;
 			}
 			return true;
-		}
-		case QEvent::MouseButtonPress:
-			return true;
-		case QEvent::MouseButtonRelease:
-			return true;
-		case QEvent::MouseButtonDblClick:
-			return false;
-		default:
-			return false;
 		}
 	}else{
 		// on BPM area
@@ -789,6 +927,43 @@ bool SequenceView::mouseEventTimeLine(QWidget *timeLine, QMouseEvent *event)
 			return true;
 		}
 		case QEvent::MouseButtonPress:
+			ClearNotesSelection();
+			if (events.contains(hitTime)){
+				switch (event->button()){
+				case Qt::LeftButton:
+					// edit one
+					if (event->modifiers() & Qt::ControlModifier){
+						ToggleBpmEventSelection(events[hitTime]);
+					}else{
+						SelectSingleBpmEvent(events[hitTime]);
+					}
+					break;
+				case Qt::RightButton: {
+					// delete one
+					if (document->RemoveBpmEvent(hitTime)){
+						//auto i = events.upperBound(time);
+						//double bpm = i==events.begin() ? document->GetInfo()->GetInitBpm() : (i-1)->value;
+						//cursor.SetNewBpmEvent(BpmEvent(time, bpm));
+						cursor.SetTime(time);
+						ClearBpmEventsSelection();
+					}
+					break;
+				}
+				default:
+					break;
+				}
+			}else{
+				if (event->button() == Qt::LeftButton){
+					// add event
+					auto i = events.upperBound(time);
+					double bpm = i==events.begin() ? document->GetInfo()->GetInitBpm() : (i-1)->value;
+					BpmEvent event(time, bpm);
+					if (document->InsertBpmEvent(event)){
+						cursor.SetExistingBpmEvent(event);
+						SelectSingleBpmEvent(event);
+					}
+				}
+			}
 			return true;
 		case QEvent::MouseButtonRelease:
 			return true;
@@ -869,15 +1044,38 @@ bool SequenceView::paintEventTimeLine(QWidget *timeLine, QPaintEvent *event)
 	}
 
 	// bpm notes
-	painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 1));
-	painter.setBrush(Qt::NoBrush);
 	for (BpmEvent bpmEvent : document->GetBpmEvents()){
 		if (bpmEvent.location < tBegin)
 			continue;
 		if (bpmEvent.location > tEnd)
 			break;
 		int y = Time2Y(bpmEvent.location) - 1;
-		painter.drawLine(timeLineMeasureWidth, y, timeLineWidth-1, y);
+		if (selectedBpmEvents.contains(bpmEvent.location)){
+			if (cursor.IsExistingBpmEvent() && cursor.GetBpmEvent().location == bpmEvent.location){
+				painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 3));
+				painter.setBrush(Qt::NoBrush);
+			}else{
+				painter.setPen(QPen(QBrush(QColor(255, 191, 191)), 3));
+				painter.setBrush(Qt::NoBrush);
+			}
+		}else{
+			if (cursor.IsExistingBpmEvent() && cursor.GetBpmEvent().location == bpmEvent.location){
+				painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
+				painter.setBrush(Qt::NoBrush);
+			}else{
+				painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 1));
+				painter.setBrush(Qt::NoBrush);
+			}
+		}
+		painter.drawLine(timeLineMeasureWidth+1, y, timeLineWidth-1, y);
+		painter.drawText(timeLineMeasureWidth, y-24, timeLineBpmWidth, 24, Qt::AlignHCenter | Qt::AlignBottom, QString::number(bpmEvent.value));
+	}
+	if (cursor.IsNewBpmEvent()){
+		painter.setPen(QPen(QBrush(QColor(255, 255, 255, 127)), 1));
+		painter.setBrush(Qt::NoBrush);
+		auto bpmEvent = cursor.GetBpmEvent();
+		int y = Time2Y(bpmEvent.location) - 1;
+		painter.drawLine(timeLineMeasureWidth+1, y, timeLineWidth-1, y);
 		painter.drawText(timeLineMeasureWidth, y-24, timeLineBpmWidth, 24, Qt::AlignHCenter | Qt::AlignBottom, QString::number(bpmEvent.value));
 	}
 
@@ -1192,19 +1390,15 @@ bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *even
 		return true;
 	}
 	case QEvent::MouseButtonPress:
+		ClearBpmEventsSelection();
 		if (noteHit){
 			switch (event->button()){
 			case Qt::LeftButton:
 				// select note
 				if (event->modifiers() & Qt::ControlModifier){
-					if (selectedNotes.contains(noteHit)){
-						selectedNotes.remove(noteHit);
-					}else{
-						selectedNotes.insert(noteHit);
-					}
+					ToggleNoteSelection(noteHit);
 				}else{
-					selectedNotes.clear();
-					selectedNotes.insert(noteHit);
+					SelectSingleNote(noteHit);
 				}
 				cursor.SetExistingSoundNote(noteHit);
 				SelectSoundChannel(noteHit->GetChannelView());
@@ -1217,32 +1411,29 @@ bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *even
 				if (soundChannels[currentChannel]->GetNotes().contains(noteHit->GetNote().location)
 					&& soundChannels[currentChannel]->GetChannel()->RemoveNote(note))
 				{
-					selectedNotes.clear();
+					ClearNotesSelection();
 					cursor.SetNewSoundNote(note);
 				}else{
 					// noteHit was in inactive channel, or failed to delete note
-					selectedNotes.clear();
-					selectedNotes.insert(noteHit);
+					SelectSingleNote(noteHit);
 					cursor.SetExistingSoundNote(noteHit);
 				}
 				SelectSoundChannel(noteHit->GetChannelView());
 				break;
 			}
 			case Qt::MidButton:
-				selectedNotes.clear();
-				selectedNotes.insert(noteHit);
+				ClearNotesSelection();
 				SelectSoundChannel(noteHit->GetChannelView());
 				break;
 			}
 		}else{
 			if (currentChannel >= 0 && lane > 0 && event->button() == Qt::LeftButton){
 				// insert note (maybe moving existing note)
-				selectedNotes.clear();
 				SoundNote note(time, lane, 0, event->modifiers() & Qt::ShiftModifier ? 0 : 1);
 				if (soundChannels[currentChannel]->GetChannel()->InsertNote(note)){
 					// select the note
 					const QMap<int, SoundNoteView*> &notes = soundChannels[currentChannel]->GetNotes();
-					selectedNotes.insert(notes[time]);
+					SelectSingleNote(notes[time]);
 					PreviewSingleNote(notes[time]);
 					cursor.SetExistingSoundNote(notes[time]);
 					timeLine->update();
@@ -1507,7 +1698,7 @@ void SequenceViewCursor::SetNewBpmEvent(BpmEvent event)
 	state = State::NEW_BPM_EVENT;
 	bpmEvent = event;
 	statusBar->GetObjectSection()->SetIcon(QIcon(":/images/event.png"));
-	statusBar->GetObjectSection()->SetText(tr("Click to add a BPM event"));
+	statusBar->GetObjectSection()->SetText(tr("Click to add a BPM event: %1").arg(event.value));
 	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
 	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
 	statusBar->GetRealTimeSection()->SetText(GetRealTimeString());
@@ -1524,7 +1715,7 @@ void SequenceViewCursor::SetExistingBpmEvent(BpmEvent event)
 	state = State::EXISTING_BPM_EVENT;
 	bpmEvent = event;
 	statusBar->GetObjectSection()->SetIcon(QIcon(":/images/event.png"));
-	statusBar->GetObjectSection()->SetText(tr("BPM event"));
+	statusBar->GetObjectSection()->SetText(tr("BPM event: %1").arg(event.value));
 	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
 	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
 	statusBar->GetRealTimeSection()->SetText(GetRealTimeString());
@@ -1538,7 +1729,7 @@ void SequenceViewCursor::SetNewBarLine(BarLine bar)
 	if (state == State::NEW_BAR_LINE && barLine == bar)
 		return;
 	time = bar.Location;
-	state = State::NEW_BPM_EVENT;
+	state = State::NEW_BAR_LINE;
 	barLine = bar;
 	statusBar->GetObjectSection()->SetIcon(QIcon(":/images/event.png"));
 	statusBar->GetObjectSection()->SetText(tr("Click to add a bar line"));
@@ -1558,7 +1749,7 @@ void SequenceViewCursor::SetExistingBarLine(BarLine bar)
 	state = State::EXISTING_BAR_LINE;
 	barLine = bar;
 	statusBar->GetObjectSection()->SetIcon(QIcon(":/images/event.png"));
-	statusBar->GetObjectSection()->SetText(tr("Bar line"));
+	statusBar->GetObjectSection()->SetText(bar.Ephemeral ? tr("Temporary bar line") : tr("Bar line"));
 	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
 	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
 	statusBar->GetRealTimeSection()->SetText(GetRealTimeString());
@@ -2041,6 +2232,7 @@ void SoundChannelView::mouseMoveEvent(QMouseEvent *event)
 
 void SoundChannelView::mousePressEvent(QMouseEvent *event)
 {
+	sview->ClearBpmEventsSelection();
 	if (current){
 		// do something
 		qreal time = sview->Y2Time(event->y());
@@ -2053,14 +2245,9 @@ void SoundChannelView::mousePressEvent(QMouseEvent *event)
 			case Qt::LeftButton:
 				// select note
 				if (event->modifiers() & Qt::ControlModifier){
-					if (sview->selectedNotes.contains(noteHit)){
-						sview->selectedNotes.remove(noteHit);
-					}else{
-						sview->selectedNotes.insert(noteHit);
-					}
+					sview->ToggleNoteSelection(noteHit);
 				}else{
-					sview->selectedNotes.clear();
-					sview->selectedNotes.insert(noteHit);
+					sview->SelectSingleNote(noteHit);
 				}
 				sview->cursor.SetExistingSoundNote(noteHit);
 				sview->PreviewSingleNote(noteHit);
@@ -2072,12 +2259,11 @@ void SoundChannelView::mousePressEvent(QMouseEvent *event)
 				if (channel->GetNotes().contains(noteHit->GetNote().location)
 					&& channel->RemoveNote(note))
 				{
-					sview->selectedNotes.clear();
+					sview->ClearNotesSelection();
 					sview->cursor.SetNewSoundNote(note);
 				}else{
 					// noteHit was in inactive channel, or failed to delete note
-					sview->selectedNotes.clear();
-					sview->selectedNotes.insert(noteHit);
+					sview->SelectSingleNote(noteHit);
 					sview->cursor.SetExistingSoundNote(noteHit);
 					sview->PreviewSingleNote(noteHit);
 				}
@@ -2091,11 +2277,10 @@ void SoundChannelView::mousePressEvent(QMouseEvent *event)
 		}else{
 			if (event->button() == Qt::LeftButton){
 				// insert note (maybe moving existing note)
-				sview->selectedNotes.clear();
 				SoundNote note(time, 0, 0, event->modifiers() & Qt::ShiftModifier ? 0 : 1);
 				if (channel->InsertNote(note)){
 					// select the note
-					sview->selectedNotes.insert(notes[time]);
+					sview->SelectSingleNote(notes[time]);
 					sview->PreviewSingleNote(notes[time]);
 					sview->cursor.SetExistingSoundNote(notes[time]);
 					sview->timeLine->update();

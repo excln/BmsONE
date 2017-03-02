@@ -2,6 +2,8 @@
 #include "SequenceView.h"
 #include "InfoView.h"
 #include "ChannelInfoView.h"
+#include "BpmEditTool.h"
+#include "SelectedObjectView.h"
 #include <QtMultimedia/QMediaPlayer>
 #include "UIDef.h"
 
@@ -9,6 +11,7 @@ const char* MainWindow::SettingsGroup = "MainWindow";
 const char* MainWindow::SettingsGeometryKey = "Geometry";
 const char* MainWindow::SettingsWindowStateKey = "WindowState";
 const char* MainWindow::SettingsWidgetsStateKey = "WidgetsState";
+const char* MainWindow::SettingsHideInactiveSelectedViewKey = "HideInactiveSelectedView";
 
 const QSize UIUtil::ToolBarIconSize(18, 18);
 
@@ -227,6 +230,15 @@ MainWindow::MainWindow(QSettings *settings)
 	dock2->resize(334, dock2->height());
 	menuView->insertAction(actionViewDockSeparator, dock2->toggleViewAction());
 
+	selectedObjectView = new SelectedObjectView(this);
+	selectedObjectView->setObjectName("Selected Objects3");
+	addDockWidget(Qt::LeftDockWidgetArea, selectedObjectView);
+	selectedObjectView->setFloating(true);
+	menuView->insertAction(actionViewDockSeparator, selectedObjectView->toggleViewAction());
+
+	bpmEditView = new BpmEditView(selectedObjectView);
+	connect(bpmEditView, SIGNAL(Updated()), this, SLOT(OnBpmEdited()));
+
 
 	// Current Channel Binding
 	connect(channelInfoView, SIGNAL(CurrentChannelChanged(int)), this, SLOT(OnCurrentChannelChanged(int)));
@@ -263,8 +275,15 @@ MainWindow::MainWindow(QSettings *settings)
 		if (settings->contains(SettingsWidgetsStateKey)){
 			restoreState(settings->value(SettingsWidgetsStateKey).toByteArray());
 		}
+
+		if (settings->value(SettingsHideInactiveSelectedViewKey, true).toBool()){
+			selectedObjectView->hide();
+		}
 	}
 	settings->endGroup(); // MainWindow
+
+	// preparation for startup
+	bpmEditView->hide();
 }
 
 MainWindow::~MainWindow()
@@ -494,6 +513,16 @@ void MainWindow::OnCurrentChannelChanged(int ichannel)
 		actionChannelMoveRight->setEnabled(false);
 		actionChannelDestroy->setEnabled(false);
 		actionChannelSelectFile->setEnabled(false);
+	}
+}
+
+void MainWindow::OnBpmEdited()
+{
+	if (!document)
+		return;
+	auto bpmEvents = bpmEditView->GetBpmEvents();
+	for (auto event : bpmEvents){
+		document->InsertBpmEvent(event);
 	}
 }
 

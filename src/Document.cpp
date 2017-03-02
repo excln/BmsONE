@@ -246,6 +246,45 @@ void Document::OnInitBpmChanged()
 	emit TimeMappingChanged();
 }
 
+bool Document::InsertBarLine(BarLine bar)
+{
+	// if (barLines.contains(bar.Location)) return false; // don't filter (due to ephemeral bars)
+	auto wh = barLines.insert(bar.Location, bar);
+	for (auto i=barLines.begin(); i!=wh; i++){
+		if (i->Ephemeral){
+			i->Ephemeral = false;
+		}
+	}
+	UpdateTotalLength(); // update ephemeral bars after `bar`
+	emit BarLinesChanged();
+	return true;
+}
+
+bool Document::RemoveBarLine(int location)
+{
+	if (!barLines.contains(location)) return false;
+	barLines.remove(location);
+	UpdateTotalLength(); // update ephemeral bars after `bar`
+	emit BarLinesChanged();
+	return true;
+}
+
+bool Document::InsertBpmEvent(BpmEvent event)
+{
+	//if (bpmEvents.contains(event.location)) return false; // don't filter (for editing)
+	bpmEvents.insert(event.location, event);
+	emit TimeMappingChanged();
+	return true;
+}
+
+bool Document::RemoveBpmEvent(int location)
+{
+	if (!bpmEvents.contains(location)) return false;
+	bpmEvents.remove(location);
+	emit TimeMappingChanged();
+	return true;
+}
+
 
 
 

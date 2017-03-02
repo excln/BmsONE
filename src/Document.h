@@ -71,8 +71,7 @@ struct BarLine : public BmsonObject
 	QJsonValue SaveBmson();
 
 	bool operator ==(const BarLine &r) const{
-		// ignore Ephemeral
-		return Location == r.Location && Kind == r.Kind;
+		return Location == r.Location && Kind == r.Kind && Ephemeral == r.Ephemeral;
 	}
 };
 
@@ -467,6 +466,12 @@ public:
 	void ChannelLengthChanged(SoundChannel *channel, int length);
 	void UpdateTotalLength();
 
+	bool InsertBarLine(BarLine bar);
+	bool RemoveBarLine(int location);
+
+	bool InsertBpmEvent(BpmEvent event);
+	bool RemoveBpmEvent(int location);
+
 signals:
 	void FilePathChanged();
 	void SoundChannelInserted(int index, SoundChannel *channel);
@@ -479,6 +484,8 @@ signals:
 
 	// emitted when length of song (in ticks) changed.
 	void TotalLengthChanged(int length);
+
+	void BarLinesChanged();
 };
 
 

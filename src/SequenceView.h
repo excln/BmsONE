@@ -320,6 +320,7 @@ private:
 	int currentChannel;
 	QSet<SoundNoteView*> selectedNotes;
 	SequenceViewCursor cursor;
+	QMap<int, BpmEvent> selectedBpmEvents;
 
 private:
 	qreal Time2Y(qreal time) const;
@@ -339,6 +340,15 @@ private:
 	//void RightClickOnExistingNote();
 	void PreviewSingleNote(SoundNoteView *nview);
 	void MakeVisibleCurrentChannel();
+	void BpmEventsSelectionUpdated();
+
+	void ClearNotesSelection();
+	void SelectSingleNote(SoundNoteView *nview);
+	void ToggleNoteSelection(SoundNoteView *nview);
+
+	void ClearBpmEventsSelection();
+	void SelectSingleBpmEvent(BpmEvent event);
+	void ToggleBpmEventSelection(BpmEvent event);
 
 	void mouseMoveEventVp(QMouseEvent *event);
 	void dragEnterEventVp(QDragEnterEvent *event);
@@ -366,6 +376,8 @@ private slots:
 	void SoundChannelRemoved(int index, SoundChannel *channel);
 	void SoundChannelMoved(int indexBefore, int indexAfter);
 	void TotalLengthChanged(int totalLength);
+	void BarLinesChanged();
+	void TimeMappingChanged();
 	void DestroySoundChannel(SoundChannelView *cview);
 	void MoveSoundChannelLeft(SoundChannelView *cview);
 	void MoveSoundChannelRight(SoundChannelView *cview);

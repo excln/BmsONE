@@ -10,6 +10,8 @@
 class SequenceView;
 class InfoView;
 class ChannelInfoView;
+class BpmEditView;
+class SelectedObjectView;
 class MainWindow;
 
 
@@ -70,11 +72,12 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
-private:
+public:
 	static const char *SettingsGroup;
 	static const char *SettingsGeometryKey;
 	static const char *SettingsWindowStateKey;
 	static const char *SettingsWidgetsStateKey;
+	static const char *SettingsHideInactiveSelectedViewKey;
 
 private:
 	QSettings *settings;
@@ -84,6 +87,9 @@ private:
 	SequenceView *sequenceView;
 	InfoView *infoView;
 	ChannelInfoView *channelInfoView;
+
+	SelectedObjectView *selectedObjectView;
+	BpmEditView *bpmEditView;
 
 	Document *document;
 
@@ -154,6 +160,8 @@ private slots:
 
 	void OnCurrentChannelChanged(int ichannel);
 
+	void OnBpmEdited();
+
 signals:
 	void CurrentChannelChanged(int ichannel);
 
@@ -170,6 +178,7 @@ public:
 	QSettings *GetSettings() const{ return settings; }
 	StatusBar *GetStatusBar() const{ return statusBar; }
 	AudioPlayer *GetAudioPlayer() const{ return audioPlayer; }
+	BpmEditView *GetBpmEditTool() const{ return bpmEditView; }
 
 };
 
