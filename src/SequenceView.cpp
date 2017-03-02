@@ -720,20 +720,83 @@ bool SequenceView::mouseEventTimeLine(QWidget *timeLine, QMouseEvent *event)
 	if (snapToGrid){
 		time = SnapToFineGrid(time);
 	}
-	switch (event->type()){
-	case QEvent::MouseMove: {
-		timeLine->setCursor(Qt::ArrowCursor);
-		cursor.SetTime(time);
-		return true;
-	}
-	case QEvent::MouseButtonPress:
-		return true;
-	case QEvent::MouseButtonRelease:
-		return true;
-	case QEvent::MouseButtonDblClick:
-		return false;
-	default:
-		return false;
+	if (event->x() < timeLineMeasureWidth){
+		// on measure area
+		const auto bars = document->GetBarLines();
+		int hitTime = time;
+		if ((event->modifiers() & Qt::AltModifier) == 0){
+			// Alt to bypass absorption
+			auto i = bars.upperBound(time);
+			if (i != bars.begin()){
+				i--;
+				if (i != bars.end() && Time2Y(i.key()) - 16 <= event->y()){
+					hitTime = i.key();
+				}
+			}
+		}
+		switch (event->type()){
+		case QEvent::MouseMove: {
+			if (event->modifiers() & Qt::ControlModifier){
+				// edit bar lines
+				if (bars.contains(hitTime)){
+					timeLine->setCursor(Qt::ArrowCursor);
+					cursor.SetExistingBarLine(bars[hitTime]);
+				}else{
+					timeLine->setCursor(Qt::ArrowCursor);
+					cursor.SetNewBarLine(BarLine(time, 0));
+				}
+			}else{
+				// just show time
+				timeLine->setCursor(Qt::ArrowCursor);
+				cursor.SetTime(time);
+			}
+			return true;
+		}
+		case QEvent::MouseButtonPress:
+			return true;
+		case QEvent::MouseButtonRelease:
+			return true;
+		case QEvent::MouseButtonDblClick:
+			return false;
+		default:
+			return false;
+		}
+	}else{
+		// on BPM area
+		const auto events = document->GetBpmEvents();
+		int hitTime = time;
+		if ((event->modifiers() & Qt::AltModifier) == 0){
+			// Alt to bypass absorption
+			auto i = events.upperBound(time);
+			if (i != events.begin()){
+				i--;
+				if (i != events.end() && Time2Y(i.key()) - 16 <= event->y()){
+					hitTime = i.key();
+				}
+			}
+		}
+		switch (event->type()){
+		case QEvent::MouseMove: {
+			if (events.contains(hitTime)){
+				timeLine->setCursor(Qt::ArrowCursor);
+				cursor.SetExistingBpmEvent(events[hitTime]);
+			}else{
+				auto i = events.upperBound(time);
+				double bpm = i==events.begin() ? document->GetInfo()->GetInitBpm() : (i-1)->value;
+				timeLine->setCursor(Qt::ArrowCursor);
+				cursor.SetNewBpmEvent(BpmEvent(time, bpm));
+			}
+			return true;
+		}
+		case QEvent::MouseButtonPress:
+			return true;
+		case QEvent::MouseButtonRelease:
+			return true;
+		case QEvent::MouseButtonDblClick:
+			return false;
+		default:
+			return false;
+		}
 	}
 }
 
@@ -1436,6 +1499,74 @@ void SequenceViewCursor::SetExistingSoundNote(SoundNoteView *note)
 	emit Changed();
 }
 
+void SequenceViewCursor::SetNewBpmEvent(BpmEvent event)
+{
+	if (state == State::NEW_BPM_EVENT && bpmEvent == event)
+		return;
+	time = event.location;
+	state = State::NEW_BPM_EVENT;
+	bpmEvent = event;
+	statusBar->GetObjectSection()->SetIcon(QIcon(":/images/event.png"));
+	statusBar->GetObjectSection()->SetText(tr("Click to add a BPM event"));
+	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
+	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
+	statusBar->GetRealTimeSection()->SetText(GetRealTimeString());
+	statusBar->GetLaneSection()->SetText();
+	statusBar->clearMessage();
+	emit Changed();
+}
+
+void SequenceViewCursor::SetExistingBpmEvent(BpmEvent event)
+{
+	if (state == State::EXISTING_BPM_EVENT && bpmEvent == event)
+		return;
+	time = event.location;
+	state = State::EXISTING_BPM_EVENT;
+	bpmEvent = event;
+	statusBar->GetObjectSection()->SetIcon(QIcon(":/images/event.png"));
+	statusBar->GetObjectSection()->SetText(tr("BPM event"));
+	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
+	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
+	statusBar->GetRealTimeSection()->SetText(GetRealTimeString());
+	statusBar->GetLaneSection()->SetText();
+	statusBar->clearMessage();
+	emit Changed();
+}
+
+void SequenceViewCursor::SetNewBarLine(BarLine bar)
+{
+	if (state == State::NEW_BAR_LINE && barLine == bar)
+		return;
+	time = bar.Location;
+	state = State::NEW_BPM_EVENT;
+	barLine = bar;
+	statusBar->GetObjectSection()->SetIcon(QIcon(":/images/event.png"));
+	statusBar->GetObjectSection()->SetText(tr("Click to add a bar line"));
+	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
+	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
+	statusBar->GetRealTimeSection()->SetText(GetRealTimeString());
+	statusBar->GetLaneSection()->SetText();
+	statusBar->clearMessage();
+	emit Changed();
+}
+
+void SequenceViewCursor::SetExistingBarLine(BarLine bar)
+{
+	if (state == State::EXISTING_BAR_LINE && barLine == bar)
+		return;
+	time = bar.Location;
+	state = State::EXISTING_BAR_LINE;
+	barLine = bar;
+	statusBar->GetObjectSection()->SetIcon(QIcon(":/images/event.png"));
+	statusBar->GetObjectSection()->SetText(tr("Bar line"));
+	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
+	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
+	statusBar->GetRealTimeSection()->SetText(GetRealTimeString());
+	statusBar->GetLaneSection()->SetText();
+	statusBar->clearMessage();
+	emit Changed();
+}
+
 bool SequenceViewCursor::HasTime() const
 {
 	return state != State::NOTHING;
@@ -1446,7 +1577,10 @@ bool SequenceViewCursor::HasLane() const
 	switch (state){
 	case State::NOTHING:
 	case State::TIME:
-		return false;
+	case State::NEW_BPM_EVENT:
+	case State::EXISTING_BPM_EVENT:
+	case State::NEW_BAR_LINE:
+	case State::EXISTING_BAR_LINE:
 		return false;
 	default:
 		return true;
@@ -1887,12 +2021,11 @@ void SoundChannelView::OnChannelMenu(QContextMenuEvent *event)
 void SoundChannelView::mouseMoveEvent(QMouseEvent *event)
 {
 	qreal time = sview->Y2Time(event->y());
+	if (sview->snapToGrid){
+		time = sview->SnapToFineGrid(time);
+	}
 	if (current){
-		if (sview->snapToGrid){
-			time = sview->SnapToFineGrid(time);
-		}
 		SoundNoteView *noteHit = HitTestBGPane(event->y(), time);
-
 		if (noteHit){
 			setCursor(Qt::SizeAllCursor);
 			sview->cursor.SetExistingSoundNote(noteHit);
@@ -1902,7 +2035,7 @@ void SoundChannelView::mouseMoveEvent(QMouseEvent *event)
 		}
 	}else{
 		setCursor(Qt::ArrowCursor);
-		sview->cursor.SetNothing();
+		sview->cursor.SetTime(time);
 	}
 }
 

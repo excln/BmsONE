@@ -13,6 +13,9 @@ TEMPLATE = app
 
 QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
 
+win32: QMAKE_LFLAGS_DEBUG += /NODEFAULTLIB:MSVCRT /NODEFAULTLIB:libcmt
+win32: QMAKE_LFLAGS_RELEASE += /NODEFAULTLIB:libcmt
+
 SOURCES += main.cpp\
         MainWindow.cpp \
     History.cpp \

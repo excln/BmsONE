@@ -154,6 +154,10 @@ public:
 		TIME_WITH_LANE,
 		NEW_SOUND_NOTE,
 		EXISTING_SOUND_NOTE,
+		NEW_BPM_EVENT,
+		EXISTING_BPM_EVENT,
+		NEW_BAR_LINE,
+		EXISTING_BAR_LINE,
 	};
 
 private:
@@ -164,6 +168,8 @@ private:
 	int lane;
 	SoundNote newSoundNote;
 	SoundNoteView *existingSoundNote;
+	BpmEvent bpmEvent;
+	BarLine barLine;
 
 private:
 	QString GetAbsoluteLocationString() const;
@@ -180,17 +186,27 @@ public:
 	int GetLane() const{ return lane; }
 	SoundNote GetNewSoundNote() const{ return newSoundNote; }
 	SoundNoteView *GetExistingSoundNote() const{ return existingSoundNote; }
+	BpmEvent GetBpmEvent() const{ return bpmEvent; }
+	BarLine GetBarLine() const{ return barLine; }
 
 	void SetNothing();
 	void SetTime(int time);
 	void SetTimeWithLane(int time, int lane);
 	void SetNewSoundNote(SoundNote note);
 	void SetExistingSoundNote(SoundNoteView *note);
+	void SetNewBpmEvent(BpmEvent event);
+	void SetExistingBpmEvent(BpmEvent event);
+	void SetNewBarLine(BarLine bar);
+	void SetExistingBarLine(BarLine bar);
 
 	bool IsNothing() const{ return state == State::NOTHING; }
 	bool IsTimeWithLane() const{ return state == State::TIME_WITH_LANE; }
 	bool IsNewSoundNote() const{ return state == State::NEW_SOUND_NOTE; }
 	bool IsExistingSoundNote() const{ return state == State::EXISTING_SOUND_NOTE; }
+	bool IsNewBpmEvent() const{ return state == State::NEW_BPM_EVENT; }
+	bool IsExistingBpmEvent() const{ return state == State::EXISTING_BPM_EVENT; }
+	bool IsNewBarLine() const{ return state == State::NEW_BAR_LINE; }
+	bool IsExistingBarLine() const{ return state == State::EXISTING_BAR_LINE; }
 
 	bool HasTime() const;
 	bool HasLane() const;

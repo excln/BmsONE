@@ -69,6 +69,11 @@ struct BarLine : public BmsonObject
 
 	BarLine(const QJsonValue &json);
 	QJsonValue SaveBmson();
+
+	bool operator ==(const BarLine &r) const{
+		// ignore Ephemeral
+		return Location == r.Location && Kind == r.Kind;
+	}
 };
 
 
@@ -82,6 +87,10 @@ struct BpmEvent : public BmsonObject
 
 	BpmEvent(const QJsonValue &json);
 	QJsonValue SaveBmson();
+
+	bool operator ==(const BpmEvent &r) const{
+		return location == r.location && value == r.value;
+	}
 };
 
 
