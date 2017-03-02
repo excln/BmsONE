@@ -17,7 +17,7 @@ class ChannelInfoView : public ScrollableForm
 private:
 	MainWindow *mainWindow;
 	QComboBox *channelList;
-	QPushButton *buttonFile;
+	QToolButton *buttonFile;
 	QLabel *labelFormat;
 	QLabel *labelLength;
 	//QLineEdit *editAdjustment;
