@@ -108,12 +108,12 @@ RmsCachePacket::RmsCachePacket(const QList<RmsCacheEntry> &entries, int count)
 {
 	//qDebug() << "RmsCachePacket create" << count;
 	// algorithm: silence compression & 8bit->4bit(when all samples in 4bit)
-	qint8 peak = 0;
+	quint8 peak = 0;
 	QMap<int, int> silent;
 	int silentCur = -1;
 	for (int i=0; i<count; i++){
 		if (entries[i].L > peak)
-			peak = entries[i].R;
+			peak = entries[i].L;
 		if (entries[i].R > peak)
 			peak = entries[i].R;
 		if (entries[i].L == 0 && entries[i].R == 0){
@@ -130,43 +130,47 @@ RmsCachePacket::RmsCachePacket(const QList<RmsCacheEntry> &entries, int count)
 	}
 	if (peak == 0){
 		// perfect silence!
-	}else if (peak < 0x08){
+	}else if (peak <= 0x0E){
 		compressed.append(0x01);
 		QMap<int, int>::const_iterator isilent = silent.begin();
 		for (int i=0; i<count; i++){
 			if (isilent != silent.end() && isilent.key() == i){
-				if (isilent.value() >= 128){
-					compressed.append(char(uchar(0x80)));
-					compressed.append(char(uchar(isilent.value() & 0xff)));
-					compressed.append(char(uchar((isilent.value() & 0xff00) >> 8)));
+				if (isilent.value() >= 0x100){
+					compressed.append(char(uchar(0xFE)));
+					compressed.append(char(uchar(isilent.value() & 0xFF)));
+					compressed.append(char(uchar((isilent.value() & 0xFF00) >> 8)));
 				}else{
-					compressed.append(char(uchar(0x80 + isilent.value())));
+					compressed.append(char(uchar(0xFF)));
+					compressed.append(char(uchar(isilent.value())));
 				}
 				i += isilent.value() - 1;
 				isilent++;
 			}else{
-				compressed.append(uchar(entries[i].L & 0x07) | uchar((entries[i].R & 0x07) << 4));
+				compressed.append(entries[i].L | (entries[i].R << 4));
 			}
 		}
-	}else{
+	}else if (peak <= 0xEF){
 		compressed.append(0x02);
 		QMap<int, int>::const_iterator isilent = silent.begin();
 		for (int i=0; i<count; i++){
 			if (isilent != silent.end() && isilent.key() == i){
-				if (isilent.value() >= 128){
-					compressed.append(char(uchar(0x80)));
-					compressed.append(char(uchar(isilent.value() & 0xff)));
-					compressed.append(char(uchar((isilent.value() & 0xff00) >> 8)));
+				if (isilent.value() >= 0x100){
+					compressed.append(char(uchar(0xFE)));
+					compressed.append(char(uchar(isilent.value() & 0xFF)));
+					compressed.append(char(uchar((isilent.value() & 0xFF00) >> 8)));
 				}else{
-					compressed.append(char(uchar(0x80 + isilent.value())));
+					compressed.append(char(uchar(0xFF)));
+					compressed.append(char(uchar(isilent.value())));
 				}
 				i += isilent.value() - 1;
 				isilent++;
 			}else{
-				compressed.append(char(uchar(entries[i].L & 0x7f)));
-				compressed.append(char(uchar(entries[i].R & 0x7f)));
+				compressed.append(char(uchar(entries[i].L)));
+				compressed.append(char(uchar(entries[i].R)));
 			}
 		}
+	}else{
+		qDebug() << "malformed source: peak >= F0";
 	}
 	//qDebug() << QString("compressed. %1 -> %2 (%3%)").arg(count*2).arg(compressed.size()).arg(50*compressed.size()/count);
 }
@@ -181,66 +185,90 @@ QList<RmsCacheEntry> RmsCachePacket::Uncompress() const
 		}
 		return entries;
 	}
-	int c=0;
-	switch (compressed[c++]){
+	int c=1;
+	switch (compressed[0]){
 	case 1:
 		while (c < compressed.size()){
-			int v = (uchar)compressed[c++];
-			if (v & 0x80){
-				int size = v - 0x80;
-				if (size > 0){
-					for (int i=0; i<size; i++){
-						entries.append(RmsCacheEntry(0, 0));
-					}
-				}else{
-					if (c > compressed.size() - 2){
-						qDebug() << "malformed1";
+			uchar v = (uchar)compressed[c++];
+			if (v >= 0xF0){
+				if (v == 0xFF){
+#ifdef _DEBUG
+					if (c > compressed.size() - 1){
+						qDebug() << "malformed 1-FF";
 						break;
 					}
+#endif
+					int sz = (uchar)compressed[c++];
+					for (int i=0; i<sz; i++){
+						entries.append(RmsCacheEntry(0, 0));
+					}
+				}else if (v == 0xFE){
+#ifdef _DEBUG
+					if (c > compressed.size() - 2){
+						qDebug() << "malformed 1-FE";
+						break;
+					}
+#endif
 					int sl = (uchar)compressed[c++];
 					int sh = (uchar)compressed[c++];
 					int sz = sl | (sh << 8);
 					for (int i=0; i<sz; i++){
 						entries.append(RmsCacheEntry(0, 0));
 					}
+				}else{
+					qDebug() << "malformed 1-Fx" << v;
+					break;
 				}
 			}else{
-				entries.append(RmsCacheEntry(v & 0x07, (v & 0x70) >> 4));
+				entries.append(RmsCacheEntry(v & 0x0F, (v & 0xF0) >> 4));
 			}
 		}
 		break;
 	case 2:
 		while (c < compressed.size()){
-			int v = (uchar)compressed[c++];
-			if (v & 0x80){
-				int size = v - 0x80;
-				if (size > 0){
-					for (int i=0; i<size; i++){
-						entries.append(RmsCacheEntry(0, 0));
-					}
-				}else{
-					if (c > compressed.size() - 2){
-						qDebug() << "malformed 2-a";
+			uchar v = (uchar)compressed[c++];
+			if (v >= 0xF0){
+				if (v == 0xFF){
+#ifdef _DEBUG
+					if (c > compressed.size() - 1){
+						qDebug() << "malformed 2-FF";
 						break;
 					}
+#endif
+					int sz = (uchar)compressed[c++];
+					for (int i=0; i<sz; i++){
+						entries.append(RmsCacheEntry(0, 0));
+					}
+				}else if (v == 0xFE){
+#ifdef _DEBUG
+					if (c > compressed.size() - 2){
+						qDebug() << "malformed 2-FE";
+						break;
+					}
+#endif
 					int sl = (uchar)compressed[c++];
 					int sh = (uchar)compressed[c++];
 					int sz = sl | (sh << 8);
 					for (int i=0; i<sz; i++){
 						entries.append(RmsCacheEntry(0, 0));
 					}
+				}else{
+					qDebug() << "malformed 2-Fx";
+					break;
 				}
 			}else{
+#ifdef _DEBUG
 				if (c >= compressed.size()){
 					qDebug() << "malformed 2-b";
 					break;
 				}
-				int w = (uchar)compressed[c++];
+#endif
+				uchar w = (uchar)compressed[c++];
 				entries.append(RmsCacheEntry(v, w));
 			}
 		}
 		break;
-	default:
+	default: // includes silence
 		break;
 	}
 	return entries;
@@ -430,6 +458,12 @@ void SoundChannelResourceManager::TaskDrawOverallWaveformAndRmsCache()
 		}
 	}
 	delete[] temp;
+//	int totalSize = 0;
+//	for (auto p : rmsCachePackets){
+//		totalSize += p.GetSize();
+//	}
+//	qDebug() << this->file.baseName() << "\t" << 2*wave->GetFrameCount()/RmsCacheBlockSize << " -> " << totalSize
+//			 << " (" << totalSize*100/(2*wave->GetFrameCount()/RmsCacheBlockSize) << "%)";
 }
 
 quint64 SoundChannelResourceManager::ReadAsS16S(QAudioBuffer::S16S *buffer, quint64 frames)

@@ -6,12 +6,12 @@
 
 struct RmsCacheEntry
 {
-	qint8 L;
-	qint8 R;
+	quint8 L;
+	quint8 R;
 
-	RmsCacheEntry() : L(-1), R(-1){}
-	RmsCacheEntry(qint8 l, qint8 r) : L(l), R(r){}
-	bool IsNull() const{ return L < 0; }
+	RmsCacheEntry() : L(255), R(255){}
+	RmsCacheEntry(quint8 l, quint8 r) : L(l), R(r){}
+	bool IsNull() const{ return L != 255; }
 };
 
 Q_DECLARE_METATYPE(QList<RmsCacheEntry>)
@@ -25,6 +25,7 @@ class RmsCachePacket
 public:
 	RmsCachePacket(const QList<RmsCacheEntry> &entries, int count);
 	QList<RmsCacheEntry> Uncompress() const;
+	int GetSize() const{ return compressed.size(); }
 };
 
 
@@ -35,7 +36,7 @@ struct Rms
 	float R;
 
 	Rms() : L(-1.f), R(-1.f){}
-	Rms(qint8 l, qint8 r) : L(l), R(r){}
+	Rms(float l, float r) : L(l), R(r){}
 	bool IsValid() const{ return L >= 0; }
 	bool IsNull() const{ return L < 0; }
 };

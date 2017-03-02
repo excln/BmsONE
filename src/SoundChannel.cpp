@@ -297,14 +297,14 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 					const QList<RmsCacheEntry> &entries = *itRms;
 					int bxBegin = std::max(0, std::min(entries.size()-1, (iPos - ixPacket) / SoundChannelResourceManager::RmsCacheBlockSize));
 					int bxEnd = std::max(bxBegin+1, std::min(entries.size(), (iNextPos - ixPacket) / SoundChannelResourceManager::RmsCacheBlockSize));
-					Rms rms(0, 0);
+					// assume (bxEnd-bxBegin) < 2^16
+					unsigned int rmsL=0;
+					unsigned int rmsR=0;
 					for (int b=bxBegin; b!=bxEnd; b++){
-						rms.L += entries[b].L*entries[b].L;
-						rms.R += entries[b].R*entries[b].R;
+						rmsL += entries[b].L*entries[b].L;
+						rmsR += entries[b].R*entries[b].R;
 					}
-					rms.L = std::sqrtf(rms.L / (bxEnd-bxBegin)) / 128.f;
-					rms.R = std::sqrtf(rms.R / (bxEnd-bxBegin)) / 128.f;
-					if (!drawer(rms)){
+					if (!drawer(Rms(std::sqrtf(float(rmsL) / (bxEnd-bxBegin)) / 127.f, std::sqrtf(float(rmsR) / (bxEnd-bxBegin)) / 127.f))){
 						return;
 					}
 				}else{
