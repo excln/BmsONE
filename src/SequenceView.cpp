@@ -3,6 +3,13 @@
 #include <cmath>
 #include <cstdlib>
 
+const char* SequenceView::SettingsGroup = "SequenceView";
+const char* SequenceView::SettingsZoomYKey = "ZoomY";
+const char* SequenceView::SettingsSnapToGridKey = "SnapToGrid";
+const char* SequenceView::SettingsCoarseGridKey = "CoarseGrid";
+const char* SequenceView::SettingsFineGridKey = "FineGrid";
+
+
 QWidget *SequenceView::NewWidget(
 		bool(SequenceView::*paintEventHandler)(QWidget *, QPaintEvent *),
 		bool(SequenceView::*mouseEventHandler)(QWidget *, QMouseEvent *),
@@ -76,7 +83,9 @@ SequenceView::SequenceView(MainWindow *parent)
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 #ifndef Q_OS_MACX
-	setCornerWidget(new QSizeGrip(this));
+	QSizeGrip *grip = new QSizeGrip(this);
+	grip->setBackgroundRole(QPalette::Window);
+	setCornerWidget(grip);
 #endif
 	setViewport(nullptr);	// creates new viewport widget
 	setViewportMargins(timeLineWidth + playingWidth, headerHeight, 0, footerHeight);
@@ -107,16 +116,23 @@ SequenceView::SequenceView(MainWindow *parent)
 	lockDeletion = false;
 	lockVerticalMove = false;
 
-	coarseGrid = GridSize(4);
-	fineGrid = GridSize(16);
-	snapToGrid = true;
+	QSettings *settings = mainWindow->GetSettings();
+	settings->beginGroup(SettingsGroup);
+	{
+		resolution = 240;
+		viewLength = 240*4*32;
 
-	resolution = 240;
-	viewLength = 240*4*32;
+		zoomXKey = 1.;
+		zoomXBgm = 1.;
 
-	zoomY = 48./240.;
-	zoomXKey = 1.;
-	zoomXBgm = 1.;
+		auto ptCoarseGrid = settings->value(SettingsCoarseGridKey, QPoint(4, 4)).toPoint();
+		coarseGrid = GridSize(ptCoarseGrid.y(), ptCoarseGrid.x());
+		auto ptFineGrid = settings->value(SettingsFineGridKey, QPoint(16, 4)).toPoint();
+		fineGrid = GridSize(ptFineGrid.y(), ptFineGrid.x());
+		snapToGrid = settings->value(SettingsSnapToGridKey, true).toBool();
+		zoomY = settings->value(SettingsZoomYKey, 48./240.).toDouble();
+	}
+	settings->endGroup();
 
 	currentLocation = 0;
 	currentChannel = 0;
@@ -126,7 +142,16 @@ SequenceView::SequenceView(MainWindow *parent)
 }
 
 SequenceView::~SequenceView()
-{	
+{
+	QSettings *settings = mainWindow->GetSettings();
+	settings->beginGroup(SettingsGroup);
+	{
+		settings->setValue(SettingsCoarseGridKey, QPoint(coarseGrid.Denominator, coarseGrid.Numerator));
+		settings->setValue(SettingsFineGridKey, QPoint(fineGrid.Denominator, fineGrid.Numerator));
+		settings->setValue(SettingsSnapToGridKey, snapToGrid);
+		settings->setValue(SettingsZoomYKey, zoomY);
+	}
+	settings->endGroup();
 }
 
 void SequenceView::ReplaceDocument(Document *newDocument)

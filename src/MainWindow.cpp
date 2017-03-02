@@ -5,10 +5,16 @@
 #include <QtMultimedia/QMediaPlayer>
 #include "UIDef.h"
 
+const char* MainWindow::SettingsGroup = "MainWindow";
+const char* MainWindow::SettingsGeometryKey = "Geometry";
+const char* MainWindow::SettingsWindowStateKey = "WindowState";
+const char* MainWindow::SettingsWidgetsStateKey = "WidgetsState";
+
 const QSize UIUtil::ToolBarIconSize(18, 18);
 
-MainWindow::MainWindow(QWidget *parent)
-	: QMainWindow(parent)
+MainWindow::MainWindow(QSettings *settings)
+	: QMainWindow()
+	, settings(settings)
 	, document(nullptr)
 	, currentChannel(-1)
 {
@@ -191,7 +197,7 @@ MainWindow::MainWindow(QWidget *parent)
 	addToolBar(sequenceTools);
 	menuView->insertAction(actionViewTbSeparator, sequenceTools->toggleViewAction());
 
-	audioPlayer = new AudioPlayer("Sound Output", tr("Sound Output"), this);
+	audioPlayer = new AudioPlayer(this, "Sound Output", tr("Sound Output"));
 	audioPlayer->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(audioPlayer);
 	menuView->insertAction(actionViewTbSeparator, audioPlayer->toggleViewAction());
@@ -232,13 +238,34 @@ MainWindow::MainWindow(QWidget *parent)
 	ReplaceDocument(newDocument);
 
 
-	// hack for dock widgets sizing
-	restoreState(saveState());
+	// Load Settings for MainWindow
+	settings->beginGroup(SettingsGroup);
+	{
+		Qt::WindowStates statesMask = Qt::WindowMaximized | Qt::WindowFullScreen;
+		auto states = (Qt::WindowStates)settings->value(SettingsWindowStateKey, 0).toInt() & statesMask;
+		if (states != 0){
+			// do not set position
+			setWindowState(states);
+		}else{
+			if (settings->contains(SettingsGeometryKey)){
+				setGeometry(settings->value(SettingsGeometryKey).toRect());
+			}
+		}
 
+		if (settings->contains(SettingsWidgetsStateKey)){
+			restoreState(settings->value(SettingsWidgetsStateKey).toByteArray());
+		}
+	}
+	settings->endGroup(); // MainWindow
 }
 
 MainWindow::~MainWindow()
 {
+	settings->beginGroup(SettingsGroup);
+	settings->setValue(SettingsGeometryKey, geometry());
+	settings->setValue(SettingsWindowStateKey, (int)windowState());
+	settings->setValue(SettingsWidgetsStateKey, saveState());
+	settings->endGroup(); // MainWindow
 }
 
 void MainWindow::FileNew()

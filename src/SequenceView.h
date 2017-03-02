@@ -174,6 +174,13 @@ public:
 	};
 
 private:
+	static const char* SettingsGroup;
+	static const char* SettingsZoomYKey;
+	static const char* SettingsSnapToGridKey;
+	static const char* SettingsCoarseGridKey;
+	static const char* SettingsFineGridKey;
+
+private:
 	MainWindow *mainWindow;
 
 	QWidget *headerCornerEntry;

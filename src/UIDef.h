@@ -9,6 +9,7 @@
 #define APP_NAME "BmsONE"
 #define APP_VERSION_STRING "alpha 0.0.2"
 #define APP_URL "http://sky.geocities.jp/exclusion_bms/"
+#define ORGANIZATION_NAME "ExclusionBms"
 
 #define QT_URL "http://www.qt.io/"
 #define OGG_VERSION_STRING "Xiph.Org libOgg 1.3.2"

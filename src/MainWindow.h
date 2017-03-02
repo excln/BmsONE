@@ -17,6 +17,13 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 private:
+	static const char *SettingsGroup;
+	static const char *SettingsGeometryKey;
+	static const char *SettingsWindowStateKey;
+	static const char *SettingsWidgetsStateKey;
+
+private:
+	QSettings *settings;
 	AudioPlayer *audioPlayer;
 	SequenceTools *sequenceTools;
 	SequenceView *sequenceView;
@@ -96,7 +103,7 @@ signals:
 	void CurrentChannelChanged(int ichannel);
 
 public:
-	explicit MainWindow(QWidget *parent = nullptr);
+	explicit MainWindow(QSettings *settings);
 	~MainWindow();
 
 	//virtual bool eventFilter(QObject *object, QEvent *event);
@@ -105,6 +112,7 @@ public:
 	virtual void dragLeaveEvent(QDragLeaveEvent *event);
 	virtual void dropEvent(QDropEvent *event);
 
+	QSettings *GetSettings() const{ return settings; }
 	AudioPlayer *GetAudioPlayer() const{ return audioPlayer; }
 
 };

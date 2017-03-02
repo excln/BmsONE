@@ -103,6 +103,8 @@ public slots:
 
 
 
+class MainWindow;
+
 class AudioPlayer : public QToolBar
 {
 	Q_OBJECT
@@ -112,7 +114,12 @@ class AudioPlayer : public QToolBar
 private:
 	static const int VolumeMax = 127;
 
+	static const char* SettingsGroup;
+	static const char* SettingsMuteKey;
+	static const char* SettingsVolumeKey;
+
 private:
+	MainWindow *mainWindow;
 	QThread *audioThread;
 	AudioPlayerOutput *output;
 	AudioPlayerIndicator *indicator;
@@ -129,7 +136,7 @@ public slots:
 	void StopImmediately();
 
 public:
-	AudioPlayer(const QString &objectName, const QString &windowTitle, QWidget *parent=nullptr);
+	AudioPlayer(MainWindow *mainWindow, const QString &objectName, const QString &windowTitle);
 	~AudioPlayer();
 
 	void Play(AudioPlaySource *src);

@@ -1,8 +1,14 @@
 #include "AudioPlayer.h"
+#include "MainWindow.h"
 #include <cmath>
 
-AudioPlayer::AudioPlayer(const QString &objectName, const QString &windowTitle, QWidget *parent)
-	: QToolBar(windowTitle, parent)
+const char* AudioPlayer::SettingsGroup = "AudioPlayer";
+const char* AudioPlayer::SettingsMuteKey = "Mute";
+const char* AudioPlayer::SettingsVolumeKey = "Volume";
+
+AudioPlayer::AudioPlayer(MainWindow *mainWindow, const QString &objectName, const QString &windowTitle)
+	: QToolBar(windowTitle, mainWindow)
+	, mainWindow(mainWindow)
 	, audioThread(new QThread())
 	, indicator(nullptr)
 	, io(nullptr)
@@ -18,7 +24,6 @@ AudioPlayer::AudioPlayer(const QString &objectName, const QString &windowTitle, 
 	sliderVolume = new QSlider(Qt::Horizontal);
 	sliderVolume->setFixedWidth(128);
 	sliderVolume->setRange(0, VolumeMax);
-	sliderVolume->setValue(VolumeMax); // temp.
 	sliderVolume->setToolTip(tr("Volume"));
 	connect(sliderVolume, SIGNAL(valueChanged(int)), this, SLOT(ChangeVolume(int)));
 	addWidget(sliderVolume);
@@ -35,6 +40,18 @@ AudioPlayer::AudioPlayer(const QString &objectName, const QString &windowTitle, 
 	io->SetMute(false);
 	io->SetVolume(1.0f);
 
+	QSettings *settings = mainWindow->GetSettings();
+	settings->beginGroup(SettingsGroup);
+	{
+		bool settingsMute = settings->value(SettingsMuteKey, false).toBool();
+		actionMute->setChecked(settingsMute);
+		ToggleMute(settingsMute);
+		int settingsVolume = settings->value(SettingsVolumeKey, VolumeMax).toInt();
+		sliderVolume->setValue(settingsVolume);
+		ChangeVolume(settingsVolume);
+	}
+	settings->endGroup();
+
 	audioThread->start(QThread::HighPriority);
 	qRegisterMetaType<AudioPlayerInternal*>("AudioPlayerInternal*");
 	QMetaObject::invokeMethod(output, "Start", Q_ARG(AudioPlayerInternal*, io));
@@ -42,6 +59,14 @@ AudioPlayer::AudioPlayer(const QString &objectName, const QString &windowTitle, 
 
 AudioPlayer::~AudioPlayer()
 {
+	QSettings *settings = mainWindow->GetSettings();
+	settings->beginGroup(SettingsGroup);
+	{
+		settings->setValue(SettingsMuteKey, actionMute->isChecked());
+		settings->setValue(SettingsVolumeKey, sliderVolume->value());
+	}
+	settings->endGroup();
+
 	audioThread->exit();
 	audioThread->wait();
 	io->StopSourcesImmediately();
