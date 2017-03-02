@@ -105,6 +105,10 @@ BMSまとめ @wiki - bmson開発部 http://www40.atwiki.jp/laser_bm/pages/104.ht
 
 7. History
 
+Sep 27 2015 alpha 0.0.4
+  - Fixed a bug that sequence view goes totally wrong when a sound note in BGM lane is previewed.
+  - Unicode characters are now supported also in extra info fields and sound file names.
+
 Sep 26 2015 alpha 0.0.3
   - Upgraded Qt from 5.4.1 to 5.5.0.
   - Implemented some additional UI features.
