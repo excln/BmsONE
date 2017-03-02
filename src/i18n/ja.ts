@@ -41,18 +41,32 @@
 <context>
     <name>BpmEditTool</name>
     <message>
-        <location filename="../BpmEditTool.cpp" line="+47"/>
-        <location line="+9"/>
         <source>BPM of the selected event: </source>
         <translation>選択されたイベントのBPM: </translation>
     </message>
     <message>
-        <location line="-2"/>
         <source>BPM of the %1 selected events: </source>
         <translation>選択された %1 イベントのBPM:</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <source>multiple values</source>
+        <translation>複数の値</translation>
+    </message>
+</context>
+<context>
+    <name>BpmEditView</name>
+    <message>
+        <location filename="../BpmEditTool.cpp" line="+59"/>
+        <source>%1 selected BPM events</source>
+        <translation>%1 個の選択されたBPMイベント</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>1 selected BPM event</source>
+        <translation>1 個の選択されたBPMイベント</translation>
+    </message>
+    <message>
+        <location line="+16"/>
         <source>multiple values</source>
         <translation>複数の値</translation>
     </message>
@@ -193,32 +207,37 @@
         <source>Level:</source>
         <translation>レベル:</translation>
     </message>
+    <message>
+        <location line="+1"/>
+        <source>Extra fields:</source>
+        <translation>拡張情報:</translation>
+    </message>
 </context>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../MainWindow.cpp" line="+30"/>
+        <location filename="../MainWindow.cpp" line="+33"/>
         <source>New</source>
         <translation>新規作成</translation>
     </message>
     <message>
-        <location line="+274"/>
+        <location line="+280"/>
         <source>Open</source>
         <translation>開く</translation>
     </message>
     <message>
-        <location line="-264"/>
-        <location line="+509"/>
+        <location line="-270"/>
+        <location line="+517"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location line="-194"/>
+        <location line="-196"/>
         <source>Save As</source>
         <translation>名前をつけて保存</translation>
     </message>
     <message>
-        <location line="-306"/>
+        <location line="-312"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
@@ -330,12 +349,12 @@
         <translation>ファイル選択</translation>
     </message>
     <message>
-        <location line="+353"/>
+        <location line="+361"/>
         <source>About BmsONE</source>
         <translation>BmsONE について</translation>
     </message>
     <message>
-        <location line="-344"/>
+        <location line="-352"/>
         <location line="+61"/>
         <source>File</source>
         <translation>ファイル</translation>
@@ -377,12 +396,12 @@
     </message>
     <message>
         <location line="+5"/>
-        <location line="+60"/>
+        <location line="+62"/>
         <source>Channel</source>
         <translation>チャンネル</translation>
     </message>
     <message>
-        <location line="-47"/>
+        <location line="-49"/>
         <source>Help</source>
         <translation>ヘルプ</translation>
     </message>
@@ -407,17 +426,16 @@
         <translation>音声出力</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>BPM Edit</source>
         <translation>BPM編集</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+17"/>
         <source>Info</source>
         <translation>情報</translation>
     </message>
     <message>
-        <location line="+78"/>
+        <location line="+82"/>
         <source>bmson files (*.bmson);;old bms files (*.bms *.bme *.bml *.pms);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;旧BMSファイル (*.bms *.bme *.bml *.pms);;すべてのファイル (*.*)</translation>
     </message>
@@ -425,20 +443,20 @@
         <location line="+13"/>
         <location line="+21"/>
         <location line="+27"/>
-        <location line="+198"/>
+        <location line="+200"/>
         <location line="+108"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location line="-316"/>
-        <location line="+194"/>
+        <location line="-318"/>
+        <location line="+196"/>
         <source>bmson files (*.bmson);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location line="-183"/>
-        <location line="+198"/>
+        <location line="-185"/>
+        <location line="+200"/>
         <source>Failed to save file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
     </message>
@@ -542,6 +560,14 @@
     </message>
 </context>
 <context>
+    <name>SelectedObjectView</name>
+    <message>
+        <location filename="../SelectedObjectView.cpp" line="+9"/>
+        <source>Selected Objects</source>
+        <translation>選択オブジェクト</translation>
+    </message>
+</context>
+<context>
     <name>SequenceTools</name>
     <message>
         <location filename="../SequenceTools.cpp" line="+22"/>
@@ -557,7 +583,7 @@
 <context>
     <name>SequenceViewCursor</name>
     <message>
-        <location filename="../SequenceView.cpp" line="+1586"/>
+        <location filename="../SequenceView.cpp" line="+1587"/>
         <source>BGM</source>
         <translation>BGM</translation>
     </message>

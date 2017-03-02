@@ -372,6 +372,8 @@ private:
 	double initBpm;
 	int level;
 
+	static QSet<QString> SupportedKeys;
+
 public:
 	DocumentInfo(Document *document);
 	~DocumentInfo();
@@ -396,6 +398,9 @@ public:
 	void SetInitBpm(double value);
 	void SetLevel(int value){ level = value; emit LevelChanged(level); }
 
+	QMap<QString, QJsonValue> GetExtraFields() const;
+	void SetExtraFields(const QMap<QString, QJsonValue> &fields);
+
 signals:
 	void TitleChanged(QString value);
 	void GenreChanged(QString value);
@@ -404,6 +409,7 @@ signals:
 	void TotalChanged(double value);
 	void InitBpmChanged(double value);
 	void LevelChanged(double value);
+	void ExtraFieldsChanged();
 };
 
 

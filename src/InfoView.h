@@ -23,6 +23,7 @@ private:
 	QuasiModalEdit *editTotal;
 	QuasiModalEdit *editInitBpm;
 	QuasiModalEdit *editLevel;
+	QuasiModalMultiLineEdit *editExtraFields;
 
 	// current document
 	Document *document;
@@ -35,6 +36,7 @@ private:
 	void SetTotal(double value){ editTotal->setText(QString::number(value)); }
 	void SetInitBpm(double value){ editInitBpm->setText(QString::number(value)); }
 	void SetLevel(int value){ editLevel->setText(QString::number(value)); }
+	void SetExtraFields(const QMap<QString, QJsonValue> &fields);
 
 public:
 	InfoView(MainWindow *mainWindow = 0);
@@ -52,6 +54,7 @@ private slots:
 	void TotalEdited();
 	void InitBpmEdited();
 	void LevelEdited();
+	void ExtraFieldsEdited();
 
 	void TitleEditCanceled();
 	void GenreEditCanceled();
@@ -60,6 +63,7 @@ private slots:
 	void TotalEditCanceled();
 	void InitBpmEditCanceled();
 	void LevelEditCanceled();
+	void ExtraFieldsEditCanceled();
 
 	void TitleChanged(QString value);
 	void GenreChanged(QString value);
@@ -68,6 +72,7 @@ private slots:
 	void TotalChanged(double value);
 	void InitBpmChanged(double value);
 	void LevelChanged(double value);
+	void ExtraFieldsChanged();
 };
 
 #endif // INFOVIEW_H

@@ -34,7 +34,8 @@ SOURCES += main.cpp\
     Util.cpp \
     Bmson.cpp \
     BpmEditTool.cpp \
-    SelectedObjectView.cpp
+    SelectedObjectView.cpp \
+    JsonExtension.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -52,7 +53,8 @@ HEADERS  += MainWindow.h \
     ScrollableForm.h \
     UIDef.h \
     BpmEditTool.h \
-    SelectedObjectView.h
+    SelectedObjectView.h \
+    JsonExtension.h
 
 FORMS    +=
 

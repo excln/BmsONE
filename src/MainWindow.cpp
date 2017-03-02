@@ -213,6 +213,14 @@ MainWindow::MainWindow(QSettings *settings)
 	addToolBar(audioPlayer);
 	menuView->insertAction(actionViewTbSeparator, audioPlayer->toggleViewAction());
 
+	selectedObjectView = new SelectedObjectView(this);
+	selectedObjectView->setObjectName("Selected Objects3");
+	addToolBar(selectedObjectView);
+	menuView->insertAction(actionViewTbSeparator, selectedObjectView->toggleViewAction());
+
+	bpmEditView = new BpmEditView(selectedObjectView);
+	connect(bpmEditView, SIGNAL(Updated()), this, SLOT(OnBpmEdited()));
+
 	sequenceView = new SequenceView(this);
 	setCentralWidget(sequenceView);
 	//sequenceView->installEventFilter(this);
@@ -229,15 +237,6 @@ MainWindow::MainWindow(QSettings *settings)
 	addDockWidget(Qt::LeftDockWidgetArea, dock2);
 	dock2->resize(334, dock2->height());
 	menuView->insertAction(actionViewDockSeparator, dock2->toggleViewAction());
-
-	selectedObjectView = new SelectedObjectView(this);
-	selectedObjectView->setObjectName("Selected Objects3");
-	addDockWidget(Qt::LeftDockWidgetArea, selectedObjectView);
-	selectedObjectView->setFloating(true);
-	menuView->insertAction(actionViewDockSeparator, selectedObjectView->toggleViewAction());
-
-	bpmEditView = new BpmEditView(selectedObjectView);
-	connect(bpmEditView, SIGNAL(Updated()), this, SLOT(OnBpmEdited()));
 
 
 	// Current Channel Binding
@@ -379,6 +378,7 @@ void MainWindow::FileSaveAs()
 
 void MainWindow::EditUndo()
 {
+	SharedUIHelper::CommitDirtyEdit();
 	if (!document->GetHistory()->CanUndo())
 		return;
 	document->GetHistory()->Undo();
@@ -386,6 +386,7 @@ void MainWindow::EditUndo()
 
 void MainWindow::EditRedo()
 {
+	SharedUIHelper::CommitDirtyEdit();
 	if (!document->GetHistory()->CanRedo())
 		return;
 	document->GetHistory()->Redo();

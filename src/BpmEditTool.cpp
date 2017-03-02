@@ -3,18 +3,19 @@
 
 
 BpmEditView::BpmEditView(SelectedObjectView *view)
-	: ScrollableForm(view)
+	: QWidget(view)
 	, selectedObjectView(view)
 {
-	auto *layout = new QFormLayout();
-	layout->addRow(message = new QLabel());
-	layout->addRow(tr("BPM:"), edit = new QuasiModalEdit());
-	{ // hack for sizing
-		auto *w = new QLabel();
-		w->setMinimumHeight(1);
-		layout->addRow(w);
-	}
-	Initialize(layout);
+	auto *layout = new QHBoxLayout();
+	auto *icon = new QLabel();
+	icon->setPixmap(QIcon(":/images/event.png").pixmap(view->iconSize(), QIcon::Normal));
+	layout->addWidget(icon);
+	layout->addWidget(message = new QLabel());
+	layout->addWidget(edit = new QuasiModalEdit());
+	edit->setMaximumWidth(120);
+	layout->addStretch(1);
+	layout->setMargin(0);
+	setLayout(layout);
 
 	connect(edit, SIGNAL(editingFinished()), this, SLOT(Edited()));
 	connect(edit, SIGNAL(EscPressed()), this, SLOT(EscPressed()));

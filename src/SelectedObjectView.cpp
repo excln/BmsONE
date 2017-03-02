@@ -2,7 +2,7 @@
 #include "MainWindow.h"
 
 SelectedObjectView::SelectedObjectView(MainWindow *mainWindow)
-	: QDockWidget(mainWindow)
+	: QToolBar(mainWindow)
 	, mainWindow(mainWindow)
 	, currentView(nullptr)
 {
@@ -16,12 +16,13 @@ SelectedObjectView::~SelectedObjectView()
 
 void SelectedObjectView::SetView(QWidget *view)
 {
-	setWidget(nullptr);
+	clear();
 	if (currentView) currentView->hide();
 	currentView = view;
 	if (currentView){
+		currentView->setParent(this);
 		currentView->show();
-		setWidget(currentView);
+		addWidget(currentView);
 		show();
 	}else{
 		QSettings *settings = mainWindow->GetSettings();

@@ -11,7 +11,6 @@ QuasiModalEdit::QuasiModalEdit(QWidget *parent)
 
 QuasiModalEdit::~QuasiModalEdit()
 {
-
 }
 
 void QuasiModalEdit::keyPressEvent(QKeyEvent *event)
@@ -36,3 +35,44 @@ void QuasiModalEdit::Commit()
 {
 	emit QLineEdit::editingFinished();
 }
+
+
+
+
+QuasiModalMultiLineEdit::QuasiModalMultiLineEdit(QWidget *parent)
+	: QTextEdit(parent)
+{
+	setUndoRedoEnabled(false);
+
+	connect(this, SIGNAL(textChanged()), this, SLOT(OnTextChanged()));
+}
+
+QuasiModalMultiLineEdit::~QuasiModalMultiLineEdit()
+{
+}
+
+void QuasiModalMultiLineEdit::OnTextChanged()
+{
+	SharedUIHelper::SetGloballyDirtyEdit(this);
+}
+
+void QuasiModalMultiLineEdit::keyPressEvent(QKeyEvent *event)
+{
+	if (event->key() == Qt::Key_Escape){
+		emit EscPressed();
+	}
+	QTextEdit::keyPressEvent(event);
+}
+
+void QuasiModalMultiLineEdit::focusOutEvent(QFocusEvent *event)
+{
+	QTextEdit::focusOutEvent(event);
+	SharedUIHelper::SetGloballyDirtyEdit(nullptr);
+	emit EditingFinished();
+}
+
+void QuasiModalMultiLineEdit::Commit()
+{
+	emit EditingFinished();
+}
+

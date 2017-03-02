@@ -20,7 +20,7 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	connect(buttonFile, SIGNAL(clicked()), this, SLOT(SelectSourceFile()));
 	labelFormat->setMinimumWidth(13);
 	labelLength->setMinimumWidth(13);
-	labelImage->setFixedHeight(160 + labelImage->frameWidth()*2);
+	labelImage->setFixedHeight(120 + labelImage->frameWidth()*2);
 	labelImage->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
 	labelImage->setScaledContents(true);
 

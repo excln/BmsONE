@@ -6,7 +6,7 @@
 
 class MainWindow;
 
-class SelectedObjectView : public QDockWidget
+class SelectedObjectView : public QToolBar
 {
 	Q_OBJECT
 

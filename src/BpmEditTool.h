@@ -10,7 +10,7 @@
 
 class MainWindow;
 
-class BpmEditView : public ScrollableForm
+class BpmEditView : public QWidget
 {
 	Q_OBJECT
 

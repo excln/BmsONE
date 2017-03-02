@@ -288,11 +288,21 @@ bool Document::RemoveBpmEvent(int location)
 
 
 
+QSet<QString> DocumentInfo::SupportedKeys;
 
 DocumentInfo::DocumentInfo(Document *document)
 	: QObject(document)
 	, document(document)
 {
+	if (SupportedKeys.isEmpty()){
+		SupportedKeys.insert(Bmson::BmsInfo::TitleKey);
+		SupportedKeys.insert(Bmson::BmsInfo::GenreKey);
+		SupportedKeys.insert(Bmson::BmsInfo::ArtistKey);
+		SupportedKeys.insert(Bmson::BmsInfo::JudgeRankKey);
+		SupportedKeys.insert(Bmson::BmsInfo::TotalKey);
+		SupportedKeys.insert(Bmson::BmsInfo::InitBpmKey);
+		SupportedKeys.insert(Bmson::BmsInfo::LevelKey);
+	}
 }
 
 DocumentInfo::~DocumentInfo()
@@ -312,27 +322,26 @@ void DocumentInfo::Initialize()
 
 void DocumentInfo::LoadBmson(QJsonValue json)
 {
-	QJsonObject jsonInfo = json.toObject();
-	title = jsonInfo[Bmson::BmsInfo::TitleKey].toString();
-	genre = jsonInfo[Bmson::BmsInfo::GenreKey].toString();
-	artist = jsonInfo[Bmson::BmsInfo::ArtistKey].toString();
-	judgeRank = jsonInfo[Bmson::BmsInfo::JudgeRankKey].toInt();
-	total = jsonInfo[Bmson::BmsInfo::TotalKey].toDouble();
-	initBpm = jsonInfo[Bmson::BmsInfo::InitBpmKey].toDouble();
-	level = jsonInfo[Bmson::BmsInfo::LevelKey].toInt();
+	bmsonFields = json.toObject();
+	title = bmsonFields[Bmson::BmsInfo::TitleKey].toString();
+	genre = bmsonFields[Bmson::BmsInfo::GenreKey].toString();
+	artist = bmsonFields[Bmson::BmsInfo::ArtistKey].toString();
+	judgeRank = bmsonFields[Bmson::BmsInfo::JudgeRankKey].toInt();
+	total = bmsonFields[Bmson::BmsInfo::TotalKey].toDouble();
+	initBpm = bmsonFields[Bmson::BmsInfo::InitBpmKey].toDouble();
+	level = bmsonFields[Bmson::BmsInfo::LevelKey].toInt();
 }
 
 QJsonValue DocumentInfo::SaveBmson()
 {
-	QJsonObject jsonInfo;
-	jsonInfo[Bmson::BmsInfo::TitleKey] = title;
-	jsonInfo[Bmson::BmsInfo::GenreKey] = genre;
-	jsonInfo[Bmson::BmsInfo::ArtistKey] = artist;
-	jsonInfo[Bmson::BmsInfo::JudgeRankKey] = judgeRank;
-	jsonInfo[Bmson::BmsInfo::TotalKey] = total;
-	jsonInfo[Bmson::BmsInfo::InitBpmKey] = initBpm;
-	jsonInfo[Bmson::BmsInfo::LevelKey] = level;
-	return jsonInfo;
+	bmsonFields[Bmson::BmsInfo::TitleKey] = title;
+	bmsonFields[Bmson::BmsInfo::GenreKey] = genre;
+	bmsonFields[Bmson::BmsInfo::ArtistKey] = artist;
+	bmsonFields[Bmson::BmsInfo::JudgeRankKey] = judgeRank;
+	bmsonFields[Bmson::BmsInfo::TotalKey] = total;
+	bmsonFields[Bmson::BmsInfo::InitBpmKey] = initBpm;
+	bmsonFields[Bmson::BmsInfo::LevelKey] = level;
+	return bmsonFields;
 }
 
 void DocumentInfo::SetInitBpm(double value)
@@ -348,6 +357,27 @@ void DocumentInfo::SetInitBpm(double value)
 	}
 	// initBpm = std::max(BmsConsts::MinBpm, std::min(BmsConsts::MaxBpm, value));
 	emit InitBpmChanged(initBpm);
+}
+
+QMap<QString, QJsonValue> DocumentInfo::GetExtraFields() const
+{
+	QMap<QString, QJsonValue> fields;
+	for (QJsonObject::const_iterator i=bmsonFields.begin(); i!=bmsonFields.end(); i++){
+		if (!SupportedKeys.contains(i.key())){
+			fields.insert(i.key(), i.value());
+		}
+	}
+	return fields;
+}
+
+void DocumentInfo::SetExtraFields(const QMap<QString, QJsonValue> &fields)
+{
+	for (QMap<QString, QJsonValue>::const_iterator i=fields.begin(); i!=fields.end(); i++){
+		if (!SupportedKeys.contains(i.key())){
+			bmsonFields.insert(i.key(), i.value());
+		}
+	}
+	emit ExtraFieldsChanged();
 }
 
 
