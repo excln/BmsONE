@@ -1,6 +1,7 @@
 #include "Bmson100Convert.h"
 #include "Bmson100.h"
 #include "Bmson021.h"
+#include "ResolutionUtil.h"
 
 namespace Bmson100
 {
@@ -203,7 +204,7 @@ QJsonObject ConverterFrom021::ConvertBgaEvent(const QJsonObject &v021)
 
 
 const int ConverterTo021::TargetResolution = 240;
-const int ConverterTo021::DefaultOriginalResolution = 960;
+const int ConverterTo021::DefaultOriginalResolution = 240;
 const int ConverterTo021::OriginalBarLineKind = 0;
 
 QJsonObject ConverterTo021::Convert(const QJsonObject &v100)
@@ -253,7 +254,7 @@ QJsonObject ConverterTo021::Convert(const QJsonObject &v100)
 
 int ConverterTo021::ScaleTicks(int t100, int resolution)
 {
-	return t100 * TargetResolution / resolution;
+	return ResolutionUtil::ConvertTicks(t100, TargetResolution, resolution);
 }
 
 QJsonObject ConverterTo021::ConvertBmsInfo(const QJsonObject &v100)

@@ -155,7 +155,9 @@ HEADERS  += MainWindow.h \
     MasterView.h \
     EditConfig.h \
     PrefEdit.h \
-    ScalarRegion.h
+    ScalarRegion.h \
+    AppInfo.h \
+    ResolutionUtil.h
 
 FORMS    +=
 

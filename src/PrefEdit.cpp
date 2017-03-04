@@ -8,8 +8,8 @@ PrefEditPage::PrefEditPage(QWidget *parent)
 {
 	auto layout = new QVBoxLayout();
 	{
-		master = new QCheckBox(tr("Enable Master Channel"));
-		master->setWhatsThis(tr("Master Channel enables some useful features, but it consumes lots of resources and make loading files slower."));
+		master = new QCheckBox(tr("Enable Master Cache"));
+		master->setWhatsThis(tr("Master Cache enables some useful features, but it consumes lots of resources and make loading files slower."));
 		master->setToolTip(master->whatsThis());
 		layout->addWidget(master);
 

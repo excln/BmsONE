@@ -7,7 +7,7 @@
 const char* BmsonIO::VersionKey = "version";
 
 // change this if native version is changed.
-const BmsonIO::BmsonVersion BmsonIO::NativeVersion = BmsonIO::BMSON_V_0_21;
+const BmsonIO::BmsonVersion BmsonIO::NativeVersion = BmsonIO::BMSON_V_1_0;
 
 const BmsonIO::BmsonVersion BmsonIO::LatestVersion = BmsonIO::BMSON_V_1_0;
 
@@ -41,7 +41,6 @@ QJsonObject BmsonIO::NormalizeBmson(BmsonConvertContext &cxt, const QJsonObject 
 		qDebug() << "Version field is empty. Treating as v0.21.";
 #endif
 		v = BMSON_V_0_21;
-		return bms;
 	}else if (version == Bmson100::Bmson::Version){
 		// v1.0
 #ifdef _DEBUG
@@ -71,11 +70,11 @@ QJsonObject BmsonIO::NormalizeBmson(BmsonConvertContext &cxt, const QJsonObject 
 	}
 	switch (v){
 	case BMSON_V_1_0:
-		cxt.MarkConverted();
-		return Bmson100::ConverterTo021::Convert(bms);
+		return bms;
 	case BMSON_V_0_21:
 	default:
-		return bms;
+		cxt.MarkConverted();
+		return Bmson100::ConverterFrom021::Convert(bms);
 	}
 }
 
@@ -83,11 +82,11 @@ QJsonObject BmsonIO::Convert(BmsonConvertContext &cxt, const QJsonObject &bms, B
 {
 	switch (version){
 	case BMSON_V_1_0:
-		cxt.MarkConverted();
-		return Bmson100::ConverterFrom021::Convert(bms);
+		return bms;
 	case BMSON_V_0_21:
 	default:
-		return bms;
+		cxt.MarkConverted();
+		return Bmson100::ConverterTo021::Convert(bms);
 	}
 }
 
@@ -115,6 +114,16 @@ QStringList BmsonIO::SaveFormatStringList()
 	return list;
 }
 
+QStringList BmsonIO::SaveFormatDescriptionList()
+{
+	QStringList list;
+	list.append(QString("Default(%1)").arg(SpecificOutputVersionOf(BmsonIO::NativeVersion)));
+	list.append(QString("Latest(%1)").arg(SpecificOutputVersionOf(BmsonIO::LatestVersion)));
+	list.append("1.0");
+	list.append("0.21");
+	return list;
+}
+
 BmsonIO::BmsonVersion BmsonIO::OutputVersionOf(QString text)
 {
 	if (text == "Default"){
@@ -129,22 +138,17 @@ BmsonIO::BmsonVersion BmsonIO::OutputVersionOf(QString text)
 		return BmsonIO::NativeVersion;
 	}
 }
-/*
-QString BmsonIO::OutputVersionOf(BmsonIO::BmsonVersion format)
-{
-	if (format == NativeVersion){
-		return "Default";
-	}else if (format == LatestVersion){
-		return "Latest";
-	}else if (format == BmsonIO::BMSON_V_1_0){
+
+QString BmsonIO::SpecificOutputVersionOf(BmsonIO::BmsonVersion format)
+{if (format == BmsonIO::BMSON_V_1_0){
 		return "1.0";
 	}else if (format == BmsonIO::BMSON_V_0_21){
 		return "0.21";
 	}else{
-		return "Default";
+		return "0.21";
 	}
 }
-*/
+
 QString BmsonIO::GetSaveFormatString()
 {
 	return App::Instance()->GetSettings()->value(SettingsFileSaveFormatKey, "Default").toString();

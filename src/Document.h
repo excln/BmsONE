@@ -30,22 +30,38 @@ private:
 	Document *document;
 
 	QString title;
+	QString subtitle;
 	QString genre;
 	QString artist;
-	int judgeRank;
+	QStringList subartists;
+	QString chartName;
+	QString modeHint;
+	int resolution;
+	double judgeRank;
 	double total;
 	double initBpm;
 	int level;
+	QString backImage;
+	QString eyecatchImage;
+	QString banner;
 
 	static QSet<QString> SupportedKeys;
 
 	void SetTitleInternal(QString value);
+	void SetSubtitleInternal(QString value);
 	void SetGenreInternal(QString value);
 	void SetArtistInternal(QString value);
+	void SetSubartistsInternal(QStringList value);
+	void SetChartNameInternal(QString value);
+	void SetModeHintInternal(QString value);
+	// void SetResolutionInternal(int value);
 	void SetJudgeRankInternal(int value);
 	void SetTotalInternal(double value);
 	void SetInitBpmInternal(double value);
 	void SetLevelInternal(int value);
+	void SetBackImageInternal(QString value);
+	void SetEyecatchInternal(QString value);
+	void SetBannerInternal(QString value);
 	void SetExtraFieldsInternal(QMap<QString, QJsonValue> value);
 
 public:
@@ -57,32 +73,57 @@ public:
 	QJsonValue SaveBmson();
 
 	QString GetTitle() const{ return title; }
+	QString GetSubtitle() const{ return subtitle; }
 	QString GetGenre() const{ return genre; }
 	QString GetArtist() const{ return artist; }
-	int GetJudgeRank() const{ return judgeRank; }
+	QStringList GetSubartists() const{ return subartists; }
+	QString GetChartName() const{ return chartName; }
+	QString GetModeHint() const{ return modeHint; }
+	int GetResolution() const{ return resolution; }
+	double GetJudgeRank() const{ return judgeRank; }
 	double GetTotal() const{ return total; }
 	double GetInitBpm() const{ return initBpm; }
 	int GetLevel() const{ return level; }
+	QString GetBackImage() const{ return backImage; }
+	QString GetEyecatchImage() const{ return eyecatchImage; }
+	QString GetBanner() const{ return banner; }
 
 	void SetTitle(QString value);
+	void SetSubtitle(QString value);
 	void SetGenre(QString value);
 	void SetArtist(QString value);
-	void SetJudgeRank(int value);
+	void SetSubartists(QStringList value);
+	void SetChartName(QString value);
+	void SetModeHint(QString value);
+	void SetJudgeRank(double value);
 	void SetTotal(double value);
 	void SetInitBpm(double value);
 	void SetLevel(int value);
+	void SetBackImage(QString value);
+	void SetEyecatchImage(QString value);
+	void SetBanner(QString value);
 
 	QMap<QString, QJsonValue> GetExtraFields() const;
 	void SetExtraFields(QMap<QString, QJsonValue> fields);
 
+	void ForceSetResolution(int value);
+
 signals:
 	void TitleChanged(QString value);
+	void SubtitleChanged(QString value);
 	void GenreChanged(QString value);
 	void ArtistChanged(QString value);
-	void JudgeRankChanged(int value);
+	void SubartistsChanged(QStringList value);
+	void ChartNameChanged(QString value);
+	void ModeHintChanged(QString value);
+	void ResolutionChanged(int value);
+	void JudgeRankChanged(double value);
 	void TotalChanged(double value);
 	void InitBpmChanged(double value);
 	void LevelChanged(double value);
+	void BackImageChanged(QString value);
+	void EyecatchImageChanged(QString value);
+	void BannerChanged(QString value);
 	void ExtraFieldsChanged();
 };
 
@@ -123,7 +164,6 @@ private:
 
 	// data
 	DocumentInfo info;
-	int timeBase;
 	QMap<int, BarLine> barLines;
 	QMap<int, BpmEvent> bpmEvents;
 	QList<SoundChannel*> soundChannels;
@@ -140,6 +180,7 @@ private:
 	void InsertSoundChannelInternal(SoundChannel *channel, int index);
 	void RemoveSoundChannelInternal(SoundChannel *channel, int index);
 	bool DetectConflictsAroundNotes(const QMultiMap<int, SoundNote> &notes) const;
+	void ConvertResolutionInternal(int newResolution);
 
 private slots:
 	void OnInitBpmChanged();
@@ -163,7 +204,6 @@ public:
 
 	void SetOutputVersion(BmsonIO::BmsonVersion version);
 
-	int GetTimeBase() const{ return timeBase; }
 	DocumentInfo *GetInfo(){ return &info; }
 	const QMap<int, BarLine> &GetBarLines() const{ return barLines; }
 	const QMap<int, BpmEvent> &GetBpmEvents() const{ return bpmEvents; }
@@ -195,6 +235,9 @@ public:
 
 	DocumentUpdateSoundNotesContext *BeginModalEditSoundNotes(const QMap<SoundChannel *, QSet<int> > &noteLocations);
 
+	int GetAcceptableResolutionDivider();
+	void ConvertResolution(int newResolution);
+
 public slots:
 	void ReconstructMasterCache();
 
@@ -204,6 +247,9 @@ signals:
 	void SoundChannelRemoved(int index, SoundChannel *channel);
 	void SoundChannelMoved(int indexBefore, int indexAfter);
 	void AfterSoundChannelsChange();
+
+	// observers should reload document.
+	void ResolutionConverted();
 
 	// emitted when BPM(initialBPM/BPM Notes location) or timeBase changed.
 	void TimeMappingChanged();

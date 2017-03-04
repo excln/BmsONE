@@ -7,8 +7,10 @@
 #include "History.h"
 #include <QtMultimedia/QMediaPlayer>
 #include "UIDef.h"
+#include "AppInfo.h"
 #include "SymbolIconManager.h"
 #include "Preferences.h"
+
 
 const char* MainWindow::SettingsGroup = "MainWindow";
 const char* MainWindow::SettingsGeometryKey = "Geometry";
@@ -142,6 +144,7 @@ MainWindow::MainWindow(QSettings *settings)
 	actionEditPlay->setShortcut(Qt::ControlModifier + Qt::Key_P);
 
 	actionEditPreferences = new QAction(tr("Preferences..."), this);
+	actionEditPreferences->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Settings));
 	actionEditPreferences->setShortcut(QKeySequence::Preferences);
 	SharedUIHelper::RegisterGlobalShortcut(actionEditPreferences);
 	connect(actionEditPreferences, SIGNAL(triggered()), this, SLOT(EditPreferences()));

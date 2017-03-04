@@ -32,7 +32,7 @@ Preferences::Preferences(MainWindow *mainWindow)
 	editPage = new PrefEditPage(this);
 	pages->addWidget(editPage);
 	auto editItem = new QListWidgetItem(list);
-	editItem->setIcon(QIcon(":/images/config/general.png"));
+	editItem->setIcon(QIcon(":/images/config/edit.png"));
 	editItem->setText(tr("Edit"));
 	editItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
@@ -97,9 +97,9 @@ PrefGeneralPage::PrefGeneralPage(QWidget *parent)
 	}
 	{
 		outputFormat = new QComboBox();
-		QStringList strs = BmsonIO::SaveFormatStringList();
+		outputFormatList = BmsonIO::SaveFormatStringList();
+		QStringList strs = BmsonIO::SaveFormatDescriptionList();
 		outputFormat->addItems(strs);
-		outputFormat->insertSeparator(2);
 		//outputFormat->setEditable(true);
 		layout->addRow(tr("Save Format:"), outputFormat);
 		outputFormat->setWhatsThis(tr("<p>Select a version of BMSON format to save files in.</p>"
@@ -145,5 +145,5 @@ void PrefGeneralPage::store()
 	QString languageKey = LanguageKeyOf(language->currentIndex());
 	App::Instance()->GetSettings()->setValue(App::SettingsLanguageKey, languageKey);
 	// Format
-	BmsonIO::SetSaveFormatString(outputFormat->currentText());
+	BmsonIO::SetSaveFormatString(outputFormatList[outputFormat->currentIndex()]);
 }

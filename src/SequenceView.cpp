@@ -323,11 +323,12 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 		connect(document, &Document::SoundChannelMoved, this, &SequenceView::SoundChannelMoved);
 		connect(document, &Document::TotalLengthChanged, this, &SequenceView::TotalLengthChanged);
 		connect(document, &Document::BarLinesChanged, this, &SequenceView::BarLinesChanged);
+		connect(document, &Document::ResolutionConverted, this, &SequenceView::ResolutionConverted);
 		connect(document, &Document::TimeMappingChanged, this, &SequenceView::TimeMappingChanged);
 		connect(document, &Document::ShowBpmEventLocation, this, &SequenceView::ShowLocation);
 
 		lockCommands = 0;
-		resolution = document->GetTimeBase();
+		resolution = document->GetInfo()->GetResolution();
 		viewLength = document->GetTotalVisibleLength();
 		currentChannel = -1;
 		playing = false;
@@ -338,6 +339,9 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 
 	timeLine->update();
 	playingPane->update();
+	masterLane->RemakeBackBuffer();
+	masterLane->update();
+	miniMap->update();
 	for (auto cview : soundChannels){
 		cview->update();
 	}
@@ -1035,9 +1039,15 @@ void SequenceView::BarLinesChanged()
 	}
 }
 
+void SequenceView::ResolutionConverted()
+{
+	ReplaceDocument(document);
+}
+
 void SequenceView::TimeMappingChanged()
 {
 	if (documentReady){
+		resolution = document->GetInfo()->GetResolution();
 		auto allBpmEvents = document->GetBpmEvents();
 		auto selectedBpmEvents = mainWindow->GetBpmEditTool()->GetBpmEvents();
 		for (auto event : selectedBpmEvents){

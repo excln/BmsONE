@@ -17,6 +17,7 @@ class PrefGeneralPage : public QWidget
 private:
 	QComboBox *language;
 	QComboBox *outputFormat;
+	QStringList outputFormatList;
 
 	QString LanguageKeyOf(int index);
 	int LanguageIndexOf(QString key);

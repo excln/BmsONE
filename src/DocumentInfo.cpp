@@ -8,15 +8,24 @@ QSet<QString> DocumentInfo::SupportedKeys;
 DocumentInfo::DocumentInfo(Document *document)
 	: QObject(document)
 	, document(document)
+	, resolution(DefaultResolution)
 {
 	if (SupportedKeys.isEmpty()){
 		SupportedKeys.insert(Bmson::BmsInfo::TitleKey);
+		SupportedKeys.insert(Bmson::BmsInfo::SubtitleKey);
 		SupportedKeys.insert(Bmson::BmsInfo::GenreKey);
 		SupportedKeys.insert(Bmson::BmsInfo::ArtistKey);
+		SupportedKeys.insert(Bmson::BmsInfo::SubartistsKey);
+		SupportedKeys.insert(Bmson::BmsInfo::ChartNameKey);
+		SupportedKeys.insert(Bmson::BmsInfo::ModeHintKey);
+		SupportedKeys.insert(Bmson::BmsInfo::ResolutionKey);
 		SupportedKeys.insert(Bmson::BmsInfo::JudgeRankKey);
 		SupportedKeys.insert(Bmson::BmsInfo::TotalKey);
 		SupportedKeys.insert(Bmson::BmsInfo::InitBpmKey);
 		SupportedKeys.insert(Bmson::BmsInfo::LevelKey);
+		SupportedKeys.insert(Bmson::BmsInfo::BackImageKey);
+		SupportedKeys.insert(Bmson::BmsInfo::EyecatchImageKey);
+		SupportedKeys.insert(Bmson::BmsInfo::BannerKey);
 	}
 }
 
@@ -27,35 +36,70 @@ DocumentInfo::~DocumentInfo()
 void DocumentInfo::Initialize()
 {
 	title = QString();
+	subtitle = QString();
 	genre = QString();
 	artist = QString();
-	judgeRank = 100;
-	total = 400.;
+	subartists.clear();
+	chartName = QString();
+	modeHint = "beat-7k";
+	resolution = DefaultResolution;
+	judgeRank = 100.;
+	total = 100.;
 	initBpm = 120.;
 	level = 1;
+	backImage = QString();
+	eyecatchImage = QString();
+	banner = QString();
 }
 
 void DocumentInfo::LoadBmson(QJsonValue json)
 {
 	bmsonFields = json.toObject();
 	title = bmsonFields[Bmson::BmsInfo::TitleKey].toString();
+	subtitle = bmsonFields[Bmson::BmsInfo::SubtitleKey].toString();
 	genre = bmsonFields[Bmson::BmsInfo::GenreKey].toString();
 	artist = bmsonFields[Bmson::BmsInfo::ArtistKey].toString();
-	judgeRank = bmsonFields[Bmson::BmsInfo::JudgeRankKey].toInt();
+	subartists.clear();
+	auto tmp_subartists = bmsonFields[Bmson::BmsInfo::SubartistsKey].toArray();
+	for (auto entry : tmp_subartists){
+		subartists.append(entry.toString());
+	}
+	chartName = bmsonFields[Bmson::BmsInfo::ChartNameKey].toString();
+	modeHint = bmsonFields[Bmson::BmsInfo::ModeHintKey].toString();
+	resolution = bmsonFields[Bmson::BmsInfo::ResolutionKey].toInt();
+	if (resolution <= 0 || resolution > 24000){
+		resolution = DefaultResolution;
+	}
+	judgeRank = bmsonFields[Bmson::BmsInfo::JudgeRankKey].toDouble();
 	total = bmsonFields[Bmson::BmsInfo::TotalKey].toDouble();
 	initBpm = bmsonFields[Bmson::BmsInfo::InitBpmKey].toDouble();
 	level = bmsonFields[Bmson::BmsInfo::LevelKey].toInt();
+	backImage = bmsonFields[Bmson::BmsInfo::BackImageKey].toString();
+	eyecatchImage = bmsonFields[Bmson::BmsInfo::EyecatchImageKey].toString();
+	banner = bmsonFields[Bmson::BmsInfo::BannerKey].toString();
 }
 
 QJsonValue DocumentInfo::SaveBmson()
 {
 	bmsonFields[Bmson::BmsInfo::TitleKey] = title;
+	bmsonFields[Bmson::BmsInfo::SubtitleKey] = subtitle;
 	bmsonFields[Bmson::BmsInfo::GenreKey] = genre;
 	bmsonFields[Bmson::BmsInfo::ArtistKey] = artist;
+	auto tmp_subartists = QJsonArray();
+	for (auto entry : subartists){
+		tmp_subartists.append(entry);
+	}
+	bmsonFields[Bmson::BmsInfo::SubartistsKey] = tmp_subartists;
+	bmsonFields[Bmson::BmsInfo::ChartNameKey] = chartName;
+	bmsonFields[Bmson::BmsInfo::ModeHintKey] = modeHint;
+	bmsonFields[Bmson::BmsInfo::ResolutionKey] = resolution;
 	bmsonFields[Bmson::BmsInfo::JudgeRankKey] = judgeRank;
 	bmsonFields[Bmson::BmsInfo::TotalKey] = total;
 	bmsonFields[Bmson::BmsInfo::InitBpmKey] = initBpm;
 	bmsonFields[Bmson::BmsInfo::LevelKey] = level;
+	bmsonFields[Bmson::BmsInfo::BackImageKey] = backImage;
+	bmsonFields[Bmson::BmsInfo::EyecatchImageKey] = eyecatchImage;
+	bmsonFields[Bmson::BmsInfo::BannerKey] = banner;
 	return bmsonFields;
 }
 
@@ -68,6 +112,19 @@ void DocumentInfo::SetTitle(QString value){
 	if (value == title)
 		return;
 	document->GetHistory()->Add(new EditValueAction<QString>([this](QString v){ SetTitleInternal(v); }, title, value, tr("edit title"), true));
+}
+
+void DocumentInfo::SetSubtitleInternal(QString value)
+{
+	subtitle = value;
+	emit SubtitleChanged(subtitle);
+}
+
+void DocumentInfo::SetSubtitle(QString value)
+{
+	if (value == subtitle)
+		return;
+	document->GetHistory()->Add(new EditValueAction<QString>([this](QString v){ SetSubtitleInternal(v); }, subtitle, value, tr("edit subtitle"), true));
 }
 
 void DocumentInfo::SetGenreInternal(QString value)
@@ -94,16 +151,65 @@ void DocumentInfo::SetArtist(QString value){
 	document->GetHistory()->Add(new EditValueAction<QString>([this](QString v){ SetArtistInternal(v); }, artist, value, tr("edit artist"), true));
 }
 
+void DocumentInfo::SetSubartistsInternal(QStringList value)
+{
+	subartists = value;
+	emit SubartistsChanged(subartists);
+}
+
+void DocumentInfo::SetSubartists(QStringList value)
+{
+	if (value == subartists)
+		return;
+	document->GetHistory()->Add(
+		new EditValueAction<QStringList>(
+			[this](QStringList v){ SetSubartistsInternal(v); },
+			subartists, value,
+			tr("edit subartists"), true));
+}
+
+void DocumentInfo::SetChartNameInternal(QString value)
+{
+	emit ChartNameChanged(chartName = value);
+}
+
+void DocumentInfo::SetChartName(QString value)
+{
+	if (value == chartName)
+		return;
+	document->GetHistory()->Add(
+		new EditValueAction<QString>(
+			[this](QString v){ SetChartNameInternal(v); },
+			chartName, value,
+			tr("edit chart name"), true));
+}
+
+void DocumentInfo::SetModeHintInternal(QString value)
+{
+	emit ModeHintChanged(modeHint = value);
+}
+
+void DocumentInfo::SetModeHint(QString value)
+{
+	if (value == modeHint)
+		return;
+	document->GetHistory()->Add(
+		new EditValueAction<QString>(
+			[this](QString v){ SetModeHintInternal(v); },
+			modeHint, value,
+			tr("edit mode hint"), true));
+}
+
 void DocumentInfo::SetJudgeRankInternal(int value)
 {
 	judgeRank = value;
 	emit JudgeRankChanged(judgeRank);
 }
 
-void DocumentInfo::SetJudgeRank(int value){
+void DocumentInfo::SetJudgeRank(double value){
 	if (value == judgeRank)
 		return;
-	document->GetHistory()->Add(new EditValueAction<int>([this](int v){ SetJudgeRankInternal(v); }, judgeRank, value, tr("edit judge rank"), true));
+	document->GetHistory()->Add(new EditValueAction<int>([this](double v){ SetJudgeRankInternal(v); }, judgeRank, value, tr("edit judge rank"), true));
 }
 
 void DocumentInfo::SetTotalInternal(double value)
@@ -146,6 +252,54 @@ void DocumentInfo::SetLevel(int value){
 	if (value == level)
 		return;
 	document->GetHistory()->Add(new EditValueAction<int>([this](int v){ SetLevelInternal(v); }, level, value, tr("edit level"), true));
+}
+
+void DocumentInfo::SetBackImageInternal(QString value)
+{
+	emit BackImageChanged(backImage = value);
+}
+
+void DocumentInfo::SetBackImage(QString value)
+{
+	if (value == backImage)
+		return;
+	document->GetHistory()->Add(
+		new EditValueAction<QString>(
+			[this](QString v){ SetBackImageInternal(v); },
+			backImage, value,
+			tr("edit back image"), true));
+}
+
+void DocumentInfo::SetEyecatchInternal(QString value)
+{
+	emit EyecatchImageChanged(eyecatchImage = value);
+}
+
+void DocumentInfo::SetEyecatchImage(QString value)
+{
+	if (value == eyecatchImage)
+		return;
+	document->GetHistory()->Add(
+		new EditValueAction<QString>(
+			[this](QString v){ SetEyecatchInternal(v); },
+			eyecatchImage, value,
+			tr("edit eyecatch image"), true));
+}
+
+void DocumentInfo::SetBannerInternal(QString value)
+{
+	emit BannerChanged(banner = value);
+}
+
+void DocumentInfo::SetBanner(QString value)
+{
+	if (value == banner)
+		return;
+	document->GetHistory()->Add(
+		new EditValueAction<QString>(
+			[this](QString v){ SetBannerInternal(v); },
+			banner, value,
+			tr("edit banner"), true));
 }
 
 QMap<QString, QJsonValue> DocumentInfo::GetExtraFields() const
@@ -200,6 +354,12 @@ void DocumentInfo::SetExtraFields(QMap<QString, QJsonValue> fields)
 	document->GetHistory()->Add(new EditValueAction<QMap<QString, QJsonValue>>(
 								[this](QMap<QString, QJsonValue> v){ SetExtraFieldsInternal(v); },
 								oldBmsonFields, fields, tr("edit extra fields"), true));
+}
+
+void DocumentInfo::ForceSetResolution(int value)
+{
+	resolution = value;
+	emit ResolutionChanged(resolution);
 }
 
 

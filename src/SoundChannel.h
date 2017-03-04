@@ -108,12 +108,15 @@ public:
 	QString GetName() const{ return QFileInfo(fileName).baseName(); }
 	//double GetAdjustment() const{ return adjustment; }
 	const QMap<int, SoundNote> &GetNotes() const{ return notes; }
-	int GetLength() const;
+	int GetLength() const{ return totalLength; }
 
 	WaveSummary GetWaveSummary() const{ return waveSummary; }
 	const QImage &GetOverallWaveform() const{ return overallWaveform; } // .isNull()==true means uninitialized
 	void UpdateVisibleRegions(const QList<QPair<int, int>> &visibleRegionsTime);
 	void DrawRmsGraph(double location, double resolution, std::function<bool(Rms)> drawer) const;
+
+	QSet<int> GetAllLocations() const;
+	void ConvertResolution(int newResolution, int oldResolution);
 
 	void AddAllIntoMasterCache(int sign=1);
 

@@ -254,6 +254,7 @@ private slots:
 	void SoundChannelMoved(int indexBefore, int indexAfter);
 	void TotalLengthChanged(int totalLength);
 	void BarLinesChanged();
+	void ResolutionConverted();
 	void TimeMappingChanged();
 	void DestroySoundChannel(SoundChannelView *cview);
 	void MoveSoundChannelLeft(SoundChannelView *cview);

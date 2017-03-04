@@ -32,14 +32,18 @@ void CollapseButton::paintEvent(QPaintEvent *e)
 		}else{
 			QRect rectText(r.left(), r.top(), r.right()-r.left()-16, r.bottom()-r.top());
 			if (rectText.isValid()){
-				int l=0;
-				for (int i=1; i<text.length(); i++,l++){
-					QString s = text.mid(0, i) + " ...";
-					if (painter.boundingRect(rectText, Qt::AlignVCenter | Qt::TextSingleLine, s).right() > rectText.right()){
-						break;
+				if (painter.boundingRect(rectText, Qt::AlignVCenter | Qt::TextSingleLine, text).right() <= rectText.right()){
+					painter.drawText(rectText, Qt::AlignVCenter | Qt::TextSingleLine, text);
+				}else{
+					int l=0;
+					for (int i=1; i<text.length(); i++,l++){
+						QString s = text.mid(0, i) + " ...";
+						if (painter.boundingRect(rectText, Qt::AlignVCenter | Qt::TextSingleLine, s).right() > rectText.right()){
+							break;
+						}
 					}
+					painter.drawText(rectText, Qt::AlignVCenter | Qt::TextSingleLine, text.mid(0,l) + " ...");
 				}
-				painter.drawText(rectText, Qt::AlignVCenter | Qt::TextSingleLine, text.mid(0,l) + " ...");
 			}
 			painter.drawPixmap(r.right()-16, r.center().y()-8, 16, 16, pm);
 		}
@@ -53,11 +57,13 @@ void CollapseButton::Clicked()
 	}else{
 		Expand();
 	}
+	emit Changed();
 }
 
 void CollapseButton::SetText(QString text)
 {
 	this->text = text;
+	setToolTip(text);
 	update();
 }
 
@@ -65,6 +71,7 @@ void CollapseButton::Expand()
 {
 	content->show();
 	update();
+	emit Changed();
 }
 
 void CollapseButton::Collapse()
@@ -74,4 +81,5 @@ void CollapseButton::Collapse()
 	}
 	content->hide();
 	update();
+	emit Changed();
 }

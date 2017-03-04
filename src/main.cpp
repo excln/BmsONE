@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "UIDef.h"
+#include "AppInfo.h"
 #include <QApplication>
 #include <QMetaType>
 #include "SoundChannelDef.h"

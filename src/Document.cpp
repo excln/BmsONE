@@ -7,6 +7,7 @@
 #include <QFile>
 #include "Bmson.h"
 #include "EditConfig.h"
+#include "ResolutionUtil.h"
 
 const double BmsConsts::MaxBpm = 1.e+6;
 const double BmsConsts::MinBpm = 1.e-6;
@@ -46,7 +47,6 @@ void Document::Initialize()
 {
 	directory = QDir::root();
 
-	timeBase = 240;
 	actualLength = 0;
 	totalLength = 0;
 	info.Initialize();
@@ -82,7 +82,6 @@ void Document::LoadFile(QString filePath)
 	if (cx.GetState() == BmsonConvertContext::BMSON_ERROR){
 		throw cx.GetCombinedMessage();
 	}
-	timeBase = 240;
 	actualLength = 0;
 	totalLength = 0;
 	info.LoadBmson(bmsonFields[Bmson::Bms::InfoKey]);
@@ -91,7 +90,7 @@ void Document::LoadFile(QString filePath)
 		BarLine barLine(jsonBar);
 		barLines.insert(barLine.Location, barLine);
 	}
-	for (QJsonValue jsonEvent : bmsonFields[Bmson::Bms::BpmNotesKey].toArray()){
+	for (QJsonValue jsonEvent : bmsonFields[Bmson::Bms::BpmEventsKey].toArray()){
 		BpmEvent event(jsonEvent);
 		bpmEvents.insert(event.location, event);
 	}
@@ -152,7 +151,7 @@ void Document::Save()
 	for (BpmEvent event : bpmEvents){
 		jsonBpmEvents.append(event.SaveBmson());
 	}
-	bmsonFields[Bmson::Bms::BpmNotesKey] = jsonBpmEvents;
+	bmsonFields[Bmson::Bms::BpmEventsKey] = jsonBpmEvents;
 	QJsonArray jsonSoundChannels;
 	for (SoundChannel *channel : soundChannels){
 		jsonSoundChannels.append(channel->SaveBmson());
@@ -196,11 +195,11 @@ double Document::GetAbsoluteTime(int ticks) const
 	double seconds = 0;
 	double bpm = info.GetInitBpm();
 	for (QMap<int, BpmEvent>::const_iterator i=bpmEvents.begin(); i!=bpmEvents.end() && i.key() < ticks; i++){
-		seconds += (i.key() - tt) * 60.0 / (bpm * DocumentInfo::DefaultResolution);
+		seconds += (i.key() - tt) * 60.0 / (bpm * info.GetResolution());
 		tt = i.key();
 		bpm = i->value;
 	}
-	return seconds + (ticks - tt) * 60.0 / (bpm * DocumentInfo::DefaultResolution);
+	return seconds + (ticks - tt) * 60.0 / (bpm * info.GetResolution());
 }
 
 int Document::FromAbsoluteTime(double destSeconds) const
@@ -209,7 +208,7 @@ int Document::FromAbsoluteTime(double destSeconds) const
 	double seconds = 0;
 	double bpm = info.GetInitBpm();
 	for (QMap<int, BpmEvent>::const_iterator i=bpmEvents.begin(); i!=bpmEvents.end(); i++){
-		double next_seconds = seconds + (i.key() - tt) * 60.0 / (bpm * DocumentInfo::DefaultResolution);
+		double next_seconds = seconds + (i.key() - tt) * 60.0 / (bpm * info.GetResolution());
 		if (next_seconds >= destSeconds){
 			break;
 		}
@@ -217,7 +216,7 @@ int Document::FromAbsoluteTime(double destSeconds) const
 		bpm = i->value;
 		seconds = next_seconds;
 	}
-	return tt + (destSeconds - seconds) * (bpm * DocumentInfo::DefaultResolution) / 60.0;
+	return tt + (destSeconds - seconds) * (bpm * info.GetResolution()) / 60.0;
 }
 
 int Document::GetTotalLength() const
@@ -344,7 +343,7 @@ void Document::UpdateTotalLength()
 		if (length > actualLength)
 			actualLength = length;
 	}
-	totalLength = actualLength + 32 * 4 * timeBase;
+	totalLength = actualLength + 32 * 4 * info.GetResolution();
 
 	// update ephemeral bars
 	for (QMap<int, BarLine>::iterator i=barLines.begin(); i!=barLines.end(); ){
@@ -357,7 +356,7 @@ void Document::UpdateTotalLength()
 	if (!barLines.contains(0)){
 		barLines.insert(0, BarLine(0, 0));
 	}
-	for (int t = barLines.lastKey() + 4*timeBase; t<totalLength; t+=4*timeBase){
+	for (int t = barLines.lastKey() + 4*info.GetResolution(); t<totalLength; t+=4*info.GetResolution()){
 		barLines.insert(t, BarLine(t, 0, true));
 	}
 
@@ -580,6 +579,83 @@ Document::DocumentUpdateSoundNotesContext *Document::BeginModalEditSoundNotes(co
 	return new DocumentUpdateSoundNotesContext(this, noteLocations);
 }
 
+int Document::GetAcceptableResolutionDivider()
+{
+	QSet<int> locs;
+	locs.insert(info.GetResolution());
+
+	// Bar Lines
+	for (auto bar : barLines){
+		locs.insert(bar.Location);
+	}
+	// BPM Events
+	for (auto bpm : bpmEvents){
+		locs.insert(bpm.location);
+	}
+	// TODO: Stop Events
+	// SoundChannels
+	for (auto channel : soundChannels){
+		locs.unite(channel->GetAllLocations());
+	}
+	// TODO: BGA
+
+	return ResolutionUtil::GetAcceptableDivider(locs);
+}
+
+void Document::ConvertResolutionInternal(int newResolution)
+{
+	int oldResolution = info.GetResolution();
+	info.ForceSetResolution(newResolution);
+
+	// Bar Lines
+	auto barLinesOld = barLines;
+	barLines.clear();
+	for (auto bar : barLinesOld){
+		bar.Location = ResolutionUtil::ConvertTicks(bar.Location, newResolution, oldResolution);
+		barLines.insert(bar.Location, bar);
+	}
+
+	// BPM Events
+	auto bpmEventsOld = bpmEvents;
+	bpmEvents.clear();
+	for (auto bpm : bpmEventsOld){
+		bpm.location = ResolutionUtil::ConvertTicks(bpm.location, newResolution, oldResolution);
+		bpmEvents.insert(bpm.location, bpm);
+	}
+
+	// TODO: Stop Events
+
+	// SoundChannels
+	soundChannelLength.clear();
+	for (auto channel : soundChannels){
+		channel->ConvertResolution(newResolution, oldResolution);
+		soundChannelLength.insert(channel, channel->GetLength());
+	}
+
+	// TODO: BGA data
+
+	UpdateTotalLength();
+
+	ReconstructMasterCache();
+	emit ResolutionConverted();
+}
+
+void Document::ConvertResolution(int newResolution)
+{
+	int div = GetAcceptableResolutionDivider();
+	if (newResolution % (info.GetResolution() / div) == 0){
+		auto updater = [this](int value){
+			ConvertResolutionInternal(value);
+		};
+		history->Add(new EditValueAction<int>(updater, info.GetResolution(), newResolution, tr("convert resolution"), true));
+	}else{
+		// not acceptable (lose information / irriversible)
+		history->Clear();
+		history->MarkAbsolutelyDirty();
+		ConvertResolutionInternal(newResolution);
+	}
+}
+
 void Document::ReconstructMasterCache()
 {
 	if (!masterEnabled)
@@ -760,26 +836,24 @@ BarLine::BarLine(const QJsonValue &json)
 	, Ephemeral(false)
 {
 	Location = bmsonFields[Bmson::BarLine::LocationKey].toInt();
-	Kind = bmsonFields[Bmson::BarLine::KindKey].toInt();
 }
 
 QJsonValue BarLine::SaveBmson()
 {
 	bmsonFields[Bmson::BarLine::LocationKey] = Location;
-	bmsonFields[Bmson::BarLine::KindKey] = Kind;
 	return bmsonFields;
 }
 
 BpmEvent::BpmEvent(const QJsonValue &json)
 	: BmsonObject(json)
 {
-	location = bmsonFields[Bmson::EventNote::LocationKey].toInt();
-	value = bmsonFields[Bmson::EventNote::ValueKey].toDouble();
+	location = bmsonFields[Bmson::BpmEvent::LocationKey].toInt();
+	value = bmsonFields[Bmson::BpmEvent::BpmKey].toDouble();
 }
 
 QJsonValue BpmEvent::SaveBmson()
 {
-	bmsonFields[Bmson::EventNote::LocationKey] = location;
-	bmsonFields[Bmson::EventNote::ValueKey] = value;
+	bmsonFields[Bmson::BpmEvent::LocationKey] = location;
+	bmsonFields[Bmson::BpmEvent::BpmKey] = value;
 	return bmsonFields;
 }

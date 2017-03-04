@@ -77,6 +77,5 @@ struct BpmEvent : public BmsonObject
 
 
 
-
 #endif // DOCUMENTDEF_H
 

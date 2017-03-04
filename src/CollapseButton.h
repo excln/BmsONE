@@ -21,6 +21,9 @@ private slots:
 public slots:
 	void SetText(QString text);
 
+signals:
+	void Changed();
+
 public:
 	CollapseButton(QWidget *content, QWidget *parent=nullptr);
 

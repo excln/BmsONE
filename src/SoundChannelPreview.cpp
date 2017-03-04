@@ -48,7 +48,7 @@ SoundChannelNotePreviewer::SoundChannelNotePreviewer(SoundChannel *channel, int 
 	: AudioPlaySource(parent)
 	, SamplesPerSec(44100.0)
 	, SamplesPerSecOrg(channel->waveSummary.Format.sampleRate())
-	, TicksPerBeat(channel->document->GetTimeBase())
+	, TicksPerBeat(channel->document->GetInfo()->GetResolution())
 	, wave(nullptr)
 	, cache(channel->cache)
 {
@@ -177,7 +177,7 @@ SoundChannelPreviewer::SoundChannelPreviewer(SoundChannel *channel, int location
 	: AudioPlaySource(parent)
 	, SamplesPerSec(44100.0)
 	, SamplesPerSecOrg(channel->waveSummary.Format.sampleRate())
-	, TicksPerBeat(channel->document->GetTimeBase())
+	, TicksPerBeat(channel->document->GetInfo()->GetResolution())
 	, wave(nullptr)
 	, cache(channel->cache)
 {

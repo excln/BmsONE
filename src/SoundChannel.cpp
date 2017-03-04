@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cmath>
 #include "Bmson.h"
+#include "ResolutionUtil.h"
 
 
 SoundChannel::SoundChannel(Document *document)
@@ -237,11 +238,6 @@ bool SoundChannel::RemoveNote(SoundNote note)
 	return true;
 }
 
-int SoundChannel::GetLength() const
-{
-	return totalLength;
-}
-
 void SoundChannel::UpdateVisibleRegions(const QList<QPair<int, int> > &visibleRegionsTime)
 {
 	visibleRegions = visibleRegionsTime;
@@ -255,7 +251,7 @@ void SoundChannel::UpdateVisibleRegionsInternal()
 		return;
 	}
 	const double samplesPerSec = waveSummary.Format.sampleRate();
-	const double ticksPerBeat = document->GetTimeBase();
+	const double ticksPerBeat = document->GetInfo()->GetResolution();
 	QMultiMap<int, int> regions; // key:start value:end
 
 	QMutexLocker lock(&cacheMutex);
@@ -336,7 +332,7 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 		return;
 	}
 	const double samplesPerSec = waveSummary.Format.sampleRate();
-	const double ticksPerBeat = document->GetTimeBase();
+	const double ticksPerBeat = document->GetInfo()->GetResolution();
 	const double deltaTicks = 1 / resolution;
 	double ticks = location;
 	QMutexLocker lock(&cacheMutex);
@@ -394,6 +390,30 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 		}
 	}
 	while (drawer(Rms()));
+}
+
+QSet<int> SoundChannel::GetAllLocations() const
+{
+	QSet<int> locs;
+	for (auto note : notes){
+		locs.insert(note.location);
+		if (note.length != 0){
+			locs.insert(note.location + note.length);
+		}
+	}
+	return locs;
+}
+
+void SoundChannel::ConvertResolution(int newResolution, int oldResolution)
+{
+	QMap<int, SoundNote> notesOld = notes;
+	notes.clear();
+	for (auto note : notesOld){
+		note.location = ResolutionUtil::ConvertTicks(note.location, newResolution, oldResolution);
+		note.length = ResolutionUtil::ConvertTicks(note.length, newResolution, oldResolution);
+		notes.insert(note.location, note);
+	}
+	UpdateCache();
 }
 
 void SoundChannel::AddAllIntoMasterCache(int sign)
@@ -480,7 +500,7 @@ void SoundChannel::UpdateCache()
 	entry.currentSamplePosition = -1;
 	entry.currentTempo = document->GetInfo()->GetInitBpm();
 	const double samplesPerSec = waveSummary.Format.sampleRate();
-	const double ticksPerBeat = document->GetTimeBase();
+	const double ticksPerBeat = document->GetInfo()->GetResolution();
 	double currentSamplesPerTick = samplesPerSec * 60.0 / (entry.currentTempo * ticksPerBeat);
 	while (true){
 		if (iNote != notes.end() && (iTempo == document->GetBpmEvents().end() || iNote->location < iTempo->location)){
@@ -643,18 +663,18 @@ void SoundChannel::UpdateCache()
 SoundNote::SoundNote(const QJsonValue &json)
 	: BmsonObject(json)
 {
-	lane = bmsonFields[Bmson::SoundNote::LaneKey].toInt();
-	location = bmsonFields[Bmson::SoundNote::LocationKey].toInt();
-	length = bmsonFields[Bmson::SoundNote::LengthKey].toInt();
-	noteType = bmsonFields[Bmson::SoundNote::CutKey].toBool() ? 1 : 0;
+	lane = bmsonFields[Bmson::Note::LaneKey].toInt();
+	location = bmsonFields[Bmson::Note::LocationKey].toInt();
+	length = bmsonFields[Bmson::Note::LengthKey].toInt();
+	noteType = bmsonFields[Bmson::Note::ContinueKey].toBool() ? 1 : 0;
 }
 
 QJsonValue SoundNote::SaveBmson()
 {
-	bmsonFields[Bmson::SoundNote::LaneKey] = lane;
-	bmsonFields[Bmson::SoundNote::LocationKey] = location;
-	bmsonFields[Bmson::SoundNote::LengthKey] = length;
-	bmsonFields[Bmson::SoundNote::CutKey] = noteType > 0;
+	bmsonFields[Bmson::Note::LaneKey] = lane;
+	bmsonFields[Bmson::Note::LocationKey] = location;
+	bmsonFields[Bmson::Note::LengthKey] = length;
+	bmsonFields[Bmson::Note::ContinueKey] = noteType > 0;
 	return bmsonFields;
 }
 

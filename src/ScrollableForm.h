@@ -19,6 +19,7 @@ public:
 	ScrollableForm(QWidget *parent=nullptr);
 	~ScrollableForm();
 
+	QWidget *Form(){ return form; }
 	void Initialize(QFormLayout *layout);
 };
 

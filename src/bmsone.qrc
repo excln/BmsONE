@@ -30,5 +30,7 @@
         <file>images/keys/p-white.png</file>
         <file>images/keys/p-yellow.png</file>
         <file>images/config/general.png</file>
+        <file>images/config/edit.png</file>
+        <file>images/symbols/settings.png</file>
     </qresource>
 </RCC>
