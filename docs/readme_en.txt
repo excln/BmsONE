@@ -4,7 +4,11 @@ BmsONE
 
 BmsONE is an editor for bmson files.
 Bmson is a new music game format derived from BMS. See [6. Links] for more information about bmson.
-This application currently supports v0.21 bmson only. Other versions are not supported.
+
+This application currently supports v0.21 bmson. v1.0 bmsons are partially supported, that is,
+they can be input and converted into v0.21 to edit. It is also possible to output them as v1.0
+if you change settings. However, editing data added at v1.0 is not supported properly yet.
+(Some fields in BMS information can be edited with `Extra fields' form.)
 
 The latest version of this document can be found at following URL:
 http://sky.geocities.jp/exclusion_bms/bmsone.html
@@ -46,6 +50,9 @@ This behavior can be modified by Ctrl, Alt and Shift keys.
 For example, Alt+dragging selects notes only in the current sound channel.
 You can also move notes horizontally by dragging on them, or change their length by Shift+dragging.
 
+You can play sounds in the current channel at that time while Alt+Right-clicking or Middle-clicking.
+(If you use Mac, Control(not ⌘)+Clicking works as Right-clicking.)
+
 
 2.4 Other Features
 
@@ -68,9 +75,6 @@ Only extra data in BMSInfo can be edited by writing fragments of JSON directly a
 A configuration file is stored in a directory such as:
   [Windows] C:\Users\<USER>\AppData\Local\BmsONE
   [Mac OS X] ~/Library/Preferences/BmsONE
-
-This application has two locales: English and Japanese.
-The language is determined by system settings.
 
 
 3. License
@@ -134,6 +138,15 @@ bmson specs by flicknote
 
 
 7. History
+
+Nov 4 2015 alpha 0.0.6
+  - Fixed crashes when opening ogg files on Mac.
+  - Reduced crashes when scrolling notecharts on Mac.
+  - Implemented previews of a sound channel at arbitrary position.
+  - Tentative support of bmson v1.0 input/output.
+  - Tentative support of view modes besides 7-key.
+  - Implemented Preferences window where you can select languages.
+  - Disabled shortcuts while dragging notes (which cause problems in the undo buffer and so on).
 
 Oct 17 2015 alpha 0.0.5
   - Implemented Undo/Redo.
