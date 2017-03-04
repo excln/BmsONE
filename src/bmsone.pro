@@ -47,7 +47,31 @@ SOURCES += main.cpp\
     SequenceViewCursor.cpp \
     CollapseButton.cpp \
     SequenceViewEditMode.cpp \
-    SequenceViewWriteMode.cpp
+    SequenceViewWriteMode.cpp \
+    libogg/bitwise.c \
+    libogg/framing.c \
+    libvorbis/analysis.c \
+    libvorbis/bitrate.c \
+    libvorbis/block.c \
+    libvorbis/codebook.c \
+    libvorbis/envelope.c \
+    libvorbis/floor0.c \
+    libvorbis/floor1.c \
+    libvorbis/info.c \
+    libvorbis/lookup.c \
+    libvorbis/lpc.c \
+    libvorbis/lsp.c \
+    libvorbis/mapping0.c \
+    libvorbis/mdct.c \
+    libvorbis/psy.c \
+    libvorbis/registry.c \
+    libvorbis/res0.c \
+    libvorbis/sharedbook.c \
+    libvorbis/smallft.c \
+    libvorbis/synthesis.c \
+    libvorbis/vorbisenc.c \
+    libvorbis/vorbisfile.c \
+    libvorbis/window.c
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -78,7 +102,30 @@ HEADERS  += MainWindow.h \
     SymbolIconManager.h \
     SequenceViewDef.h \
     CollapseButton.h \
-    SequenceViewContexts.h
+    SequenceViewContexts.h \
+    libvorbis/books/coupled/res_books_51.h \
+    libvorbis/books/coupled/res_books_stereo.h \
+    libvorbis/books/floor/floor_books.h \
+    libvorbis/books/uncoupled/res_books_uncoupled.h \
+    libvorbis/modes/floor_all.h \
+    libvorbis/modes/psych_8.h \
+    libvorbis/modes/psych_11.h \
+    libvorbis/modes/psych_16.h \
+    libvorbis/modes/psych_44.h \
+    libvorbis/modes/residue_8.h \
+    libvorbis/modes/residue_16.h \
+    libvorbis/modes/residue_44.h \
+    libvorbis/modes/residue_44p51.h \
+    libvorbis/modes/residue_44u.h \
+    libvorbis/modes/setup_8.h \
+    libvorbis/modes/setup_11.h \
+    libvorbis/modes/setup_16.h \
+    libvorbis/modes/setup_22.h \
+    libvorbis/modes/setup_32.h \
+    libvorbis/modes/setup_44.h \
+    libvorbis/modes/setup_44p51.h \
+    libvorbis/modes/setup_44u.h \
+    libvorbis/modes/setup_X.h
 
 FORMS    +=
 
@@ -93,32 +140,6 @@ macx: ICON = bmsone.icns
 
 
 
-win32: INCLUDEPATH += $$PWD/
-win32: DEPENDPATH += $$PWD/
-
-win32: LIBS += -L$$PWD/lib/win32_VS2012/ -llibogg_static
-
-win32:!win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/libogg_static.lib
-else:win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/liblibogg_static.a
-
-win32: LIBS += -L$$PWD/lib/win32_VS2012/ -llibvorbis_static
-
-win32:!win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/libvorbis_static.lib
-else:win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/liblibvorbis_static.a
-
-win32: LIBS += -L$$PWD/lib/win32_VS2012/ -llibvorbisfile_static
-
-
-win32:!win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/libvorbisfile_static.lib
-else:win32-g++: PRE_TARGETDEPS += $$PWD/lib/win32_VS2012/liblibvorbisfile_static.a
-
-
-
-macx: INCLUDEPATH += /usr/local/Cellar/libogg/1.3.2/include /usr/local/Cellar/libvorbis/1.3.5/include
-macx: LIBS += /usr/local/Cellar/libogg/1.3.2/lib/libogg.a \
-     /usr/local/Cellar/libvorbis/1.3.5/lib/libvorbis.a \
-     /usr/local/Cellar/libvorbis/1.3.5/lib/libvorbisfile.a
-macx: PRE_TARGETDEPS += /usr/local/Cellar/libogg/1.3.2/lib/libogg.a \
-     /usr/local/Cellar/libvorbis/1.3.5/lib/libvorbis.a \
-     /usr/local/Cellar/libvorbis/1.3.5/lib/libvorbisfile.a
+INCLUDEPATH += $$PWD/ $$PWD/libvorbis
+DEPENDPATH += $$PWD/
 
