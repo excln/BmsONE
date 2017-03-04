@@ -136,6 +136,10 @@ bmson specs by flicknote
 
 7. History
 
+Nov 20 2015 beta 0.1.1
+  - Fixed a bug that a new document lacks version info.
+  - Reduced unnecessary Master Cache updates during editing sound notes.
+
 Nov 14 2015 beta 0.1.0
   - Improved View Mode functionality.
   - Implemented Master Cache, Master Lane and Mini Map.
