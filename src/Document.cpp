@@ -47,6 +47,7 @@ void Document::Initialize()
 {
 	directory = QDir::root();
 
+	bmsonFields = BmsonIO::InitialBmson();
 	actualLength = 0;
 	totalLength = 0;
 	info.Initialize();

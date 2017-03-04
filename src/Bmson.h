@@ -34,6 +34,8 @@ public:
 	static const BmsonVersion NativeVersion;
 	static const BmsonVersion LatestVersion;
 
+	static QJsonObject InitialBmson();
+
 	// various format -> normal format
 	static QJsonObject NormalizeBmson(BmsonConvertContext &cxt, const QJsonObject &bms, BmsonVersion *version=nullptr);
 

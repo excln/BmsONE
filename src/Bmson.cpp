@@ -31,6 +31,13 @@ BmsonIO *BmsonIO::Instance()
 	return instance;
 }
 
+QJsonObject BmsonIO::InitialBmson()
+{
+	QJsonObject json;
+	json[VersionKey] = Bmson100::Bmson::Version;
+	return json;
+}
+
 QJsonObject BmsonIO::NormalizeBmson(BmsonConvertContext &cxt, const QJsonObject &bms, BmsonVersion *ver)
 {
 	BmsonVersion v = NativeVersion;
