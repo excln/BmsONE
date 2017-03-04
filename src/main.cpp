@@ -38,7 +38,11 @@ App::App(int argc, char *argv[])
 		settings->clear();
 		settings->setValue(SettingsVersionKey, SettingsVersion);
 	}
-	QString locale = settings->value(SettingsLanguageKey, QLocale::system().name()).toString();
+	QString systemLocale = QLocale::system().name();
+	QString locale = settings->value(SettingsLanguageKey).toString();
+	if (locale.isNull() || locale.isEmpty()){
+		locale = systemLocale;
+	}
 
 	QTranslator *translator = new QTranslator(this);
 	if (translator->load(":/i18n/" + locale)){

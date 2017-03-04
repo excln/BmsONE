@@ -22,6 +22,7 @@ class UIUtil
 {
 public:
 	static const QSize ToolBarIconSize;
+	static void SetFont(QWidget *widget);
 };
 
 

@@ -607,25 +607,45 @@
 <context>
     <name>Preferences</name>
     <message>
-        <location filename="../Preferences.cpp" line="21"/>
+        <location filename="../Preferences.cpp" line="12"/>
+        <source>Preferences</source>
+        <translation>環境設定</translation>
+    </message>
+    <message>
+        <location filename="../Preferences.cpp" line="24"/>
+        <source>(Requires restart)</source>
+        <translation>(再起動が必要)</translation>
+    </message>
+    <message>
+        <location filename="../Preferences.cpp" line="25"/>
+        <source>Language:</source>
+        <translation>言語:</translation>
+    </message>
+    <message>
+        <location filename="../Preferences.cpp" line="34"/>
         <source>Save Format:</source>
         <translation>保存フォーマット:</translation>
+    </message>
+    <message>
+        <location filename="../Preferences.cpp" line="37"/>
+        <source>Close</source>
+        <translation>閉じる</translation>
     </message>
 </context>
 <context>
     <name>QMessageBox</name>
     <message>
-        <location filename="../main.cpp" line="104"/>
+        <location filename="../main.cpp" line="108"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="105"/>
+        <location filename="../main.cpp" line="109"/>
         <source>Discard</source>
         <translation>破棄</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="106"/>
+        <location filename="../main.cpp" line="110"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
     </message>
@@ -633,67 +653,67 @@
 <context>
     <name>QScrollBar</name>
     <message>
-        <location filename="../main.cpp" line="90"/>
+        <location filename="../main.cpp" line="94"/>
         <source>Scroll here</source>
         <translation>ここにスクロール</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="91"/>
+        <location filename="../main.cpp" line="95"/>
         <source>Top</source>
         <translation>上端にスクロール</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="92"/>
+        <location filename="../main.cpp" line="96"/>
         <source>Bottom</source>
         <translation>下端にスクロール</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="93"/>
+        <location filename="../main.cpp" line="97"/>
         <source>Scroll up</source>
         <translation>上のページ</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="94"/>
+        <location filename="../main.cpp" line="98"/>
         <source>Scroll down</source>
         <translation>下のページ</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="95"/>
+        <location filename="../main.cpp" line="99"/>
         <source>Page up</source>
         <translation>上にスクロール</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="96"/>
+        <location filename="../main.cpp" line="100"/>
         <source>Page down</source>
         <translation>下にスクロール</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="97"/>
+        <location filename="../main.cpp" line="101"/>
         <source>Left edge</source>
         <translation>左端にスクロール</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="98"/>
+        <location filename="../main.cpp" line="102"/>
         <source>Right edge</source>
         <translation>右端にスクロール</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="99"/>
+        <location filename="../main.cpp" line="103"/>
         <source>Scroll left</source>
         <translation>左にスクロール</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="100"/>
+        <location filename="../main.cpp" line="104"/>
         <source>Scroll right</source>
         <translation>右にスクロール</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="101"/>
+        <location filename="../main.cpp" line="105"/>
         <source>Page left</source>
         <translation>左のページ</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="102"/>
+        <location filename="../main.cpp" line="106"/>
         <source>Page right</source>
         <translation>右のページ</translation>
     </message>

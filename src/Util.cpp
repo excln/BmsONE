@@ -20,3 +20,14 @@ void SharedUIHelper::CommitDirtyEdit()
 	}
 }
 
+
+
+
+void UIUtil::SetFont(QWidget *widget)
+{
+#ifdef Q_OS_WIN
+	widget->setFont(QFont("Meiryo"));
+#endif
+}
+
+

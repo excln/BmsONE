@@ -25,9 +25,7 @@ MainWindow::MainWindow(QSettings *settings)
 	, currentChannel(-1)
 	, closing(false)
 {
-#ifdef Q_OS_WIN
-	setFont(QFont("Meiryo"));
-#endif
+	UIUtil::SetFont(this);
 	setWindowIcon(QIcon(":/images/bmsone64.png"));
 	resize(960,640);
 	setDockOptions(QMainWindow::AnimatedDocks);
@@ -256,6 +254,7 @@ MainWindow::MainWindow(QSettings *settings)
 
 	//setStatusBar(statusBar = new StatusBar(this));
 	auto *statusToolBar = new QToolBar(tr("Status Bar"));
+	UIUtil::SetFont(statusToolBar);
 	statusToolBar->setObjectName("Status Bar");
 	statusToolBar->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 	statusToolBar->addWidget(statusBar = new StatusBar(this));
@@ -263,6 +262,7 @@ MainWindow::MainWindow(QSettings *settings)
 	menuViewToolBars->insertAction(actionViewTbSeparator, statusToolBar->toggleViewAction());
 
 	auto *fileTools = new QToolBar(tr("File"));
+	UIUtil::SetFont(fileTools);
 	fileTools->setObjectName("File Tools");
 	fileTools->addAction(actionFileNew);
 	fileTools->addAction(actionFileOpen);
@@ -272,6 +272,7 @@ MainWindow::MainWindow(QSettings *settings)
 	menuViewToolBars->insertAction(actionViewTbSeparator, fileTools->toggleViewAction());
 
 	auto *editTools = new QToolBar(tr("Edit"));
+	UIUtil::SetFont(editTools);
 	editTools->setObjectName("Edit Tools");
 	editTools->addAction(actionEditUndo);
 	editTools->addAction(actionEditRedo);
@@ -280,19 +281,23 @@ MainWindow::MainWindow(QSettings *settings)
 	menuViewToolBars->insertAction(actionViewTbSeparator, editTools->toggleViewAction());
 
 	preferences = new Preferences(this);
+	UIUtil::SetFont(preferences);
 	connect(preferences, SIGNAL(SaveFormatChanged(BmsonIO::BmsonVersion)), this, SLOT(SaveFormatChanged(BmsonIO::BmsonVersion)));
 
 	sequenceTools = new SequenceTools("Sequence Tools", tr("Sequence Tools"), this);
+	UIUtil::SetFont(sequenceTools);
 	sequenceTools->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(sequenceTools);
 	menuViewToolBars->insertAction(actionViewTbSeparator, sequenceTools->toggleViewAction());
 
 	audioPlayer = new AudioPlayer(this, "Sound Output", tr("Sound Output"));
+	UIUtil::SetFont(audioPlayer);
 	audioPlayer->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(audioPlayer);
 	menuViewToolBars->insertAction(actionViewTbSeparator, audioPlayer->toggleViewAction());
 
 	selectedObjectView = new SelectedObjectView(this);
+	UIUtil::SetFont(selectedObjectView);
 	selectedObjectView->setObjectName("Selected Objects");
 	addToolBar(selectedObjectView);
 	menuViewToolBars->insertAction(actionViewTbSeparator, selectedObjectView->toggleViewAction());
@@ -305,12 +310,14 @@ MainWindow::MainWindow(QSettings *settings)
 	//sequenceView->installEventFilter(this);
 
 	auto dock = new QDockWidget(tr("Info"));
+	UIUtil::SetFont(dock);
 	dock->setObjectName("Info");
 	dock->setWidget(infoView = new InfoView(this));
 	addDockWidget(Qt::LeftDockWidgetArea, dock);
 	menuViewDockBars->insertAction(actionViewDockSeparator, dock->toggleViewAction());
 
 	auto dock2 = new QDockWidget(tr("Channel"));
+	UIUtil::SetFont(dock2);
 	dock2->setObjectName("Channel");
 	dock2->setWidget(channelInfoView = new ChannelInfoView(this));
 	addDockWidget(Qt::LeftDockWidgetArea, dock2);
