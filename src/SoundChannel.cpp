@@ -133,37 +133,52 @@ void SoundChannel::OnTimeMappingChanged()
 
 void SoundChannel::InsertNoteImpl(SoundNote note)
 {
-	MasterCacheAddPreviousNoteInernal(note.location, -1);
+	bool updatesMasterCache = note.noteType == 0;
+	if (updatesMasterCache){
+		MasterCacheAddPreviousNoteInernal(note.location, -1);
+	}
 	notes.insert(note.location, note);
 	UpdateCache();
 	UpdateVisibleRegionsInternal();
-	MasterCacheAddPreviousNoteInernal(note.location, 1);
-	MasterCacheAddNoteInternal(note.location, 1);
+	if (updatesMasterCache){
+		MasterCacheAddPreviousNoteInernal(note.location, 1);
+		MasterCacheAddNoteInternal(note.location, 1);
+	}
 	emit NoteInserted(note);
 	document->ChannelLengthChanged(this, totalLength);
 }
 
 void SoundChannel::RemoveNoteImpl(SoundNote note)
 {
-	MasterCacheAddPreviousNoteInernal(note.location, -1);
-	MasterCacheAddNoteInternal(note.location, -1);
+	bool updatesMasterCache = note.noteType == 0;
+	if (updatesMasterCache){
+		MasterCacheAddPreviousNoteInernal(note.location, -1);
+		MasterCacheAddNoteInternal(note.location, -1);
+	}
 	SoundNote actualNote = notes.take(note.location);
 	UpdateCache();
 	UpdateVisibleRegionsInternal();
-	MasterCacheAddPreviousNoteInernal(note.location, 1);
+	if (updatesMasterCache){
+		MasterCacheAddPreviousNoteInernal(note.location, 1);
+	}
 	emit NoteRemoved(actualNote);
 	document->ChannelLengthChanged(this, totalLength);
 }
 
 void SoundChannel::UpdateNoteImpl(SoundNote note)
 {
-	MasterCacheAddPreviousNoteInernal(note.location, -1);
-	MasterCacheAddNoteInternal(note.location, -1);
+	bool updatesMasterCache = note.noteType == 0;
+	if (updatesMasterCache){
+		MasterCacheAddPreviousNoteInernal(note.location, -1);
+		MasterCacheAddNoteInternal(note.location, -1);
+	}
 	notes[note.location] = note;
 	UpdateCache();
 	UpdateVisibleRegionsInternal();
-	MasterCacheAddPreviousNoteInernal(note.location, 1);
-	MasterCacheAddNoteInternal(note.location, 1);
+	if (updatesMasterCache){
+		MasterCacheAddPreviousNoteInernal(note.location, 1);
+		MasterCacheAddNoteInternal(note.location, 1);
+	}
 	emit NoteChanged(note.location, note);
 	document->ChannelLengthChanged(this, totalLength);
 }
