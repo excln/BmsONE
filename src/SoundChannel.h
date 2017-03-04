@@ -140,7 +140,7 @@ class SoundChannelSourceFilePreviewer : public AudioPlaySource
 	Q_OBJECT
 
 private:
-	S16S44100StreamTransformer *wave;
+	S32F44100StreamTransformer *wave;
 
 signals:
 	void Progress(quint64 position);
@@ -165,7 +165,7 @@ private:
 	const double SamplesPerSec;
 	const double SamplesPerSecOrg;
 	const double TicksPerBeat;
-	S16S44100StreamTransformer *wave;
+	S32F44100StreamTransformer *wave;
 	QMap<int, SoundChannel::CacheEntry> cache;
 	SoundNote note;
 	int nextNoteLocation;
@@ -197,7 +197,7 @@ private:
 	const double SamplesPerSecOrg;
 	const double TicksPerBeat;
 	QMutex mutex;
-	S16S44100StreamTransformer *wave;
+	S32F44100StreamTransformer *wave;
 	QMap<int, SoundChannel::CacheEntry> cache;
 	QMap<int, SoundChannel::CacheEntry>::iterator icache;
 	int currentSamplePos;

@@ -10,7 +10,7 @@ SoundChannelSourceFilePreviewer::SoundChannelSourceFilePreviewer(SoundChannel *c
 	QString srcPath = channel->document->GetAbsolutePath(channel->fileName);
 	AudioStreamSource *native = SoundChannelUtil::OpenSourceFile(srcPath, this);
 	if (native){
-		wave = new S16S44100StreamTransformer(native);
+		wave = new S32F44100StreamTransformer(native);
 		wave->Open();
 	}
 }
@@ -96,7 +96,7 @@ SoundChannelNotePreviewer::SoundChannelNotePreviewer(SoundChannel *channel, int 
 	AudioStreamSource *native = SoundChannelUtil::OpenSourceFile(srcPath, this);
 	if (!native)
 		return;
-	wave = new S16S44100StreamTransformer(native);
+	wave = new S32F44100StreamTransformer(native);
 	wave->Open();
 	wave->SeekAbsolute(currentSamplePos);
 }
@@ -211,7 +211,7 @@ SoundChannelPreviewer::SoundChannelPreviewer(SoundChannel *channel, int location
 	AudioStreamSource *native = SoundChannelUtil::OpenSourceFile(srcPath, this);
 	if (!native)
 		return;
-	wave = new S16S44100StreamTransformer(native);
+	wave = new S32F44100StreamTransformer(native);
 	wave->Open();
 	wave->SeekAbsolute((quint64)std::max<qint64>(0, currentSamplePos));
 }
@@ -260,7 +260,7 @@ int SoundChannelPreviewer::AudioPlayRead(AudioPlaySource::SampleType *buffer, in
 				currentSamplePos += samplesRead;
 			}else{
 				for (int i=0; i<samples; i++){
-					buffer[i] = QAudioBuffer::StereoFrame<signed short>();
+					buffer[i] = QAudioBuffer::StereoFrame<float>();
 				}
 				samples = 0;
 			}
@@ -277,7 +277,7 @@ int SoundChannelPreviewer::AudioPlayRead(AudioPlaySource::SampleType *buffer, in
 					int samplesRead = wave->Read(buffer, r);
 					if (samplesRead == 0){
 						for (int i=0; i<r; i++){
-							buffer[i] = QAudioBuffer::StereoFrame<signed short>();
+							buffer[i] = QAudioBuffer::StereoFrame<float>();
 						}
 						break;
 					}
@@ -286,7 +286,7 @@ int SoundChannelPreviewer::AudioPlayRead(AudioPlaySource::SampleType *buffer, in
 				}
 			}else{
 				for (int i=0; i<endSamples; i++){
-					buffer[i] = QAudioBuffer::StereoFrame<signed short>();
+					buffer[i] = QAudioBuffer::StereoFrame<float>();
 				}
 				buffer += endSamples;
 			}

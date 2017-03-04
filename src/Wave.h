@@ -127,6 +127,37 @@ public:
 	quint64 Read(QAudioBuffer::S16S *buffer, quint64 frames);
 };
 
+class S32F44100StreamTransformer : public AudioStreamSource
+{
+	Q_OBJECT
+
+private:
+	static const uint InputBufferSize = 4096;
+
+public:
+	typedef QAudioBuffer::S32F SampleType;
+
+private:
+	AudioStreamSource *src;
+	char *inputBuffer;
+	QList<SampleType> auxBuffer;
+
+	bool IsSourceS32F44100() const;
+	void Provide(qreal playHeadEnd);
+	void Forget(qreal playHeadEnd);
+
+public:
+	S32F44100StreamTransformer(AudioStreamSource *src, QObject *parent=nullptr);
+	~S32F44100StreamTransformer();
+
+	virtual int Open();
+	virtual quint64 Read(char *buffer, quint64 bufferSize);
+	virtual void SeekRelative(qint64 relativeFrames);
+	virtual void SeekAbsolute(quint64 absoluteFrames);
+
+	quint64 Read(QAudioBuffer::S32F *buffer, quint64 frames);
+};
+
 
 
 
@@ -215,7 +246,7 @@ class AudioPlaySource : public QObject
 	Q_OBJECT
 
 public:
-	typedef QAudioBuffer::S16S SampleType;
+	typedef QAudioBuffer::S32F SampleType;
 
 	AudioPlaySource(QObject *parent=nullptr) : QObject(parent){}
 	~AudioPlaySource(){}

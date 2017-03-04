@@ -18,7 +18,7 @@ class MasterCacheWorker : public QObject
 private:
 	MasterCache *master;
 	AudioStreamSource *native;
-	S16S44100StreamTransformer *wave;
+	S32F44100StreamTransformer *wave;
 	QFuture<void> task;
 	bool cancel;
 	mutable QMutex workerMutex;
@@ -40,9 +40,6 @@ class MasterPlayer : public AudioPlaySource
 private:
 	MasterCache *master;
 	int position;
-
-	static float saturate(float t, float x);
-	static float sigmoid(float x);
 
 signals:
 	void Progress(int position);

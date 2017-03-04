@@ -14,7 +14,7 @@ class AudioPlayerInternal : public QIODevice
 
 private:
 	typedef QAudioBuffer::S16S SampleTypePlay;
-	typedef QAudioBuffer::S16S SampleTypeRead;
+	typedef QAudioBuffer::S32F SampleTypeRead;
 	typedef QAudioBuffer::S32F SampleTypeTemp;
 	static const qint64 BufferSampleCount;
 	static const float EnvPrevRelease;

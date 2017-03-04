@@ -146,7 +146,7 @@ MasterCacheWorker::MasterCacheWorker(MasterCache *master, int time, int v, Sound
 	native = SoundChannelUtil::OpenSourceFile(srcPath, this);
 	if (!native)
 		return;
-	wave = new S16S44100StreamTransformer(native, this);
+	wave = new S32F44100StreamTransformer(native, this);
 	task = QtConcurrent::run([=](){
 		AddSoundTask(time, v, int(double(frames) * MasterCache::SampleRate / channel->GetWaveSummary().Format.sampleRate()));
 	});
@@ -172,7 +172,7 @@ void MasterCacheWorker::AddSoundTask(int time, int v, int frames)
 	wave->Open();
 	wave->SeekAbsolute(0);
 	static const int BufferSize = 4096;
-	QAudioBuffer::S16S buf[BufferSize];
+	QAudioBuffer::S32F buf[BufferSize];
 	while (frames > 0){
 		int sizeRead = wave->Read(buf, std::min<int>(BufferSize, frames));
 		if (sizeRead == 0){
@@ -193,16 +193,16 @@ void MasterCacheWorker::AddSoundTask(int time, int v, int frames)
 				for (int i=0; i<sizeRead; i++){
 					auto smp = buf[i];
 					QAudioBuffer::S32F out = master->data[time+i];
-					out.left += float(smp.left) / 32768.0;
-					out.right += float(smp.right) / 32768.0;
+					out.left += smp.left;
+					out.right += smp.right;
 					master->data[time+i] = out;
 				}
 			}else{
 				for (int i=0; i<sizeRead; i++){
 					auto smp = buf[i];
 					QAudioBuffer::S32F out = master->data[time+i];
-					out.left -= float(smp.left) / 32768.0;
-					out.right -= float(smp.right) / 32768.0;
+					out.left -= smp.left;
+					out.right -= smp.right;
 					master->data[time+i] = out;
 				}
 			}
@@ -251,29 +251,10 @@ int MasterPlayer::AudioPlayRead(AudioPlaySource::SampleType *buffer, int bufferS
 		QAudioBuffer::S32F data = position < 0 || position >= master->data.size()
 				? QAudioBuffer::StereoFrame<float>(0, 0)
 				: master->data[position];
-		buffer[i].left = short(saturate(0.95f, data.left) * 32767.0f);
-		buffer[i].right = short(saturate(0.95f, data.right) * 32767.0f);
+		buffer[i] = data;
 	}
 	return i;
 }
 
-float MasterPlayer::saturate(float t, float x)
-{
-	if (std::fabsf(x) < t){
-		return x;
-	}
-	return x > 0.f
-		? t + (1.f-t)*sigmoid((x-t)/((1.f-t)*1.5f))
-		: -(t + (1.f-t)*sigmoid((-x-t)/((1.f-t)*1.5f)));
-}
-
-float MasterPlayer::sigmoid(float x)
-{
-	return std::fabsf(x) < 1.f
-		? x*(1.5f - 0.5f*x*x)
-		: (x > 0.f
-		   ? 1.f
-		   : -1.f);
-}
 
 

@@ -268,8 +268,8 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 			int posOut = 0;
 			while (posOut + tmpCurrentPosition <= samplesToRead){
 				for (int i=0; i<tmpCurrentPosition; i++){
-					tmp[posOut].left += tmpCurrent[i].left / 32768.f;
-					tmp[posOut].right += tmpCurrent[i].right / 32768.f;
+					tmp[posOut].left += tmpCurrent[i].left;
+					tmp[posOut].right += tmpCurrent[i].right;
 					posOut++;
 				}
 				tmpCurrentPosition = srcCurrent->AudioPlayRead(tmpCurrent, BufferSampleCount);
@@ -279,8 +279,8 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 			if (tmpCurrentPosition > 0){
 				const int remaining = samplesToRead - posOut;
 				for (int i=0; i<remaining; i++){
-					tmp[posOut].left += tmpCurrent[i].left / 32768.f;
-					tmp[posOut].right += tmpCurrent[i].right / 32768.f;
+					tmp[posOut].left += tmpCurrent[i].left;
+					tmp[posOut].right += tmpCurrent[i].right;
 					posOut++;
 				}
 				for (int i=0; i<tmpCurrentPosition-remaining; i++){
@@ -297,8 +297,8 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 			int posOut = 0;
 			while (posOut + tmpPrevPosition <= samplesToRead){
 				for (int i=0; i<tmpPrevPosition; i++){
-					tmp[posOut].left += envPrev * tmpPrev[i].left / 32768.f;
-					tmp[posOut].right += envPrev * tmpPrev[i].right / 32768.f;
+					tmp[posOut].left += envPrev * tmpPrev[i].left;
+					tmp[posOut].right += envPrev * tmpPrev[i].right;
 					posOut++;
 					envPrev -= envPrev * EnvPrevRelease;
 				}
@@ -309,8 +309,8 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 			if (tmpPrevPosition > 0){
 				const int remaining = samplesToRead - posOut;
 				for (int i=0; i<remaining; i++){
-					tmp[posOut].left += envPrev * tmpPrev[i].left / 32768.f;
-					tmp[posOut].right += envPrev * tmpPrev[i].right / 32768.f;
+					tmp[posOut].left += envPrev * tmpPrev[i].left;
+					tmp[posOut].right += envPrev * tmpPrev[i].right;
 					posOut++;
 					envPrev -= envPrev * EnvPrevRelease;
 				}
@@ -326,8 +326,8 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 			}
 		}
 		for (int i=0; i<samplesToRead; i++){
-			float l = saturate(0.9f, tmp[i].left) * volume;
-			float r = saturate(0.9f, tmp[i].right) * volume;
+			float l = saturate(0.95f, tmp[i].left * volume);
+			float r = saturate(0.95f, tmp[i].right * volume);
 			float absL = std::fabsf(l);
 			float absR = std::fabsf(r);
 			if (absL > peakL){
