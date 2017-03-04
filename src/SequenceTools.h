@@ -30,6 +30,9 @@ private:
 	static QString TextForGridSize(GridSize grid);
 
 private slots:
+	void DeleteObjects();
+	void TransferObjects();
+
 	void EditMode();
 	void WriteMode();
 	void SnapToGrid(bool snap);
@@ -38,6 +41,7 @@ private slots:
 	void ModeChanged(SequenceEditMode mode);
 	void SnapToGridChanged(bool snap);
 	void SmallGridChanged(GridSize grid);
+	void SelectionChanged(SequenceEditSelection selection);
 
 public:
 	SequenceTools(const QString &objectName, const QString &windowTitle, MainWindow *mainWindow=nullptr);

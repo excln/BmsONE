@@ -93,6 +93,12 @@ MainWindow::MainWindow(QSettings *settings)
 	actionEditSelectAll->setShortcut(QKeySequence::SelectAll);
 	actionEditSelectAll->setEnabled(false);
 
+	actionEditDelete = new QAction(tr("Delete"), this);
+	actionEditDelete->setEnabled(false);
+
+	actionEditTransfer = new QAction(tr("Switch Key/BGM"), this);
+	actionEditTransfer->setEnabled(false);
+
 	actionEditModeEdit = new QAction(tr("Edit Mode"), this);
 	actionEditModeEdit->setShortcut(Qt::ControlModifier + Qt::Key_1);
 
@@ -177,10 +183,15 @@ MainWindow::MainWindow(QSettings *settings)
 	menuEdit->addAction(actionEditPaste);
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditSelectAll);
+#endif
+	menuEdit->addSeparator();
+	menuEdit->addAction(actionEditDelete);
+	menuEdit->addAction(actionEditTransfer);
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditModeEdit);
 	menuEdit->addAction(actionEditModeWrite);
-	menuEdit->addAction(actionEditModeInteractive);
+	//menuEdit->addAction(actionEditModeInteractive);
+#if 0
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditLockCreation);
 	menuEdit->addAction(actionEditLockDeletion);

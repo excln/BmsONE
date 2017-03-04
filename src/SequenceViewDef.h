@@ -8,5 +8,12 @@ enum class SequenceEditMode{
 	INTERACTIVE_MODE,
 };
 
+enum class SequenceEditSelection{
+	NO_SELECTION,
+	KEY_SOUND_NOTES_SELECTION,
+	BGM_SOUND_NOTES_SELECTION,
+	BPM_EVENTS_SELECTION,
+};
+
 #endif // SEQUENCEVIEWDEF_H
 

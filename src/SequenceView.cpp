@@ -134,6 +134,10 @@ SequenceView::SequenceView(MainWindow *parent)
 	tb->addAction("M");
 #endif
 	rubberBand = new QRubberBand(QRubberBand::Rectangle, playingPane);
+	actionDeleteSelectedNotes = new QAction(tr("Delete"), this);
+	connect(actionDeleteSelectedNotes, SIGNAL(triggered(bool)), this, SLOT(DeleteSelectedObjects()));
+	actionTransferSelectedNotes = new QAction(tr("Move to BGM Lanes"), this);
+	connect(actionTransferSelectedNotes, SIGNAL(triggered(bool)), this, SLOT(TransferSelectedNotes()));
 
 	QSettings *settings = mainWindow->GetSettings();
 	settings->beginGroup(SettingsGroup);
@@ -164,6 +168,7 @@ SequenceView::SequenceView(MainWindow *parent)
 	settings->endGroup();
 
 	currentChannel = 0;
+	selection = SequenceEditSelection::NO_SELECTION;
 	playing = false;
 }
 
@@ -246,6 +251,19 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 	}
 }
 
+void SequenceView::ClearAnySelection()
+{
+	selectedNotes.clear();
+	selectedBpmEvents.clear();
+	playingPane->update();
+	for (auto cview : soundChannels){
+		cview->update();
+	}
+	timeLine->update();
+	BpmEventsSelectionUpdated();
+	UpdateSelectionType();
+}
+
 void SequenceView::ClearNotesSelection()
 {
 	selectedNotes.clear();
@@ -253,6 +271,7 @@ void SequenceView::ClearNotesSelection()
 	for (auto cview : soundChannels){
 		cview->update();
 	}
+	UpdateSelectionType();
 }
 
 void SequenceView::SelectSingleNote(SoundNoteView *nview)
@@ -265,6 +284,7 @@ void SequenceView::SelectSingleNote(SoundNoteView *nview)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
+	UpdateSelectionType();
 }
 
 void SequenceView::ToggleNoteSelection(SoundNoteView *nview)
@@ -280,6 +300,7 @@ void SequenceView::ToggleNoteSelection(SoundNoteView *nview)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
+	UpdateSelectionType();
 }
 
 void SequenceView::SelectAdditionalNote(SoundNoteView *nview)
@@ -291,6 +312,7 @@ void SequenceView::SelectAdditionalNote(SoundNoteView *nview)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
+	UpdateSelectionType();
 }
 
 void SequenceView::DeselectNote(SoundNoteView *nview)
@@ -302,6 +324,7 @@ void SequenceView::DeselectNote(SoundNoteView *nview)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
+	UpdateSelectionType();
 }
 
 void SequenceView::ClearBpmEventsSelection()
@@ -309,6 +332,7 @@ void SequenceView::ClearBpmEventsSelection()
 	selectedBpmEvents.clear();
 	timeLine->update();
 	BpmEventsSelectionUpdated();
+	UpdateSelectionType();
 }
 
 void SequenceView::SelectSingleBpmEvent(BpmEvent event)
@@ -319,6 +343,7 @@ void SequenceView::SelectSingleBpmEvent(BpmEvent event)
 	selectedBpmEvents.insert(event.location, event);
 	timeLine->update();
 	BpmEventsSelectionUpdated();
+	UpdateSelectionType();
 }
 
 void SequenceView::ToggleBpmEventSelection(BpmEvent event)
@@ -332,6 +357,7 @@ void SequenceView::ToggleBpmEventSelection(BpmEvent event)
 	}
 	timeLine->update();
 	BpmEventsSelectionUpdated();
+	UpdateSelectionType();
 }
 
 void SequenceView::DeleteSelectedNotes()
@@ -364,7 +390,36 @@ void SequenceView::TransferSelectedNotesToBgm()
 
 void SequenceView::TransferSelectedNotesToKey()
 {
+	QMultiMap<SoundChannel*, SoundNote> notes;
+	for (auto nv : selectedNotes){
+		SoundNote n = nv->GetNote();
+		int lane = GetSomeVacantLane(n.location);
+		if (lane > 0){
+			n.length = 0;
+			n.lane = lane;
+			notes.insert(nv->GetChannelView()->GetChannel(), n);
+		}
+	}
+	if (notes.empty()){
+		qApp->beep();
+		return;
+	}
+	ClearBpmEventsSelection();
+	ClearNotesSelection();
+	if (notes.empty())
+		return;
+	document->MultiChannelUpdateSoundNotes(notes);
+}
 
+void SequenceView::DeleteSelectedBpmEvents()
+{
+	QList<int> locations;
+	for (auto e : selectedBpmEvents){
+		locations.append(e.location);
+	}
+	ClearBpmEventsSelection();
+	ClearNotesSelection();
+	document->RemoveBpmEvents(locations);
 }
 
 QSize SequenceView::sizeHint() const
@@ -397,7 +452,7 @@ void SequenceView::keyPressEvent(QKeyEvent *event)
 	switch (event->key()){
 	case Qt::Key_Delete:
 	case Qt::Key_Backspace:
-		DeleteSelectedNotes();
+		DeleteSelectedObjects();
 		return;
 	default:
 		QAbstractScrollArea::keyPressEvent(event);
@@ -544,6 +599,31 @@ int SequenceView::SnapToUpperFineGrid(qreal time) const
 	int snapped = int(prevBarLoc + fineGrid.NthGrid(resolution,
 													1+fineGrid.GridNumber(resolution, time - 1.0 - prevBarLoc)) + 0.5);
 	return std::min<int>(snapped, nextBarLoc);
+}
+
+int SequenceView::GetSomeVacantLane(int location)
+{
+	for (auto il=lanes.begin(); il!=lanes.end(); il++){
+		bool vacant = true;
+		for (int i=0; i<soundChannels.size(); i++){
+			const QMap<int, SoundNoteView*> &notes = soundChannels[i]->GetNotes();
+			QMap<int, SoundNoteView*>::const_iterator inote = notes.lowerBound(location);
+			if (inote != notes.begin())
+				inote--;
+			for (; inote != notes.end() && inote.value()->GetNote().location <= location; inote++){
+				const SoundNote &n = inote.value()->GetNote();
+				if (n.lane == il.key() && n.location+n.length>=location){
+					vacant = false;
+					goto g;
+				}
+			}
+		}
+g:
+		if (vacant){
+			return il.key();
+		}
+	}
+	return 0;
 }
 
 void SequenceView::SetNoteColor(QLinearGradient &g, int lane, bool active) const
@@ -804,6 +884,7 @@ void SequenceView::TimeMappingChanged()
 		for (auto event : mainWindow->GetBpmEditTool()->GetBpmEvents()){
 			this->selectedBpmEvents.insert(event.location, event);
 		}
+		UpdateSelectionType();
 		timeLine->update();
 		// update of each channel view is triggered by each channel
 	}
@@ -883,6 +964,24 @@ void SequenceView::BpmEventsSelectionUpdated()
 	mainWindow->GetBpmEditTool()->SetBpmEvents(selectedBpmEvents.values());
 }
 
+void SequenceView::UpdateSelectionType()
+{
+	if (selectedBpmEvents.isEmpty()){
+		if (selectedNotes.isEmpty()){
+			selection = SequenceEditSelection::NO_SELECTION;
+		}else{
+			if ((*selectedNotes.begin())->GetNote().lane == 0){
+				selection = SequenceEditSelection::BGM_SOUND_NOTES_SELECTION;
+			}else{
+				selection = SequenceEditSelection::KEY_SOUND_NOTES_SELECTION;
+			}
+		}
+	}else{
+		selection = SequenceEditSelection::BPM_EVENTS_SELECTION;
+	}
+	emit SelectionChanged(selection);
+}
+
 void SequenceView::OnCurrentChannelChanged(int index)
 {
 	if (currentChannel != index){
@@ -940,6 +1039,37 @@ void SequenceView::SetMediumGrid(GridSize grid)
 		cview->update();
 	}
 	emit MediumGridChanged(coarseGrid);
+}
+
+void SequenceView::DeleteSelectedObjects()
+{
+	switch (selection){
+	case SequenceEditSelection::NO_SELECTION:
+		break;
+	case SequenceEditSelection::KEY_SOUND_NOTES_SELECTION:
+	case SequenceEditSelection::BGM_SOUND_NOTES_SELECTION:
+		DeleteSelectedNotes();
+		break;
+	case SequenceEditSelection::BPM_EVENTS_SELECTION:
+		DeleteSelectedBpmEvents();
+		break;
+	}
+}
+
+void SequenceView::TransferSelectedNotes()
+{
+	switch (selection){
+	case SequenceEditSelection::NO_SELECTION:
+		break;
+	case SequenceEditSelection::KEY_SOUND_NOTES_SELECTION:
+		TransferSelectedNotesToBgm();
+		break;
+	case SequenceEditSelection::BGM_SOUND_NOTES_SELECTION:
+		TransferSelectedNotesToKey();
+		break;
+	case SequenceEditSelection::BPM_EVENTS_SELECTION:
+		break;
+	}
 }
 
 bool SequenceView::eventFilter(QObject *sender, QEvent *event)

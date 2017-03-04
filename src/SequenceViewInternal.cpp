@@ -16,8 +16,9 @@ SoundChannelView::SoundChannelView(SequenceView *sview, SoundChannel *channel)
 {
 	// this make scrolling fast, but I must treat redrawing region carefully.
 	//setAttribute(Qt::WA_OpaquePaintEvent);
-
 	setMouseTracking(true);
+
+	rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
 
 	actionPreview = new QAction(tr("Preview Source Sound"), this);
 	actionPreview->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Sound));
@@ -28,6 +29,11 @@ SoundChannelView::SoundChannelView(SequenceView *sview, SoundChannel *channel)
 	connect(actionMoveRight, SIGNAL(triggered()), this, SLOT(MoveRight()));
 	actionDestroy = new QAction(tr("Delete"), this);
 	connect(actionDestroy, SIGNAL(triggered()), this, SLOT(Destroy()));
+
+	actionDeleteNotes = new QAction(tr("Delete"), this);
+	connect(actionDeleteNotes, SIGNAL(triggered()), this, SLOT(DeleteNotes()));
+	actionTransferNotes = new QAction(tr("Move to Key Lanes"), this);
+	connect(actionTransferNotes, SIGNAL(triggered()), this, SLOT(TransferNotes()));
 
 	// follow current state
 	for (SoundNote note : channel->GetNotes()){
@@ -58,7 +64,11 @@ void SoundChannelView::NoteInserted(SoundNote note)
 
 void SoundChannelView::NoteRemoved(SoundNote note)
 {
-	delete notes.take(note.location);
+	auto *nv = notes.take(note.location);
+	if (sview->selectedNotes.contains(nv)){
+		sview->DeselectNote(nv);
+	}
+	delete nv;
 	UpdateWholeBackBuffer();
 	update();
 	sview->playingPane->update();
@@ -131,6 +141,16 @@ void SoundChannelView::Destroy()
 	QMetaObject::invokeMethod(sview, "DestroySoundChannel", Qt::QueuedConnection, Q_ARG(SoundChannelView*, this));
 }
 
+void SoundChannelView::DeleteNotes()
+{
+	sview->DeleteSelectedNotes();
+}
+
+void SoundChannelView::TransferNotes()
+{
+	sview->TransferSelectedNotes();
+}
+
 
 
 void SoundChannelView::paintEvent(QPaintEvent *event)
@@ -168,11 +188,15 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 			continue;
 		}
 		int noteStartY = sview->Time2Y(note.location) - 1;
-		int noteEndY = sview->Time2Y(note.location + note.length) - 1;
+		//int noteEndY = sview->Time2Y(note.location + note.length) - 1;
 
 		if (note.lane == 0){
 			if (sview->cursor->IsExistingSoundNote() && sview->cursor->GetExistingSoundNote() == nview){
-				painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 1));
+				if (sview->selectedNotes.contains(nview)){
+					painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 3, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+				}else{
+					painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
+				}
 				painter.setBrush(Qt::NoBrush);
 				switch (note.noteType){
 				case 0: {
@@ -184,7 +208,27 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 					break;
 				}
 				case 1: {
-					QRect rect(6, noteStartY - 4, width() - 12, 4); // don't show as long notes
+					QRect rect(6, noteStartY - 8, width() - 12, 8); // don't show as long notes
+					painter.drawRect(rect);
+					break;
+				}
+				default:
+					break;
+				}
+			}else if (sview->selectedNotes.contains(nview)){
+				painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 3, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+				painter.setBrush(Qt::NoBrush);
+				switch (note.noteType){
+				case 0: {
+					QPolygon polygon;
+					polygon.append(QPoint(width()/2, noteStartY - 8));
+					polygon.append(QPoint(6, noteStartY));
+					polygon.append(QPoint(width()-7, noteStartY));
+					painter.drawPolygon(polygon);
+					break;
+				}
+				case 1: {
+					QRect rect(6, noteStartY - 8, width() - 12, 8); // don't show as long notes
 					painter.drawRect(rect);
 					break;
 				}
@@ -204,7 +248,7 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 					break;
 				}
 				case 1: {
-					QRect rect(6, noteStartY - 4, width() - 12, 4); // don't show as long notes
+					QRect rect(6, noteStartY - 8, width() - 12, 8); // don't show as long notes
 					painter.drawRect(rect);
 					break;
 				}
@@ -257,7 +301,7 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 						break;
 					}
 					case 1:
-						QRect rect(6, noteStartY - 4, width() - 12, 4); // don't show as long notes
+						QRect rect(6, noteStartY - 8, width() - 12, 8); // don't show as long notes
 						painter.drawRect(rect);
 						break;
 					}
@@ -277,7 +321,7 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 					break;
 				}
 				case 1:
-					QRect rect(6, noteStartY - 4, width() - 12, 4); // don't show as long notes
+					QRect rect(6, noteStartY - 8, width() - 12, 8); // don't show as long notes
 					painter.drawRect(rect);
 					break;
 				}
@@ -433,14 +477,14 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 	}
 }
 
-SoundNoteView *SoundChannelView::HitTestBGPane(int y, qreal time)
+SoundNoteView *SoundChannelView::HitTestBGPane(int y, int time)
 {
 	// space-base hit test (using `y`) is prior to time-base (using `time`)
 	SoundNoteView *nviewS = nullptr;
 	SoundNoteView *nviewT = nullptr;
 	for (SoundNoteView *nv : notes){
 		const SoundNote &note = nv->GetNote();
-		if (note.lane == 0 && sview->Time2Y(note.location + note.length) - 4 < y && sview->Time2Y(note.location) >= y){
+		if (note.lane == 0 && sview->Time2Y(note.location + note.length) - 8 < y && sview->Time2Y(note.location) >= y){
 			nviewS = nv;
 		}
 		if (note.lane == 0 && time >= note.location && time <= note.location+note.length){ // LN contains its End
@@ -467,103 +511,74 @@ void SoundChannelView::OnChannelMenu(QContextMenuEvent *event)
 
 void SoundChannelView::mouseMoveEvent(QMouseEvent *event)
 {
-	qreal time = sview->Y2Time(event->y());
-	if (sview->snapToGrid){
-		time = sview->SnapToLowerFineGrid(time);
-	}
-	if (current){
-		SoundNoteView *noteHit = HitTestBGPane(event->y(), time);
-		if (noteHit){
-			setCursor(Qt::SizeAllCursor);
-			sview->cursor->SetExistingSoundNote(noteHit);
-		}else{
-			setCursor(Qt::CrossCursor);
-			sview->cursor->SetNewSoundNote(SoundNote(time, 0, 0, event->modifiers() & Qt::ShiftModifier ? 0 : 1));
+	if (!current){
+		qreal time = sview->Y2Time(event->y());
+		int iTime = int(time);
+		if (sview->snapToGrid){
+			iTime = sview->SnapToLowerFineGrid(time);
 		}
-	}else{
 		setCursor(Qt::ArrowCursor);
-		sview->cursor->SetTime(time);
+		sview->cursor->SetTime(iTime);
+		return;
+	}
+	switch (sview->editMode){
+	case SequenceEditMode::EDIT_MODE:
+		mouseMoveEventEditMode(event);
+		break;
+	case SequenceEditMode::WRITE_MODE:
+		mouseMoveEventWriteMode(event);
+		break;
+	default:
+		break;
 	}
 }
 
 void SoundChannelView::mousePressEvent(QMouseEvent *event)
 {
-	sview->ClearBpmEventsSelection();
-	if (current){
-		// do something
-		qreal time = sview->Y2Time(event->y());
-		if (sview->snapToGrid){
-			time = sview->SnapToLowerFineGrid(time);
-		}
-		SoundNoteView *noteHit = HitTestBGPane(event->y(), time);
-		if (noteHit){
-			switch (event->button()){
-			case Qt::LeftButton:
-				// select note
-				if (event->modifiers() & Qt::ControlModifier){
-					sview->ToggleNoteSelection(noteHit);
-				}else{
-					sview->SelectSingleNote(noteHit);
-				}
-				sview->cursor->SetExistingSoundNote(noteHit);
-				sview->PreviewSingleNote(noteHit);
-				break;
-			case Qt::RightButton:
-			{
-				// delete note
-				SoundNote note = noteHit->GetNote();
-				if (channel->GetNotes().contains(noteHit->GetNote().location)
-					&& channel->RemoveNote(note))
-				{
-					sview->ClearNotesSelection();
-					sview->cursor->SetNewSoundNote(note);
-				}else{
-					// noteHit was in inactive channel, or failed to delete note
-					sview->SelectSingleNote(noteHit);
-					sview->cursor->SetExistingSoundNote(noteHit);
-					sview->PreviewSingleNote(noteHit);
-				}
-				break;
-			}
-			case Qt::MidButton:
-				sview->selectedNotes.clear();
-				sview->cursor->SetExistingSoundNote(noteHit);
-				break;
-			}
-		}else{
-			if (event->button() == Qt::LeftButton){
-				// insert note (maybe moving existing note)
-				SoundNote note(time, 0, 0, event->modifiers() & Qt::ShiftModifier ? 0 : 1);
-				if (channel->InsertNote(note)){
-					// select the note
-					sview->SelectSingleNote(notes[time]);
-					sview->PreviewSingleNote(notes[time]);
-					sview->cursor->SetExistingSoundNote(notes[time]);
-					sview->timeLine->update();
-					sview->playingPane->update();
-					for (auto cview : sview->soundChannels){
-						cview->update();
-					}
-				}else{
-					// note was not created
-					sview->cursor->SetNewSoundNote(note);
-				}
-			}
-		}
-	}else{
-		// select this channel
+	if (!current){
+		sview->ClearAnySelection();
 		sview->selectedNotes.clear();
 		sview->SelectSoundChannel(this);
+		return;
 	}
-	return;
+	switch (sview->editMode){
+	case SequenceEditMode::EDIT_MODE:
+		mousePressEventEditMode(event);
+		break;
+	case SequenceEditMode::WRITE_MODE:
+		mousePressEventWriteMode(event);
+		break;
+	default:
+		break;
+	}
 }
 
 void SoundChannelView::mouseReleaseEvent(QMouseEvent *event)
 {
+	switch (sview->editMode){
+	case SequenceEditMode::EDIT_MODE:
+		mouseReleaseEventEditMode(event);
+		break;
+	case SequenceEditMode::WRITE_MODE:
+		mouseReleaseEventWriteMode(event);
+		break;
+	default:
+		break;
+	}
 }
 
 void SoundChannelView::mouseDoubleClickEvent(QMouseEvent *event)
 {
+	switch (sview->editMode){
+	case SequenceEditMode::EDIT_MODE:
+		mouseDoubleClickEventEditMode(event);
+		break;
+	case SequenceEditMode::WRITE_MODE:
+		mouseDoubleClickEventWriteMode(event);
+		break;
+	default:
+		break;
+	}
 }
 
 void SoundChannelView::enterEvent(QEvent *event)
@@ -573,6 +588,255 @@ void SoundChannelView::enterEvent(QEvent *event)
 void SoundChannelView::leaveEvent(QEvent *event)
 {
 	sview->cursor->SetNothing();
+}
+
+void SoundChannelView::mouseMoveEventEditMode(QMouseEvent *event)
+{
+	qreal time = sview->Y2Time(event->y());
+	int iTime = time;
+	int iTimeUpper = time;
+	if (sview->snapToGrid){
+		iTime = sview->SnapToLowerFineGrid(time);
+		iTimeUpper = sview->SnapToUpperFineGrid(time);
+	}
+	SoundNoteView *noteHit = HitTestBGPane(event->y(), sview->snappedHitTestInEditMode ? iTime : -1);
+	if (rubberBand->isVisibleTo(this)){
+		int cursorTime = iTime;
+		int timeBegin, timeEnd;
+		if (iTime >= rubberBandOriginTime){
+			timeBegin = rubberBandOriginTime;
+			timeEnd = iTimeUpper;
+			cursorTime = iTimeUpper;
+		}else{
+			timeBegin = iTime;
+			timeEnd = rubberBandOriginTime;
+		}
+		QRect rectRb;
+		rectRb.setBottom(sview->Time2Y(timeBegin) - 2);
+		rectRb.setTop(sview->Time2Y(timeEnd) - 1);
+		rectRb.setLeft(0);
+		rectRb.setRight(width()-1);
+		rubberBand->setGeometry(rectRb);
+		setCursor(Qt::ArrowCursor);
+		sview->cursor->SetBgmNotesSelection(cursorTime, timeBegin, timeEnd, -1);
+	}else{
+		if (noteHit){
+			setCursor(Qt::SizeAllCursor);
+			sview->cursor->SetExistingSoundNote(noteHit);
+		}else{
+			setCursor(Qt::ArrowCursor);
+			sview->cursor->SetTimeWithLane(iTime, 0);
+		}
+	}
+}
+
+void SoundChannelView::mousePressEventEditMode(QMouseEvent *event)
+{
+	qreal time = sview->Y2Time(event->y());
+	int iTime = time;
+	if (sview->snapToGrid){
+		iTime = sview->SnapToLowerFineGrid(time);
+	}
+	SoundNoteView *noteHit = HitTestBGPane(event->y(), sview->snappedHitTestInEditMode ? iTime : -1);
+	if (noteHit){
+		switch (event->button()){
+		case Qt::LeftButton:
+			// select note
+			if (event->modifiers() & Qt::ControlModifier){
+				sview->ToggleNoteSelection(noteHit);
+			}else{
+				if (sview->selectedNotes.contains(noteHit)){
+					// don't deselect other notes
+				}else{
+					sview->SelectSingleNote(noteHit);
+				}
+			}
+			sview->cursor->SetExistingSoundNote(noteHit);
+			sview->SelectSoundChannel(noteHit->GetChannelView());
+			sview->PreviewSingleNote(noteHit);
+			break;
+		case Qt::RightButton: {
+			// select note & cxt menu
+			if (event->modifiers() & Qt::ControlModifier){
+				sview->SelectAdditionalNote(noteHit);
+			}else{
+				if (!sview->selectedNotes.contains(noteHit)){
+					sview->SelectSingleNote(noteHit);
+					sview->PreviewSingleNote(noteHit);
+				}
+			}
+			sview->cursor->SetExistingSoundNote(noteHit);
+			sview->SelectSoundChannel(noteHit->GetChannelView());
+			QMenu menu(this);
+			menu.addAction(actionDeleteNotes);
+			menu.addAction(actionTransferNotes);
+			menu.exec(event->globalPos());
+			break;
+		}
+		case Qt::MidButton:
+			sview->ClearNotesSelection();
+			sview->cursor->SetExistingSoundNote(noteHit);
+			break;
+		}
+	}else{
+		rubberBandOriginTime = iTime;
+		rubberBand->setGeometry(event->x(), event->y(), 0 ,0);
+		rubberBand->show();
+		if (event->modifiers() & Qt::ControlModifier){
+			// don't deselect notes (to add new selections)
+		}else{
+			// clear (to make new selections)
+			sview->ClearNotesSelection();
+		}
+	}
+}
+
+void SoundChannelView::mouseReleaseEventEditMode(QMouseEvent *event)
+{
+	qreal time = sview->Y2Time(event->y());
+	int iTime = time;
+	int iTimeUpper = time;
+	if (sview->snapToGrid){
+		iTime = sview->SnapToLowerFineGrid(time);
+		iTimeUpper = sview->SnapToUpperFineGrid(time);
+	}
+	if (rubberBand->isVisibleTo(this)){
+		int cursorTime = iTime;
+		int timeBegin, timeEnd;
+		if (iTime >= rubberBandOriginTime){
+			timeBegin = rubberBandOriginTime;
+			timeEnd = iTimeUpper;
+			cursorTime = iTimeUpper;
+		}else{
+			timeBegin = iTime;
+			timeEnd = rubberBandOriginTime;
+		}
+		if (event->modifiers() & Qt::AltModifier){
+			for (SoundNoteView *nv : GetNotes()){
+				const SoundNote &note = nv->GetNote();
+				if (note.lane > 0){
+					if (note.location+note.length >= timeBegin && note.location < timeEnd){
+						if (event->modifiers() & Qt::ShiftModifier){
+							sview->ToggleNoteSelection(nv);
+						}else{
+							sview->SelectAdditionalNote(nv);
+						}
+					}
+				}
+			}
+		}else{
+			for (SoundNoteView *nv : GetNotes()){
+				const SoundNote &note = nv->GetNote();
+				if (note.lane == 0){
+					if (note.location+note.length >= timeBegin && note.location < timeEnd){
+						if (event->modifiers() & Qt::ShiftModifier){
+							sview->ToggleNoteSelection(nv);
+						}else{
+							sview->SelectAdditionalNote(nv);
+						}
+					}
+				}
+			}
+		}
+		rubberBand->hide();
+	}
+}
+
+void SoundChannelView::mouseDoubleClickEventEditMode(QMouseEvent *event)
+{
+
+}
+
+void SoundChannelView::mouseMoveEventWriteMode(QMouseEvent *event)
+{
+	qreal time = sview->Y2Time(event->y());
+	int iTime = int(time);
+	if (sview->snapToGrid){
+		iTime = sview->SnapToLowerFineGrid(time);
+	}
+	SoundNoteView *noteHit = HitTestBGPane(event->y(), iTime);
+	if (noteHit){
+		setCursor(Qt::SizeAllCursor);
+		sview->cursor->SetExistingSoundNote(noteHit);
+	}else{
+		setCursor(Qt::CrossCursor);
+		sview->cursor->SetNewSoundNote(SoundNote(iTime, 0, 0, event->modifiers() & Qt::ShiftModifier ? 0 : 1));
+	}
+}
+
+void SoundChannelView::mousePressEventWriteMode(QMouseEvent *event)
+{
+	sview->ClearBpmEventsSelection();
+	qreal time = sview->Y2Time(event->y());
+	int iTime = int(time);
+	if (sview->snapToGrid){
+		iTime = sview->SnapToLowerFineGrid(time);
+	}
+	SoundNoteView *noteHit = HitTestBGPane(event->y(), iTime);
+	if (noteHit){
+		switch (event->button()){
+		case Qt::LeftButton:
+			// select note
+			if (event->modifiers() & Qt::ControlModifier){
+				sview->ToggleNoteSelection(noteHit);
+			}else{
+				sview->SelectSingleNote(noteHit);
+			}
+			sview->cursor->SetExistingSoundNote(noteHit);
+			sview->PreviewSingleNote(noteHit);
+			break;
+		case Qt::RightButton:
+		{
+			// delete note
+			SoundNote note = noteHit->GetNote();
+			if (channel->GetNotes().contains(noteHit->GetNote().location)
+				&& channel->RemoveNote(note))
+			{
+				sview->ClearNotesSelection();
+				sview->cursor->SetNewSoundNote(note);
+			}else{
+				// noteHit was in inactive channel, or failed to delete note
+				sview->SelectSingleNote(noteHit);
+				sview->cursor->SetExistingSoundNote(noteHit);
+				sview->PreviewSingleNote(noteHit);
+			}
+			break;
+		}
+		case Qt::MidButton:
+			sview->ClearNotesSelection();
+			sview->cursor->SetExistingSoundNote(noteHit);
+			break;
+		}
+	}else{
+		if (event->button() == Qt::LeftButton){
+			// insert note (maybe moving existing note)
+			SoundNote note(iTime, 0, 0, event->modifiers() & Qt::ShiftModifier ? 0 : 1);
+			if (channel->InsertNote(note)){
+				// select the note
+				sview->SelectSingleNote(notes[iTime]);
+				sview->PreviewSingleNote(notes[iTime]);
+				sview->cursor->SetExistingSoundNote(notes[iTime]);
+				sview->timeLine->update();
+				sview->playingPane->update();
+				for (auto cview : sview->soundChannels){
+					cview->update();
+				}
+			}else{
+				// note was not created
+				sview->cursor->SetNewSoundNote(note);
+			}
+		}
+	}
+	return;
+}
+
+void SoundChannelView::mouseReleaseEventWriteMode(QMouseEvent *event)
+{
+}
+
+void SoundChannelView::mouseDoubleClickEventWriteMode(QMouseEvent *event)
+{
+
 }
 
 

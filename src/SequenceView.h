@@ -80,6 +80,9 @@ private:
 			bool(SequenceView::*mouseEventHandler)(QWidget*,QMouseEvent*)=nullptr,
 			bool(SequenceView::*enterEventHandler)(QWidget *, QEvent *)=nullptr);
 
+	QAction *actionDeleteSelectedNotes;
+	QAction *actionTransferSelectedNotes;
+
 	// general resources
 	int timeLineWidth;
 	int timeLineMeasureWidth;
@@ -121,6 +124,7 @@ private:
 
 	bool playing;
 	int currentChannel;
+	SequenceEditSelection selection;
 	QSet<SoundNoteView*> selectedNotes;
 	QMap<int, BpmEvent> selectedBpmEvents;
 	SequenceViewCursor *cursor;
@@ -138,10 +142,11 @@ private:
 	QMap<int, QPair<int, BarLine> > BarsInRange(qreal tBegin, qreal tEnd);
 	int SnapToLowerFineGrid(qreal time) const;
 	int SnapToUpperFineGrid(qreal time) const;
+	int GetSomeVacantLane(int location);
 	void SetNoteColor(QLinearGradient &g, int lane, bool active) const;
 	void UpdateVerticalScrollBar(qreal newTimeBegin=-1.0);
 	void VisibleRangeChanged() const;
-	SoundNoteView *HitTestPlayingPane(int lane, int y, int time);
+	SoundNoteView *HitTestPlayingPane(int lane, int y, int time, bool excludeInactiveChannels=false);
 	void SelectSoundChannel(SoundChannelView *cview);
 	//void LeftClickOnExistingNote();
 	//void RightClickOnExistingNote();
@@ -149,6 +154,8 @@ private:
 	void MakeVisibleCurrentChannel();
 	void BpmEventsSelectionUpdated();
 
+	void UpdateSelectionType();
+	void ClearAnySelection();
 	void ClearNotesSelection();
 	void SelectSingleNote(SoundNoteView *nview);
 	void ToggleNoteSelection(SoundNoteView *nview);
@@ -162,6 +169,8 @@ private:
 	void DeleteSelectedNotes();
 	void TransferSelectedNotesToBgm();
 	void TransferSelectedNotesToKey();
+
+	void DeleteSelectedBpmEvents();
 
 	virtual QSize sizeHint() const;
 	virtual bool event(QEvent *e);
@@ -214,6 +223,8 @@ public slots:
 	void SetSnapToGrid(bool snap);
 	void SetSmallGrid(GridSize grid);
 	void SetMediumGrid(GridSize grid);
+	void DeleteSelectedObjects();
+	void TransferSelectedNotes();
 
 signals:
 	void CurrentChannelChanged(int index);
@@ -221,6 +232,7 @@ signals:
 	void SnapToGridChanged(bool snap);
 	void SmallGridChanged(GridSize grid);
 	void MediumGridChanged(GridSize grid);
+	void SelectionChanged(SequenceEditSelection selection);
 
 public:
 	SequenceView(MainWindow *parent);
@@ -231,7 +243,7 @@ public:
 	bool GetSnapToGrid() const{ return snapToGrid; }
 	GridSize GetSmallGrid() const{ return fineGrid; }
 	GridSize GetMediumGrid() const{ return coarseGrid; }
-
+	SequenceEditSelection GetSelection() const{ return selection; }
 
 };
 

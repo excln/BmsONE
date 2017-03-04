@@ -27,15 +27,17 @@ class SoundNoteView : public QObject
 private:
 	SoundChannelView *cview;
 	SoundNote note;
+	//bool selected;
 
 public:
 	SoundNoteView(SoundChannelView *cview, SoundNote note);
 	~SoundNoteView();
 
-	void UpdateNote(SoundNote note);
-
 	SoundChannelView *GetChannelView() const{ return cview; }
 	SoundNote GetNote() const{ return note; }
+
+	void UpdateNote(SoundNote note);
+	//void SetSelected(bool selected);
 
 };
 
@@ -99,14 +101,20 @@ private:
 
 	QImage *backBuffer;
 
+	QRubberBand *rubberBand;
+	int rubberBandOriginTime;
+
 private:
 	QAction *actionPreview;
 	QAction *actionMoveLeft;
 	QAction *actionMoveRight;
 	QAction *actionDestroy;
 
+	QAction *actionDeleteNotes;
+	QAction *actionTransferNotes;
+
 private:
-	SoundNoteView *HitTestBGPane(int y, qreal time);
+	SoundNoteView *HitTestBGPane(int y, int time);
 	void OnChannelMenu(QContextMenuEvent * event);
 
 private slots:
@@ -124,6 +132,9 @@ private slots:
 	void MoveLeft();
 	void MoveRight();
 	void Destroy();
+
+	void DeleteNotes();
+	void TransferNotes();
 
 public:
 	SoundChannelView(SequenceView *sview, SoundChannel *channel);
@@ -147,6 +158,16 @@ public:
 	virtual void mouseDoubleClickEvent(QMouseEvent *event);
 	virtual void enterEvent(QEvent *event);
 	virtual void leaveEvent(QEvent *event);
+
+	void mouseMoveEventEditMode(QMouseEvent *event);
+	void mousePressEventEditMode(QMouseEvent *event);
+	void mouseReleaseEventEditMode(QMouseEvent *event);
+	void mouseDoubleClickEventEditMode(QMouseEvent *event);
+
+	void mouseMoveEventWriteMode(QMouseEvent *event);
+	void mousePressEventWriteMode(QMouseEvent *event);
+	void mouseReleaseEventWriteMode(QMouseEvent *event);
+	void mouseDoubleClickEventWriteMode(QMouseEvent *event);
 };
 
 

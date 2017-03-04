@@ -73,6 +73,8 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
+	friend class SequenceTools;
+
 public:
 	static const char *SettingsGroup;
 	static const char *SettingsGeometryKey;
@@ -109,6 +111,8 @@ private:
 	QAction *actionEditCopy;
 	QAction *actionEditPaste;
 	QAction *actionEditSelectAll;
+	QAction *actionEditDelete;
+	QAction *actionEditTransfer;
 	QAction *actionEditModeEdit;
 	QAction *actionEditModeWrite;
 	QAction *actionEditModeInteractive;

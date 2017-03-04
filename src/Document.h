@@ -158,6 +158,7 @@ public:
 	bool InsertBpmEvent(BpmEvent event);
 	bool RemoveBpmEvent(int location);
 	void UpdateBpmEvents(QList<BpmEvent> events);
+	void RemoveBpmEvents(QList<int> locations);
 
 	void MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel *, SoundNote> &notes);
 	void MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel*, SoundNote> &notes);

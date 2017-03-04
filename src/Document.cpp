@@ -163,8 +163,10 @@ QList<QPair<int, int> > Document::FindConflictingNotes(SoundNote note) const
 	for (int i=0; i<soundChannels.size(); i++){
 		const QMap<int, SoundNote> &notes = soundChannels[i]->GetNotes();
 		QMap<int, SoundNote>::const_iterator inote = notes.lowerBound(note.location);
+		if (inote != notes.begin())
+			inote--;
 		while (inote != notes.end() && inote->location <= note.location + note.length){
-			if (inote->lane > 0 && inote->lane == note.lane){
+			if (inote->lane > 0 && inote->lane == note.lane && inote->location+inote->length>=note.location){
 				noteRefs.append(QPair<int,int>(i, inote->location));
 			}
 			inote++;
@@ -401,6 +403,31 @@ changed:
 			};
 			actions->AddAction(new AddValueAction<BpmEvent>(adder, remover, event, QString(), true));
 		}
+	}
+	actions->Finish();
+	history->Add(actions);
+}
+
+void Document::RemoveBpmEvents(QList<int> locations)
+{
+	if (locations.isEmpty())
+		return;
+	auto shower = [=](){
+		emit ShowBpmEventLocation(locations.first());
+	};
+	auto *actions = new MultiAction(tr("remove BPM events"), shower);
+	for (auto location : locations){
+		if (!bpmEvents.contains(location)) continue;
+		BpmEvent event = bpmEvents.take(location);
+		auto adder = [this](BpmEvent value){
+			bpmEvents.insert(value.location, value);
+			emit TimeMappingChanged();
+		};
+		auto remover = [this](BpmEvent value){
+			bpmEvents.remove(value.location);
+			emit TimeMappingChanged();
+		};
+		actions->AddAction(new RemoveValueAction<BpmEvent>(adder, remover, event, tr("remove BPM event"), true, shower));
 	}
 	actions->Finish();
 	history->Add(actions);
