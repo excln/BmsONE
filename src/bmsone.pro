@@ -80,7 +80,9 @@ SOURCES += main.cpp\
 	bmson/Bmson100Convert.cpp \
     Bmson.cpp \
     bmson/BmsonConvertDef.cpp \
-    Preferences.cpp
+    Preferences.cpp \
+    Skin.cpp \
+    ViewMode.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -141,7 +143,9 @@ HEADERS  += MainWindow.h \
 	bmson/Bmson100Convert.h \
     Bmson.h \
     bmson/BmsonConvertDef.h \
-    Preferences.h
+    Preferences.h \
+    Skin.h \
+    ViewMode.h
 
 FORMS    +=
 

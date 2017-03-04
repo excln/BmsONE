@@ -7,6 +7,8 @@
 #include "SoundChannel.h"
 #include "SequenceDef.h"
 #include "SequenceViewDef.h"
+#include "ViewMode.h"
+#include "Skin.h"
 #include <functional>
 
 
@@ -28,28 +30,6 @@ class SequenceView : public QAbstractScrollArea
 	friend class SoundChannelView;
 	friend class SoundChannelHeader;
 	friend class SoundChannelFooter;
-
-public:
-
-	struct LaneDef{
-		int lane;
-		qreal left;
-		qreal width;
-		QColor color;
-		QColor noteColor;
-		QColor leftLine;
-		QColor rightLine;
-		QString keyImageName;
-		LaneDef(){}
-		LaneDef(int lane, QString nm, qreal left, qreal width, QColor color, QColor noteColor,
-				QColor leftLine=QColor(0,0,0,0), QColor rightLine=QColor(0,0,0,0))
-			: lane(lane), left(left), width(width), color(color), noteColor(noteColor)
-			, leftLine(leftLine), rightLine(rightLine), keyImageName(nm)
-		{}
-		bool operator ==(const LaneDef &r) const{
-			return lane == r.lane;
-		}
-	};
 
 private:
 	static const char* SettingsGroup;
@@ -131,15 +111,18 @@ private:
 	int timeLineBpmWidth;
 	int headerHeight;
 	int footerHeight;
-	QMap<int, LaneDef> lanes;
-	QList<LaneDef> sortedLanes;
 	QPen penBigV;
 	QPen penV;
 	QPen penBar;
 	QPen penBeat;
 	QPen penStep;
 
+	ViewMode *viewMode;
+	Skin *skin;
+	QMap<int, LaneDef> lanes;
+	QList<LaneDef> sortedLanes;
 	int playingWidth;
+	QList<QLabel*> playingFooterImages;
 
 	// current document
 	Document *document;
@@ -176,6 +159,7 @@ private:
 	int lockCommands;
 
 private:
+	void ReplaceSkin(Skin *newSkin);
 	qreal Time2Y(qreal time) const;
 	qreal Y2Time(qreal y) const;
 	qreal TimeSpan2DY(qreal time) const;
@@ -250,6 +234,8 @@ private:
 	bool paintEventPlayingFooter(QWidget *widget, QPaintEvent *event);
 
 private slots:
+	void ViewModeChanged(ViewMode *mode);
+	void SkinChanged();
 	void SoundChannelInserted(int index, SoundChannel *channel);
 	void SoundChannelRemoved(int index, SoundChannel *channel);
 	void SoundChannelMoved(int indexBefore, int indexAfter);

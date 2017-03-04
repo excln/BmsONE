@@ -2,6 +2,7 @@
 #include "SequenceViewInternal.h"
 #include "MainWindow.h"
 #include "SymbolIconManager.h"
+#include "ViewMode.h"
 
 
 SequenceViewCursor::SequenceViewCursor(SequenceView *sview)
@@ -79,27 +80,13 @@ QString SequenceViewCursor::GetRealTimeString() const
 
 QString SequenceViewCursor::GetLaneString() const
 {
-	// TODO: Use play mode & skin settings
-	switch (lane){
-	case 0:
+	if (lane <= 0){
 		return tr("BGM");
-	case 1:
-		return tr("Key 1P 1");
-	case 2:
-		return tr("Key 1P 2");
-	case 3:
-		return tr("Key 1P 3");
-	case 4:
-		return tr("Key 1P 4");
-	case 5:
-		return tr("Key 1P 5");
-	case 6:
-		return tr("Key 1P 6");
-	case 7:
-		return tr("Key 1P 7");
-	case 8:
-		return tr("Key 1P S");
-	default:
+	}
+	auto lanes = sview->viewMode->GetLaneDefinitions();
+	if (lanes.contains(lane)){
+		return lanes[lane].Name;
+	}else{
 		return tr("?");
 	}
 }

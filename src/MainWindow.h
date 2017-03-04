@@ -146,6 +146,8 @@ private:
 
 	bool closing;
 
+	QMenu *menuViewMode;
+
 private:
 	void ReplaceDocument(Document *newDocument);
 	bool Save();
@@ -201,6 +203,8 @@ public:
 	StatusBar *GetStatusBar() const{ return statusBar; }
 	AudioPlayer *GetAudioPlayer() const{ return audioPlayer; }
 	BpmEditView *GetBpmEditTool() const{ return bpmEditView; }
+
+	QMenu *GetMenuViewMode() const{ return menuViewMode; }
 
 	void OpenFiles(QStringList filePaths);
 

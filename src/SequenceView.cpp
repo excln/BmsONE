@@ -39,40 +39,13 @@ SequenceView::SequenceView(MainWindow *parent)
 	, cursor(new SequenceViewCursor(this))
 	, context(nullptr)
 	, lockCommands(0)
+	, viewMode(nullptr)
+	, skin(nullptr)
 {
 	qRegisterMetaType<SoundChannelView*>("SoundChannelView*");
 	qRegisterMetaType<GridSize>("GridSize");
 	connect(cursor, SIGNAL(Changed()), this, SLOT(CursorChanged()));
 	{
-		const int lmargin = 5;
-		const int wscratch = 32;
-		const int wwhite = 24;
-		const int wblack = 24;
-		QColor cscratch(60, 26, 26);
-		QColor cwhite(51, 51, 51);
-		QColor cblack(26, 26, 60);
-		QColor cbigv(180, 180, 180);
-		QColor csmallv(90, 90, 90);
-		QColor ncwhite(210, 210, 210);
-		QColor ncblack(150, 150, 240);
-		QColor ncscratch(240, 150, 150);
-		lanes.insert(8, LaneDef(8, "scratch", lmargin, wscratch, cscratch, ncscratch, cbigv));
-		lanes.insert(1, LaneDef(1, "wkey", lmargin+wscratch+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, csmallv));
-		lanes.insert(2, LaneDef(2, "bkey", lmargin+wscratch+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv));
-		lanes.insert(3, LaneDef(3, "wkey", lmargin+wscratch+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv));
-		lanes.insert(4, LaneDef(4, "bkey", lmargin+wscratch+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv));
-		lanes.insert(5, LaneDef(5, "wkey", lmargin+wscratch+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv));
-		lanes.insert(6, LaneDef(6, "bkey", lmargin+wscratch+wwhite*3+wblack*2, wblack, cblack, ncblack, csmallv));
-		lanes.insert(7, LaneDef(7, "wkey", lmargin+wscratch+wwhite*3+wblack*3, wwhite, cwhite, ncwhite, csmallv, cbigv));
-		sortedLanes.append(lanes[8]);
-		sortedLanes.append(lanes[1]);
-		sortedLanes.append(lanes[2]);
-		sortedLanes.append(lanes[3]);
-		sortedLanes.append(lanes[4]);
-		sortedLanes.append(lanes[5]);
-		sortedLanes.append(lanes[6]);
-		sortedLanes.append(lanes[7]);
-
 		timeLineMeasureWidth = 20;
 		timeLineBpmWidth = 34;
 		timeLineWidth = timeLineMeasureWidth + timeLineBpmWidth;
@@ -89,8 +62,22 @@ SequenceView::SequenceView(MainWindow *parent)
 		penBeat.setCosmetic(true);
 		penStep = QPen(QBrush(QColor(90, 90, 90)), 1);
 		penStep.setCosmetic(true);
+	}
 
-		playingWidth = lmargin+wscratch+wwhite*4+wblack*3 + 5;
+	{
+		viewMode = ViewMode::ViewModeBeat7k();
+		playingWidth = 1;
+		auto group = new QActionGroup(this);
+		auto modes = ViewMode::GetAllViewModes();
+		for (auto mode : modes){
+			auto action = mainWindow->GetMenuViewMode()->addAction(mode->GetName());
+			action->setCheckable(true);
+			action->setChecked(mode == viewMode);
+			connect(action, &QAction::triggered, this, [mode, this](){
+				ViewModeChanged(mode);
+			});
+			group->addAction(action);
+		}
 	}
 
 	setAttribute(Qt::WA_OpaquePaintEvent);
@@ -121,13 +108,6 @@ SequenceView::SequenceView(MainWindow *parent)
 	footerPlayingEntry = NewWidget(&SequenceView::paintEventPlayingFooter);
 	timeLine->setMouseTracking(true);
 	playingPane->setMouseTracking(true);
-	{
-		for (auto lane : lanes){
-			QLabel *label = new QLabel(footerPlayingEntry);
-			label->setGeometry(lane.left, (footerHeight-48)/2, lane.width, 48);
-			label->setPixmap(QPixmap(":/images/keys/" + lane.keyImageName));
-		}
-	}
 #if 0
 	auto *tb = new QToolBar(headerPlayingEntry);
 	tb->addAction("L");
@@ -184,6 +164,8 @@ SequenceView::SequenceView(MainWindow *parent)
 		context = new SequenceView::WriteModeContext(this);
 		break;
 	}
+
+	ViewModeChanged(ViewMode::ViewModeBeat7k());
 }
 
 SequenceView::~SequenceView()
@@ -202,6 +184,17 @@ SequenceView::~SequenceView()
 		settings->setValue(SettingsZoomYKey, zoomY);
 	}
 	settings->endGroup();
+}
+
+void SequenceView::ReplaceSkin(Skin *newSkin)
+{
+	if (skin){
+		disconnect(skin, SIGNAL(Changed()), this, SLOT(SkinChanged()));
+		delete skin;
+	}
+	skin = newSkin;
+	connect(skin, SIGNAL(Changed()), this, SLOT(SkinChanged()));
+	SkinChanged();
 }
 
 void SequenceView::ReplaceDocument(Document *newDocument)
@@ -1326,6 +1319,35 @@ bool SequenceView::paintEventPlayingFooter(QWidget *widget, QPaintEvent *event)
 	painter.setPen(palette().dark().color());
 	painter.drawRect(rect.adjusted(0, 0, -1, -1));
 	return true;
+}
+
+void SequenceView::ViewModeChanged(ViewMode *mode)
+{
+	viewMode = mode;
+	ReplaceSkin(SkinLibrary::GetDefaultSkinLibrary()->CreateSkin(viewMode, this));
+}
+
+void SequenceView::SkinChanged()
+{
+	sortedLanes = skin->GetLanes();
+	playingWidth = skin->GetWidth();
+	lanes.clear();
+	for (auto lane : sortedLanes){
+		lanes.insert(lane.lane, lane);
+	}
+	for (auto label : playingFooterImages){
+		delete label;
+	}
+	playingFooterImages.clear();
+	for (auto lane : lanes){
+		QLabel *label = new QLabel(footerPlayingEntry);
+		label->setGeometry(lane.left, (footerHeight-48)/2, lane.width, 48);
+		label->setPixmap(QPixmap(":/images/keys/" + lane.keyImageName));
+		label->show();
+		playingFooterImages.append(label);
+	}
+	setViewportMargins(timeLineWidth + playingWidth, headerHeight, 0, footerHeight);
+	OnViewportResize();
 }
 
 void SequenceView::SelectSoundChannel(SoundChannelView *cview){

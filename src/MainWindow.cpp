@@ -225,6 +225,8 @@ MainWindow::MainWindow(QSettings *settings)
 	auto *menuViewToolBars = menuView->addMenu(tr("Toolbars"));
 	actionViewTbSeparator = menuViewToolBars->addSeparator();
 	menuView->addSeparator();
+	menuViewMode = menuView->addMenu(tr("View Mode"));
+	menuView->addSeparator();
 	menuView->addAction(actionViewSnapToGrid);
 	auto *menuViewZoom = menuView->addMenu(tr("Zoom"));
 	menuViewZoom->addAction(actionViewZoomIn);
