@@ -32,5 +32,14 @@
         <file>images/config/general.png</file>
         <file>images/config/edit.png</file>
         <file>images/symbols/settings.png</file>
+        <file>images/keys/c-Space.png</file>
+        <file>images/keys/c-L-blue.png</file>
+        <file>images/keys/c-L-green.png</file>
+        <file>images/keys/c-L-red.png</file>
+        <file>images/keys/c-L-yellow.png</file>
+        <file>images/keys/c-R-blue.png</file>
+        <file>images/keys/c-R-green.png</file>
+        <file>images/keys/c-R-red.png</file>
+        <file>images/keys/c-R-yellow.png</file>
     </qresource>
 </RCC>

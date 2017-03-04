@@ -23,6 +23,8 @@ ViewMode *ViewMode::GetViewMode(QString modeHint)
 		ModeLibrary.insert("beat-7k-battle", ViewModeBeat14k());
 		ModeLibrary.insert("popn-5k", ViewModePopn5k());
 		ModeLibrary.insert("popn-9k", ViewModePopn9k());
+		ModeLibrary.insert("circularrhythm-single", ViewModeCircularSingle());
+		ModeLibrary.insert("circularrhythm-double", ViewModeCircularDouble());
 	}
 	if (ModeLibrary.contains(modeHint)){
 		return ModeLibrary[modeHint];
@@ -40,6 +42,8 @@ QList<ViewMode *> ViewMode::GetAllViewModes()
 	modes.append(ViewModeBeat10k());
 	modes.append(ViewModePopn5k());
 	modes.append(ViewModePopn9k());
+	modes.append(ViewModeCircularSingle());
+	modes.append(ViewModeCircularDouble());
 	return modes;
 }
 
@@ -49,6 +53,8 @@ ViewMode *ViewMode::VM_Beat10k = nullptr;
 ViewMode *ViewMode::VM_Beat14k = nullptr;
 ViewMode *ViewMode::VM_Popn5k = nullptr;
 ViewMode *ViewMode::VM_Popn9k = nullptr;
+ViewMode *ViewMode::VM_CircularSingle = nullptr;
+ViewMode *ViewMode::VM_CircularDouble = nullptr;
 
 ViewMode *ViewMode::ViewModeBeat5k()
 {
@@ -152,5 +158,35 @@ ViewMode *ViewMode::ViewModePopn9k()
 	VM_Popn9k->lanes.insert(8, LaneDef(8, tr("Key 8")));
 	VM_Popn9k->lanes.insert(9, LaneDef(9, tr("Key 9")));
 	return VM_Popn9k;
+}
+
+ViewMode *ViewMode::ViewModeCircularSingle()
+{
+	if (VM_CircularSingle)
+		return VM_CircularSingle;
+	VM_CircularSingle = new ViewMode(tr("CircularRhythm-single"), MODE_CIRC_SINGLE);
+	VM_CircularSingle->lanes.insert(1, LaneDef(1, tr("Key Red")));
+	VM_CircularSingle->lanes.insert(2, LaneDef(2, tr("Key Yellow")));
+	VM_CircularSingle->lanes.insert(3, LaneDef(3, tr("Key Green")));
+	VM_CircularSingle->lanes.insert(4, LaneDef(4, tr("Key Blue")));
+	VM_CircularSingle->lanes.insert(5, LaneDef(5, tr("Space")));
+	return VM_CircularSingle;
+}
+
+ViewMode *ViewMode::ViewModeCircularDouble()
+{
+	if (VM_CircularDouble)
+		return VM_CircularDouble;
+	VM_CircularDouble = new ViewMode(tr("CircularRhythm-double"), MODE_CIRC_DOUBLE);
+	VM_CircularDouble->lanes.insert(1, LaneDef(1, tr("Left Key Red")));
+	VM_CircularDouble->lanes.insert(2, LaneDef(2, tr("Left Key Yellow")));
+	VM_CircularDouble->lanes.insert(3, LaneDef(3, tr("Left Key Green")));
+	VM_CircularDouble->lanes.insert(4, LaneDef(4, tr("Left Key Blue")));
+	VM_CircularDouble->lanes.insert(5, LaneDef(5, tr("Right Key Red")));
+	VM_CircularDouble->lanes.insert(6, LaneDef(6, tr("Right Key Yellow")));
+	VM_CircularDouble->lanes.insert(7, LaneDef(7, tr("Right Key Green")));
+	VM_CircularDouble->lanes.insert(8, LaneDef(8, tr("Right Key Blue")));
+	VM_CircularDouble->lanes.insert(9, LaneDef(9, tr("Space")));
+	return VM_CircularDouble;
 }
 

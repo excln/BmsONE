@@ -159,11 +159,13 @@ private:
 	QColor pcGreen;//(17, 51, 17);
 	QColor pcBlue;//(26, 26, 60);
 	QColor pcRed;//(60, 26, 26);
+	QColor pcBlack;
 	QColor pnWhite;//(210, 210, 210);
 	QColor pnYellow;//(210, 210, 123);
 	QColor pnGreen;//(123, 210, 123);
 	QColor pnBlue;//(150, 150, 240);
 	QColor pnRed;//(240, 150, 150);
+	QColor pnBlack;
 
 	void SetupSkin7k(Skin *skin, int scratch);
 	Skin *CreateDefault7k(QObject *parent);
@@ -179,6 +181,12 @@ private:
 
 	Skin *CreateDefaultPop5k(QObject *parent);
 	Skin *CreateDefaultPop9k(QObject *parent);
+
+	void SetupSkinCircularSingle(Skin *skin, int order);
+	Skin *CreateDefaultCircularSingle(QObject *parent);
+
+	void SetupSkinCircularDouble(Skin *skin, int order);
+	Skin *CreateDefaultCircularDouble(QObject *parent);
 
 public:
 	Skin *CreateSkin(ViewMode *mode, QObject *parent=nullptr);

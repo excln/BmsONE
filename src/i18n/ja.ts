@@ -97,77 +97,77 @@
 <context>
     <name>Document</name>
     <message>
-        <location filename="../Document.cpp" line="67"/>
-        <location filename="../Document.cpp" line="162"/>
+        <location filename="../Document.cpp" line="68"/>
+        <location filename="../Document.cpp" line="163"/>
         <source>Failed to open file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="70"/>
-        <location filename="../Document.cpp" line="75"/>
-        <location filename="../Document.cpp" line="78"/>
+        <location filename="../Document.cpp" line="71"/>
+        <location filename="../Document.cpp" line="76"/>
+        <location filename="../Document.cpp" line="79"/>
         <source>Malformed bmson file.</source>
         <translation>不正な形式のファイルです。</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="169"/>
+        <location filename="../Document.cpp" line="170"/>
         <source>Failed to convert bmson format:</source>
         <translation>BMSON フォーマットの変換に失敗しました:</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="328"/>
+        <location filename="../Document.cpp" line="329"/>
         <source>move sound channel</source>
         <translation>音声チャンネル移動</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="398"/>
+        <location filename="../Document.cpp" line="399"/>
         <source>add bar line</source>
         <translation>小節線追加</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="413"/>
+        <location filename="../Document.cpp" line="414"/>
         <source>remove bar line</source>
         <translation>小節線削除</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="432"/>
+        <location filename="../Document.cpp" line="433"/>
         <source>update BPM event</source>
         <translation>小節線更新</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="443"/>
+        <location filename="../Document.cpp" line="444"/>
         <source>add BPM event</source>
         <translation>BPMイベント追加</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="463"/>
-        <location filename="../Document.cpp" line="525"/>
+        <location filename="../Document.cpp" line="464"/>
+        <location filename="../Document.cpp" line="526"/>
         <source>remove BPM event</source>
         <translation>BPMイベント削除</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="482"/>
+        <location filename="../Document.cpp" line="483"/>
         <source>update BPM events</source>
         <translation>BPMイベント更新</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="513"/>
+        <location filename="../Document.cpp" line="514"/>
         <source>remove BPM events</source>
         <translation>BPMイベント削除</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="546"/>
+        <location filename="../Document.cpp" line="547"/>
         <source>delete sound notes</source>
         <translation>音声ノート削除</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="569"/>
-        <location filename="../Document.cpp" line="810"/>
+        <location filename="../Document.cpp" line="570"/>
+        <location filename="../Document.cpp" line="811"/>
         <source>update sound notes</source>
         <translation>音声ノート変更</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="650"/>
+        <location filename="../Document.cpp" line="651"/>
         <source>convert resolution</source>
         <translation>分解能変換</translation>
     </message>
@@ -1058,46 +1058,46 @@
 <context>
     <name>SkinLibrary</name>
     <message>
-        <location filename="../Skin.cpp" line="79"/>
-        <location filename="../Skin.cpp" line="206"/>
+        <location filename="../Skin.cpp" line="81"/>
+        <location filename="../Skin.cpp" line="208"/>
         <source>Left</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="80"/>
-        <location filename="../Skin.cpp" line="207"/>
+        <location filename="../Skin.cpp" line="82"/>
+        <location filename="../Skin.cpp" line="209"/>
         <source>Right</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="81"/>
-        <location filename="../Skin.cpp" line="159"/>
-        <location filename="../Skin.cpp" line="208"/>
-        <location filename="../Skin.cpp" line="278"/>
+        <location filename="../Skin.cpp" line="83"/>
+        <location filename="../Skin.cpp" line="161"/>
+        <location filename="../Skin.cpp" line="210"/>
+        <location filename="../Skin.cpp" line="280"/>
         <source>Scratch</source>
         <translation>スクラッチ</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="155"/>
-        <location filename="../Skin.cpp" line="274"/>
+        <location filename="../Skin.cpp" line="157"/>
+        <location filename="../Skin.cpp" line="276"/>
         <source>Left/Left</source>
         <translation>左/左</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="156"/>
-        <location filename="../Skin.cpp" line="275"/>
+        <location filename="../Skin.cpp" line="158"/>
+        <location filename="../Skin.cpp" line="277"/>
         <source>Left/Right</source>
         <translation>左/右</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="157"/>
-        <location filename="../Skin.cpp" line="276"/>
+        <location filename="../Skin.cpp" line="159"/>
+        <location filename="../Skin.cpp" line="278"/>
         <source>Right/Left</source>
         <translation>右/左</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="158"/>
-        <location filename="../Skin.cpp" line="277"/>
+        <location filename="../Skin.cpp" line="160"/>
+        <location filename="../Skin.cpp" line="279"/>
         <source>Right/Right</source>
         <translation>右/右</translation>
     </message>
@@ -1110,17 +1110,17 @@
         <translation>音声チャンネルのソースファイル選択</translation>
     </message>
     <message>
-        <location filename="../SoundChannel.cpp" line="191"/>
+        <location filename="../SoundChannel.cpp" line="206"/>
         <source>modify sound note</source>
         <translation>音声ノート変更</translation>
     </message>
     <message>
-        <location filename="../SoundChannel.cpp" line="200"/>
+        <location filename="../SoundChannel.cpp" line="215"/>
         <source>add sound note</source>
         <translation>音声ノート追加</translation>
     </message>
     <message>
-        <location filename="../SoundChannel.cpp" line="217"/>
+        <location filename="../SoundChannel.cpp" line="232"/>
         <source>remove sound note</source>
         <translation>音声ノート削除</translation>
     </message>
@@ -1184,48 +1184,48 @@
         <translation>Beat 5k</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="58"/>
-        <location filename="../ViewMode.cpp" line="72"/>
-        <location filename="../ViewMode.cpp" line="132"/>
-        <location filename="../ViewMode.cpp" line="145"/>
+        <location filename="../ViewMode.cpp" line="64"/>
+        <location filename="../ViewMode.cpp" line="78"/>
+        <location filename="../ViewMode.cpp" line="138"/>
+        <location filename="../ViewMode.cpp" line="151"/>
         <source>Key 1</source>
         <translation>キー 1</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="59"/>
-        <location filename="../ViewMode.cpp" line="73"/>
-        <location filename="../ViewMode.cpp" line="133"/>
-        <location filename="../ViewMode.cpp" line="146"/>
+        <location filename="../ViewMode.cpp" line="65"/>
+        <location filename="../ViewMode.cpp" line="79"/>
+        <location filename="../ViewMode.cpp" line="139"/>
+        <location filename="../ViewMode.cpp" line="152"/>
         <source>Key 2</source>
         <translation>キー 2</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="60"/>
-        <location filename="../ViewMode.cpp" line="74"/>
-        <location filename="../ViewMode.cpp" line="134"/>
-        <location filename="../ViewMode.cpp" line="147"/>
+        <location filename="../ViewMode.cpp" line="66"/>
+        <location filename="../ViewMode.cpp" line="80"/>
+        <location filename="../ViewMode.cpp" line="140"/>
+        <location filename="../ViewMode.cpp" line="153"/>
         <source>Key 3</source>
         <translation>キー 3</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="61"/>
-        <location filename="../ViewMode.cpp" line="75"/>
-        <location filename="../ViewMode.cpp" line="135"/>
-        <location filename="../ViewMode.cpp" line="148"/>
+        <location filename="../ViewMode.cpp" line="67"/>
+        <location filename="../ViewMode.cpp" line="81"/>
+        <location filename="../ViewMode.cpp" line="141"/>
+        <location filename="../ViewMode.cpp" line="154"/>
         <source>Key 4</source>
         <translation>キー 4</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="62"/>
-        <location filename="../ViewMode.cpp" line="76"/>
-        <location filename="../ViewMode.cpp" line="136"/>
-        <location filename="../ViewMode.cpp" line="149"/>
+        <location filename="../ViewMode.cpp" line="68"/>
+        <location filename="../ViewMode.cpp" line="82"/>
+        <location filename="../ViewMode.cpp" line="142"/>
+        <location filename="../ViewMode.cpp" line="155"/>
         <source>Key 5</source>
         <translation>キー 5</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="63"/>
-        <location filename="../ViewMode.cpp" line="79"/>
+        <location filename="../ViewMode.cpp" line="69"/>
+        <location filename="../ViewMode.cpp" line="85"/>
         <source>Scratch</source>
         <translation>スクラッチ</translation>
     </message>
@@ -1234,14 +1234,14 @@
         <translation>Beat 7k</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="77"/>
-        <location filename="../ViewMode.cpp" line="150"/>
+        <location filename="../ViewMode.cpp" line="83"/>
+        <location filename="../ViewMode.cpp" line="156"/>
         <source>Key 6</source>
         <translation>キー 6</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="78"/>
-        <location filename="../ViewMode.cpp" line="151"/>
+        <location filename="../ViewMode.cpp" line="84"/>
+        <location filename="../ViewMode.cpp" line="157"/>
         <source>Key 7</source>
         <translation>キー 7</translation>
     </message>
@@ -1250,128 +1250,204 @@
         <translation>Beat 10k</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="57"/>
+        <location filename="../ViewMode.cpp" line="63"/>
         <source>Beat 5-key</source>
         <translation>ビート 5鍵盤</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="71"/>
+        <location filename="../ViewMode.cpp" line="77"/>
         <source>Beat 7-key</source>
         <translation>ビート 7鍵盤</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="87"/>
+        <location filename="../ViewMode.cpp" line="93"/>
         <source>Beat 10-key</source>
         <translation>ビート 10鍵盤</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="88"/>
-        <location filename="../ViewMode.cpp" line="108"/>
+        <location filename="../ViewMode.cpp" line="94"/>
+        <location filename="../ViewMode.cpp" line="114"/>
         <source>P1 Key 1</source>
         <translation>1P キー 1</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="89"/>
-        <location filename="../ViewMode.cpp" line="109"/>
+        <location filename="../ViewMode.cpp" line="95"/>
+        <location filename="../ViewMode.cpp" line="115"/>
         <source>P1 Key 2</source>
         <translation>1P キー 2</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="90"/>
-        <location filename="../ViewMode.cpp" line="110"/>
+        <location filename="../ViewMode.cpp" line="96"/>
+        <location filename="../ViewMode.cpp" line="116"/>
         <source>P1 Key 3</source>
         <translation>1P キー 3</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="91"/>
-        <location filename="../ViewMode.cpp" line="111"/>
+        <location filename="../ViewMode.cpp" line="97"/>
+        <location filename="../ViewMode.cpp" line="117"/>
         <source>P1 Key 4</source>
         <translation>1P キー 4</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="92"/>
-        <location filename="../ViewMode.cpp" line="112"/>
+        <location filename="../ViewMode.cpp" line="98"/>
+        <location filename="../ViewMode.cpp" line="118"/>
         <source>P1 Key 5</source>
         <translation>1P キー 5</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="93"/>
-        <location filename="../ViewMode.cpp" line="115"/>
+        <location filename="../ViewMode.cpp" line="99"/>
+        <location filename="../ViewMode.cpp" line="121"/>
         <source>P1 Scratch</source>
         <translation>1P スクラッチ</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="94"/>
-        <location filename="../ViewMode.cpp" line="116"/>
+        <location filename="../ViewMode.cpp" line="100"/>
+        <location filename="../ViewMode.cpp" line="122"/>
         <source>P2 Key 1</source>
         <translation>2P キー 1</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="95"/>
-        <location filename="../ViewMode.cpp" line="117"/>
+        <location filename="../ViewMode.cpp" line="101"/>
+        <location filename="../ViewMode.cpp" line="123"/>
         <source>P2 Key 2</source>
         <translation>2P キー 2</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="96"/>
-        <location filename="../ViewMode.cpp" line="118"/>
+        <location filename="../ViewMode.cpp" line="102"/>
+        <location filename="../ViewMode.cpp" line="124"/>
         <source>P2 Key 3</source>
         <translation>2P キー 3</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="97"/>
-        <location filename="../ViewMode.cpp" line="119"/>
+        <location filename="../ViewMode.cpp" line="103"/>
+        <location filename="../ViewMode.cpp" line="125"/>
         <source>P2 Key 4</source>
         <translation>2P キー 4</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="98"/>
-        <location filename="../ViewMode.cpp" line="120"/>
+        <location filename="../ViewMode.cpp" line="104"/>
+        <location filename="../ViewMode.cpp" line="126"/>
         <source>P2 Key 5</source>
         <translation>2P キー 5</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="99"/>
-        <location filename="../ViewMode.cpp" line="123"/>
+        <location filename="../ViewMode.cpp" line="105"/>
+        <location filename="../ViewMode.cpp" line="129"/>
         <source>P2 Scratch</source>
         <translation>2P スクラッチ</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="107"/>
+        <location filename="../ViewMode.cpp" line="113"/>
         <source>Beat 14-key</source>
         <translation>ビート 14鍵盤</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="131"/>
+        <location filename="../ViewMode.cpp" line="137"/>
         <source>Pop 5-key</source>
         <translation>ポップ 5鍵盤</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="144"/>
+        <location filename="../ViewMode.cpp" line="150"/>
         <source>Pop 9-key</source>
         <translation>ポップ 9鍵盤</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="167"/>
+        <source>CircularRhythm-single</source>
+        <translation>CircularRhythm シングル</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="168"/>
+        <source>Key Red</source>
+        <translation>赤</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="169"/>
+        <source>Key Yellow</source>
+        <translation>黄</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="170"/>
+        <source>Key Green</source>
+        <translation>緑</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="171"/>
+        <source>Key Blue</source>
+        <translation>青</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="172"/>
+        <location filename="../ViewMode.cpp" line="189"/>
+        <source>Space</source>
+        <translation>スペース</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="180"/>
+        <source>CircularRhythm-double</source>
+        <translation>CircularRhythm ダブル</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="181"/>
+        <source>Left Key Red</source>
+        <translation>左 赤</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="182"/>
+        <source>Left Key Yellow</source>
+        <translation>左 黄</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="183"/>
+        <source>Left Key Green</source>
+        <translation>左 緑</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="184"/>
+        <source>Left Key Blue</source>
+        <translation>左 青</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="185"/>
+        <source>Right Key Red</source>
+        <translation>右 赤</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="186"/>
+        <source>Right Key Yellow</source>
+        <translation>右 黄</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="187"/>
+        <source>Right Key Green</source>
+        <translation>右 緑</translation>
+    </message>
+    <message>
+        <location filename="../ViewMode.cpp" line="188"/>
+        <source>Right Key Blue</source>
+        <translation>右 青</translation>
     </message>
     <message>
         <source>Beat 14k</source>
         <translation>Beat 14k</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="113"/>
+        <location filename="../ViewMode.cpp" line="119"/>
         <source>P1 Key 6</source>
         <translation>1P キー 6</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="114"/>
+        <location filename="../ViewMode.cpp" line="120"/>
         <source>P1 Key 7</source>
         <translation>1P キー 7</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="121"/>
+        <location filename="../ViewMode.cpp" line="127"/>
         <source>P2 Key 6</source>
         <translation>2P キー 6</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="122"/>
+        <location filename="../ViewMode.cpp" line="128"/>
         <source>P2 Key 7</source>
         <translation>2P キー 7</translation>
     </message>
@@ -1384,12 +1460,12 @@
         <translation>Popn 9k</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="152"/>
+        <location filename="../ViewMode.cpp" line="158"/>
         <source>Key 8</source>
         <translation>キー 8</translation>
     </message>
     <message>
-        <location filename="../ViewMode.cpp" line="153"/>
+        <location filename="../ViewMode.cpp" line="159"/>
         <source>Key 9</source>
         <translation>キー 9</translation>
     </message>

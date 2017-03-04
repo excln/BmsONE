@@ -24,11 +24,13 @@ SkinLibrary::SkinLibrary()
 	pcGreen = QColor(17, 51, 17);
 	pcBlue = QColor(26, 26, 60);
 	pcRed = QColor(60, 26, 26);
+	pcBlack = QColor(26, 26, 26);
 	pnWhite = QColor(210, 210, 210);
 	pnYellow = QColor(210, 210, 123);
 	pnGreen = QColor(123, 210, 123);
 	pnBlue = QColor(150, 150, 240);
 	pnRed = QColor(240, 150, 150);
+	pnBlack = QColor(123, 123, 123);
 }
 
 void SkinLibrary::SetupSkin7k(Skin *skin, int scratch)
@@ -67,6 +69,9 @@ void SkinLibrary::SetupSkin7k(Skin *skin, int scratch)
 #define DEFAULT_BEAT_7K_ID "default-beat-7k"
 #define DEFAULT_BEAT_10K_ID "default-beat-10k"
 #define DEFAULT_BEAT_14K_ID "default-beat-14k"
+#define DEFAULT_CIRCULAR_SINGLE_ID "default-circular-single"
+#define DEFAULT_CIRCULAR_DOUBLE_ID "default-circular-double"
+#define CIRCULAR_ORDER_PROPERTY_KEY "lane-order"
 
 Skin *SkinLibrary::CreateDefault7k(QObject *parent)
 {
@@ -317,6 +322,115 @@ Skin *SkinLibrary::CreateDefaultPop9k(QObject *parent)
 	return skin;
 }
 
+void SkinLibrary::SetupSkinCircularSingle(Skin *skin, int order)
+{
+	skin->width = lmargin*2 + wwhite*4 + wscratch;
+	skin->lanes.clear();
+	switch (order & 1){
+	case 0:
+		skin->lanes.append(LaneDef(4, "c-L-blue", lmargin+wwhite*0, wwhite, pcBlue, pnBlue, cbigv));
+		skin->lanes.append(LaneDef(3, "c-L-green", lmargin+wwhite*1, wwhite, pcGreen, pnGreen, csmallv));
+		skin->lanes.append(LaneDef(2, "c-L-yellow", lmargin+wwhite*2, wwhite, pcYellow, pnYellow, csmallv));
+		skin->lanes.append(LaneDef(1, "c-L-red", lmargin+wwhite*3, wwhite, pcRed, pnRed, csmallv));
+		skin->lanes.append(LaneDef(5, "c-Space", lmargin+wwhite*4, wscratch, pcBlack, pnBlack, csmallv, cbigv));
+		break;
+	case 1:
+		skin->lanes.append(LaneDef(5, "c-Space", lmargin+wwhite*0, wscratch, pcBlack, pnBlack, cbigv));
+		skin->lanes.append(LaneDef(1, "c-R-red", lmargin+wscratch+wwhite*0, wwhite, pcRed, pnRed, csmallv));
+		skin->lanes.append(LaneDef(2, "c-R-yellow", lmargin+wscratch+wwhite*1, wwhite, pcYellow, pnYellow, csmallv));
+		skin->lanes.append(LaneDef(3, "c-R-green", lmargin+wscratch+wwhite*2, wwhite, pcGreen, pnGreen, csmallv));
+		skin->lanes.append(LaneDef(4, "c-R-blue", lmargin+wscratch+wwhite*3, wwhite, pcBlue, pnBlue, csmallv, cbigv));
+		break;
+	}
+}
+
+Skin *SkinLibrary::CreateDefaultCircularSingle(QObject *parent)
+{
+	QString defaultOrder = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_CIRCULAR_SINGLE_ID, CIRCULAR_ORDER_PROPERTY_KEY), "l").toString();
+	Skin *skin = new Skin(DEFAULT_CIRCULAR_SINGLE_ID, parent);
+	QStringList choices;
+	choices.append("l");
+	choices.append("r");
+	QStringList choiceNames;
+	choiceNames.append(tr("Left"));
+	choiceNames.append(tr("Right"));
+	SkinEnumProperty *laneOrderProp = new SkinEnumProperty(skin, tr("Lane Order"), choices, choiceNames, defaultOrder);
+	laneOrderProp->setObjectName(CIRCULAR_ORDER_PROPERTY_KEY);
+	skin->properties.append(laneOrderProp);
+	connect(laneOrderProp, &SkinProperty::Changed, skin, [=](){
+		skin->lanes.clear();
+		SetupSkinCircularSingle(skin, laneOrderProp->GetIndexValue());
+		App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_CIRCULAR_SINGLE_ID, CIRCULAR_ORDER_PROPERTY_KEY), laneOrderProp->GetChoiceValue());
+		emit skin->Changed();
+		return;
+	});
+	SetupSkinCircularSingle(skin, laneOrderProp->GetIndexValue());
+	return skin;
+}
+
+void SkinLibrary::SetupSkinCircularDouble(Skin *skin, int order)
+{
+	skin->width = lmargin*2 + wwhite*8 + wscratch;
+	skin->lanes.clear();
+	switch ((order & 2) >> 1){
+	case 0:
+		skin->lanes.append(LaneDef(4, "c-L-blue", lmargin+wwhite*0, wwhite, pcBlue, pnBlue, cbigv));
+		skin->lanes.append(LaneDef(3, "c-L-green", lmargin+wwhite*1, wwhite, pcGreen, pnGreen, csmallv));
+		skin->lanes.append(LaneDef(2, "c-L-yellow", lmargin+wwhite*2, wwhite, pcYellow, pnYellow, csmallv));
+		skin->lanes.append(LaneDef(1, "c-L-red", lmargin+wwhite*3, wwhite, pcRed, pnRed, csmallv));
+		break;
+	case 1:
+		skin->lanes.append(LaneDef(1, "c-R-red", lmargin+wwhite*0, wwhite, pcRed, pnRed, cbigv));
+		skin->lanes.append(LaneDef(2, "c-R-yellow", lmargin+wwhite*1, wwhite, pcYellow, pnYellow, csmallv));
+		skin->lanes.append(LaneDef(3, "c-R-green", lmargin+wwhite*2, wwhite, pcGreen, pnGreen, csmallv));
+		skin->lanes.append(LaneDef(4, "c-R-blue", lmargin+wwhite*3, wwhite, pcBlue, pnBlue, csmallv));
+		break;
+	}
+	skin->lanes.append(LaneDef(9, "c-Space", lmargin+wwhite*4, wscratch, pcBlack, pnBlack, csmallv));
+	switch (order & 1){
+	case 0:
+		skin->lanes.append(LaneDef(8, "c-L-blue", lmargin+wscratch+wwhite*4, wwhite, pcBlue, pnBlue, csmallv));
+		skin->lanes.append(LaneDef(7, "c-L-green", lmargin+wscratch+wwhite*5, wwhite, pcGreen, pnGreen, csmallv));
+		skin->lanes.append(LaneDef(6, "c-L-yellow", lmargin+wscratch+wwhite*6, wwhite, pcYellow, pnYellow, csmallv));
+		skin->lanes.append(LaneDef(5, "c-L-red", lmargin+wscratch+wwhite*7, wwhite, pcRed, pnRed, csmallv, cbigv));
+		break;
+	case 1:
+		skin->lanes.append(LaneDef(5, "c-R-red", lmargin+wscratch+wwhite*4, wwhite, pcRed, pnRed, csmallv));
+		skin->lanes.append(LaneDef(6, "c-R-yellow", lmargin+wscratch+wwhite*5, wwhite, pcYellow, pnYellow, csmallv));
+		skin->lanes.append(LaneDef(7, "c-R-green", lmargin+wscratch+wwhite*6, wwhite, pcGreen, pnGreen, csmallv));
+		skin->lanes.append(LaneDef(8, "c-R-blue", lmargin+wscratch+wwhite*7, wwhite, pcBlue, pnBlue, csmallv, cbigv));
+		break;
+	}
+}
+
+Skin *SkinLibrary::CreateDefaultCircularDouble(QObject *parent)
+{
+	QString defaultOrder = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_CIRCULAR_DOUBLE_ID, CIRCULAR_ORDER_PROPERTY_KEY), "lr").toString();
+	Skin *skin = new Skin(DEFAULT_CIRCULAR_DOUBLE_ID, parent);
+	QStringList choices;
+	choices.append("ll");
+	choices.append("lr");
+	choices.append("rl");
+	choices.append("rr");
+	QStringList choiceNames;
+	choiceNames.append(tr("Left/Left"));
+	choiceNames.append(tr("Left/Right"));
+	choiceNames.append(tr("Right/Left"));
+	choiceNames.append(tr("Right/Right"));
+	SkinEnumProperty *laneOrderProp = new SkinEnumProperty(skin, tr("Lane Order"), choices, choiceNames, defaultOrder);
+	laneOrderProp->setObjectName(CIRCULAR_ORDER_PROPERTY_KEY);
+	skin->properties.append(laneOrderProp);
+	connect(laneOrderProp, &SkinProperty::Changed, skin, [=](){
+		skin->lanes.clear();
+		SetupSkinCircularDouble(skin, laneOrderProp->GetIndexValue());
+		App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_CIRCULAR_DOUBLE_ID, CIRCULAR_ORDER_PROPERTY_KEY), laneOrderProp->GetChoiceValue());
+		emit skin->Changed();
+		return;
+	});
+	SetupSkinCircularDouble(skin, laneOrderProp->GetIndexValue());
+	return skin;
+}
+
 Skin *SkinLibrary::CreateSkin(ViewMode *mode, QObject *parent)
 {
 	switch (mode->GetMode()){
@@ -332,6 +446,10 @@ Skin *SkinLibrary::CreateSkin(ViewMode *mode, QObject *parent)
 		return CreateDefaultPop5k(parent);
 	case ViewMode::MODE_POPN_9K:
 		return CreateDefaultPop9k(parent);
+	case ViewMode::MODE_CIRC_SINGLE:
+		return CreateDefaultCircularSingle(parent);
+	case ViewMode::MODE_CIRC_DOUBLE:
+		return CreateDefaultCircularDouble(parent);
 	default:
 		return CreateDefault7k(parent);
 	}

@@ -15,6 +15,8 @@ public:
 		MODE_BEAT_14K,
 		MODE_POPN_5K,
 		MODE_POPN_9K,
+		MODE_CIRC_SINGLE,
+		MODE_CIRC_DOUBLE,
 	};
 
 	struct LaneDef
@@ -39,9 +41,10 @@ private:
 	static ViewMode *VM_Beat14k;
 	static ViewMode *VM_Popn5k;
 	static ViewMode *VM_Popn9k;
+	static ViewMode *VM_CircularSingle;
+	static ViewMode *VM_CircularDouble;
 	//static ViewMode *VM_Dance4;
 	//static ViewMode *VM_Dance8;
-	//static ViewMode *VM_Circular;
 
 private:
 	ViewMode(QString name, Mode mode);
@@ -61,6 +64,8 @@ public:
 	static ViewMode *ViewModeBeat14k();
 	static ViewMode *ViewModePopn5k();
 	static ViewMode *ViewModePopn9k();
+	static ViewMode *ViewModeCircularSingle();
+	static ViewMode *ViewModeCircularDouble();
 
 };
 
