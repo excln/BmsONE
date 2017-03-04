@@ -15,10 +15,10 @@ SoundChannel::SoundChannel(Document *document)
 	, waveSummary(nullptr)
 	, totalLength(0)
 {
-	connect(resource, SIGNAL(WaveSummaryReady(const WaveSummary*)), this, SLOT(OnWaveSummaryReady(const WaveSummary*)));
-	connect(resource, SIGNAL(OverallWaveformReady()), this, SLOT(OnOverallWaveformReady()));
-	connect(resource, SIGNAL(RmsCacheUpdated()), this, SLOT(OnRmsCacheUpdated()));
-	connect(resource, SIGNAL(RmsCachePacketReady(int,QList<RmsCacheEntry>)), this, SLOT(OnRmsCachePacketReady(int,QList<RmsCacheEntry>)));
+	connect(resource, SIGNAL(WaveSummaryReady(const WaveSummary*)), this, SLOT(OnWaveSummaryReady(const WaveSummary*)), Qt::QueuedConnection);
+	connect(resource, SIGNAL(OverallWaveformReady()), this, SLOT(OnOverallWaveformReady()), Qt::QueuedConnection);
+	connect(resource, SIGNAL(RmsCacheUpdated()), this, SLOT(OnRmsCacheUpdated()), Qt::QueuedConnection);
+	connect(resource, SIGNAL(RmsCachePacketReady(int,QList<RmsCacheEntry>)), this, SLOT(OnRmsCachePacketReady(int,QList<RmsCacheEntry>)), Qt::QueuedConnection);
 
 	connect(document, SIGNAL(TimeMappingChanged()), this, SLOT(OnTimeMappingChanged()));
 }

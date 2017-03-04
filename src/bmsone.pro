@@ -71,7 +71,10 @@ SOURCES += main.cpp\
     libvorbis/synthesis.c \
     libvorbis/vorbisenc.c \
     libvorbis/vorbisfile.c \
-    libvorbis/window.c
+    libvorbis/window.c \
+    SequenceViewPreview.cpp \
+    SoundChannelPreview.cpp \
+    SequenceViewChannelInternal.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -125,7 +128,8 @@ HEADERS  += MainWindow.h \
     libvorbis/modes/setup_44.h \
     libvorbis/modes/setup_44p51.h \
     libvorbis/modes/setup_44u.h \
-    libvorbis/modes/setup_X.h
+    libvorbis/modes/setup_X.h \
+    SequenceViewChannelInternal.h
 
 FORMS    +=
 

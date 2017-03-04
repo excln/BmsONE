@@ -4,7 +4,7 @@
 #include "SequenceViewInternal.h"
 
 SequenceView::EditModeContext::EditModeContext(SequenceView *sview)
-	: Context(sview), sview(sview)
+	: Context(sview)
 {
 }
 
@@ -12,26 +12,7 @@ SequenceView::EditModeContext::~EditModeContext()
 {
 }
 
-SequenceView::Context *SequenceView::EditModeContext::KeyPress(QKeyEvent *event)
-{
-	switch (event->key()){
-	case Qt::Key_Delete:
-	case Qt::Key_Backspace:
-		sview->DeleteSelectedObjects();
-		break;
-	case Qt::Key_Escape:
-		break;
-	default:
-		break;
-	}
-	return this;
-}
 /*
-SequenceView::Context *SequenceView::EditModeContext::KeyUp(QKeyEvent *)
-{
-	return this;
-}
-
 SequenceView::Context *SequenceView::EditModeContext::Enter(QEnterEvent *)
 {
 	return this;
@@ -102,6 +83,10 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 			? sview->HitTestPlayingPane(lane, event->y(), sview->snappedHitTestInEditMode ? iTime : -1, event->modifiers() & Qt::AltModifier)
 			: nullptr;
 	sview->ClearBpmEventsSelection();
+	if (event->button() == Qt::RightButton && (event->modifiers() & Qt::AltModifier)){
+		sview->ClearNotesSelection();
+		return new PreviewContext(this, sview, Qt::RightButton, iTime);
+	}
 	if (noteHit){
 		switch (event->button()){
 		case Qt::LeftButton: {
@@ -155,7 +140,7 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 		case Qt::MidButton:
 			sview->ClearNotesSelection();
 			sview->SelectSoundChannel(noteHit->GetChannelView());
-			break;
+			return new PreviewContext(this, sview, event->button(), iTime);
 		}
 	}else if (lane >= 0){
 		// any button
@@ -269,7 +254,7 @@ SequenceView::EditModeSelectNotesContext::EditModeSelectNotesContext(SequenceVie
 		SequenceView *sview, Qt::MouseButton button,
 		int laneX, int iTime, QPoint pos
 		)
-	: Context(sview), parent(parent), sview(sview)
+	: Context(sview, parent), locker(sview)
 	, mouseButton(button)
 {
 	rubberBand = new QRubberBand(QRubberBand::Rectangle, sview->playingPane);
@@ -284,32 +269,7 @@ SequenceView::EditModeSelectNotesContext::~EditModeSelectNotesContext()
 	delete rubberBand;
 }
 
-SequenceView::Context *SequenceView::EditModeSelectNotesContext::Escape()
-{
-	auto p = parent;
-	delete this;
-	return p;
-}
-
-SequenceView::Context *SequenceView::EditModeSelectNotesContext::KeyPress(QKeyEvent *event)
-{
-	switch (event->key()){
-	case Qt::Key_Delete:
-	case Qt::Key_Backspace:
-		break;
-	case Qt::Key_Escape:
-		return Escape();
-	default:
-		break;
-	}
-	return this;
-}
 /*
-SequenceView::Context *SequenceView::EditModeSelectNotesContext::KeyUp(QKeyEvent *)
-{
-	return this;
-}
-
 SequenceView::Context *SequenceView::EditModeSelectNotesContext::Enter(QEnterEvent *)
 {
 	return this;
@@ -469,15 +429,6 @@ SequenceView::Context *SequenceView::EditModeSelectNotesContext::PlayingPane_Mou
 	return Escape();
 }
 
-void SequenceView::EditModeSelectNotesContext::DeleteSelectedObjects()
-{
-	// ignore
-}
-
-void SequenceView::EditModeSelectNotesContext::TransferSelectedNotes()
-{
-	// ignore
-}
 
 
 
@@ -485,7 +436,7 @@ SequenceView::EditModeDragNotesContext::EditModeDragNotesContext(SequenceView::E
 		SequenceView *sview,
 		Document::DocumentUpdateSoundNotesContext *cxt, int laneX, int iTime
 		, bool editLN)
-	: Context(sview), parent(parent), sview(sview)
+	: Context(sview, parent), locker(sview)
 	, updateNotesCxt(cxt), editLN(editLN)
 {
 	dragNotesOriginLaneX = dragNotesPreviousLaneX = laneX;
@@ -494,38 +445,13 @@ SequenceView::EditModeDragNotesContext::EditModeDragNotesContext(SequenceView::E
 
 SequenceView::EditModeDragNotesContext::~EditModeDragNotesContext()
 {
-}
-
-SequenceView::Context *SequenceView::EditModeDragNotesContext::Escape()
-{
 	if (updateNotesCxt){
 		updateNotesCxt->Cancel();
 		delete updateNotesCxt;
 	}
-	auto p = parent;
-	delete this;
-	return p;
 }
 
-SequenceView::Context *SequenceView::EditModeDragNotesContext::KeyPress(QKeyEvent *event)
-{
-	switch (event->key()){
-	case Qt::Key_Delete:
-	case Qt::Key_Backspace:
-		break;
-	case Qt::Key_Escape:
-		return Escape();
-	default:
-		break;
-	}
-	return this;
-}
 /*
-SequenceView::Context *SequenceView::EditModeDragNotesContext::KeyUp(QKeyEvent *)
-{
-	return this;
-}
-
 SequenceView::Context *SequenceView::EditModeDragNotesContext::Enter(QEnterEvent *)
 {
 	return this;
@@ -617,23 +543,13 @@ SequenceView::Context *SequenceView::EditModeDragNotesContext::PlayingPane_Mouse
 	return Escape();
 }
 
-void SequenceView::EditModeDragNotesContext::DeleteSelectedObjects()
-{
-	// ignore
-}
-
-void SequenceView::EditModeDragNotesContext::TransferSelectedNotes()
-{
-	// ignore
-}
-
 
 
 SequenceView::EditModeSelectBpmEventsContext::EditModeSelectBpmEventsContext(
 		SequenceView::EditModeContext *parent, SequenceView *sview,
 		Qt::MouseButton button, int iTime, QPoint pos
 		)
-	: Context(sview), parent(parent), sview(sview)
+	: Context(sview, parent), locker(sview)
 	, mouseButton(button)
 {
 	rubberBand = new QRubberBand(QRubberBand::Rectangle, sview->timeLine);
@@ -645,27 +561,6 @@ SequenceView::EditModeSelectBpmEventsContext::EditModeSelectBpmEventsContext(
 SequenceView::EditModeSelectBpmEventsContext::~EditModeSelectBpmEventsContext()
 {
 	delete rubberBand;
-}
-
-SequenceView::Context *SequenceView::EditModeSelectBpmEventsContext::Escape()
-{
-	auto p = parent;
-	delete this;
-	return p;
-}
-
-SequenceView::Context *SequenceView::EditModeSelectBpmEventsContext::KeyPress(QKeyEvent *event)
-{
-	switch (event->key()){
-	case Qt::Key_Delete:
-	case Qt::Key_Backspace:
-		break;
-	case Qt::Key_Escape:
-		return Escape();
-	default:
-		break;
-	}
-	return this;
 }
 
 SequenceView::Context *SequenceView::EditModeSelectBpmEventsContext::MeasureArea_MouseMove(QMouseEvent *event)
@@ -755,15 +650,4 @@ SequenceView::Context *SequenceView::EditModeSelectBpmEventsContext::BpmArea_Mou
 	// maybe shows context menu?
 	return Escape();
 }
-
-void SequenceView::EditModeSelectBpmEventsContext::DeleteSelectedObjects()
-{
-	// ignore
-}
-
-void SequenceView::EditModeSelectBpmEventsContext::TransferSelectedNotes()
-{
-	// ignore
-}
-
 

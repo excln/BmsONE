@@ -4,7 +4,7 @@
 #include "SequenceViewInternal.h"
 
 SequenceView::WriteModeContext::WriteModeContext(SequenceView *sview)
-	: Context(sview), sview(sview)
+	: Context(sview)
 {
 }
 
@@ -12,26 +12,7 @@ SequenceView::WriteModeContext::~WriteModeContext()
 {
 }
 
-SequenceView::Context *SequenceView::WriteModeContext::KeyPress(QKeyEvent *event)
-{
-	switch (event->key()){
-	case Qt::Key_Delete:
-	case Qt::Key_Backspace:
-		DeleteSelectedObjects();
-		break;
-	case Qt::Key_Escape:
-		break;
-	default:
-		break;
-	}
-	return this;
-}
 /*
-SequenceView::Context *SequenceView::WriteModeContext::KeyUp(QKeyEvent *)
-{
-	return this;
-}
-
 SequenceView::Context *SequenceView::WriteModeContext::Enter(QEnterEvent *)
 {
 	return this;
@@ -81,6 +62,10 @@ SequenceView::Context *SequenceView::WriteModeContext::PlayingPane_MousePress(QM
 	SoundNoteView *noteHit = lane >= 0 ? sview->HitTestPlayingPane(lane, event->y(), iTime, event->modifiers() & Qt::AltModifier) : nullptr;
 
 	sview->ClearBpmEventsSelection();
+	if (event->button() == Qt::RightButton && (event->modifiers() & Qt::AltModifier)){
+		sview->ClearNotesSelection();
+		return new PreviewContext(this, sview, Qt::RightButton, iTime);
+	}
 	if (noteHit){
 		switch (event->button()){
 		case Qt::LeftButton:
@@ -114,7 +99,7 @@ SequenceView::Context *SequenceView::WriteModeContext::PlayingPane_MousePress(QM
 		case Qt::MidButton:
 			sview->ClearNotesSelection();
 			sview->SelectSoundChannel(noteHit->GetChannelView());
-			break;
+			return new PreviewContext(this, sview, event->button(), iTime);
 		}
 	}else{
 		if (sview->currentChannel >= 0 && lane > 0 && event->button() == Qt::LeftButton){

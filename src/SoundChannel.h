@@ -40,6 +40,7 @@ class SoundChannel : public QObject, public BmsonObject
 
 	friend class SoundChannelSourceFilePreviewer;
 	friend class SoundChannelNotePreviewer;
+	friend class SoundChannelPreviewer;
 	friend class Document;
 
 private:
@@ -172,6 +173,39 @@ signals:
 public:
 	SoundChannelNotePreviewer(SoundChannel *channel, int location, QObject *parent=nullptr);
 	~SoundChannelNotePreviewer();
+
+	virtual void AudioPlayRelease();
+	virtual int AudioPlayRead(SampleType *buffer, int bufferSampleCount);
+};
+
+
+
+class SoundChannelPreviewer : public AudioPlaySource
+{
+	Q_OBJECT
+
+private:
+	const double SamplesPerSec;
+	const double SamplesPerSecOrg;
+	const double TicksPerBeat;
+	QMutex mutex;
+	S16S44100StreamTransformer *wave;
+	QMap<int, SoundChannel::CacheEntry> cache;
+	QMap<int, SoundChannel::CacheEntry>::iterator icache;
+	int currentSamplePos;
+	double currentBpm;
+	double currentTicks;
+
+signals:
+	void Progress(int currentTicks);
+	void Stopped();
+
+public slots:
+	void Stop();
+
+public:
+	SoundChannelPreviewer(SoundChannel *channel, int location, QObject *parent=nullptr);
+	~SoundChannelPreviewer();
 
 	virtual void AudioPlayRelease();
 	virtual int AudioPlayRead(SampleType *buffer, int bufferSampleCount);

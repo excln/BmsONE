@@ -62,15 +62,16 @@ private:
 
 private:
 	class Context{
-		SequenceView *sview;
 	protected:
-		Context(SequenceView *sview) : sview(sview){}
+		SequenceView *sview;
+		Context *parent;
+		Context(SequenceView *sview, Context *parent=nullptr) : sview(sview), parent(parent){}
 	public:
 		virtual ~Context(){}
-		virtual bool IsTop() const{ return true; }
-		virtual Context* Escape(){ return this; }
+		virtual bool IsTop() const{ return parent == nullptr; }
+		virtual Context* Escape();
 
-		virtual Context* KeyPress(QKeyEvent*){ return this; }
+		virtual Context* KeyPress(QKeyEvent*);
 		//virtual Context* KeyUp(QKeyEvent*){ return this; }
 		//virtual Context* Enter(QEnterEvent*){ return this; }
 		//virtual Context* Leave(QEnterEvent*){ return this; }
@@ -85,15 +86,21 @@ private:
 		virtual Context* BpmArea_MouseMove(QMouseEvent*);
 		virtual Context* BpmArea_MousePress(QMouseEvent*);
 		virtual Context* BpmArea_MouseRelease(QMouseEvent*);
-
-		virtual void DeleteSelectedObjects();
-		virtual void TransferSelectedNotes();
 	};
 	class EditModeContext;
 	class EditModeSelectNotesContext;
 	class EditModeDragNotesContext;
 	class EditModeSelectBpmEventsContext;
 	class WriteModeContext;
+	class PreviewContext;
+
+	class CommandsLocker
+	{
+		SequenceView *sview;
+	public:
+		CommandsLocker(SequenceView *sview) : sview(sview){ sview->LockCommands(); }
+		~CommandsLocker(){ sview->UnlockCommands(); }
+	};
 
 private:
 	MainWindow *mainWindow;
@@ -166,6 +173,8 @@ private:
 	QMap<int, BpmEvent> selectedBpmEvents;
 	SequenceViewCursor *cursor;
 
+	int lockCommands;
+
 private:
 	qreal Time2Y(qreal time) const;
 	qreal Y2Time(qreal y) const;
@@ -207,6 +216,9 @@ private:
 	void TransferSelectedNotesToKey();
 
 	void DeleteSelectedBpmEvents();
+
+	void LockCommands();
+	void UnlockCommands();
 
 	virtual QSize sizeHint() const;
 	virtual bool event(QEvent *e);

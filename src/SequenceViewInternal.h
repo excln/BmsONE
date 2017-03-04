@@ -6,6 +6,7 @@
 #include "Document.h"
 #include "SoundChannel.h"
 #include "SequenceDef.h"
+#include "SequenceViewDef.h"
 #include <functional>
 
 
@@ -94,6 +95,31 @@ class SoundChannelView : public QWidget
 	friend class SoundChannelFooter;
 
 private:
+	class Context{
+	protected:
+		SoundChannelView *cview;
+		SequenceView *sview;
+		Context *parent;
+		Context(SoundChannelView *cview, Context *parent=nullptr) : cview(cview), sview(cview->sview), parent(parent){}
+	public:
+		virtual ~Context(){}
+		virtual bool IsTop() const{ return parent == nullptr; }
+		virtual Context* Escape();
+
+		virtual SoundChannelView::Context* KeyPress(QKeyEvent*);
+		//virtual Context* KeyUp(QKeyEvent*){ return this; }
+		//virtual Context* Enter(QEnterEvent*){ return this; }
+		//virtual Context* Leave(QEnterEvent*){ return this; }
+		virtual Context* MouseMove(QMouseEvent*){ return this; }
+		virtual Context* MousePress(QMouseEvent*){ return this; }
+		virtual Context* MouseRelease(QMouseEvent*){ return this; }
+	};
+	class EditModeContext;
+	class EditModeSelectNotesContext;
+	class WriteModeContext;
+	class PreviewContext;
+
+private:
 	SequenceView *sview;
 	SoundChannel *channel;
 	QMap<int, SoundNoteView*> notes;
@@ -101,8 +127,7 @@ private:
 
 	QImage *backBuffer;
 
-	QRubberBand *rubberBand;
-	int rubberBandOriginTime;
+	Context *context;
 
 private:
 	QAction *actionPreview;
@@ -159,15 +184,7 @@ public:
 	virtual void enterEvent(QEvent *event);
 	virtual void leaveEvent(QEvent *event);
 
-	void mouseMoveEventEditMode(QMouseEvent *event);
-	void mousePressEventEditMode(QMouseEvent *event);
-	void mouseReleaseEventEditMode(QMouseEvent *event);
-	void mouseDoubleClickEventEditMode(QMouseEvent *event);
-
-	void mouseMoveEventWriteMode(QMouseEvent *event);
-	void mousePressEventWriteMode(QMouseEvent *event);
-	void mouseReleaseEventWriteMode(QMouseEvent *event);
-	void mouseDoubleClickEventWriteMode(QMouseEvent *event);
+	void SetMode(SequenceEditMode mode);
 };
 
 
