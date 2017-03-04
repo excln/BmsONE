@@ -11,6 +11,8 @@ SymbolIconManager::SymbolIconManager()
 	icons.insert(Icon::Save, Load("save"));
 	icons.insert(Icon::Undo, Load("undo"));
 	icons.insert(Icon::Redo, Load("redo"));
+	icons.insert(Icon::Expand, Load("expand"));
+	icons.insert(Icon::Collapse, Load("collapse"));
 	icons.insert(Icon::Sound, Load("sound"));
 	icons.insert(Icon::Mute, Load("mute"));
 	icons.insert(Icon::Stop, Load("stop"));

@@ -160,33 +160,47 @@ QMap<QString, QJsonValue> DocumentInfo::GetExtraFields() const
 	return fields;
 }
 
-void DocumentInfo::SetExtraFieldsInternal(QJsonObject value)
+void DocumentInfo::SetExtraFieldsInternal(QMap<QString, QJsonValue> value)
 {
-	bmsonFields = value;
+	for (auto i=bmsonFields.begin(); i!=bmsonFields.end(); ){
+		if (!SupportedKeys.contains(i.key())){
+			i = bmsonFields.erase(i);
+			continue;
+		}
+		i++;
+	}
+	for (auto i=value.begin(); i!=value.end(); i++){
+		bmsonFields.insert(i.key(), i.value());
+	}
 	emit ExtraFieldsChanged();
 }
 
-void DocumentInfo::SetExtraFields(const QMap<QString, QJsonValue> &fields)
+void DocumentInfo::SetExtraFields(QMap<QString, QJsonValue> fields)
 {
 	bool changed = false;
-	QJsonObject oldBmsonFields = bmsonFields;
-	for (QMap<QString, QJsonValue>::const_iterator i=fields.begin(); i!=fields.end(); i++){
+	QMap<QString, QJsonValue> oldBmsonFields;
+	for (auto i=bmsonFields.begin(); i!=bmsonFields.end(); i++){
 		if (!SupportedKeys.contains(i.key())){
-			if (!bmsonFields.contains(i.key()) || bmsonFields[i.key()] != i.value()){
-				changed = true;
-				bmsonFields.insert(i.key(), i.value());
-			}
+			oldBmsonFields.insert(i.key(), i.value());
 		}
 	}
+	for (auto i=fields.begin(); i!=fields.end(); ){
+		if (SupportedKeys.contains(i.key())){
+			i = fields.erase(i);
+			continue;
+		}
+		i++;
+	}
+	changed = oldBmsonFields != fields;
 	if (!changed){
 		// don't add action to undo stack but notify
 		emit ExtraFieldsChanged();
 		return;
 	}
 	emit ExtraFieldsChanged();
-	document->GetHistory()->Add(new EditValueAction<QJsonObject>(
-								[this](QJsonObject v){ SetExtraFieldsInternal(v); },
-								oldBmsonFields, bmsonFields, tr("edit extra fields"), false));
+	document->GetHistory()->Add(new EditValueAction<QMap<QString, QJsonValue>>(
+								[this](QMap<QString, QJsonValue> v){ SetExtraFieldsInternal(v); },
+								oldBmsonFields, fields, tr("edit extra fields"), true));
 }
 
 

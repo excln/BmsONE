@@ -22,5 +22,7 @@
         <file>images/symbols/undo.png</file>
         <file>images/symbols/edit_mode.png</file>
         <file>images/symbols/write_mode.png</file>
+        <file>images/symbols/collapse.png</file>
+        <file>images/symbols/expand.png</file>
     </qresource>
 </RCC>

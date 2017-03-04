@@ -44,7 +44,8 @@ SOURCES += main.cpp\
     SymbolIconManager.cpp \
     SequenceViewContents.cpp \
     StatusBar.cpp \
-    SequenceViewCursor.cpp
+    SequenceViewCursor.cpp \
+    CollapseButton.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -73,7 +74,8 @@ HEADERS  += MainWindow.h \
 	QOggVorbisAdapter.h \
     DocumentAux.h \
     SymbolIconManager.h \
-    SequenceViewDef.h
+    SequenceViewDef.h \
+    CollapseButton.h
 
 FORMS    +=
 

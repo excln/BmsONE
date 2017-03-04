@@ -29,6 +29,7 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	buttonPreview->setFixedWidth(24);
 	buttonPreview->setAutoRaise(true);
 	buttonFile = new QToolButton();
+	buttonFile->setMinimumWidth(24);
 	buttonFile->setToolTip(tr("Sound File"));
 	buttonFile->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	buttonFile->setAutoRaise(true);

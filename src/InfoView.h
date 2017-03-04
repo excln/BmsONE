@@ -8,7 +8,7 @@
 #include "ScrollableForm.h"
 
 class MainWindow;
-
+class CollapseButton;
 
 class InfoView : public QWidget
 {
@@ -27,7 +27,7 @@ private:
 	QuasiModalEdit *editTotal;
 	QuasiModalEdit *editInitBpm;
 	QuasiModalEdit *editLevel;
-	QToolButton *buttonShowExtraFields;
+	CollapseButton *buttonShowExtraFields;
 	QuasiModalMultiLineEdit *editExtraFields;
 
 	// current document
@@ -52,8 +52,6 @@ public:
 
 
 private slots:
-	void ShowExtraFields();
-
 	void TitleEdited();
 	void GenreEdited();
 	void ArtistEdited();

@@ -555,13 +555,9 @@ void MainWindow::FilePathChanged()
 	}else{
 		title = QDir::toNativeSeparators(title);
 	}
-	bool dirty = document->GetHistory()->IsDirty();
-	setWindowModified(dirty);
-	if (dirty){
-		title += " *";
-	}
-	title += " - " APP_NAME;
-	this->setWindowTitle(title);
+	title += " [*] - " APP_NAME;
+	setWindowTitle(title);
+	setWindowModified(document->GetHistory()->IsDirty());
 }
 
 void MainWindow::HistoryChanged()

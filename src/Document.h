@@ -43,7 +43,7 @@ private:
 	void SetTotalInternal(double value);
 	void SetInitBpmInternal(double value);
 	void SetLevelInternal(int value);
-	void SetExtraFieldsInternal(QJsonObject value);
+	void SetExtraFieldsInternal(QMap<QString, QJsonValue> value);
 
 public:
 	DocumentInfo(Document *document);
@@ -70,7 +70,7 @@ public:
 	void SetLevel(int value);
 
 	QMap<QString, QJsonValue> GetExtraFields() const;
-	void SetExtraFields(const QMap<QString, QJsonValue> &fields);
+	void SetExtraFields(QMap<QString, QJsonValue> fields);
 
 signals:
 	void TitleChanged(QString value);

@@ -1,6 +1,7 @@
 #include "InfoView.h"
 #include "MainWindow.h"
 #include "JsonExtension.h"
+#include "CollapseButton.h"
 
 const char* InfoView::SettingsGroup = "DocumentInfoView";
 const char* InfoView::SettingsShowExtraFields = "ShowExtraFields";
@@ -18,8 +19,9 @@ InfoView::InfoView(MainWindow *mainWindow)
 	layout->addRow(tr("Initial Bpm:"), editInitBpm = new QuasiModalEdit());
 	layout->addRow(tr("Total:"), editTotal = new QuasiModalEdit());
 	layout->addRow(tr("Level:"), editLevel = new QuasiModalEdit());
-	layout->addRow(tr("Extra fields:"), buttonShowExtraFields = new QToolButton());
-	layout->addRow(editExtraFields = new QuasiModalMultiLineEdit());
+	editExtraFields = new QuasiModalMultiLineEdit();
+	layout->addRow(tr("Extra fields:"), buttonShowExtraFields = new CollapseButton(editExtraFields, this));
+	layout->addRow(editExtraFields);
 	layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
 	layout->setSizeConstraint(QLayout::SetNoConstraint);
 	editExtraFields->setAcceptRichText(false);
@@ -34,7 +36,6 @@ InfoView::InfoView(MainWindow *mainWindow)
 
 	buttonShowExtraFields->setAutoRaise(true);
 	buttonShowExtraFields->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	connect(buttonShowExtraFields, SIGNAL(clicked(bool)), this, SLOT(ShowExtraFields()));
 
 	connect(editTitle, &QLineEdit::editingFinished, this, &InfoView::TitleEdited);
 	connect(editGenre, &QLineEdit::editingFinished, this, &InfoView::GenreEdited);
@@ -59,10 +60,9 @@ InfoView::InfoView(MainWindow *mainWindow)
 	{
 		bool showExtraFields = settings->value(SettingsShowExtraFields, false).toBool();
 		if (showExtraFields){
-			buttonShowExtraFields->setText("⏫");
+			buttonShowExtraFields->Expand();
 		}else{
-			editExtraFields->hide();
-			buttonShowExtraFields->setText("⏬");
+			buttonShowExtraFields->Collapse();
 		}
 	}
 	settings->endGroup();
@@ -106,17 +106,6 @@ void InfoView::ReplaceDocument(Document *newDocument)
 	}
 }
 
-void InfoView::ShowExtraFields()
-{
-	if (editExtraFields->isVisibleTo(this)){
-		editExtraFields->hide();
-		buttonShowExtraFields->setText("⏬");
-	}else{
-		editExtraFields->show();
-		buttonShowExtraFields->setText("⏫");
-	}
-}
-
 void InfoView::SetExtraFields(const QMap<QString, QJsonValue> &fields)
 {
 	QString s;
@@ -128,6 +117,7 @@ void InfoView::SetExtraFields(const QMap<QString, QJsonValue> &fields)
 		s += ",\n";
 	}
 	editExtraFields->setText(s);
+	buttonShowExtraFields->SetText(s);
 }
 
 void InfoView::TitleEdited()

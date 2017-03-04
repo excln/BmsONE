@@ -15,6 +15,8 @@ public:
 		Save,
 		Undo,
 		Redo,
+		Expand,
+		Collapse,
 		Sound,
 		Mute,
 		Stop,
