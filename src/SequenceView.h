@@ -123,6 +123,7 @@ private:
 	QList<LaneDef> sortedLanes;
 	int playingWidth;
 	QList<QLabel*> playingFooterImages;
+	QList<QObject*> skinPropertyMenuItems;
 
 	// current document
 	Document *document;
@@ -232,6 +233,7 @@ private:
 	bool mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *event);
 	//bool paintEventPlayingHeader(QWidget *widget, QPaintEvent *event);
 	bool paintEventPlayingFooter(QWidget *widget, QPaintEvent *event);
+	bool contextMenuEventPlayingFooter(QContextMenuEvent * event);
 
 private slots:
 	void ViewModeChanged(ViewMode *mode);

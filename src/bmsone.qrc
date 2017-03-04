@@ -24,5 +24,10 @@
         <file>images/symbols/write_mode.png</file>
         <file>images/symbols/collapse.png</file>
         <file>images/symbols/expand.png</file>
+        <file>images/keys/p-blue.png</file>
+        <file>images/keys/p-green.png</file>
+        <file>images/keys/p-red.png</file>
+        <file>images/keys/p-white.png</file>
+        <file>images/keys/p-yellow.png</file>
     </qresource>
 </RCC>

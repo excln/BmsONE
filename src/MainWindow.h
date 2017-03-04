@@ -146,7 +146,9 @@ private:
 
 	bool closing;
 
+	QMenu *menuView;
 	QMenu *menuViewMode;
+	QAction *actionViewSkinSettingSeparator;
 
 private:
 	void ReplaceDocument(Document *newDocument);
@@ -204,7 +206,9 @@ public:
 	AudioPlayer *GetAudioPlayer() const{ return audioPlayer; }
 	BpmEditView *GetBpmEditTool() const{ return bpmEditView; }
 
+	QMenu *GetMenuView() const{ return menuView; }
 	QMenu *GetMenuViewMode() const{ return menuViewMode; }
+	QAction *GetViewSkinSettingSeparator() const{ return actionViewSkinSettingSeparator; }
 
 	void OpenFiles(QStringList filePaths);
 
@@ -229,6 +233,9 @@ private:
 public:
 	App(int argc, char *argv[]);
 	virtual ~App();
+
+	static App* Instance();
+	QSettings *GetSettings(){ return settings; }
 };
 
 

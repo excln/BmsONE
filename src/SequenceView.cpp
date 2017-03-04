@@ -188,12 +188,52 @@ SequenceView::~SequenceView()
 
 void SequenceView::ReplaceSkin(Skin *newSkin)
 {
+	auto menuView = mainWindow->GetMenuView();
+	for (auto item : skinPropertyMenuItems){
+		delete item;
+	}
+	skinPropertyMenuItems.clear();
 	if (skin){
 		disconnect(skin, SIGNAL(Changed()), this, SLOT(SkinChanged()));
 		delete skin;
 	}
 	skin = newSkin;
 	connect(skin, SIGNAL(Changed()), this, SLOT(SkinChanged()));
+	for (auto p : skin->GetProperties()){
+		switch (p->GetType()){
+		case SkinProperty::PROP_BOOL: {
+			auto prop = p->ToBoolProperty();
+			auto action = new QAction(prop->GetName(), menuView);
+			action->setCheckable(true);
+			action->setChecked(prop->GetBoolValue());
+			menuView->insertAction(mainWindow->GetViewSkinSettingSeparator(), action);
+			connect(action, &QAction::toggled, this, [=](bool val){
+				prop->SetValue(val);
+			});
+			skinPropertyMenuItems.append(action);
+			break;
+		}
+		case SkinProperty::PROP_ENUM: {
+			auto prop = p->ToEnumProperty();
+			auto menu = new QMenu(prop->GetName());
+			auto group = new QActionGroup(prop); // parent is ok?
+			for (int i=0; i<prop->GetDisplayChoices().size(); i++){
+				auto action = menu->addAction(prop->GetDisplayChoices()[i]);
+				action->setCheckable(true);
+				action->setChecked(i == prop->GetIndexValue());
+				group->addAction(action);
+				connect(action, &QAction::triggered, this, [=](){
+					prop->SetValue(i);
+				});
+			}
+			menuView->insertMenu(mainWindow->GetViewSkinSettingSeparator(), menu);
+			skinPropertyMenuItems.append(menu);
+			break;
+		}
+		default:
+			break;
+		}
+	}
 	SkinChanged();
 }
 
@@ -1248,6 +1288,14 @@ bool SequenceView::eventFilter(QObject *sender, QEvent *event)
 		}
 		return false;
 	}
+	case QEvent::ContextMenu:
+	{
+		auto *widget = dynamic_cast<QWidget*>(sender);
+		if (widget == footerPlayingEntry){
+			return contextMenuEventPlayingFooter(dynamic_cast<QContextMenuEvent*>(event));
+		}
+		return false;
+	}
 	default:
 		return false;
 	}
@@ -1321,6 +1369,22 @@ bool SequenceView::paintEventPlayingFooter(QWidget *widget, QPaintEvent *event)
 	return true;
 }
 
+bool SequenceView::contextMenuEventPlayingFooter(QContextMenuEvent *event)
+{
+	if (skinPropertyMenuItems.empty())
+		return true;
+	QMenu menu(this);
+	for (auto item : skinPropertyMenuItems){
+		if (auto m = dynamic_cast<QMenu*>(item)){
+			menu.addMenu(m);
+		}else if (auto action = dynamic_cast<QAction*>(item)){
+			menu.addAction(action);
+		}
+	}
+	menu.exec(event->globalPos());
+	return true;
+}
+
 void SequenceView::ViewModeChanged(ViewMode *mode)
 {
 	viewMode = mode;
@@ -1348,6 +1412,7 @@ void SequenceView::SkinChanged()
 	}
 	setViewportMargins(timeLineWidth + playingWidth, headerHeight, 0, footerHeight);
 	OnViewportResize();
+	playingPane->update();
 }
 
 void SequenceView::SelectSoundChannel(SoundChannelView *cview){

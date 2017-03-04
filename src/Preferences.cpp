@@ -23,6 +23,8 @@ Preferences::Preferences(MainWindow *mainWindow)
 		subLayout->addWidget(language);
 		subLayout->addWidget(new QLabel(tr("(Requires restart)")));
 		bodyLayout->addRow(tr("Language:"), subLayout);
+		QString description = tr("Select a language used in this application. After selecting one, restart BmsONE.");
+		language->setWhatsThis(description);
 	}
 	{
 		outputFormat = new QComboBox();
@@ -33,6 +35,9 @@ Preferences::Preferences(MainWindow *mainWindow)
 		outputFormat->addItem("0.21");
 		//outputFormat->setEditable(true);
 		bodyLayout->addRow(tr("Save Format:"), outputFormat);
+		QString description = tr("<p>Select a version of BMSON format to save files in.</p>"
+								 "<p><b>Default</b> (recommended): the most suitable version for current BmsONE.</p>");
+		outputFormat->setWhatsThis(description);
 	}
 
 	auto buttonsLayout = new QHBoxLayout();

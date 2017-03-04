@@ -73,6 +73,11 @@ App::~App()
 	if (settings) delete settings;
 }
 
+App *App::Instance()
+{
+	return dynamic_cast<App*>(qApp);
+}
+
 bool App::event(QEvent *e)
 {
 	if (e->type() == QEvent::FileOpen){

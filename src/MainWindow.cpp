@@ -253,14 +253,14 @@ MainWindow::MainWindow(QSettings *settings)
 #endif
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditPreferences);
-	auto *menuView = menuBar()->addMenu(tr("View"));
+	menuView = menuBar()->addMenu(tr("View"));
 	auto *menuViewDockBars = menuView->addMenu(tr("Views"));
 	actionViewDockSeparator = menuViewDockBars->addSeparator();
 	auto *menuViewToolBars = menuView->addMenu(tr("Toolbars"));
 	actionViewTbSeparator = menuViewToolBars->addSeparator();
 	menuView->addSeparator();
 	menuViewMode = menuView->addMenu(tr("View Mode"));
-	menuView->addSeparator();
+	actionViewSkinSettingSeparator = menuView->addSeparator();
 	menuView->addAction(actionViewSnapToGrid);
 	auto *menuViewZoom = menuView->addMenu(tr("Zoom"));
 	menuViewZoom->addAction(actionViewZoomIn);
