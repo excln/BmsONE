@@ -55,7 +55,7 @@ SequenceView::SequenceView(MainWindow *parent)
 		timeLineWidth = timeLineMeasureWidth + timeLineBpmWidth;
 		headerHeight = 0;
 		footerHeight = 52;
-		miniMapWidth = 88;
+		masterLaneWidth = 64;
 
 		penBigV = QPen(QBrush(QColor(180, 180, 180)), 1);
 		penBigV.setCosmetic(true);
@@ -98,7 +98,6 @@ SequenceView::SequenceView(MainWindow *parent)
 //	setCornerWidget(grip);
 //#endif
 	setViewport(nullptr);	// creates new viewport widget
-	setViewportMargins(timeLineWidth + playingWidth, headerHeight, 0, footerHeight);
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	viewport()->setAutoFillBackground(true);
 	QPalette palette;
@@ -123,6 +122,9 @@ SequenceView::SequenceView(MainWindow *parent)
 	playingPane->setMouseTracking(true);
 	miniMap = new MiniMapView(this);
 	miniMap->installEventFilter(this);
+	masterLane = new MasterLaneView(this, miniMap);
+	masterLane->installEventFilter(this);
+	footerMasterLane = NewWidget(&SequenceView::paintEventFooterEntity);
 #if 0
 	auto *tb = new QToolBar(headerPlayingEntry);
 	tb->addAction("L");
@@ -168,6 +170,10 @@ SequenceView::SequenceView(MainWindow *parent)
 	connect(EditConfig::Instance(), SIGNAL(CanShowMiniMapChanged(bool)), this, SLOT(ShowMiniMapChanged(bool)));
 	fixMiniMap = EditConfig::GetFixMiniMap();
 	connect(EditConfig::Instance(), SIGNAL(FixMiniMapChanged(bool)), this, SLOT(FixMiniMapChanged(bool)));
+	showMasterLane = EditConfig::CanShowMasterLane();
+	connect(EditConfig::Instance(), SIGNAL(CanShowMasterLaneChanged(bool)), this, SLOT(ShowMasterLaneChanged(bool)));
+	masterLane->setVisible(showMasterLane);
+	footerMasterLane->setVisible(showMasterLane);
 
 	currentChannel = 0;
 	selection = SequenceEditSelection::NO_SELECTION;
@@ -210,7 +216,7 @@ SequenceView::~SequenceView()
 void SequenceView::UpdateViewportMargins()
 {
 	setViewportMargins(
-		timeLineWidth + playingWidth,
+		timeLineWidth + playingWidth + (showMasterLane ? masterLaneWidth : 0),
 		headerHeight,
 		showMiniMap && fixMiniMap ? miniMap->width() : 0,
 		footerHeight);
@@ -327,8 +333,6 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 		playing = false;
 		miniMap->ReplaceDocument(document);
 		cursor->SetNothing();
-		OnViewportResize();
-		UpdateVerticalScrollBar(0.0); // daburi
 	}
 	documentReady = true;
 
@@ -337,6 +341,8 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
+	UpdateVerticalScrollBar(0);
+	OnViewportResize();
 }
 
 void SequenceView::ClearAnySelection()
@@ -897,6 +903,9 @@ void SequenceView::scrollContentsBy(int dx, int dy)
 		}
 		timeLine->scroll(0, dy);
 		playingPane->scroll(0, dy);
+		if (showMasterLane){
+			masterLane->ScrollContents(dy);
+		}
 	}
 	if (dx){
 		viewport()->scroll(dx, 0);
@@ -923,13 +932,18 @@ void SequenceView::OnViewportResize()
 {
 	QRect vr = viewport()->geometry();
 	timeLine->setGeometry(0, headerHeight, timeLineWidth, vr.height());
-	playingPane->setGeometry(timeLineWidth, headerHeight, playingWidth, vr.height());
-	//headerChannelsArea->setGeometry(timeLineWidth + playingWidth, 0, vr.width(), headerHeight);
-	//headerCornerEntry->setGeometry(0, 0, timeLineWidth, headerHeight);
-	//headerPlayingEntry->setGeometry(timeLineWidth, 0, playingWidth, headerHeight);
-	footerChannelsArea->setGeometry(timeLineWidth + playingWidth, vr.bottom()+1, vr.width(), footerHeight);
 	footerCornerEntry->setGeometry(0, vr.bottom()+1, timeLineWidth, footerHeight);
-	footerPlayingEntry->setGeometry(timeLineWidth, vr.bottom()+1, playingWidth, footerHeight);
+	if (showMasterLane){
+		masterLane->setGeometry(timeLineWidth, headerHeight, masterLaneWidth, vr.height());
+		footerMasterLane->setGeometry(timeLineWidth, vr.bottom()+1, masterLaneWidth, footerHeight);
+		playingPane->setGeometry(timeLineWidth + masterLaneWidth, headerHeight, playingWidth, vr.height());
+		footerPlayingEntry->setGeometry(timeLineWidth + masterLaneWidth, vr.bottom()+1, playingWidth, footerHeight);
+		footerChannelsArea->setGeometry(timeLineWidth + masterLaneWidth + playingWidth, vr.bottom()+1, vr.width(), footerHeight);
+	}else{
+		playingPane->setGeometry(timeLineWidth, headerHeight, playingWidth, vr.height());
+		footerPlayingEntry->setGeometry(timeLineWidth, vr.bottom()+1, playingWidth, footerHeight);
+		footerChannelsArea->setGeometry(timeLineWidth + playingWidth, vr.bottom()+1, vr.width(), footerHeight);
+	}
 	miniMap->SetPosition(vr.right()+1, vr.top()-headerHeight, vr.height()+headerHeight+footerHeight);
 	for (int i=0; i<soundChannels.size(); i++){
 		int x = i * 64 - horizontalScrollBar()->value();
@@ -1028,12 +1042,18 @@ void SequenceView::TimeMappingChanged()
 				break;
 			}
 		}
-		this->selectedBpmEvents.clear();
+		selectedBpmEvents.clear();
 		for (auto event : mainWindow->GetBpmEditTool()->GetBpmEvents()){
 			this->selectedBpmEvents.insert(event.location, event);
 		}
 		UpdateSelectionType();
 		timeLine->update();
+		if (showMasterLane){
+			masterLane->update();
+		}
+		if (showMiniMap){
+			miniMap->update();
+		}
 		// update of each channel view is triggered by each channel
 	}
 }
@@ -1248,6 +1268,9 @@ void SequenceView::ZoomIn()
 	UpdateVerticalScrollBar(tOld);
 	timeLine->update();
 	playingPane->update();
+	if (showMasterLane){
+		masterLane->update();
+	}
 	//headerChannelsArea->update();
 	footerChannelsArea->update();
 	for (SoundChannelView *cview : soundChannels){
@@ -1265,6 +1288,9 @@ void SequenceView::ZoomOut()
 	UpdateVerticalScrollBar(tOld);
 	timeLine->update();
 	playingPane->update();
+	if (showMasterLane){
+		masterLane->update();
+	}
 	//headerChannelsArea->update();
 	footerChannelsArea->update();
 	for (SoundChannelView *cview : soundChannels){
@@ -1427,6 +1453,9 @@ void SequenceView::CursorChanged()
 {
 	timeLine->update();
 	playingPane->update();
+	if (showMasterLane){
+		masterLane->update();
+	}
 	for (auto cview : soundChannels){
 		cview->update();
 	}
@@ -1460,6 +1489,15 @@ void SequenceView::FixMiniMapChanged(bool value)
 	if (showMiniMap){
 		miniMap->SetFixed(value);
 	}
+}
+
+void SequenceView::ShowMasterLaneChanged(bool value)
+{
+	showMasterLane = value;
+	masterLane->setVisible(value);
+	footerMasterLane->setVisible(value);
+	UpdateViewportMargins();
+	OnViewportResize();
 }
 
 void SequenceView::ShowLocation(int location)

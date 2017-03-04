@@ -19,10 +19,12 @@ SequenceView::PreviewContext::PreviewContext(SequenceView::Context *parent, Sequ
 	connect(this, SIGNAL(stop()), previewer, SLOT(Stop()), Qt::QueuedConnection);
 	sview->mainWindow->GetAudioPlayer()->Play(previewer);
 	sview->cursor->SetTime(time);
+	sview->playingPane->grabMouse();
 }
 
 SequenceView::PreviewContext::~PreviewContext()
 {
+	sview->playingPane->releaseMouse();
 	emit stop();
 }
 

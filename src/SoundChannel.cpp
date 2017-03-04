@@ -124,6 +124,42 @@ void SoundChannel::OnTimeMappingChanged()
 	UpdateVisibleRegionsInternal();
 }
 
+void SoundChannel::InsertNoteImpl(SoundNote note)
+{
+	MasterCacheAddPreviousNoteInernal(note.location, -1);
+	notes.insert(note.location, note);
+	UpdateCache();
+	UpdateVisibleRegionsInternal();
+	MasterCacheAddPreviousNoteInernal(note.location, 1);
+	MasterCacheAddNoteInternal(note.location, 1);
+	emit NoteInserted(note);
+	document->ChannelLengthChanged(this, totalLength);
+}
+
+void SoundChannel::RemoveNoteImpl(SoundNote note)
+{
+	MasterCacheAddPreviousNoteInernal(note.location, -1);
+	MasterCacheAddNoteInternal(note.location, -1);
+	SoundNote actualNote = notes.take(note.location);
+	UpdateCache();
+	UpdateVisibleRegionsInternal();
+	MasterCacheAddPreviousNoteInernal(note.location, 1);
+	emit NoteRemoved(actualNote);
+	document->ChannelLengthChanged(this, totalLength);
+}
+
+void SoundChannel::UpdateNoteImpl(SoundNote note)
+{
+	MasterCacheAddPreviousNoteInernal(note.location, -1);
+	MasterCacheAddNoteInternal(note.location, -1);
+	notes[note.location] = note;
+	UpdateCache();
+	UpdateVisibleRegionsInternal();
+	MasterCacheAddPreviousNoteInernal(note.location, 1);
+	MasterCacheAddNoteInternal(note.location, 1);
+	emit NoteChanged(note.location, note);
+	document->ChannelLengthChanged(this, totalLength);
+}
 
 EditAction *SoundChannel::InsertNoteInternal(SoundNote note)
 {
@@ -143,28 +179,16 @@ EditAction *SoundChannel::InsertNoteInternal(SoundNote note)
 	if (notes.contains(note.location)){
 		// move
 		auto setter = [this](SoundNote note){
-			notes[note.location] = note;
-			UpdateCache();
-			UpdateVisibleRegionsInternal();
-			emit NoteChanged(note.location, note);
-			document->ChannelLengthChanged(this, totalLength);
+			UpdateNoteImpl(note);
 		};
 		return new EditValueAction<SoundNote>(setter, notes[note.location], note, tr("modify sound note"), true, shower);
 	}else{
 		// new
 		auto adder = [this](SoundNote note){
-			notes.insert(note.location, note);
-			UpdateCache();
-			UpdateVisibleRegionsInternal();
-			emit NoteInserted(note);
-			document->ChannelLengthChanged(this, totalLength);
+			InsertNoteImpl(note);
 		};
 		auto remover = [this](SoundNote note){
-			SoundNote actualNote = notes.take(note.location);
-			UpdateCache();
-			UpdateVisibleRegionsInternal();
-			emit NoteRemoved(actualNote);
-			document->ChannelLengthChanged(this, totalLength);
+			RemoveNoteImpl(note);
 		};
 		return new AddValueAction<SoundNote>(adder, remover, note, tr("add sound note"), true, shower);
 	}
@@ -178,18 +202,10 @@ EditAction *SoundChannel::RemoveNoteInternal(SoundNote note)
 		emit ShowNoteLocation(note.location);
 	};
 	auto adder = [this](SoundNote note){
-		notes.insert(note.location, note);
-		UpdateCache();
-		UpdateVisibleRegionsInternal();
-		emit NoteInserted(note);
-		document->ChannelLengthChanged(this, totalLength);
+		InsertNoteImpl(note);
 	};
 	auto remover = [this](SoundNote note){
-		SoundNote actualNote = notes.take(note.location);
-		UpdateCache();
-		UpdateVisibleRegionsInternal();
-		emit NoteRemoved(actualNote);
-		document->ChannelLengthChanged(this, totalLength);
+		RemoveNoteImpl(note);
 	};
 	return new RemoveValueAction<SoundNote>(adder, remover, note, tr("remove sound note"), true, shower);
 }
@@ -374,7 +390,7 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 	while (drawer(Rms()));
 }
 
-void SoundChannel::AddAllIntoMasterCache(MasterCache *master)
+void SoundChannel::AddAllIntoMasterCache()
 {
 	QMutexLocker lock(&cacheMutex);
 	for (auto note : notes){
@@ -387,9 +403,46 @@ void SoundChannel::AddAllIntoMasterCache(MasterCache *master)
 		}
 		while (++icache != cache.end()){
 			if (icache->currentSamplePosition != icache->prevSamplePosition){
-				master->AddSound(document->GetAbsoluteTime(note.location) * MasterCache::SampleRate, this, icache->prevSamplePosition);
+				document->GetMaster()->AddSound(document->GetAbsoluteTime(note.location) * MasterCache::SampleRate, this, icache->prevSamplePosition);
 				break;
 			}
+		}
+	}
+}
+
+void SoundChannel::MasterCacheAddPreviousNoteInernal(int location, int v)
+{
+	// check if there exists the previous note cut by the note[location].
+	{
+		QMap<int, CacheEntry>::const_iterator icache = cache.lowerBound(location);
+		if (icache == cache.end() || icache->prevSamplePosition < 0)
+			return; // no previous note cut by the note[location].
+	}
+	auto inote = notes.lowerBound(location);
+	//if (inote == notes.begin())
+	//	return; // cannot happen
+	do{
+		inote--;
+	}while(inote != notes.begin() && inote->noteType != 0);
+	//if (inote->noteType != 0)
+	//	return; // cannot happen
+	MasterCacheAddNoteInternal(inote.key(), v);
+}
+
+void SoundChannel::MasterCacheAddNoteInternal(int location, int v)
+{
+	auto note = notes[location];
+	if (note.noteType != 0)
+		return;
+	QMap<int, CacheEntry>::const_iterator icache = cache.find(location);
+	if (icache == cache.end()){
+		//qDebug() << "Cache entry not found!" << note.location;
+		return;
+	}
+	while (++icache != cache.end()){
+		if (icache->currentSamplePosition != icache->prevSamplePosition){
+			document->GetMaster()->AddSound(document->GetAbsoluteTime(location) * MasterCache::SampleRate, v, this, icache->prevSamplePosition);
+			return;
 		}
 	}
 }

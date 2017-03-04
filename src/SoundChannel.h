@@ -78,6 +78,11 @@ private:
 	void UpdateVisibleRegionsInternal();
 	EditAction *InsertNoteInternal(SoundNote note);
 	EditAction *RemoveNoteInternal(SoundNote note);
+	void InsertNoteImpl(SoundNote note);
+	void RemoveNoteImpl(SoundNote note);
+	void UpdateNoteImpl(SoundNote note);
+	void MasterCacheAddPreviousNoteInernal(int location, int v);
+	void MasterCacheAddNoteInternal(int location, int v);
 
 private slots:
 	//void OnWaveSummaryReady(const WaveSummary *summary);
@@ -110,7 +115,7 @@ public:
 	void UpdateVisibleRegions(const QList<QPair<int, int>> &visibleRegionsTime);
 	void DrawRmsGraph(double location, double resolution, std::function<bool(Rms)> drawer) const;
 
-	void AddAllIntoMasterCache(MasterCache *master);
+	void AddAllIntoMasterCache();
 
 signals:
 	void NoteInserted(SoundNote note);

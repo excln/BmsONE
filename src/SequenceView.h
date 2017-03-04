@@ -20,7 +20,7 @@ class SoundChannelFooter;
 class SoundChannelView;
 class SequenceViewCursor;
 class MiniMapView;
-
+class MasterLaneView;
 
 
 class SequenceView : public QAbstractScrollArea
@@ -28,6 +28,7 @@ class SequenceView : public QAbstractScrollArea
 	Q_OBJECT
 
 	friend class MiniMapView;
+	friend class MasterLaneView;
 	friend class SequenceViewCursor;
 	friend class SoundChannelView;
 	friend class SoundChannelHeader;
@@ -96,6 +97,8 @@ private:
 	QWidget *timeLine;
 	QWidget *playingPane;
 	MiniMapView *miniMap;
+	MasterLaneView *masterLane;
+	QWidget *footerMasterLane;
 
 	QMap<QWidget*, bool(SequenceView::*)(QWidget*,QPaintEvent*)> paintEventDispatchTable;
 	QMap<QWidget*, bool(SequenceView::*)(QWidget*,QEvent*)> enterEventDispatchTable;
@@ -114,7 +117,7 @@ private:
 	int timeLineBpmWidth;
 	int headerHeight;
 	int footerHeight;
-	int miniMapWidth;
+	int masterLaneWidth;
 	QPen penBigV;
 	QPen penV;
 	QPen penBar;
@@ -147,6 +150,7 @@ private:
 	GridSize fineGrid;
 	bool snapToGrid;
 	bool snappedHitTestInEditMode;
+	bool showMasterLane;
 	bool showMiniMap;
 	bool fixMiniMap;
 
@@ -258,6 +262,7 @@ private slots:
 	void ShowPlayingPaneContextMenu(QPoint globalPos);
 	void ShowMiniMapChanged(bool value);
 	void FixMiniMapChanged(bool value);
+	void ShowMasterLaneChanged(bool value);
 
 public slots:
 	void ShowLocation(int location);

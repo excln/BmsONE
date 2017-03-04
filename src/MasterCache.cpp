@@ -147,13 +147,16 @@ MasterCacheWorker::MasterCacheWorker(MasterCache *master, int time, int v, Sound
 	if (!native)
 		return;
 	wave = new S16S44100StreamTransformer(native, this);
-	auto task = QtConcurrent::run([=](){
+	task = QtConcurrent::run([=](){
 		AddSoundTask(time, v, int(double(frames) * MasterCache::SampleRate / channel->GetWaveSummary().Format.sampleRate()));
 	});
 }
 
 MasterCacheWorker::~MasterCacheWorker()
 {
+	if (task.isRunning()){
+		task.waitForFinished();
+	}
 }
 
 void MasterCacheWorker::Cancel()
@@ -218,3 +221,59 @@ void MasterCacheWorker::AddSoundTask(int time, int v, int frames)
 	}
 	master->WorkerComplete(this);
 }
+
+
+
+
+
+MasterPlayer::MasterPlayer(MasterCache *master, int position, QObject *parent)
+	: AudioPlaySource(parent)
+	, master(master)
+	, position(position)
+{
+}
+
+MasterPlayer::~MasterPlayer()
+{
+}
+
+void MasterPlayer::AudioPlayRelease()
+{
+	emit Stopped();
+}
+
+int MasterPlayer::AudioPlayRead(AudioPlaySource::SampleType *buffer, int bufferSampleCount)
+{
+	int i=0;
+	emit Progress(position);
+	QMutexLocker locker(&master->dataMutex);
+	for (; i<bufferSampleCount && position < master->data.size(); i++,position++){
+		QAudioBuffer::S32F data = position < 0 || position >= master->data.size()
+				? QAudioBuffer::StereoFrame<float>(0, 0)
+				: master->data[position];
+		buffer[i].left = short(saturate(0.95f, data.left) * 32767.0f);
+		buffer[i].right = short(saturate(0.95f, data.right) * 32767.0f);
+	}
+	return i;
+}
+
+float MasterPlayer::saturate(float t, float x)
+{
+	if (std::fabsf(x) < t){
+		return x;
+	}
+	return x > 0.f
+		? t + (1.f-t)*sigmoid((x-t)/((1.f-t)*1.5f))
+		: -(t + (1.f-t)*sigmoid((-x-t)/((1.f-t)*1.5f)));
+}
+
+float MasterPlayer::sigmoid(float x)
+{
+	return std::fabsf(x) < 1.f
+		? x*(1.5f - 0.5f*x*x)
+		: (x > 0.f
+		   ? 1.f
+		   : -1.f);
+}
+
+

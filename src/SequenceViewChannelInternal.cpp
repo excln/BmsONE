@@ -357,10 +357,12 @@ SoundChannelView::PreviewContext::PreviewContext(
 	connect(this, SIGNAL(stop()), previewer, SLOT(Stop()), Qt::QueuedConnection);
 	sview->mainWindow->GetAudioPlayer()->Play(previewer);
 	sview->cursor->SetTime(time);
+	cview->grabMouse();
 }
 
 SoundChannelView::PreviewContext::~PreviewContext()
 {
+	cview->releaseMouse();
 	emit stop();
 }
 

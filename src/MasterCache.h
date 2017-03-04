@@ -8,6 +8,7 @@
 
 class Document;
 class SoundChannel;
+class MasterCache;
 
 
 class MasterCacheWorker : public QObject
@@ -18,6 +19,7 @@ private:
 	MasterCache *master;
 	AudioStreamSource *native;
 	S16S44100StreamTransformer *wave;
+	QFuture<void> task;
 	bool cancel;
 	mutable QMutex workerMutex;
 
@@ -31,11 +33,36 @@ public:
 };
 
 
+class MasterPlayer : public AudioPlaySource
+{
+	Q_OBJECT
+
+private:
+	MasterCache *master;
+	int position;
+
+	static float saturate(float t, float x);
+	static float sigmoid(float x);
+
+signals:
+	void Progress(int position);
+	void Stopped();
+
+public:
+	MasterPlayer(MasterCache *master, int position, QObject *parent=nullptr);
+	virtual ~MasterPlayer();
+
+	virtual void AudioPlayRelease();
+	virtual int AudioPlayRead(SampleType *buffer, int bufferSampleCount);
+};
+
+
 class MasterCache : public QObject
 {
 	Q_OBJECT
 
 	friend class MasterCacheWorker;
+	friend class MasterPlayer;
 
 public:
 	static const int SampleRate = 44100;

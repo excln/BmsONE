@@ -334,7 +334,7 @@ bool SequenceView::mouseEventTimeLine(QWidget *timeLine, QMouseEvent *event)
 
 bool SequenceView::paintEventTimeLine(QWidget *timeLine, QPaintEvent *event)
 {
-	static const int mx = 4, my = 4;
+	static const int my = 4;
 	QPainter painter(timeLine);
 	QRect rect = event->rect();
 

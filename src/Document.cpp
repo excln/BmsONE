@@ -31,6 +31,7 @@ Document::Document(QObject *parent)
 	master = new MasterCache(this);
 	outputVersion = BmsonIO::NativeVersion;
 	savedVersion = BmsonIO::NativeVersion;
+	connect(this, SIGNAL(TimeMappingChanged()), this, SLOT(ReconstructMasterCache()), Qt::QueuedConnection);
 	connect(&info, SIGNAL(InitBpmChanged(double)), this, SLOT(OnInitBpmChanged()));
 
 	masterEnabled = EditConfig::GetEnableMasterChannel();
@@ -200,6 +201,23 @@ double Document::GetAbsoluteTime(int ticks) const
 		bpm = i->value;
 	}
 	return seconds + (ticks - tt) * 60.0 / (bpm * DocumentInfo::DefaultResolution);
+}
+
+int Document::FromAbsoluteTime(double destSeconds) const
+{
+	int tt = 0;
+	double seconds = 0;
+	double bpm = info.GetInitBpm();
+	for (QMap<int, BpmEvent>::const_iterator i=bpmEvents.begin(); i!=bpmEvents.end(); i++){
+		double next_seconds = seconds + (i.key() - tt) * 60.0 / (bpm * DocumentInfo::DefaultResolution);
+		if (next_seconds >= destSeconds){
+			break;
+		}
+		tt = i.key();
+		bpm = i->value;
+		seconds = next_seconds;
+	}
+	return tt + (destSeconds - seconds) * (bpm * DocumentInfo::DefaultResolution) / 60.0;
 }
 
 int Document::GetTotalLength() const
@@ -566,7 +584,7 @@ void Document::ReconstructMasterCache()
 		return;
 	master->ClearAll();
 	for (auto channel : soundChannels){
-		channel->AddAllIntoMasterCache(master);
+		channel->AddAllIntoMasterCache();
 	}
 }
 

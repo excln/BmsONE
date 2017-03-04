@@ -169,6 +169,7 @@ public:
 	const QMap<int, BpmEvent> &GetBpmEvents() const{ return bpmEvents; }
 	const QList<SoundChannel*> &GetSoundChannels() const{ return soundChannels; }
 	double GetAbsoluteTime(int ticks) const;
+	int FromAbsoluteTime(double destSeconds) const;
 	int GetTotalLength() const;
 	int GetTotalVisibleLength() const;
 	QList<QPair<int, int>> FindConflictingNotes(SoundNote note) const; // returns [Channel,Location]
@@ -194,6 +195,7 @@ public:
 
 	DocumentUpdateSoundNotesContext *BeginModalEditSoundNotes(const QMap<SoundChannel *, QSet<int> > &noteLocations);
 
+public slots:
 	void ReconstructMasterCache();
 
 signals:

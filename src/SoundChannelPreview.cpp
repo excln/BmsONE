@@ -237,11 +237,11 @@ void SoundChannelPreviewer::Stop()
 
 int SoundChannelPreviewer::AudioPlayRead(AudioPlaySource::SampleType *buffer, int bufferSampleCount)
 {
+	emit Progress(currentTicks);
 	QMutexLocker locker(&mutex);
 	if (!wave){
 		return 0;
 	}
-	emit Progress(currentTicks);
 	int samples = bufferSampleCount;
 	double nextExpectedTicks = currentTicks + (samples/SamplesPerSec)*currentBpm*TicksPerBeat/60.0;
 	//qDebug() << "reading" << bufferSampleCount << "samples...";
