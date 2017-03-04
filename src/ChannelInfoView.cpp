@@ -199,24 +199,18 @@ void ChannelInfoView::WaveSummaryUpdated()
 {
 	if (!channel)
 		return;
-	const WaveSummary *summary = channel->GetWaveSummary();
-	if (summary){
-		if (summary->FrameCount > 0){
-			labelFormat->setText(QString("%1bit/%2ch/%3")
-								 .arg(summary->Format.sampleSize())
-								 .arg(summary->Format.channelCount())
-								 .arg(TextForSamplingRate(summary->Format.sampleRate())));
-			qreal sec = (qreal)summary->FrameCount / summary->Format.sampleRate();
-			labelLength->setText(QString("%1 sec").arg(sec));
-		}else{
-			// empty
-			labelFormat->setText(QString());
-			labelLength->setText(QString());
-		}
+	WaveSummary summary = channel->GetWaveSummary();
+	if (summary.FrameCount > 0){
+		labelFormat->setText(QString("%1bit/%2ch/%3")
+							 .arg(summary.Format.sampleSize())
+							 .arg(summary.Format.channelCount())
+							 .arg(TextForSamplingRate(summary.Format.sampleRate())));
+		qreal sec = (qreal)summary.FrameCount / summary.Format.sampleRate();
+		labelLength->setText(QString("%1 sec").arg(sec));
 	}else{
-		// loading
-		labelFormat->setText(QString(tr("Loading...")));
-		labelLength->setText(QString(tr("Loading...")));
+		// empty
+		labelFormat->setText(QString());
+		labelLength->setText(QString());
 	}
 }
 

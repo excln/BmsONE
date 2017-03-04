@@ -7,6 +7,7 @@
 #include "SoundChannelDef.h"
 
 class Document;
+class MasterCache;
 class DocumentInfo;
 class SoundChannelResourceManager;
 class EditAction;
@@ -41,6 +42,7 @@ class SoundChannel : public QObject, public BmsonObject
 	friend class SoundChannelNotePreviewer;
 	friend class SoundChannelPreviewer;
 	friend class Document;
+	friend class MasterCache;
 
 private:
 	struct CacheEntry{
@@ -60,7 +62,7 @@ private:
 	QMap<int, SoundNote> notes; // indexed by location
 
 	// utility
-	WaveSummary *waveSummary;
+	WaveSummary waveSummary;
 	QImage overallWaveform;
 	mutable QMutex cacheMutex;
 	QMap<int, CacheEntry> cache;
@@ -78,7 +80,7 @@ private:
 	EditAction *RemoveNoteInternal(SoundNote note);
 
 private slots:
-	void OnWaveSummaryReady(const WaveSummary *summary);
+	//void OnWaveSummaryReady(const WaveSummary *summary);
 	void OnOverallWaveformReady();
 	void OnRmsCacheUpdated();
 	void OnRmsCachePacketReady(int position, QList<RmsCacheEntry> packet);
@@ -103,10 +105,12 @@ public:
 	const QMap<int, SoundNote> &GetNotes() const{ return notes; }
 	int GetLength() const;
 
-	const WaveSummary *GetWaveSummary() const{ return waveSummary; }
+	WaveSummary GetWaveSummary() const{ return waveSummary; }
 	const QImage &GetOverallWaveform() const{ return overallWaveform; } // .isNull()==true means uninitialized
 	void UpdateVisibleRegions(const QList<QPair<int, int>> &visibleRegionsTime);
 	void DrawRmsGraph(double location, double resolution, std::function<bool(Rms)> drawer) const;
+
+	void AddAllIntoMasterCache(MasterCache *master);
 
 signals:
 	void NoteInserted(SoundNote note);

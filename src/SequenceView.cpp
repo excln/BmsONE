@@ -3,6 +3,7 @@
 #include "SequenceViewContexts.h"
 #include "MainWindow.h"
 #include "BpmEditTool.h"
+#include "MasterView.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -13,6 +14,7 @@ const char* SequenceView::SettingsSnapToGridKey = "SnapToGrid";
 const char* SequenceView::SettingsSnappedHitTestInEditMode = "SnappedHitTestInEditMode";
 const char* SequenceView::SettingsCoarseGridKey = "CoarseGrid";
 const char* SequenceView::SettingsFineGridKey = "FineGrid";
+const char* SequenceView::SettingsShowMiniMapKey = "ShowMiniMap";
 
 
 QWidget *SequenceView::NewWidget(
@@ -22,6 +24,7 @@ QWidget *SequenceView::NewWidget(
 {
 	QWidget *widget = new QWidget(this);
 	widget->installEventFilter(this);
+	widget->setMouseTracking(true);
 	if (paintEventHandler)
 		paintEventDispatchTable.insert(widget, paintEventHandler);
 	if (mouseEventHandler)
@@ -34,6 +37,7 @@ QWidget *SequenceView::NewWidget(
 SequenceView::SequenceView(MainWindow *parent)
 	: QAbstractScrollArea(parent)
 	, mainWindow(parent)
+	, miniMap(nullptr)
 	, document(nullptr)
 	, documentReady(false)
 	, cursor(new SequenceViewCursor(this))
@@ -51,6 +55,7 @@ SequenceView::SequenceView(MainWindow *parent)
 		timeLineWidth = timeLineMeasureWidth + timeLineBpmWidth;
 		headerHeight = 0;
 		footerHeight = 52;
+		miniMapWidth = 88;
 
 		penBigV = QPen(QBrush(QColor(180, 180, 180)), 1);
 		penBigV.setCosmetic(true);
@@ -80,6 +85,8 @@ SequenceView::SequenceView(MainWindow *parent)
 		}
 	}
 
+	setMouseTracking(true);
+	installEventFilter(this);
 	setAttribute(Qt::WA_OpaquePaintEvent);
 	setAcceptDrops(true);
 	setFrameShape(QFrame::NoFrame);
@@ -97,6 +104,12 @@ SequenceView::SequenceView(MainWindow *parent)
 	QPalette palette;
 	palette.setBrush(QPalette::Background, QColor(102, 102, 102));
 	viewport()->setPalette(palette);
+	viewport()->installEventFilter(this);
+	viewport()->setMouseTracking(true);
+	verticalScrollBar()->installEventFilter(this);
+	verticalScrollBar()->setMouseTracking(true);
+	horizontalScrollBar()->installEventFilter(this);
+	horizontalScrollBar()->setMouseTracking(true);
 	grabGesture(Qt::PinchGesture);
 	timeLine = NewWidget(&SequenceView::paintEventTimeLine, &SequenceView::mouseEventTimeLine, &SequenceView::enterEventTimeLine);
 	playingPane = NewWidget(&SequenceView::paintEventPlayingPane, &SequenceView::mouseEventPlayingPane, &SequenceView::enterEventPlayingPane);
@@ -108,6 +121,8 @@ SequenceView::SequenceView(MainWindow *parent)
 	footerPlayingEntry = NewWidget(&SequenceView::paintEventPlayingFooter);
 	timeLine->setMouseTracking(true);
 	playingPane->setMouseTracking(true);
+	miniMap = new MiniMapView(this);
+	miniMap->installEventFilter(this);
 #if 0
 	auto *tb = new QToolBar(headerPlayingEntry);
 	tb->addAction("L");
@@ -146,6 +161,8 @@ SequenceView::SequenceView(MainWindow *parent)
 		snapToGrid = settings->value(SettingsSnapToGridKey, true).toBool();
 		snappedHitTestInEditMode = settings->value(SettingsSnappedHitTestInEditMode, true).toBool();
 		zoomY = settings->value(SettingsZoomYKey, 48./240.).toDouble();
+
+		showMiniMap = settings->value(SettingsShowMiniMapKey, true).toBool();
 	}
 	settings->endGroup();
 
@@ -265,6 +282,8 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 		for (auto *channel : document->GetSoundChannels()){
 			auto cview = new SoundChannelView(this, channel);
 			cview->setParent(viewport());
+			cview->installEventFilter(this);
+			cview->setMouseTracking(true);
 			cview->setVisible(true);
 			cview->SetMode(editMode);
 			soundChannels.push_back(cview);
@@ -275,6 +294,8 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 			auto *footer = new SoundChannelFooter(this, cview);
 			footer->setParent(footerChannelsArea);
 			footer->setVisible(true);
+			footer->installEventFilter(this);
+			footer->setMouseTracking(true);
 			soundChannelFooters.push_back(footer);
 			ichannel++;
 		}
@@ -291,6 +312,7 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 		viewLength = document->GetTotalVisibleLength();
 		currentChannel = -1;
 		playing = false;
+		miniMap->ReplaceDocument(document);
 		cursor->SetNothing();
 		OnViewportResize();
 		UpdateVerticalScrollBar(0.0); // daburi
@@ -868,6 +890,9 @@ void SequenceView::scrollContentsBy(int dx, int dy)
 		//headerChannelsArea->scroll(dx, 0);
 		footerChannelsArea->scroll(dx, 0);
 	}
+	if (miniMap->IsPresent()){
+		miniMap->update();
+	}
 	VisibleRangeChanged();
 }
 
@@ -892,6 +917,7 @@ void SequenceView::OnViewportResize()
 	footerChannelsArea->setGeometry(timeLineWidth + playingWidth, vr.bottom()+1, vr.width(), footerHeight);
 	footerCornerEntry->setGeometry(0, vr.bottom()+1, timeLineWidth, footerHeight);
 	footerPlayingEntry->setGeometry(timeLineWidth, vr.bottom()+1, playingWidth, footerHeight);
+	miniMap->SetPosition(vr.right()+1, vr.top()-headerHeight, vr.height()+headerHeight+footerHeight);
 	for (int i=0; i<soundChannels.size(); i++){
 		int x = i * 64 - horizontalScrollBar()->value();
 		soundChannels[i]->setGeometry(x, 0, 64, vr.height());
@@ -915,6 +941,8 @@ void SequenceView::SoundChannelInserted(int index, SoundChannel *channel)
 	auto cview = new SoundChannelView(this, channel);
 	cview->setParent(viewport());
 	cview->setVisible(true);
+	cview->installEventFilter(this);
+	cview->setMouseTracking(true);
 	cview->SetMode(editMode);
 	soundChannels.insert(index, cview);
 	//auto *header = new SoundChannelHeader(this, cview);
@@ -924,6 +952,8 @@ void SequenceView::SoundChannelInserted(int index, SoundChannel *channel)
 	auto *footer = new SoundChannelFooter(this, cview);
 	footer->setParent(footerChannelsArea);
 	footer->setVisible(true);
+	footer->installEventFilter(this);
+	footer->setMouseTracking(true);
 	soundChannelFooters.insert(index, footer);
 	OnViewportResize();
 }
@@ -1269,8 +1299,59 @@ bool SequenceView::eventFilter(QObject *sender, QEvent *event)
 		return false;
 	}
 	case QEvent::MouseMove:
-	case QEvent::MouseButtonPress:
+	{
+		// Used for popping in/out of mini map (don't consume it)
+		if (showMiniMap){
+			auto widget = dynamic_cast<QWidget*>(sender);
+			auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
+			auto pt = widget->mapTo(this, mouseEvent->pos());
+			auto rectGeom = viewport()->geometry();
+			QRect hitRect(rectGeom.right()-10, 0, rectGeom.right()+10, height());
+			bool captured = hitRect.contains(pt);
+			if (miniMap->IsPresent()){
+				QWidget *wo = qApp->widgetAt(mapToGlobal(pt));
+				if (!captured && wo != miniMap && wo != verticalScrollBar() && widget != miniMap && widget != verticalScrollBar()){
+					miniMap->PopOut();
+				}
+			}else{
+				if (captured){
+					miniMap->PopIn();
+				}
+			}
+		}
+		auto *widget = dynamic_cast<QWidget*>(sender);
+		if (mouseEventDispatchTable.contains(widget)){
+			return (this->*mouseEventDispatchTable[widget])(widget, dynamic_cast<QMouseEvent*>(event));
+		}
+		return false;
+	}
 	case QEvent::MouseButtonRelease:
+	{
+		if (miniMap->IsPresent()){
+			auto ptGlobal = QCursor::pos();
+			auto pt = mapFromGlobal(ptGlobal);
+			auto rectGeom = viewport()->geometry();
+			QRect hitRect(rectGeom.right()-10, 0, rectGeom.right()+10, height());
+			bool captured = hitRect.contains(pt);
+			QWidget *wo = qApp->widgetAt(ptGlobal);
+			if (!captured && wo != miniMap && wo != verticalScrollBar()){
+				miniMap->PopOut();
+			}
+		}
+		auto *widget = dynamic_cast<QWidget*>(sender);
+		if (mouseEventDispatchTable.contains(widget)){
+			return (this->*mouseEventDispatchTable[widget])(widget, dynamic_cast<QMouseEvent*>(event));
+		}
+		return false;
+	}
+	case QEvent::MouseButtonPress:
+	{
+		auto *widget = dynamic_cast<QWidget*>(sender);
+		if (mouseEventDispatchTable.contains(widget)){
+			return (this->*mouseEventDispatchTable[widget])(widget, dynamic_cast<QMouseEvent*>(event));
+		}
+		return false;
+	}
 	case QEvent::MouseButtonDblClick:
 	{
 		auto *widget = dynamic_cast<QWidget*>(sender);
@@ -1280,11 +1361,24 @@ bool SequenceView::eventFilter(QObject *sender, QEvent *event)
 		return false;
 	}
 	case QEvent::Enter:
-	case QEvent::Leave:
 	{
 		auto *widget = dynamic_cast<QWidget*>(sender);
 		if (enterEventDispatchTable.contains(widget)){
-			return (this->*enterEventDispatchTable[widget])(widget, dynamic_cast<QEvent*>(event));
+			return (this->*enterEventDispatchTable[widget])(widget, event);
+		}
+		return false;
+	}
+	case QEvent::Leave:
+	{
+		auto *widget = dynamic_cast<QWidget*>(sender);
+		if (miniMap->IsPresent()){
+			QWidget *wo = qApp->widgetAt(QCursor::pos());
+			if (wo == nullptr || !isAncestorOf(wo)){
+				miniMap->PopOut();
+			}
+		}
+		if (enterEventDispatchTable.contains(widget)){
+			return (this->*enterEventDispatchTable[widget])(widget, event);
 		}
 		return false;
 	}

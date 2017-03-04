@@ -2,6 +2,7 @@
 #define DOCUMENTDEF_H
 
 #include <QtCore>
+#include <QtMultimedia>
 
 class BmsConsts
 {
@@ -34,6 +35,7 @@ struct WaveSummary
 
 	WaveSummary() : FrameCount(0){}
 	WaveSummary(const QAudioFormat &format, qint64 frameCount) : Format(format), FrameCount(frameCount){}
+	bool IsValid() const{ return FrameCount > 0; }
 };
 
 

@@ -3,6 +3,7 @@
 #include "SoundChannel.h"
 #include "History.h"
 #include "HistoryUtil.h"
+#include "MasterCache.h"
 #include <QFile>
 #include "Bmson.h"
 
@@ -23,9 +24,10 @@ double BmsConsts::ClampBpm(double value)
 
 Document::Document(QObject *parent)
 	: QObject(parent)
-	, history(new EditHistory(this))
 	, info(this)
 {
+	history = new EditHistory(this);
+	master = new MasterCache(this);
 	outputVersion = BmsonIO::NativeVersion;
 	savedVersion = BmsonIO::NativeVersion;
 	connect(&info, SIGNAL(InitBpmChanged(double)), this, SLOT(OnInitBpmChanged()));
@@ -45,6 +47,7 @@ void Document::Initialize()
 	info.Initialize();
 	barLines.insert(0, BarLine(0, 0));
 	UpdateTotalLength();
+	ReconstructMasterCache();
 
 	savedVersion = BmsonIO::NativeVersion;
 	history->SetReservedAction(false); // in spite of outputVersion
@@ -95,6 +98,7 @@ void Document::LoadFile(QString filePath)
 		soundChannels.push_back(channel);
 	}
 	UpdateTotalLength();
+	ReconstructMasterCache();
 	this->filePath = filePath;
 
 	// conversion is not revertible by Undo.
@@ -179,6 +183,19 @@ void Document::SetOutputVersion(BmsonIO::BmsonVersion version)
 	outputVersion = version;
 	// if untitled, savedVersion is ignored and reserved action is disabled.
 	history->SetReservedAction(!directory.isRoot() && version != savedVersion);
+}
+
+double Document::GetAbsoluteTime(int ticks) const
+{
+	int tt=0;
+	double seconds = 0;
+	double bpm = info.GetInitBpm();
+	for (QMap<int, BpmEvent>::const_iterator i=bpmEvents.begin(); i!=bpmEvents.end() && i.key() < ticks; i++){
+		seconds += (i.key() - tt) * 60.0 / (bpm * DocumentInfo::DefaultResolution);
+		tt = i.key();
+		bpm = i->value;
+	}
+	return seconds + (ticks - tt) * 60.0 / (bpm * DocumentInfo::DefaultResolution);
 }
 
 int Document::GetTotalLength() const
@@ -529,6 +546,14 @@ void Document::MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel *, Soun
 Document::DocumentUpdateSoundNotesContext *Document::BeginModalEditSoundNotes(const QMap<SoundChannel*, QSet<int>> &noteLocations)
 {
 	return new DocumentUpdateSoundNotesContext(this, noteLocations);
+}
+
+void Document::ReconstructMasterCache()
+{
+	master->ClearAll();
+	for (auto channel : soundChannels){
+		channel->AddAllIntoMasterCache(master);
+	}
 }
 
 Document::DocumentUpdateSoundNotesContext::DocumentUpdateSoundNotesContext(Document *document, QMap<SoundChannel *, QSet<int> > noteLocations)

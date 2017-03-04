@@ -46,16 +46,7 @@ QString SequenceViewCursor::CompositeLocationString(int t) const
 
 QString SequenceViewCursor::RealTimeString(int t) const
 {
-	int tt=0;
-	double seconds = 0;
-	const QMap<int, BpmEvent> bpmEvents = sview->document->GetBpmEvents();
-	double bpm = sview->document->GetInfo()->GetInitBpm();
-	for (QMap<int, BpmEvent>::const_iterator i=bpmEvents.begin(); i!=bpmEvents.end() && i.key() < t; i++){
-		seconds += (i.key() - tt) * 60.0 / (bpm * sview->resolution);
-		tt = i.key();
-		bpm = i->value;
-	}
-	seconds += (t - tt) * 60.0 / (bpm * sview->resolution);
+	double seconds = sview->document->GetAbsoluteTime(t);
 	int min = seconds / 60.0;
 	double sec = seconds - (min * 60.0);
 	return QString("%0:%1")

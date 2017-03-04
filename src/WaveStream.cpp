@@ -270,8 +270,9 @@ void OggStreamSource::SeekAbsolute(quint64 absoluteFrames)
 
 
 
-S16S44100StreamTransformer::S16S44100StreamTransformer(AudioStreamSource *src)
-	: src(src)
+S16S44100StreamTransformer::S16S44100StreamTransformer(AudioStreamSource *src, QObject *parent)
+	: AudioStreamSource(parent)
+	, src(src)
 	, inputBuffer(new char[InputBufferSize])
 {
 	src->setParent(this);

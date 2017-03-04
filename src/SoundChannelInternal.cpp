@@ -307,6 +307,22 @@ void SoundChannelResourceManager::UpdateWaveData(const QString &srcPath)
 	rmsCachePackets.clear();
 	file = QFileInfo(srcPath);
 	wave = SoundChannelUtil::OpenSourceFile(srcPath, this);
+
+	// Load Wave Summary
+	if (!wave){
+		qDebug() << "No Such Audio File (or Unknown File Type): " << file.path();
+		summary = WaveSummary();
+		return;
+	}
+	int error = wave->Open();
+	if (error != 0){
+		qDebug() << "Audio File Error: " << error;
+		summary = WaveSummary();
+		return;
+	}
+	summary.Format = wave->GetFormat();
+	summary.FrameCount = wave->GetFrameCount();
+
 	currentTask = QtConcurrent::run([this](){
 		RunTaskWaveData();
 	});
@@ -327,12 +343,6 @@ void SoundChannelResourceManager::RequireRmsCachePacket(int position)
 
 void SoundChannelResourceManager::RunTaskWaveData()
 {
-	if (!TaskLoadWaveSummary()){
-		emit WaveSummaryReady(&summary);
-		return;
-	}
-	emit WaveSummaryReady(&summary);
-
 	TaskDrawOverallWaveformAndRmsCache();
 	emit OverallWaveformReady();
 	emit RmsCacheUpdated();
@@ -347,24 +357,6 @@ void SoundChannelResourceManager::RunTaskRmsCachePacket(int position)
 		return;
 	}
 	emit RmsCachePacketReady(position, i->Uncompress());
-}
-
-bool SoundChannelResourceManager::TaskLoadWaveSummary()
-{
-	if (!wave){
-		qDebug() << "No Such Audio File (or Unknown File Type): " << file.path();
-		summary = WaveSummary();
-		return false;
-	}
-	int error = wave->Open();
-	if (error != 0){
-		qDebug() << "Audio File Error: " << error;
-		summary = WaveSummary();
-		return false;
-	}
-	summary.Format = wave->GetFormat();
-	summary.FrameCount = wave->GetFrameCount();
-	return true;
 }
 
 void SoundChannelResourceManager::TaskDrawOverallWaveformAndRmsCache()

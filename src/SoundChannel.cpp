@@ -3,6 +3,7 @@
 #include "SoundChannelInternal.h"
 #include "HistoryUtil.h"
 #include "History.h"
+#include "MasterCache.h"
 #include <cstdlib>
 #include <cmath>
 #include "Bmson.h"
@@ -12,10 +13,9 @@ SoundChannel::SoundChannel(Document *document)
 	: QObject(document)
 	, document(document)
 	, resource(new SoundChannelResourceManager(this))
-	, waveSummary(nullptr)
+	, waveSummary()
 	, totalLength(0)
 {
-	connect(resource, SIGNAL(WaveSummaryReady(const WaveSummary*)), this, SLOT(OnWaveSummaryReady(const WaveSummary*)), Qt::QueuedConnection);
 	connect(resource, SIGNAL(OverallWaveformReady()), this, SLOT(OnOverallWaveformReady()), Qt::QueuedConnection);
 	connect(resource, SIGNAL(RmsCacheUpdated()), this, SLOT(OnRmsCacheUpdated()), Qt::QueuedConnection);
 	connect(resource, SIGNAL(RmsCachePacketReady(int,QList<RmsCacheEntry>)), this, SLOT(OnRmsCachePacketReady(int,QList<RmsCacheEntry>)), Qt::QueuedConnection);
@@ -25,9 +25,6 @@ SoundChannel::SoundChannel(Document *document)
 
 SoundChannel::~SoundChannel()
 {
-	if (waveSummary){
-		delete waveSummary;
-	}
 }
 
 void SoundChannel::LoadSound(const QString &filePath)
@@ -36,6 +33,10 @@ void SoundChannel::LoadSound(const QString &filePath)
 	//adjustment = 0.;
 
 	resource->UpdateWaveData(filePath);
+	waveSummary = resource->GetWaveSummary();
+	emit WaveSummaryUpdated();
+	UpdateCache();
+	document->ChannelLengthChanged(this, totalLength);
 }
 
 void SoundChannel::LoadBmson(const QJsonValue &json)
@@ -56,6 +57,10 @@ void SoundChannel::LoadBmson(const QJsonValue &json)
 	}
 
 	resource->UpdateWaveData(document->GetAbsolutePath(fileName));
+	waveSummary = resource->GetWaveSummary();
+	emit WaveSummaryUpdated();
+	UpdateCache();
+	document->ChannelLengthChanged(this, totalLength);
 }
 
 QJsonValue SoundChannel::SaveBmson()
@@ -82,17 +87,6 @@ void SoundChannel::SetSourceFile(const QString &absolutePath)
 	};
 	auto *action = new EditValueAction<QString>(setter, fileName, newFileName, tr("select sound channel source file"), true, shower);
 	document->GetHistory()->Add(action);
-}
-
-void SoundChannel::OnWaveSummaryReady(const WaveSummary *summary)
-{
-	if (waveSummary){
-		delete waveSummary;
-	}
-	waveSummary = new WaveSummary(*summary);
-	emit WaveSummaryUpdated();
-	UpdateCache();
-	document->ChannelLengthChanged(this, totalLength);
 }
 
 void SoundChannel::OnOverallWaveformReady()
@@ -234,11 +228,11 @@ void SoundChannel::UpdateVisibleRegions(const QList<QPair<int, int> > &visibleRe
 
 void SoundChannel::UpdateVisibleRegionsInternal()
 {
-	if (!waveSummary || visibleRegions.empty()){
+	if (!waveSummary.IsValid() || visibleRegions.empty()){
 		rmsCacheLibrary.clear();
 		return;
 	}
-	const double samplesPerSec = waveSummary->Format.sampleRate();
+	const double samplesPerSec = waveSummary.Format.sampleRate();
 	const double ticksPerBeat = document->GetTimeBase();
 	QMultiMap<int, int> regions; // key:start value:end
 
@@ -316,10 +310,10 @@ void SoundChannel::UpdateVisibleRegionsInternal()
 
 void SoundChannel::DrawRmsGraph(double location, double resolution, std::function<bool(Rms)> drawer) const
 {
-	if (!waveSummary){
+	if (!waveSummary.IsValid()){
 		return;
 	}
-	const double samplesPerSec = waveSummary->Format.sampleRate();
+	const double samplesPerSec = waveSummary.Format.sampleRate();
 	const double ticksPerBeat = document->GetTimeBase();
 	const double deltaTicks = 1 / resolution;
 	double ticks = location;
@@ -331,7 +325,7 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 		int iPos = pos + 0.5;
 		int iNextPos = nextPos + 0.5;
 		ticks += deltaTicks;
-		if (iPos >= waveSummary->FrameCount|| iNextPos <= 0){
+		if (iPos >= waveSummary.FrameCount|| iNextPos <= 0){
 			if (!drawer(Rms())){
 				return;
 			}
@@ -339,8 +333,8 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 			if (iPos < 0){
 				iPos = 0;
 			}
-			if (iNextPos > waveSummary->FrameCount){
-				iNextPos = waveSummary->FrameCount;
+			if (iNextPos > waveSummary.FrameCount){
+				iNextPos = waveSummary.FrameCount;
 			}
 			if (iPos >= iNextPos){
 				if (!drawer(Rms())){
@@ -380,11 +374,31 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 	while (drawer(Rms()));
 }
 
+void SoundChannel::AddAllIntoMasterCache(MasterCache *master)
+{
+	QMutexLocker lock(&cacheMutex);
+	for (auto note : notes){
+		if (note.noteType != 0)
+			continue;
+		QMap<int, CacheEntry>::const_iterator icache = cache.find(note.location);
+		if (icache == cache.end()){
+			//qDebug() << "Cache entry not found!" << note.location;
+			continue;
+		}
+		while (++icache != cache.end()){
+			if (icache->currentSamplePosition != icache->prevSamplePosition){
+				master->AddSound(document->GetAbsoluteTime(note.location) * MasterCache::SampleRate, this, icache->prevSamplePosition);
+				break;
+			}
+		}
+	}
+}
+
 void SoundChannel::UpdateCache()
 {
 	QMutexLocker lock(&cacheMutex);
 	cache.clear();
-	if (!waveSummary){
+	if (!waveSummary.IsValid()){
 		return;
 	}
 	QMap<int, SoundNote>::const_iterator iNote = notes.begin();
@@ -395,7 +409,7 @@ void SoundChannel::UpdateCache()
 	CacheEntry entry;
 	entry.currentSamplePosition = -1;
 	entry.currentTempo = document->GetInfo()->GetInitBpm();
-	const double samplesPerSec = waveSummary->Format.sampleRate();
+	const double samplesPerSec = waveSummary.Format.sampleRate();
 	const double ticksPerBeat = document->GetTimeBase();
 	double currentSamplesPerTick = samplesPerSec * 60.0 / (entry.currentTempo * ticksPerBeat);
 	while (true){
@@ -408,11 +422,11 @@ void SoundChannel::UpdateCache()
 				loc = iNote->location;
 				cache.insert(loc, entry);
 				//if (this->GetName() == "d_cym")qDebug() << "insert: START " << loc;
-				soundEndsAt = loc + int(waveSummary->FrameCount / currentSamplesPerTick);
+				soundEndsAt = loc + int(waveSummary.FrameCount / currentSamplesPerTick);
 				for (iNote++; iNote != notes.end() && iNote->noteType != 0; iNote++);
 			}else if (soundEndsAt < iNote->location){
 				// END before RESTART
-				entry.prevSamplePosition = waveSummary->FrameCount;
+				entry.prevSamplePosition = waveSummary.FrameCount;
 				entry.prevTempo = entry.currentTempo;
 				entry.currentSamplePosition = -1;
 				loc = soundEndsAt;
@@ -421,13 +435,13 @@ void SoundChannel::UpdateCache()
 			}else{
 				// RESTART before END
 				qint64 sp = entry.currentSamplePosition + qint64((iNote.key() - loc) * currentSamplesPerTick);
-				entry.prevSamplePosition = std::min(sp, waveSummary->FrameCount);
+				entry.prevSamplePosition = std::min(sp, waveSummary.FrameCount);
 				entry.prevTempo = entry.currentTempo;
 				entry.currentSamplePosition = 0;
 				loc = iNote->location;
 				cache.insert(loc, entry);
 				//if (this->GetName() == "d_cym")qDebug() << "insert: RESTART before END " << loc;
-				soundEndsAt = loc + int(waveSummary->FrameCount / currentSamplesPerTick);
+				soundEndsAt = loc + int(waveSummary.FrameCount / currentSamplesPerTick);
 				for (iNote++; iNote != notes.end() && iNote->noteType != 0; iNote++);
 			}
 		}else if (iNote != notes.end() && iTempo != document->GetBpmEvents().end() && iNote->location == iTempo->location){
@@ -441,12 +455,12 @@ void SoundChannel::UpdateCache()
 				loc = iNote->location;
 				cache.insert(loc, entry);
 				//if (this->GetName() == "d_cym")qDebug() << "insert: START & BPM " << loc;
-				soundEndsAt = loc + int(waveSummary->FrameCount / currentSamplesPerTick);
+				soundEndsAt = loc + int(waveSummary.FrameCount / currentSamplesPerTick);
 				for (iNote++; iNote != notes.end() && iNote->noteType != 0; iNote++);
 				iTempo++;
 			}else if (soundEndsAt < iNote->location){
 				// END before RESTART & BPM
-				entry.prevSamplePosition = waveSummary->FrameCount;
+				entry.prevSamplePosition = waveSummary.FrameCount;
 				entry.prevTempo = entry.currentTempo;
 				entry.currentSamplePosition = -1;
 				loc = soundEndsAt;
@@ -455,7 +469,7 @@ void SoundChannel::UpdateCache()
 			}else{
 				// RESTART & BPM before END
 				qint64 sp = entry.currentSamplePosition + qint64((iNote.key() - loc) * currentSamplesPerTick);
-				entry.prevSamplePosition = std::min(sp, waveSummary->FrameCount);
+				entry.prevSamplePosition = std::min(sp, waveSummary.FrameCount);
 				entry.prevTempo = entry.currentTempo;
 				entry.currentSamplePosition = 0;
 				entry.currentTempo = iTempo->value;
@@ -463,7 +477,7 @@ void SoundChannel::UpdateCache()
 				loc = iNote->location;
 				cache.insert(loc, entry);
 				//if (this->GetName() == "d_cym")qDebug() << "insert: RESTART & BPM before END " << loc;
-				soundEndsAt = loc + int(waveSummary->FrameCount / currentSamplesPerTick);
+				soundEndsAt = loc + int(waveSummary.FrameCount / currentSamplesPerTick);
 				for (iNote++; iNote != notes.end() && iNote->noteType != 0; iNote++);
 				iTempo++;
 			}
@@ -480,7 +494,7 @@ void SoundChannel::UpdateCache()
 				iTempo++;
 			}else if (soundEndsAt < iTempo.key()){
 				// END before BPM
-				entry.prevSamplePosition = waveSummary->FrameCount;
+				entry.prevSamplePosition = waveSummary.FrameCount;
 				entry.prevTempo = entry.currentTempo;
 				entry.currentSamplePosition = -1;
 				loc = soundEndsAt;
@@ -489,7 +503,7 @@ void SoundChannel::UpdateCache()
 			}else{
 				// BPM during playing
 				qint64 sp = entry.currentSamplePosition + qint64((iTempo.key() - loc) * currentSamplesPerTick);
-				entry.prevSamplePosition = std::min(sp, waveSummary->FrameCount);
+				entry.prevSamplePosition = std::min(sp, waveSummary.FrameCount);
 				entry.prevTempo = entry.currentTempo;
 				entry.currentSamplePosition = entry.prevSamplePosition;
 				entry.currentTempo = iTempo->value;
@@ -498,7 +512,7 @@ void SoundChannel::UpdateCache()
 				cache.insert(loc, entry);
 				//if (this->GetName() == "d_cym")qDebug() << "insert: BPM during Playing " << loc << "[" << entry.prevTempo << entry.currentTempo << "]" <<
 				//										   "(" << entry.prevSamplePosition << entry.currentSamplePosition << ")";
-				soundEndsAt = loc + int((waveSummary->FrameCount - entry.currentSamplePosition) / currentSamplesPerTick);
+				soundEndsAt = loc + int((waveSummary.FrameCount - entry.currentSamplePosition) / currentSamplesPerTick);
 				iTempo++;
 			}
 		}else{
@@ -510,7 +524,7 @@ void SoundChannel::UpdateCache()
 				// sound end & previous action (BPM?) simultaneous
 				QMap<int, CacheEntry>::iterator iCache = cache.find(loc);
 				if (iCache == cache.end()){
-					entry.prevSamplePosition = waveSummary->FrameCount;
+					entry.prevSamplePosition = waveSummary.FrameCount;
 					entry.prevTempo = entry.currentTempo;
 					entry.currentSamplePosition = -1;
 					loc = soundEndsAt;
@@ -524,7 +538,7 @@ void SoundChannel::UpdateCache()
 				}
 			}else{
 				// all we have to do is finish sound
-				entry.prevSamplePosition = waveSummary->FrameCount;
+				entry.prevSamplePosition = waveSummary.FrameCount;
 				entry.prevTempo = entry.currentTempo;
 				entry.currentSamplePosition = -1;
 				loc = soundEndsAt;

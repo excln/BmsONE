@@ -116,7 +116,7 @@ private:
 	void Forget(qreal playHeadEnd);
 
 public:
-	S16S44100StreamTransformer(AudioStreamSource *src);
+	S16S44100StreamTransformer(AudioStreamSource *src, QObject *parent=nullptr);
 	~S16S44100StreamTransformer();
 
 	virtual int Open();

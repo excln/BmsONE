@@ -16,12 +16,15 @@ struct SoundNote;
 class SoundLoader;
 class EditHistory;
 class EditAction;
-
+class MasterCache;
 
 
 class DocumentInfo : public QObject, public BmsonObject
 {
 	Q_OBJECT
+
+public:
+	static const int DefaultResolution = 240;
 
 private:
 	Document *document;
@@ -116,6 +119,7 @@ private:
 	EditHistory *history;
 	BmsonIO::BmsonVersion savedVersion;
 	BmsonIO::BmsonVersion outputVersion;
+	MasterCache *master;
 
 	// data
 	DocumentInfo info;
@@ -144,6 +148,7 @@ public:
 	void LoadFile(QString filePath); // for initialization
 
 	EditHistory *GetHistory(){ return history; }
+	MasterCache *GetMaster(){ return master; }
 
 	QDir GetProjectDirectory(const QDir &def=QDir::root()) const { return directory.isRoot() ? def : directory; }
 	QString GetFilePath() const { return filePath; }
@@ -159,6 +164,7 @@ public:
 	const QMap<int, BarLine> &GetBarLines() const{ return barLines; }
 	const QMap<int, BpmEvent> &GetBpmEvents() const{ return bpmEvents; }
 	const QList<SoundChannel*> &GetSoundChannels() const{ return soundChannels; }
+	double GetAbsoluteTime(int ticks) const;
 	int GetTotalLength() const;
 	int GetTotalVisibleLength() const;
 	QList<QPair<int, int>> FindConflictingNotes(SoundNote note) const; // returns [Channel,Location]
@@ -183,6 +189,8 @@ public:
 	void MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel*, SoundNote> &notes);
 
 	DocumentUpdateSoundNotesContext *BeginModalEditSoundNotes(const QMap<SoundChannel *, QSet<int> > &noteLocations);
+
+	void ReconstructMasterCache();
 
 signals:
 	void FilePathChanged();

@@ -19,6 +19,7 @@ class SoundNoteView;
 class SoundChannelFooter;
 class SoundChannelView;
 class SequenceViewCursor;
+class MiniMapView;
 
 
 
@@ -26,6 +27,7 @@ class SequenceView : public QAbstractScrollArea
 {
 	Q_OBJECT
 
+	friend class MiniMapView;
 	friend class SequenceViewCursor;
 	friend class SoundChannelView;
 	friend class SoundChannelHeader;
@@ -39,6 +41,7 @@ private:
 	static const char* SettingsSnappedHitTestInEditMode;
 	static const char* SettingsCoarseGridKey;
 	static const char* SettingsFineGridKey;
+	static const char* SettingsShowMiniMapKey;
 
 private:
 	class Context{
@@ -93,6 +96,7 @@ private:
 	QWidget *footerChannelsArea;
 	QWidget *timeLine;
 	QWidget *playingPane;
+	MiniMapView *miniMap;
 
 	QMap<QWidget*, bool(SequenceView::*)(QWidget*,QPaintEvent*)> paintEventDispatchTable;
 	QMap<QWidget*, bool(SequenceView::*)(QWidget*,QEvent*)> enterEventDispatchTable;
@@ -111,6 +115,7 @@ private:
 	int timeLineBpmWidth;
 	int headerHeight;
 	int footerHeight;
+	int miniMapWidth;
 	QPen penBigV;
 	QPen penV;
 	QPen penBar;
@@ -143,6 +148,7 @@ private:
 	GridSize fineGrid;
 	bool snapToGrid;
 	bool snappedHitTestInEditMode;
+	bool showMiniMap;
 
 	qreal zoomY;	// pixels per tick
 	qreal zoomXKey;	// 1 = default

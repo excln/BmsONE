@@ -38,7 +38,7 @@ private:
 	void RunTaskWaveData();
 	void RunTaskRmsCachePacket(int position);
 
-	bool TaskLoadWaveSummary();
+	//bool TaskLoadWaveSummary();
 	void TaskDrawOverallWaveformAndRmsCache();
 
 	quint64 ReadAsS16S(QAudioBuffer::S16S *buffer, quint64 frames);
@@ -53,10 +53,11 @@ public:
 	void RequireRmsCachePacket(int position);
 
 	// get data
+	WaveSummary GetWaveSummary() const{ return summary; }
 	const QImage &GetOverallWaveform() const{ return overallWaveform; }
 
 signals:
-	void WaveSummaryReady(const WaveSummary *summary);
+	//void WaveSummaryReady(const WaveSummary *summary);
 	void OverallWaveformReady();
 	void RmsCacheUpdated();
 	void RmsCachePacketReady(int position, QList<RmsCacheEntry> packet);

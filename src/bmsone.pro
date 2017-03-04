@@ -82,7 +82,9 @@ SOURCES += main.cpp\
     bmson/BmsonConvertDef.cpp \
     Preferences.cpp \
     Skin.cpp \
-    ViewMode.cpp
+    ViewMode.cpp \
+    MasterCache.cpp \
+    MasterView.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -145,7 +147,9 @@ HEADERS  += MainWindow.h \
     bmson/BmsonConvertDef.h \
     Preferences.h \
     Skin.h \
-    ViewMode.h
+    ViewMode.h \
+    MasterCache.h \
+    MasterView.h
 
 FORMS    +=
 
