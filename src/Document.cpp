@@ -406,6 +406,52 @@ changed:
 	history->Add(actions);
 }
 
+void Document::MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel *, SoundNote> &notes)
+{
+	if (notes.empty())
+		return;
+	int minLocation = INT_MAX;
+	SoundChannel *channel = nullptr;
+	for (auto i=notes.begin(); i!=notes.end(); i++){
+		if (i->location < minLocation){
+			minLocation = i->location;
+			channel = i.key();
+		}
+	}
+	auto shower = [=](){
+		channel->ShowNoteLocation(minLocation);
+	};
+	auto *actions = new MultiAction(tr("delete sound notes"), shower);
+	for (auto i=notes.begin(); i!=notes.end(); i++){
+		actions->AddAction(i.key()->RemoveNoteInternal(i.value()));
+	}
+	actions->Finish();
+	history->Add(actions);
+}
+
+void Document::MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel *, SoundNote> &notes)
+{
+	if (notes.empty())
+		return;
+	int minLocation = INT_MAX;
+	SoundChannel *channel = nullptr;
+	for (auto i=notes.begin(); i!=notes.end(); i++){
+		if (i->location < minLocation){
+			minLocation = i->location;
+			channel = i.key();
+		}
+	}
+	auto shower = [=](){
+		channel->ShowNoteLocation(minLocation);
+	};
+	auto *actions = new MultiAction(tr("update sound notes"), shower);
+	for (auto i=notes.begin(); i!=notes.end(); i++){
+		actions->AddAction(i.key()->InsertNoteInternal(i.value()));
+	}
+	actions->Finish();
+	history->Add(actions);
+}
+
 
 
 

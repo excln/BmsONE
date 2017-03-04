@@ -152,13 +152,20 @@ private:
 	void ClearNotesSelection();
 	void SelectSingleNote(SoundNoteView *nview);
 	void ToggleNoteSelection(SoundNoteView *nview);
+	void SelectAdditionalNote(SoundNoteView *nview);
+	void DeselectNote(SoundNoteView *nview);
 
 	void ClearBpmEventsSelection();
 	void SelectSingleBpmEvent(BpmEvent event);
 	void ToggleBpmEventSelection(BpmEvent event);
 
+	void DeleteSelectedNotes();
+	void TransferSelectedNotesToBgm();
+	void TransferSelectedNotesToKey();
+
 	virtual QSize sizeHint() const;
 	virtual bool event(QEvent *e);
+	virtual void keyPressEvent(QKeyEvent *event);
 	virtual bool viewportEvent(QEvent *event);
 	virtual void scrollContentsBy(int dx, int dy);
 	virtual bool eventFilter(QObject *sender, QEvent *event);

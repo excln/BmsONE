@@ -131,16 +131,16 @@ void SoundChannel::OnTimeMappingChanged()
 }
 
 
-bool SoundChannel::InsertNote(SoundNote note)
+EditAction *SoundChannel::InsertNoteInternal(SoundNote note)
 {
 	// check lane conflict
 	if (note.lane == 0){
 		if (notes.contains(note.location) && notes[note.location].lane == 0){
-			return false;
+			return nullptr;
 		}
 	}else{
 		if (!document->FindConflictingNotes(note).empty()){
-			return false;
+			return nullptr;
 		}
 	}
 	auto shower = [=](){
@@ -155,9 +155,7 @@ bool SoundChannel::InsertNote(SoundNote note)
 			emit NoteChanged(note.location, note);
 			document->ChannelLengthChanged(this, totalLength);
 		};
-		auto *action = new EditValueAction<SoundNote>(setter, notes[note.location], note, tr("modify sound note"), true, shower);
-		document->GetHistory()->Add(action);
-		return true;
+		return new EditValueAction<SoundNote>(setter, notes[note.location], note, tr("modify sound note"), true, shower);
 	}else{
 		// new
 		auto adder = [this](SoundNote note){
@@ -174,37 +172,53 @@ bool SoundChannel::InsertNote(SoundNote note)
 			emit NoteRemoved(actualNote);
 			document->ChannelLengthChanged(this, totalLength);
 		};
-		auto *action = new AddValueAction<SoundNote>(adder, remover, note, tr("add sound note"), true, shower);
-		document->GetHistory()->Add(action);
-		return true;
+		return new AddValueAction<SoundNote>(adder, remover, note, tr("add sound note"), true, shower);
 	}
+}
+
+EditAction *SoundChannel::RemoveNoteInternal(SoundNote note)
+{
+	if (!notes.contains(note.location))
+		return nullptr;
+	auto shower = [=](){
+		emit ShowNoteLocation(note.location);
+	};
+	auto adder = [this](SoundNote note){
+		notes.insert(note.location, note);
+		UpdateCache();
+		UpdateVisibleRegionsInternal();
+		emit NoteInserted(note);
+		document->ChannelLengthChanged(this, totalLength);
+	};
+	auto remover = [this](SoundNote note){
+		SoundNote actualNote = notes.take(note.location);
+		UpdateCache();
+		UpdateVisibleRegionsInternal();
+		emit NoteRemoved(actualNote);
+		document->ChannelLengthChanged(this, totalLength);
+	};
+	return new RemoveValueAction<SoundNote>(adder, remover, note, tr("remove sound note"), true, shower);
+}
+
+
+bool SoundChannel::InsertNote(SoundNote note)
+{
+	EditAction *action = InsertNoteInternal(note);
+	if (action == nullptr){
+		return false;
+	}
+	document->GetHistory()->Add(action);
+	return true;
 }
 
 bool SoundChannel::RemoveNote(SoundNote note)
 {
-	if (notes.contains(note.location)){
-		auto shower = [=](){
-			emit ShowNoteLocation(note.location);
-		};
-		auto adder = [this](SoundNote note){
-			notes.insert(note.location, note);
-			UpdateCache();
-			UpdateVisibleRegionsInternal();
-			emit NoteInserted(note);
-			document->ChannelLengthChanged(this, totalLength);
-		};
-		auto remover = [this](SoundNote note){
-			SoundNote actualNote = notes.take(note.location);
-			UpdateCache();
-			UpdateVisibleRegionsInternal();
-			emit NoteRemoved(actualNote);
-			document->ChannelLengthChanged(this, totalLength);
-		};
-		auto *action = new RemoveValueAction<SoundNote>(adder, remover, note, tr("remove sound note"), true, shower);
-		document->GetHistory()->Add(action);
-		return true;
+	EditAction *action = RemoveNoteInternal(note);
+	if (action == nullptr){
+		return false;
 	}
-	return false;
+	document->GetHistory()->Add(action);
+	return true;
 }
 
 int SoundChannel::GetLength() const

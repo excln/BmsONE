@@ -159,6 +159,9 @@ public:
 	bool RemoveBpmEvent(int location);
 	void UpdateBpmEvents(QList<BpmEvent> events);
 
+	void MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel *, SoundNote> &notes);
+	void MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel*, SoundNote> &notes);
+
 signals:
 	void FilePathChanged();
 	void SoundChannelInserted(int index, SoundChannel *channel);

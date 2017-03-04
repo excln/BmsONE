@@ -288,10 +288,8 @@ void SequenceView::mouseEventPlayingPaneEditMode(QMouseEvent *event)
 	switch (event->type()){
 	case QEvent::MouseMove: {
 		if (rubberBand->isVisibleTo(playingPane)){
-			QRect rectRb;
 			int cursorTime = iTime;
 			int timeBegin, timeEnd;
-			QList<int> laneList;
 			int laneXBegin, laneXLast;
 			if (laneX > rubberBandOriginLaneX){
 				laneXBegin = rubberBandOriginLaneX;
@@ -308,6 +306,8 @@ void SequenceView::mouseEventPlayingPaneEditMode(QMouseEvent *event)
 				timeBegin = iTime;
 				timeEnd = rubberBandOriginTime;
 			}
+			QRect rectRb;
+			QList<int> laneList;
 			rectRb.setBottom(Time2Y(timeBegin) - 2);
 			rectRb.setTop(Time2Y(timeEnd) - 1);
 			rectRb.setLeft(sortedLanes[laneXBegin].left);
@@ -341,7 +341,11 @@ void SequenceView::mouseEventPlayingPaneEditMode(QMouseEvent *event)
 				if (event->modifiers() & Qt::ControlModifier){
 					ToggleNoteSelection(noteHit);
 				}else{
-					SelectSingleNote(noteHit);
+					if (selectedNotes.contains(noteHit)){
+						// don't deselect other notes
+					}else{
+						SelectSingleNote(noteHit);
+					}
 				}
 				cursor->SetExistingSoundNote(noteHit);
 				SelectSoundChannel(noteHit->GetChannelView());
@@ -352,7 +356,11 @@ void SequenceView::mouseEventPlayingPaneEditMode(QMouseEvent *event)
 				if (event->modifiers() & Qt::ControlModifier){
 					ToggleNoteSelection(noteHit);
 				}else{
-					SelectSingleNote(noteHit);
+					if (selectedNotes.contains(noteHit)){
+						// don't deselect other notes
+					}else{
+						SelectSingleNote(noteHit);
+					}
 				}
 				cursor->SetExistingSoundNote(noteHit);
 				SelectSoundChannel(noteHit->GetChannelView());
@@ -370,13 +378,33 @@ void SequenceView::mouseEventPlayingPaneEditMode(QMouseEvent *event)
 			rubberBand->setGeometry(event->x(), event->y(), 0 ,0);
 			rubberBand->show();
 			if (event->modifiers() & Qt::ControlModifier){
+				// don't deselect notes (to add new selections)
 			}else{
+				// clear (to make new selections)
 				ClearNotesSelection();
 			}
 		}
 		return;
 	case QEvent::MouseButtonRelease:
 		if (rubberBand->isVisibleTo(playingPane)){
+			int cursorTime = iTime;
+			int timeBegin, timeEnd;
+			int laneXBegin, laneXLast;
+			if (laneX > rubberBandOriginLaneX){
+				laneXBegin = rubberBandOriginLaneX;
+				laneXLast = laneX;
+			}else{
+				laneXBegin = laneX;
+				laneXLast = rubberBandOriginLaneX;
+			}
+			if (iTime >= rubberBandOriginTime){
+				timeBegin = rubberBandOriginTime;
+				timeEnd = iTimeUpper;
+				cursorTime = iTimeUpper;
+			}else{
+				timeBegin = iTime;
+				timeEnd = rubberBandOriginTime;
+			}
 			QList<int> lns;
 			if (laneX > rubberBandOriginLaneX){
 				for (int ix=rubberBandOriginLaneX; ix<=laneX; ix++){
@@ -387,20 +415,16 @@ void SequenceView::mouseEventPlayingPaneEditMode(QMouseEvent *event)
 					lns.append(sortedLanes[ix].lane);
 				}
 			}
-			int timeBegin, timeEnd;
-			if (iTime > rubberBandOriginTime){
-				timeBegin = rubberBandOriginTime;
-				timeEnd = iTime;
-			}else{
-				timeBegin = iTime;
-				timeEnd = rubberBandOriginTime;
-			}
 			for (SoundChannelView *cview : soundChannels){
 				for (SoundNoteView *nv : cview->GetNotes()){
 					const SoundNote &note = nv->GetNote();
 					if (lns.contains(note.lane)){
 						if (note.location+note.length >= timeBegin && note.location < timeEnd){
-							ToggleNoteSelection(nv);
+							if (event->modifiers() & Qt::ShiftModifier){
+								ToggleNoteSelection(nv);
+							}else{
+								SelectAdditionalNote(nv);
+							}
 						}
 					}
 				}
@@ -409,6 +433,11 @@ void SequenceView::mouseEventPlayingPaneEditMode(QMouseEvent *event)
 		}
 		return;
 	case QEvent::MouseButtonDblClick:
+		if (noteHit){
+			if (event->button() == Qt::LeftButton){
+				TransferSelectedNotesToBgm();
+			}
+		}
 		return;
 	default:
 		return;

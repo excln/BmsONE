@@ -257,7 +257,8 @@ void SequenceView::ClearNotesSelection()
 
 void SequenceView::SelectSingleNote(SoundNoteView *nview)
 {
-	ClearBpmEventsSelection();
+	if (!selectedBpmEvents.isEmpty())
+		ClearBpmEventsSelection();
 	selectedNotes.clear();
 	selectedNotes.insert(nview);
 	playingPane->update();
@@ -268,12 +269,35 @@ void SequenceView::SelectSingleNote(SoundNoteView *nview)
 
 void SequenceView::ToggleNoteSelection(SoundNoteView *nview)
 {
-	ClearBpmEventsSelection();
+	if (!selectedBpmEvents.isEmpty())
+		ClearBpmEventsSelection();
 	if (selectedNotes.contains(nview)){
 		selectedNotes.remove(nview);
 	}else{
 		selectedNotes.insert(nview);
 	}
+	playingPane->update();
+	for (auto cview : soundChannels){
+		cview->update();
+	}
+}
+
+void SequenceView::SelectAdditionalNote(SoundNoteView *nview)
+{
+	if (!selectedBpmEvents.isEmpty())
+		ClearBpmEventsSelection();
+	selectedNotes.insert(nview);
+	playingPane->update();
+	for (auto cview : soundChannels){
+		cview->update();
+	}
+}
+
+void SequenceView::DeselectNote(SoundNoteView *nview)
+{
+	if (!selectedBpmEvents.isEmpty())
+		ClearBpmEventsSelection();
+	selectedNotes.remove(nview);
 	playingPane->update();
 	for (auto cview : soundChannels){
 		cview->update();
@@ -289,7 +313,8 @@ void SequenceView::ClearBpmEventsSelection()
 
 void SequenceView::SelectSingleBpmEvent(BpmEvent event)
 {
-	ClearNotesSelection();
+	if (!selectedNotes.isEmpty())
+		ClearNotesSelection();
 	selectedBpmEvents.clear();
 	selectedBpmEvents.insert(event.location, event);
 	timeLine->update();
@@ -298,7 +323,8 @@ void SequenceView::SelectSingleBpmEvent(BpmEvent event)
 
 void SequenceView::ToggleBpmEventSelection(BpmEvent event)
 {
-	ClearNotesSelection();
+	if (!selectedNotes.empty())
+		ClearNotesSelection();
 	if (selectedBpmEvents.contains(event.location)){
 		selectedBpmEvents.remove(event.location);
 	}else{
@@ -306,6 +332,39 @@ void SequenceView::ToggleBpmEventSelection(BpmEvent event)
 	}
 	timeLine->update();
 	BpmEventsSelectionUpdated();
+}
+
+void SequenceView::DeleteSelectedNotes()
+{
+	QMultiMap<SoundChannel*, SoundNote> notes;
+	for (auto nv : selectedNotes){
+		notes.insert(nv->GetChannelView()->GetChannel(), nv->GetNote());
+	}
+	ClearBpmEventsSelection();
+	ClearNotesSelection();
+	if (notes.empty())
+		return;
+	document->MultiChannelDeleteSoundNotes(notes);
+}
+
+void SequenceView::TransferSelectedNotesToBgm()
+{
+	QMultiMap<SoundChannel*, SoundNote> notes;
+	for (auto nv : selectedNotes){
+		SoundNote n = nv->GetNote();
+		n.lane = 0;
+		notes.insert(nv->GetChannelView()->GetChannel(), n);
+	}
+	ClearBpmEventsSelection();
+	ClearNotesSelection();
+	if (notes.empty())
+		return;
+	document->MultiChannelUpdateSoundNotes(notes);
+}
+
+void SequenceView::TransferSelectedNotesToKey()
+{
+
 }
 
 QSize SequenceView::sizeHint() const
@@ -330,6 +389,19 @@ bool SequenceView::event(QEvent *e)
 	}
 	default:
 		return QAbstractScrollArea::event(e);
+	}
+}
+
+void SequenceView::keyPressEvent(QKeyEvent *event)
+{
+	switch (event->key()){
+	case Qt::Key_Delete:
+	case Qt::Key_Backspace:
+		DeleteSelectedNotes();
+		return;
+	default:
+		QAbstractScrollArea::keyPressEvent(event);
+		return;
 	}
 }
 

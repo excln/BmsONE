@@ -10,6 +10,7 @@
 class Document;
 class DocumentInfo;
 class SoundChannelResourceManager;
+class EditAction;
 
 
 struct SoundNote : public BmsonObject
@@ -39,6 +40,7 @@ class SoundChannel : public QObject, public BmsonObject
 
 	friend class SoundChannelSourceFilePreviewer;
 	friend class SoundChannelNotePreviewer;
+	friend class Document;
 
 private:
 	struct CacheEntry{
@@ -72,6 +74,8 @@ private:
 private:
 	void UpdateCache();
 	void UpdateVisibleRegionsInternal();
+	EditAction *InsertNoteInternal(SoundNote note);
+	EditAction *RemoveNoteInternal(SoundNote note);
 
 private slots:
 	void OnWaveSummaryReady(const WaveSummary *summary);
