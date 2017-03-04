@@ -78,9 +78,15 @@ void SoundChannel::SetSourceFile(const QString &absolutePath)
 {
 	QString newFileName = document->GetRelativePath(absolutePath);
 	auto setter = [this](QString value){
+		AddAllIntoMasterCache(-1);
 		fileName = value;
 		resource->UpdateWaveData(document->GetAbsolutePath(fileName));
+		waveSummary = resource->GetWaveSummary();
+		UpdateCache();
+		document->ChannelLengthChanged(this, totalLength);
 		emit NameChanged();
+		emit WaveSummaryUpdated();
+		AddAllIntoMasterCache(1);
 	};
 	auto shower = [this](){
 		emit Show();
@@ -390,9 +396,10 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 	while (drawer(Rms()));
 }
 
-void SoundChannel::AddAllIntoMasterCache()
+void SoundChannel::AddAllIntoMasterCache(int sign)
 {
 	QMutexLocker lock(&cacheMutex);
+	QList<MasterCacheMultiWorker::Patch> patches;
 	for (auto note : notes){
 		if (note.noteType != 0)
 			continue;
@@ -403,10 +410,17 @@ void SoundChannel::AddAllIntoMasterCache()
 		}
 		while (++icache != cache.end()){
 			if (icache->currentSamplePosition != icache->prevSamplePosition){
-				document->GetMaster()->AddSound(document->GetAbsoluteTime(note.location) * MasterCache::SampleRate, this, icache->prevSamplePosition);
+				MasterCacheMultiWorker::Patch patch;
+				patch.sign = sign;
+				patch.time = document->GetAbsoluteTime(note.location) * MasterCache::SampleRate;
+				patch.frames = double(icache->prevSamplePosition) * MasterCache::SampleRate / waveSummary.Format.sampleRate();
+				patches.append(patch);
 				break;
 			}
 		}
+	}
+	if (patches.size() > 0){
+		document->GetMaster()->MultiAddSound(patches, this);
 	}
 }
 
@@ -441,7 +455,10 @@ void SoundChannel::MasterCacheAddNoteInternal(int location, int v)
 	}
 	while (++icache != cache.end()){
 		if (icache->currentSamplePosition != icache->prevSamplePosition){
-			document->GetMaster()->AddSound(document->GetAbsoluteTime(location) * MasterCache::SampleRate, v, this, icache->prevSamplePosition);
+			document->GetMaster()->AddSound(
+						document->GetAbsoluteTime(location) * MasterCache::SampleRate,
+						v, this,
+						double(icache->prevSamplePosition) * MasterCache::SampleRate / waveSummary.Format.sampleRate());
 			return;
 		}
 	}

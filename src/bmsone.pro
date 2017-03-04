@@ -86,7 +86,8 @@ SOURCES += main.cpp\
     MasterCache.cpp \
     MasterView.cpp \
     EditConfig.cpp \
-    PrefEdit.cpp
+    PrefEdit.cpp \
+    ScalarRegion.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -153,7 +154,8 @@ HEADERS  += MainWindow.h \
     MasterCache.h \
     MasterView.h \
     EditConfig.h \
-    PrefEdit.h
+    PrefEdit.h \
+    ScalarRegion.h
 
 FORMS    +=
 

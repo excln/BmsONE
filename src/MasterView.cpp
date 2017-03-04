@@ -25,10 +25,12 @@ MiniMapView::MiniMapView(SequenceView *sview)
 	posHeight = height();
 	dragging = false;
 	hide();
-	rmsCacheInvalid = true;
+	wholeRmsCacheInvalid = true;
 	bufferInvalid = true;
 	opacity = EditConfig::GetMiniMapOpacity();
 
+	timer.setSingleShot(true);
+	connect(&timer, SIGNAL(timeout()), this, SLOT(OnTimer()));
 	connect(EditConfig::Instance(), SIGNAL(MiniMapOpacityChanged(double)), this, SLOT(MiniMapOpacityChanged(double)));
 }
 
@@ -39,14 +41,17 @@ MiniMapView::~MiniMapView()
 void MiniMapView::ReplaceDocument(Document *newDocument)
 {
 	if (document){
+		//disconnect(master, SIGNAL(Cleared()), this, SLOT(MasterCacheCleared()));
 		//disconnect(master, SIGNAL(RegionUpdated(int,int)), this, SLOT(MasterCacheUpdated(int,int)));
 	}
 	document = newDocument;
 	master = document->GetMaster();
 	if (document){
+		connect(master, SIGNAL(Cleared()), this, SLOT(MasterCacheCleared()), Qt::QueuedConnection);
 		connect(master, SIGNAL(RegionUpdated(int,int)), this, SLOT(MasterCacheUpdated(int,int)), Qt::QueuedConnection);
 	}
-	rmsCacheInvalid = true;
+	wholeRmsCacheInvalid = true;
+	rmsCacheInvalidRegions.Clear();
 	bufferInvalid = true;
 	update();
 }
@@ -109,12 +114,32 @@ void MiniMapView::SetFixed(bool value)
 }
 
 
+void MiniMapView::MasterCacheCleared()
+{
+	wholeRmsCacheInvalid = true;
+	bufferInvalid = true;
+
+	timer.start(50);
+}
+
 void MiniMapView::MasterCacheUpdated(int position, int length)
 {
-	// toriaezu
-	rmsCacheInvalid = true;
+	if (!wholeRmsCacheInvalid){
+		rmsCacheInvalidRegions.Union(position, position+length);
+	}
 	bufferInvalid = true;
-	// don't update yet
+
+	timer.start(50);
+}
+
+void MiniMapView::OnTimer()
+{
+	if (wholeRmsCacheInvalid){
+		ReconstructRmsCache();
+	}else if (rmsCacheInvalidRegions.NotEmpty()){
+		UpdateRmsCachePartially();
+	}
+	update();
 }
 
 void MiniMapView::MiniMapOpacityChanged(double value)
@@ -127,6 +152,7 @@ void MiniMapView::ReconstructRmsCache()
 {
 	if (!document)
 		return;
+	//auto time0 = QTime::currentTime();
 
 	rmsCacheOfTicks.clear();
 	const QMap<int, BpmEvent> bpmEvents = sview->document->GetBpmEvents();
@@ -146,6 +172,19 @@ void MiniMapView::ReconstructRmsCache()
 		RmsCachePacket packet;
 		packet.rms = Rms(0.0f, 0.0f);
 		packet.available = true;
+#if 1
+		// INTERNAL ITERATOR
+		int s = smp_prev;
+		master->GetData(smp_prev, [&](int pending, QAudioBuffer::S32F signal){
+			packet.available &= pending == 0;
+			packet.rms.L += signal.left * signal.left;
+			packet.rms.R += signal.right * signal.right;
+			packet.peak.L = std::max(packet.peak.L, std::fabsf(signal.left));
+			packet.peak.R = std::max(packet.peak.R, std::fabsf(signal.right));
+			return ++s < smp;
+		});
+#else
+		// EXTERNAL ITERATOR
 		for (int s=smp_prev; s<smp; s++){
 			QPair<int, QAudioBuffer::S32F> d = master->GetData(s);
 			packet.available &= d.first == 0;
@@ -154,6 +193,7 @@ void MiniMapView::ReconstructRmsCache()
 			packet.peak.L = std::max(packet.peak.L, std::fabsf(d.second.left));
 			packet.peak.R = std::max(packet.peak.R, std::fabsf(d.second.right));
 		}
+#endif
 		if (smp_prev < smp){
 			packet.rms.L /= smp - smp_prev;
 			packet.rms.R /= smp - smp_prev;
@@ -161,7 +201,79 @@ void MiniMapView::ReconstructRmsCache()
 		rmsCacheOfTicks.append(packet);
 		smp_prev = smp;
 	}
-	rmsCacheInvalid = false;
+	wholeRmsCacheInvalid = false;
+	rmsCacheInvalidRegions.Clear();
+
+	//auto time1 = QTime::currentTime();
+	//qDebug() << time0.msecsTo(time1);
+	emit RmsCacheUpdated();
+}
+
+void MiniMapView::UpdateRmsCachePartially()
+{
+	if (!document)
+		return;
+
+	const QMap<int, BpmEvent> bpmEvents = sview->document->GetBpmEvents();
+	for (auto i=rmsCacheInvalidRegions.Begin(); i!=rmsCacheInvalidRegions.End(); ++i){
+		const int t0 = int(sview->document->FromAbsoluteTime(double(i.T0()) / MasterCache::SampleRate));
+		const int t1 = int(sview->document->FromAbsoluteTime(double(i.T1() - 1) / MasterCache::SampleRate)) + 1;
+		if (rmsCacheOfTicks.size() < t1){
+			rmsCacheOfTicks.resize(t1);
+		}
+		int tt = t0;
+		double seconds = double(i.T0()) / MasterCache::SampleRate;
+		double bpm = sview->document->GetInfo()->GetInitBpm();
+		QMap<int, BpmEvent>::const_iterator iev = bpmEvents.upperBound(t0);
+		int smp_prev = i.T0();
+		if (iev != bpmEvents.begin()){
+			iev--;
+			bpm = iev->value;
+		}
+		for (int t=t0+1; t<t1; t++){
+			for (; iev!=bpmEvents.end() && iev.key() < t; iev++){
+				seconds += (iev.key() - tt) * 60.0 / (bpm * sview->resolution);
+				tt = iev.key();
+				bpm = iev->value;
+			}
+			double sec = seconds + (t - tt) * 60.0 / (bpm * sview->resolution);
+			int smp = sec * MasterCache::SampleRate;
+			RmsCachePacket packet;
+			packet.rms = Rms(0.0f, 0.0f);
+			packet.available = true;
+#if 1
+			// INTERNAL ITERATOR
+			int s = smp_prev;
+			master->GetData(smp_prev, [&](int pending, QAudioBuffer::S32F signal){
+				packet.available &= pending == 0;
+				packet.rms.L += signal.left * signal.left;
+				packet.rms.R += signal.right * signal.right;
+				packet.peak.L = std::max(packet.peak.L, std::fabsf(signal.left));
+				packet.peak.R = std::max(packet.peak.R, std::fabsf(signal.right));
+				return ++s < smp;
+			});
+#else
+			// EXTERNAL ITERATOR
+			for (int s=smp_prev; s<smp; s++){
+				QPair<int, QAudioBuffer::S32F> d = master->GetData(s);
+				packet.available &= d.first == 0;
+				packet.rms.L += d.second.left * d.second.left;
+				packet.rms.R += d.second.right * d.second.right;
+				packet.peak.L = std::max(packet.peak.L, std::fabsf(d.second.left));
+				packet.peak.R = std::max(packet.peak.R, std::fabsf(d.second.right));
+			}
+#endif
+			if (smp_prev < smp){
+				packet.rms.L /= smp - smp_prev;
+				packet.rms.R /= smp - smp_prev;
+			}
+			rmsCacheOfTicks[t-1] = packet;
+			smp_prev = smp;
+		}
+	}
+	rmsCacheInvalidRegions.Clear();
+
+	emit RmsCacheUpdated();
 }
 
 void MiniMapView::UpdateBuffer()
@@ -169,8 +281,10 @@ void MiniMapView::UpdateBuffer()
 	if (!document)
 		return;
 
-	if (rmsCacheInvalid){
+	if (wholeRmsCacheInvalid){
 		ReconstructRmsCache();
+	}else if (rmsCacheInvalidRegions.NotEmpty()){
+		UpdateRmsCachePartially();
 	}
 
 	if (buffer.isNull() || posHeight != buffer.height() || posWidth != buffer.width()){
@@ -311,9 +425,12 @@ MasterLaneView::MasterLaneView(SequenceView *sview, MiniMapView *miniMap)
 	, sview(sview)
 	, mview(miniMap)
 	, backBuffer(nullptr)
+	, bufferInvalid(false)
 {
 	setMouseTracking(true);
 	cxt = new BaseContext(this);
+
+	connect(mview, SIGNAL(RmsCacheUpdated()), this, SLOT(OnDataUpdated()));
 }
 
 MasterLaneView::~MasterLaneView()
@@ -327,6 +444,9 @@ void MasterLaneView::paintEvent(QPaintEvent *event)
 	QRect rect = event->rect();
 
 	if (backBuffer){
+		if (bufferInvalid){
+			UpdateWholeBackBuffer();
+		}
 		painter.drawImage(0, 0, *backBuffer);
 	}else{
 		RemakeBackBuffer();
@@ -439,7 +559,7 @@ void MasterLaneView::UpdateBackBuffer(const QRect &rect)
 	}
 
 	// draw waveforms
-	if (mview->rmsCacheInvalid){
+	if (mview->wholeRmsCacheInvalid){
 		mview->ReconstructRmsCache();
 	}
 	for (int y=rect.bottom()+my; y>=rect.top()-my; y--){
@@ -481,6 +601,13 @@ void MasterLaneView::UpdateBackBuffer(const QRect &rect)
 			painter.drawLine(width()/2, y, width()/2, y);
 		}
 	}
+	bufferInvalid = false;
+}
+
+void MasterLaneView::OnDataUpdated()
+{
+	bufferInvalid = true;
+	update();
 }
 
 void MasterLaneView::ScrollContents(int dy)

@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include <QtConcurrent>
+#include <functional>
 #include "Wave.h"
 #include "SoundChannel.h"
 
@@ -10,8 +11,20 @@ class Document;
 class SoundChannel;
 class MasterCache;
 
+class MasterCacheWorkerBase : public QObject
+{
+	Q_OBJECT
+public:
+	MasterCacheWorkerBase(QObject *parent=nullptr) : QObject(parent){}
+	virtual void Start()=0;
+	virtual void Cancel()=0;
 
-class MasterCacheWorker : public QObject
+signals:
+	void Complete(MasterCacheWorkerBase *worker);
+};
+
+
+class MasterCacheSingleWorker : public MasterCacheWorkerBase
 {
 	Q_OBJECT
 
@@ -19,17 +32,53 @@ private:
 	MasterCache *master;
 	AudioStreamSource *native;
 	S32F44100StreamTransformer *wave;
+	int time;
+	int v;
+	int frames;
 	QFuture<void> task;
-	bool cancel;
-	mutable QMutex workerMutex;
+	volatile bool cancel;
 
-	void AddSoundTask(int time, int v, int frames);
+	void AddSoundTask();
 
 public:
-	MasterCacheWorker(MasterCache *master, int time, int v, SoundChannel *channel, int frames);
-	~MasterCacheWorker();
+	MasterCacheSingleWorker(MasterCache *master, int time, int v, SoundChannel *channel, int frames);
+	~MasterCacheSingleWorker();
 
-	void Cancel();
+	virtual void Start();
+	virtual void Cancel();
+};
+
+class MasterCacheMultiWorker : public MasterCacheWorkerBase
+{
+	Q_OBJECT
+
+public:
+	struct Patch{
+		int sign;
+		int time;
+		int frames;
+		Patch(){}
+		Patch(int sign, int time, int frames) : sign(sign), time(time), frames(frames){}
+	};
+
+private:
+	MasterCache *master;
+	QList<Patch> patches;
+	AudioStreamSource *native;
+	S32F44100StreamTransformer *wave;
+	QFuture<void> task;
+	static const int BufferSize;
+	QAudioBuffer::S32F *buf;
+	volatile bool cancel;
+
+	void AddSoundTask();
+
+public:
+	MasterCacheMultiWorker(MasterCache *master, QList<Patch> patches, SoundChannel *channel);
+	~MasterCacheMultiWorker();
+
+	virtual void Start();
+	virtual void Cancel();
 };
 
 
@@ -58,7 +107,8 @@ class MasterCache : public QObject
 {
 	Q_OBJECT
 
-	friend class MasterCacheWorker;
+	friend class MasterCacheSingleWorker;
+	friend class MasterCacheMultiWorker;
 	friend class MasterPlayer;
 
 public:
@@ -68,14 +118,16 @@ private:
 	Document *document;
 	QVector<QAudioBuffer::S32F> data;
 	QMap<int, QPair<int,int>> counter;
-	QSet<MasterCacheWorker*> workers;
+	QSet<MasterCacheWorkerBase*> workers;
 	mutable QMutex workersMutex;
 	mutable QMutex dataMutex;
 	mutable QMutex counterMutex;
 
 	void IncCounter(int position, int length);
 	void DecCounter(int position, int length);
-	void WorkerComplete(MasterCacheWorker *worker);
+
+private slots:
+	void WorkerComplete(MasterCacheWorkerBase *worker);
 
 public:
 	MasterCache(Document *document);
@@ -85,11 +137,13 @@ public:
 	void AddSound(int time, SoundChannel *channel, int frames);
 	void RemoveSound(int time, SoundChannel *channel, int frames);
 	void AddSound(int time, int v, SoundChannel *channel, int frames);
+	void MultiAddSound(QList<MasterCacheMultiWorker::Patch> patches, SoundChannel *channel);
 
-	//void DrawRmsGraph(double location, double resolution, std::function<bool(Rms)> drawer) const;
+	void GetData(int position, std::function<bool(int, QAudioBuffer::S32F)> f);
 	QPair<int, QAudioBuffer::S32F> GetData(int position);
 
 signals:
+	void Cleared();
 	void RegionUpdated(int position, int length);
 
 };

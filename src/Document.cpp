@@ -253,6 +253,7 @@ void Document::InsertSoundChannelInternal(SoundChannel *channel, int index)
 {
 	soundChannelLength.insert(channel, channel->GetLength());
 	soundChannels.insert(index, channel);
+	channel->AddAllIntoMasterCache(1);
 	emit SoundChannelInserted(index, channel);
 	emit AfterSoundChannelsChange();
 }
@@ -271,6 +272,7 @@ void Document::RemoveSoundChannelInternal(SoundChannel *channel, int index)
 		emit AfterSoundChannelsChange();
 		return;
 	}
+	channel->AddAllIntoMasterCache(-1);
 	soundChannels.removeAt(index);
 	soundChannelLength.remove(channel);
 	emit SoundChannelRemoved(index, channel);

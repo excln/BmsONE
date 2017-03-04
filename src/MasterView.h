@@ -4,6 +4,7 @@
 #include <QtCore>
 #include <QtWidgets>
 #include "SoundChannelDef.h"
+#include "ScalarRegion.h"
 
 class SequenceView;
 class Document;
@@ -35,25 +36,34 @@ private:
 	bool fixed;
 	double opacity;
 
-	bool rmsCacheInvalid;
+	bool wholeRmsCacheInvalid;
+	ScalarRegion rmsCacheInvalidRegions;
 	QVector<RmsCachePacket> rmsCacheOfTicks;
 
 	static const int BufferWidth = 88, BufferHeight = 1024;
 	bool bufferInvalid;
 	QImage buffer;
 
+	QTimer timer;
+
 	bool dragging;
 	int dragYOrigin;
 	int dragVOrigin;
 
 	void ReconstructRmsCache();
+	void UpdateRmsCachePartially();
 	void UpdateBuffer();
 
 private slots:
 	void PopOutAnimationFinished();
+	void MasterCacheCleared();
 	void MasterCacheUpdated(int position, int length);
+	void OnTimer();
 
 	void MiniMapOpacityChanged(double value);
+
+signals:
+	void RmsCacheUpdated();
 
 public:
 	MiniMapView(SequenceView *sview);
@@ -103,6 +113,10 @@ private:
 	MiniMapView *mview;
 	Context *cxt;
 	QImage *backBuffer;
+	bool bufferInvalid;
+
+private slots:
+	void OnDataUpdated();
 
 public:
 	MasterLaneView(SequenceView *sview, MiniMapView *miniMap);

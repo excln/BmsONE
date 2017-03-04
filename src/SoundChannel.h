@@ -115,7 +115,7 @@ public:
 	void UpdateVisibleRegions(const QList<QPair<int, int>> &visibleRegionsTime);
 	void DrawRmsGraph(double location, double resolution, std::function<bool(Rms)> drawer) const;
 
-	void AddAllIntoMasterCache();
+	void AddAllIntoMasterCache(int sign=1);
 
 signals:
 	void NoteInserted(SoundNote note);

@@ -1012,6 +1012,10 @@ void SequenceView::TotalLengthChanged(int totalLength)
 			qreal t = oldVL - (verticalScrollBar()->value() + viewport()->height())/zoomY;
 			UpdateVerticalScrollBar(t);
 			update();
+			if (showMasterLane){
+				masterLane->UpdateWholeBackBuffer();
+				masterLane->update();
+			}
 			for (auto *cv : soundChannels){
 				cv->UpdateWholeBackBuffer();
 				cv->update();
