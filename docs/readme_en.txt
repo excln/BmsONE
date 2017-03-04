@@ -4,6 +4,7 @@ BmsONE
 
 BmsONE is an editor for bmson files.
 Bmson is a new music game format derived from BMS. See [6. Links] for more information about bmson.
+This application currently supports v0.21 bmson only. Other versions are not supported.
 
 The latest version of this document can be found at following URL:
 http://sky.geocities.jp/exclusion_bms/bmsone.html
@@ -13,8 +14,11 @@ http://sky.geocities.jp/exclusion_bms/bmsone.html
 
 2.1 Caution
 
-The current version lacks a lot of necessary features. Furthermore, it often crashes or behaves wrong.
+This software is under development, so the current version lacks some features
+and often goes wrong (particularly on Mac).
 Be sure to make backups and save files frequently.
+
+Note that "Ctrl key" below means Command key (⌘) on Mac.
 
 
 2.2 Adding Sound Channels
@@ -23,15 +27,24 @@ Be sure to make backups and save files frequently.
 Dragging and dropping sound files also works.
 
 
-2.3 Locating Sound Notes
+2.3 Locating and Editing Sound Notes
 
-First select a sound channel in which notes are located by clicking on the corresponding BGM lane.
+There are two modes, "Edit Mode" and "Write Mode".
+
+In order to locate sound notes, you first have to switch to "Write Mode"
+by clicking on the pencil icon in the tool bar.
+Next click on a BGM lane whose channel you want to edit. The selected channel is shown highlighted.
 Then Shift+Click on a (playing or BGM) lane to locate a new note which plays sound from beginning.
 You can locate a note which slices sound by just clicking on the lane.
 Right-clicking on an existing note will delete it.
 
-Waveforms drawn in a BGM lane stand for the sound played at the time.
+Notice that waveforms are drawn in a BGM lane, which stand for the sound played at that time.
 Colors of waveforms tell you the sound is played by key notes or BGM notes.
+
+In "Edit Mode", you can select multiple objects by dragging around them.
+This behavior can be modified by Ctrl, Alt and Shift keys.
+For example, Alt+dragging selects notes only in the current sound channel.
+You can also move notes horizontally by dragging on them, or change their length by Shift+dragging.
 
 
 2.4 Other Features
@@ -48,6 +61,9 @@ To edit BPM events, click on the lane next to measures bar.
 After placing or selecting a BPM event, a small tool bar to input BPM appears.
 
 BGA data and most extra data cannot be edited, but they will not be lost by this application.
+Only extra data in BMSInfo can be edited by writing fragments of JSON directly as follows:
+  "banner": "my_banner.png",
+  "back_image": "my_back_image.png"
 
 A configuration file is stored in a directory such as:
   [Windows] C:\Users\<USER>\AppData\Local\BmsONE
@@ -99,11 +115,32 @@ Please tweet with #bmson tag for general topics on bmson format.
 
 6. Links
 
-Bmson Project by wosderge http://cerebralmuddystream.nekokan.dyndns.info/bmson/
-BMSまとめ @wiki - bmson開発部 http://www40.atwiki.jp/laser_bm/pages/104.html
+Bmson Project by wosderge
+  http://cerebralmuddystream.nekokan.dyndns.info/bmson/
+  The official web site of bmson format.
+
+BMSまとめ @wiki - how to bmson
+  http://www40.atwiki.jp/laser_bm/pages/110.html
+  How to create and play bmson. (Japanese)
+
+bmson specs by flicknote
+  https://docs.google.com/document/d/1ZDjfjWud8UG3RPjyhN-dd1rVjPaactcMT3PIODTap9s/edit
+  A draft and detailed explanation of bmson format specification. (English)
+  Note that this includes many features not supported by bmson applications yet.
+
+#bmson Creation Notes by ドルフィン
+  https://docs.google.com/document/d/1gQKPWApeL03aO09-II7slxTeuvm3HO_FmY1D4chRvOQ/edit
+  How to create bmson, including key sounds creation with DAWs and editing with bmson editors. (English)
 
 
 7. History
+
+Oct 17 2015 alpha 0.0.5
+  - Implemented Undo/Redo.
+  - Implemented "Edit Mode", and then you can move notes and make long notes.
+  - Selected notes can now be deleted or switch playable lanes and BGM lanes at a time.
+  - Modified the UI of Info View and Channel View.
+  - Fixed some slight bugs and improved performance.
 
 Sep 27 2015 alpha 0.0.4
   - Fixed a bug that sequence view goes totally wrong when a sound note in BGM lane is previewed.
