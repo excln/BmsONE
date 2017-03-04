@@ -166,6 +166,10 @@ public:
 		EXISTING_BPM_EVENT,
 		NEW_BAR_LINE,
 		EXISTING_BAR_LINE,
+		TIME_SELECTION,
+		KEY_NOTES_SELECTION,
+		BGM_NOTES_SELECTION,
+		BPM_EVENTS_SELECTION,
 	};
 
 private:
@@ -178,12 +182,22 @@ private:
 	SoundNoteView *existingSoundNote;
 	BpmEvent bpmEvent;
 	BarLine barLine;
+	int timeBegin, timeEnd;
+	QList<int> laneRange;
+	int itemCountInRange;
 
 private:
+	QString AbsoluteLocationString(int t) const;
+	QString CompositeLocationString(int t) const;
+	QString RealTimeString(int t) const;
 	QString GetAbsoluteLocationString() const;
 	QString GetCompositeLocationString() const;
 	QString GetRealTimeString() const;
 	QString GetLaneString() const;
+	QString GetAbsoluteLocationRangeString() const;
+	QString GetCompositeLocationRangeString() const;
+	QString GetRealTimeRangeString() const;
+	QString GetLaneListString() const;
 
 public:
 	SequenceViewCursor(SequenceView *sview);
@@ -206,6 +220,10 @@ public:
 	void SetExistingBpmEvent(BpmEvent event);
 	void SetNewBarLine(BarLine bar);
 	void SetExistingBarLine(BarLine bar);
+	void SetTimeSelection(int time, int timeBegin, int timeEnd);
+	void SetKeyNotesSelection(int time, int timeBegin, int timeEnd, QList<int> lanes, int itemCount);
+	void SetBgmNotesSelection(int time, int timeBegin, int timeEnd, int itemCount);
+	void SetBpmEventsSelection(int time, int timeBegin, int timeEnd, int itemCount);
 
 	bool IsNothing() const{ return state == State::NOTHING; }
 	bool IsTimeWithLane() const{ return state == State::TIME_WITH_LANE; }
@@ -218,6 +236,8 @@ public:
 
 	bool HasTime() const;
 	bool HasLane() const;
+	bool HasTimeRange() const;
+	bool HasItemCount() const;
 
 signals:
 	void Changed();

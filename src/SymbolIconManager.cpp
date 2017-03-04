@@ -14,6 +14,9 @@ SymbolIconManager::SymbolIconManager()
 	icons.insert(Icon::Sound, Load("sound"));
 	icons.insert(Icon::Mute, Load("mute"));
 	icons.insert(Icon::Stop, Load("stop"));
+	icons.insert(Icon::EditMode, Load("edit_mode"));
+	icons.insert(Icon::WriteMode, Load("write_mode"));
+	icons.insert(Icon::InteractiveMode, QIcon());
 	icons.insert(Icon::Snap, Load("snap"));
 	icons.insert(Icon::Location, Load("location"));
 	icons.insert(Icon::Time, Load("time"));

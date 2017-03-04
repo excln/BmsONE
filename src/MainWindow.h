@@ -198,7 +198,9 @@ class App : public QApplication
 	Q_OBJECT
 
 private:
+	static const char* SettingsVersionKey;
 	static const char* SettingsLanguageKey;
+	static const int SettingsVersion;
 
 	QSettings *settings;
 	MainWindow *mainWindow;

@@ -1,0 +1,12 @@
+#ifndef SEQUENCEVIEWDEF_H
+#define SEQUENCEVIEWDEF_H
+
+
+enum class SequenceEditMode{
+	EDIT_MODE,
+	WRITE_MODE,
+	INTERACTIVE_MODE,
+};
+
+#endif // SEQUENCEVIEWDEF_H
+

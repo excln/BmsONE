@@ -6,6 +6,7 @@
 #include "Document.h"
 #include "SoundChannel.h"
 #include "SequenceDef.h"
+#include "SequenceViewDef.h"
 #include <functional>
 
 
@@ -29,11 +30,6 @@ class SequenceView : public QAbstractScrollArea
 	friend class SoundChannelFooter;
 
 public:
-	enum class EditMode{
-		EDIT_MODE,
-		WRITE_MODE,
-		INTERACTIVE_MODE,
-	};
 
 	struct LaneDef{
 		int lane;
@@ -50,12 +46,17 @@ public:
 			: lane(lane), left(left), width(width), color(color), noteColor(noteColor)
 			, leftLine(leftLine), rightLine(rightLine), keyImageName(nm)
 		{}
+		bool operator ==(const LaneDef &r) const{
+			return lane == r.lane;
+		}
 	};
 
 private:
 	static const char* SettingsGroup;
 	static const char* SettingsZoomYKey;
+	static const char* SettingsModeKey;
 	static const char* SettingsSnapToGridKey;
+	static const char* SettingsSnappedHitTestInEditMode;
 	static const char* SettingsCoarseGridKey;
 	static const char* SettingsFineGridKey;
 
@@ -86,6 +87,7 @@ private:
 	int headerHeight;
 	int footerHeight;
 	QMap<int, LaneDef> lanes;
+	QList<LaneDef> sortedLanes;
 	QPen penBigV;
 	QPen penV;
 	QPen penBar;
@@ -107,23 +109,24 @@ private:
 	QList<SoundChannelFooter*> soundChannelFooters;
 
 	// editor states
-	EditMode editMode;
-	bool lockCreation;
-	bool lockDeletion;
-	bool lockVerticalMove;
+	SequenceEditMode editMode;
 	GridSize coarseGrid;
 	GridSize fineGrid;
 	bool snapToGrid;
-	bool playing;
+	bool snappedHitTestInEditMode;
 
 	qreal zoomY;	// pixels per tick
 	qreal zoomXKey;	// 1 = default
 	qreal zoomXBgm;	// 1 = default
 
+	bool playing;
 	int currentChannel;
 	QSet<SoundNoteView*> selectedNotes;
-	SequenceViewCursor *cursor;
 	QMap<int, BpmEvent> selectedBpmEvents;
+	SequenceViewCursor *cursor;
+	QRubberBand *rubberBand;
+	int rubberBandOriginLaneX;
+	int rubberBandOriginTime;
 
 private:
 	qreal Time2Y(qreal time) const;
@@ -133,7 +136,8 @@ private:
 	QSet<int> FineGridsInRange(qreal tBegin, qreal tEnd);
 	QSet<int> CoarseGridsInRange(qreal tBegin, qreal tEnd);
 	QMap<int, QPair<int, BarLine> > BarsInRange(qreal tBegin, qreal tEnd);
-	qreal SnapToFineGrid(qreal time) const;
+	int SnapToLowerFineGrid(qreal time) const;
+	int SnapToUpperFineGrid(qreal time) const;
 	void SetNoteColor(QLinearGradient &g, int lane, bool active) const;
 	void UpdateVerticalScrollBar(qreal newTimeBegin=-1.0);
 	void VisibleRangeChanged() const;
@@ -181,6 +185,9 @@ private:
 	//bool paintEventPlayingHeader(QWidget *widget, QPaintEvent *event);
 	bool paintEventPlayingFooter(QWidget *widget, QPaintEvent *event);
 
+	void mouseEventPlayingPaneEditMode(QMouseEvent *event);
+	void mouseEventPlayingPaneWriteMode(QMouseEvent *event);
+
 private slots:
 	void SoundChannelInserted(int index, SoundChannel *channel);
 	void SoundChannelRemoved(int index, SoundChannel *channel);
@@ -196,12 +203,14 @@ private slots:
 public slots:
 	void ShowLocation(int location);
 	void OnCurrentChannelChanged(int index);
+	void SetMode(SequenceEditMode mode);
 	void SetSnapToGrid(bool snap);
 	void SetSmallGrid(GridSize grid);
 	void SetMediumGrid(GridSize grid);
 
 signals:
 	void CurrentChannelChanged(int index);
+	void ModeChanged(SequenceEditMode mode);
 	void SnapToGridChanged(bool snap);
 	void SmallGridChanged(GridSize grid);
 	void MediumGridChanged(GridSize grid);
@@ -211,6 +220,7 @@ public:
 	virtual ~SequenceView();
 
 	void ReplaceDocument(Document *newDocument);
+	SequenceEditMode GetMode() const{ return editMode; }
 	bool GetSnapToGrid() const{ return snapToGrid; }
 	GridSize GetSmallGrid() const{ return fineGrid; }
 	GridSize GetMediumGrid() const{ return coarseGrid; }

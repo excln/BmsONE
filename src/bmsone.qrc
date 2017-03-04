@@ -20,5 +20,7 @@
         <file>images/symbols/stop.png</file>
         <file>images/symbols/time.png</file>
         <file>images/symbols/undo.png</file>
+        <file>images/symbols/edit_mode.png</file>
+        <file>images/symbols/write_mode.png</file>
     </qresource>
 </RCC>

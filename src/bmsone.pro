@@ -41,7 +41,10 @@ SOURCES += main.cpp\
     HistoryUtil.cpp \
 	DocumentInfo.cpp \
 	QOggVorbisAdapter.cpp \
-    SymbolIconManager.cpp
+    SymbolIconManager.cpp \
+    SequenceViewContents.cpp \
+    StatusBar.cpp \
+    SequenceViewCursor.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -69,7 +72,8 @@ HEADERS  += MainWindow.h \
 	HistoryUtil.h \
 	QOggVorbisAdapter.h \
     DocumentAux.h \
-    SymbolIconManager.h
+    SymbolIconManager.h \
+    SequenceViewDef.h
 
 FORMS    +=
 

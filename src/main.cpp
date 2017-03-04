@@ -17,6 +17,72 @@ int main(int argc, char *argv[])
 }
 
 
+const char* App::SettingsVersionKey = "ConfigVersion";
+const char* App::SettingsLanguageKey = "Language";
+const int App::SettingsVersion = 1;
+
+App::App(int argc, char *argv[])
+	: QApplication(argc, argv)
+	, settings(nullptr)
+	, mainWindow(nullptr)
+{
+	QString settingsDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+	if (settingsDir.isEmpty()){
+		settings = new QSettings(ORGANIZATION_NAME, APP_NAME);
+	}else{
+		settings = new QSettings(QDir(settingsDir).filePath("Settings.ini"), QSettings::IniFormat);
+	}
+	int version = settings->value(SettingsVersionKey, 0).toInt();
+	if (version != SettingsVersion){
+		settings->clear();
+		settings->setValue(SettingsVersionKey, SettingsVersion);
+	}
+	QString locale = settings->value(SettingsLanguageKey, QLocale::system().name()).toString();
+
+	QTranslator *translator = new QTranslator(this);
+	if (translator->load(":/i18n/" + locale)){
+		installTranslator(translator);
+	}
+
+	QTranslator *qtTranslator = new QTranslator(this);
+	if (qtTranslator->load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath))){
+		installTranslator(qtTranslator);
+	}
+
+	QTranslator *qtBaseTranslator = new QTranslator(this);
+	if (qtBaseTranslator->load("qtbase_" + locale, QLibraryInfo::location(QLibraryInfo::TranslationsPath))){
+		installTranslator(qtBaseTranslator);
+	}
+
+	mainWindow = new MainWindow(settings);
+	if (arguments().size() > 1){
+		QStringList filePaths = arguments().mid(1);
+		mainWindow->OpenFiles(filePaths);
+	}
+	mainWindow->show();
+}
+
+App::~App()
+{
+	if (mainWindow) delete mainWindow;
+	if (settings) delete settings;
+}
+
+bool App::event(QEvent *e)
+{
+	if (e->type() == QEvent::FileOpen){
+		QFileOpenEvent *fileOpenEvent = dynamic_cast<QFileOpenEvent*>(e);
+		QStringList filePaths;
+		filePaths.append(fileOpenEvent->file());
+		mainWindow->OpenFiles(filePaths);
+		return true;
+	}
+	return QApplication::event(e);
+}
+
+
+
+
 #if 0
 
 void dummy4tr(){

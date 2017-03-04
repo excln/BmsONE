@@ -2,6 +2,9 @@
 #include "MainWindow.h"
 #include "JsonExtension.h"
 
+const char* InfoView::SettingsGroup = "DocumentInfoView";
+const char* InfoView::SettingsShowExtraFields = "ShowExtraFields";
+
 InfoView::InfoView(MainWindow *mainWindow)
 	: QWidget(mainWindow)
 	, mainWindow(mainWindow)
@@ -15,7 +18,7 @@ InfoView::InfoView(MainWindow *mainWindow)
 	layout->addRow(tr("Initial Bpm:"), editInitBpm = new QuasiModalEdit());
 	layout->addRow(tr("Total:"), editTotal = new QuasiModalEdit());
 	layout->addRow(tr("Level:"), editLevel = new QuasiModalEdit());
-	layout->addRow(new QLabel(tr("Extra fields:")));
+	layout->addRow(tr("Extra fields:"), buttonShowExtraFields = new QToolButton());
 	layout->addRow(editExtraFields = new QuasiModalMultiLineEdit());
 	layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
 	layout->setSizeConstraint(QLayout::SetNoConstraint);
@@ -26,8 +29,12 @@ InfoView::InfoView(MainWindow *mainWindow)
 	editExtraFields->setMinimumHeight(24);
 	editExtraFields->setMaximumHeight(999999); // (チート)
 	editExtraFields->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	editExtraFields->SetSizeHint(QSize(999999, 999999)); // (チート)
+	editExtraFields->SetSizeHint(QSize(200, 999999)); // (チート)
 	setLayout(layout);
+
+	buttonShowExtraFields->setAutoRaise(true);
+	buttonShowExtraFields->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	connect(buttonShowExtraFields, SIGNAL(clicked(bool)), this, SLOT(ShowExtraFields()));
 
 	connect(editTitle, &QLineEdit::editingFinished, this, &InfoView::TitleEdited);
 	connect(editGenre, &QLineEdit::editingFinished, this, &InfoView::GenreEdited);
@@ -46,12 +53,30 @@ InfoView::InfoView(MainWindow *mainWindow)
 	connect(editTotal, &QuasiModalEdit::EscPressed, this, &InfoView::TotalEditCanceled);
 	connect(editLevel, &QuasiModalEdit::EscPressed, this, &InfoView::LevelEditCanceled);
 	connect(editExtraFields, &QuasiModalMultiLineEdit::EscPressed, this, &InfoView::ExtraFieldsEditCanceled);
+
+	auto *settings = mainWindow->GetSettings();
+	settings->beginGroup(SettingsGroup);
+	{
+		bool showExtraFields = settings->value(SettingsShowExtraFields, false).toBool();
+		if (showExtraFields){
+			buttonShowExtraFields->setText("⏫");
+		}else{
+			editExtraFields->hide();
+			buttonShowExtraFields->setText("⏬");
+		}
+	}
+	settings->endGroup();
 }
 
 InfoView::~InfoView()
 {
+	auto *settings = mainWindow->GetSettings();
+	settings->beginGroup(SettingsGroup);
+	{
+		settings->setValue(SettingsShowExtraFields, editExtraFields->isVisibleTo(this));
+	}
+	settings->endGroup();
 }
-
 
 void InfoView::ReplaceDocument(Document *newDocument)
 {
@@ -78,6 +103,17 @@ void InfoView::ReplaceDocument(Document *newDocument)
 		connect(info, &DocumentInfo::TotalChanged, this, &InfoView::TotalChanged);
 		connect(info, &DocumentInfo::LevelChanged, this, &InfoView::LevelChanged);
 		connect(info, &DocumentInfo::ExtraFieldsChanged, this, &InfoView::ExtraFieldsChanged);
+	}
+}
+
+void InfoView::ShowExtraFields()
+{
+	if (editExtraFields->isVisibleTo(this)){
+		editExtraFields->hide();
+		buttonShowExtraFields->setText("⏬");
+	}else{
+		editExtraFields->show();
+		buttonShowExtraFields->setText("⏫");
 	}
 }
 

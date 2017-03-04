@@ -32,7 +32,7 @@ struct GridSize
 	}
 
 	int GridNumber(uint timeBase, qreal time) const{
-		return time * Denominator / (timeBase * Numerator);
+		return int(time * Denominator / (timeBase * Numerator));
 	}
 
 	// equivalence

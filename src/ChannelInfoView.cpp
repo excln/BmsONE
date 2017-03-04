@@ -18,7 +18,7 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	channelList->setMinimumWidth(34);
 	labelImage = new OverallWaveformLabel();
 	labelImage->setMinimumWidth(48);
-	labelImage->setMinimumHeight(48);
+	labelImage->setMinimumHeight(1);
 	labelImage->setMaximumHeight(999999);
 	labelImage->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	labelImage->setScaledContents(true);
@@ -27,9 +27,11 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	buttonPreview->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Sound));
 	buttonPreview->setToolTip(tr("Preview"));
 	buttonPreview->setFixedWidth(24);
+	buttonPreview->setAutoRaise(true);
 	buttonFile = new QToolButton();
 	buttonFile->setToolTip(tr("Sound File"));
 	buttonFile->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	buttonFile->setAutoRaise(true);
 	connect(buttonFile, SIGNAL(clicked()), this, SLOT(SelectSourceFile()));
 	auto headerLayout = new QHBoxLayout();
 	headerLayout->setSpacing(0);
@@ -225,6 +227,7 @@ void ChannelInfoView::OverallWaveformUpdated()
 	if (!image.isNull()){
 		//qDebug() << image.width() << image.height();
 		labelImage->setPixmap(QPixmap::fromImage(image));
+		labelImage->setMinimumHeight(1);
 	}else{
 		labelImage->setPixmap(QPixmap());
 	}
@@ -321,5 +324,5 @@ OverallWaveformLabel::OverallWaveformLabel()
 
 QSize OverallWaveformLabel::sizeHint() const
 {
-	return QSize(999999, 999999); // (チート)
+	return QSize(200, 999999); // (チート)
 }

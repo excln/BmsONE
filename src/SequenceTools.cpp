@@ -20,6 +20,19 @@ SequenceTools::SequenceTools(const QString &objectName, const QString &windowTit
 	setObjectName(objectName);
 	setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 
+	auto modes = new QActionGroup(this);
+
+	editMode = addAction(SymbolIconManager::GetIcon(SymbolIconManager::Icon::EditMode), tr("Edit Mode"));
+	connect(editMode, SIGNAL(triggered()), this, SLOT(EditMode()));
+	editMode->setCheckable(true);
+	modes->addAction(editMode);
+
+	writeMode = addAction(SymbolIconManager::GetIcon(SymbolIconManager::Icon::WriteMode), tr("Write Mode"));
+	connect(writeMode, SIGNAL(triggered()), this, SLOT(WriteMode()));
+	writeMode->setCheckable(true);
+	modes->addAction(writeMode);
+
+	addSeparator();
 	snapToGrid = addAction(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Snap), tr("Snap to Grid"));
 	snapToGrid->setCheckable(true);
 	connect(snapToGrid, SIGNAL(toggled(bool)), this, SLOT(SnapToGrid(bool)));
@@ -54,14 +67,17 @@ SequenceTools::~SequenceTools()
 void SequenceTools::ReplaceSequenceView(SequenceView *newSView)
 {
 	if (sview){
+		disconnect(sview, SIGNAL(ModeChanged(SequenceEditMode)), this, SLOT(ModeChanged(SequenceEditMode)));
 		disconnect(sview, SIGNAL(SnapToGridChanged(bool)), this, SLOT(SnapToGridChanged(bool)));
 		disconnect(sview, SIGNAL(SmallGridChanged(GridSize)), this, SLOT(SmallGridChanged(GridSize)));
 	}
 	sview = newSView;
 	if (sview){
+		connect(sview, SIGNAL(ModeChanged(SequenceEditMode)), this, SLOT(ModeChanged(SequenceEditMode)));
 		connect(sview, SIGNAL(SnapToGridChanged(bool)), this, SLOT(SnapToGridChanged(bool)));
 		connect(sview, SIGNAL(SmallGridChanged(GridSize)), this, SLOT(SmallGridChanged(GridSize)));
 
+		ModeChanged(sview->GetMode());
 		snapToGrid->setEnabled(true);
 		SnapToGridChanged(sview->GetSnapToGrid());
 		SmallGridChanged(sview->GetSmallGrid());
@@ -69,6 +85,20 @@ void SequenceTools::ReplaceSequenceView(SequenceView *newSView)
 		snapToGrid->setEnabled(false);
 		snapToGrid->setChecked(false);
 	}
+}
+
+void SequenceTools::EditMode()
+{
+	if (!sview)
+		return;
+	sview->SetMode(SequenceEditMode::EDIT_MODE);
+}
+
+void SequenceTools::WriteMode()
+{
+	if (!sview)
+		return;
+	sview->SetMode(SequenceEditMode::WRITE_MODE);
 }
 
 void SequenceTools::SnapToGrid(bool snap)
@@ -87,6 +117,24 @@ void SequenceTools::SmallGrid(int index)
 	disconnect(sview, SIGNAL(SmallGridChanged(GridSize)), this, SLOT(SmallGridChanged(GridSize)));
 	sview->SetSmallGrid(grid);
 	connect(sview, SIGNAL(SmallGridChanged(GridSize)), this, SLOT(SmallGridChanged(GridSize)));
+}
+
+void SequenceTools::ModeChanged(SequenceEditMode mode)
+{
+	switch (mode){
+	case SequenceEditMode::EDIT_MODE:
+		editMode->setChecked(true);
+		writeMode->setChecked(false);
+		break;
+	case SequenceEditMode::WRITE_MODE:
+		editMode->setChecked(false);
+		writeMode->setChecked(true);
+		break;
+	case SequenceEditMode::INTERACTIVE_MODE:
+		editMode->setChecked(false);
+		writeMode->setChecked(false);
+		break;
+	}
 }
 
 void SequenceTools::SnapToGridChanged(bool snap)

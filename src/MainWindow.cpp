@@ -65,7 +65,16 @@ MainWindow::MainWindow(QSettings *settings)
 
 	actionEditRedo = new QAction(tr("Redo"), this);
 	actionEditRedo->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Redo));
+#ifdef Q_OS_WIN
+	{
+		QList<QKeySequence> shortcutsRedo;
+		shortcutsRedo.append(QKeySequence::Redo);
+		shortcutsRedo.append(Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_Z);
+		actionEditRedo->setShortcuts(shortcutsRedo);
+	}
+#else
 	actionEditRedo->setShortcut(QKeySequence::Redo);
+#endif
 	QObject::connect(actionEditRedo, SIGNAL(triggered()), this, SLOT(EditRedo()));
 
 	actionEditCut = new QAction(tr("Cut"), this);
@@ -300,6 +309,8 @@ MainWindow::MainWindow(QSettings *settings)
 
 		if (settings->contains(SettingsWidgetsStateKey)){
 			restoreState(settings->value(SettingsWidgetsStateKey).toByteArray());
+		}else{
+			restoreState(saveState());
 		}
 
 		if (settings->value(SettingsHideInactiveSelectedViewKey, true).toBool()){
@@ -544,7 +555,9 @@ void MainWindow::FilePathChanged()
 	}else{
 		title = QDir::toNativeSeparators(title);
 	}
-	if (document->GetHistory()->IsDirty()){
+	bool dirty = document->GetHistory()->IsDirty();
+	setWindowModified(dirty);
+	if (dirty){
 		title += " *";
 	}
 	title += " - " APP_NAME;
@@ -779,137 +792,4 @@ void MainWindow::OpenFiles(QStringList filePaths)
 }
 
 
-
-
-
-StatusBar::StatusBar(MainWindow *mainWindow)
-	: QStatusBar(mainWindow)
-	, mainWindow(mainWindow)
-{
-	absoluteLocationSection = new StatusBarSection(tr("Absolute Location"), SymbolIconManager::GetIcon(SymbolIconManager::Icon::Location), 80);
-	addWidget(absoluteLocationSection, 0);
-	compositeLocationSection = new StatusBarSection(tr("Location"), SymbolIconManager::GetIcon(SymbolIconManager::Icon::Location), 120);
-	addWidget(compositeLocationSection, 0);
-	realTimeSection = new StatusBarSection(tr("Real Time"), SymbolIconManager::GetIcon(SymbolIconManager::Icon::Time), 120);
-	addWidget(realTimeSection, 0);
-	laneSection = new StatusBarSection(tr("Lane"), SymbolIconManager::GetIcon(SymbolIconManager::Icon::Lane), 100);
-	addWidget(laneSection, 0);
-	objectSection = new StatusBarSection(QString(), QIcon(), 320);
-	addWidget(objectSection, 1);
-}
-
-StatusBar::~StatusBar()
-{
-}
-
-
-
-const int StatusBarSection::BaseHeight = 18;
-
-StatusBarSection::StatusBarSection(QString name, QIcon icon, int baseWidth)
-	: QWidget()
-	, name(name)
-	, icon(icon)
-	, baseWidth(baseWidth)
-{
-	if (!name.isEmpty()){
-		setToolTip(name);
-	}
-}
-
-StatusBarSection::~StatusBarSection()
-{
-}
-
-void StatusBarSection::SetIcon(QIcon icon)
-{
-	this->icon = icon;
-	update();
-}
-
-void StatusBarSection::SetText(QString text)
-{
-	this->text = text;
-	update();
-}
-
-QSize StatusBarSection::minimumSizeHint() const
-{
-	return QSize(BaseHeight, BaseHeight);
-}
-
-QSize StatusBarSection::sizeHint() const
-{
-	return QSize(baseWidth, BaseHeight);
-}
-
-void StatusBarSection::paintEvent(QPaintEvent *event)
-{
-	QPainter painter(this);
-	int x = 0;
-	if (!icon.isNull()){
-		QPixmap pm = icon.pixmap(QSize(height(), height()), QIcon::Normal);
-		painter.drawPixmap(QPoint(x, 0), pm);
-		x += height() + 2;
-	}
-	painter.setPen(palette().windowText().color());
-	painter.drawText(x, 0, width()-x, height(), 0, text);
-}
-
-
-const char* App::SettingsLanguageKey = "Language";
-
-App::App(int argc, char *argv[])
-	: QApplication(argc, argv)
-	, settings(nullptr)
-	, mainWindow(nullptr)
-{
-	QString settingsDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-	if (settingsDir.isEmpty()){
-		settings = new QSettings(ORGANIZATION_NAME, APP_NAME);
-	}else{
-		settings = new QSettings(QDir(settingsDir).filePath("Settings.ini"), QSettings::IniFormat);
-	}
-	QString locale = settings->value(SettingsLanguageKey, QLocale::system().name()).toString();
-
-	QTranslator *translator = new QTranslator(this);
-	if (translator->load(":/i18n/" + locale)){
-		installTranslator(translator);
-	}
-
-	QTranslator *qtTranslator = new QTranslator(this);
-	if (qtTranslator->load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath))){
-		installTranslator(qtTranslator);
-	}
-
-	QTranslator *qtBaseTranslator = new QTranslator(this);
-	if (qtBaseTranslator->load("qtbase_" + locale, QLibraryInfo::location(QLibraryInfo::TranslationsPath))){
-		installTranslator(qtBaseTranslator);
-	}
-
-	mainWindow = new MainWindow(settings);
-	if (arguments().size() > 1){
-		QStringList filePaths = arguments().mid(1);
-		mainWindow->OpenFiles(filePaths);
-	}
-	mainWindow->show();
-}
-
-App::~App()
-{
-	if (mainWindow) delete mainWindow;
-	if (settings) delete settings;
-}
-
-bool App::event(QEvent *e)
-{
-	if (e->type() == QEvent::FileOpen){
-		QFileOpenEvent *fileOpenEvent = dynamic_cast<QFileOpenEvent*>(e);
-		QStringList filePaths;
-		filePaths.append(fileOpenEvent->file());
-		mainWindow->OpenFiles(filePaths);
-		return true;
-	}
-	return QApplication::event(e);
-}
 

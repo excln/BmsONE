@@ -15,6 +15,10 @@ class InfoView : public QWidget
 	Q_OBJECT
 
 private:
+	static const char* SettingsGroup;
+	static const char* SettingsShowExtraFields;
+
+private:
 	MainWindow *mainWindow;
 	QuasiModalEdit *editTitle;
 	QuasiModalEdit *editGenre;
@@ -23,6 +27,7 @@ private:
 	QuasiModalEdit *editTotal;
 	QuasiModalEdit *editInitBpm;
 	QuasiModalEdit *editLevel;
+	QToolButton *buttonShowExtraFields;
 	QuasiModalMultiLineEdit *editExtraFields;
 
 	// current document
@@ -47,6 +52,8 @@ public:
 
 
 private slots:
+	void ShowExtraFields();
+
 	void TitleEdited();
 	void GenreEdited();
 	void ArtistEdited();
