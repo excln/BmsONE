@@ -4,6 +4,7 @@
 #include "MainWindow.h"
 #include "BpmEditTool.h"
 #include "MasterView.h"
+#include "EditConfig.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -14,7 +15,6 @@ const char* SequenceView::SettingsSnapToGridKey = "SnapToGrid";
 const char* SequenceView::SettingsSnappedHitTestInEditMode = "SnappedHitTestInEditMode";
 const char* SequenceView::SettingsCoarseGridKey = "CoarseGrid";
 const char* SequenceView::SettingsFineGridKey = "FineGrid";
-const char* SequenceView::SettingsShowMiniMapKey = "ShowMiniMap";
 
 
 QWidget *SequenceView::NewWidget(
@@ -161,10 +161,13 @@ SequenceView::SequenceView(MainWindow *parent)
 		snapToGrid = settings->value(SettingsSnapToGridKey, true).toBool();
 		snappedHitTestInEditMode = settings->value(SettingsSnappedHitTestInEditMode, true).toBool();
 		zoomY = settings->value(SettingsZoomYKey, 48./240.).toDouble();
-
-		showMiniMap = settings->value(SettingsShowMiniMapKey, true).toBool();
 	}
 	settings->endGroup();
+
+	showMiniMap = EditConfig::CanShowMiniMap();
+	connect(EditConfig::Instance(), SIGNAL(CanShowMiniMapChanged(bool)), this, SLOT(ShowMiniMapChanged(bool)));
+	fixMiniMap = EditConfig::GetFixMiniMap();
+	connect(EditConfig::Instance(), SIGNAL(FixMiniMapChanged(bool)), this, SLOT(FixMiniMapChanged(bool)));
 
 	currentChannel = 0;
 	selection = SequenceEditSelection::NO_SELECTION;
@@ -183,6 +186,7 @@ SequenceView::SequenceView(MainWindow *parent)
 	}
 
 	ViewModeChanged(ViewMode::ViewModeBeat7k());
+	FixMiniMapChanged(fixMiniMap);
 }
 
 SequenceView::~SequenceView()
@@ -201,6 +205,15 @@ SequenceView::~SequenceView()
 		settings->setValue(SettingsZoomYKey, zoomY);
 	}
 	settings->endGroup();
+}
+
+void SequenceView::UpdateViewportMargins()
+{
+	setViewportMargins(
+		timeLineWidth + playingWidth,
+		headerHeight,
+		showMiniMap && fixMiniMap ? miniMap->width() : 0,
+		footerHeight);
 }
 
 void SequenceView::ReplaceSkin(Skin *newSkin)
@@ -1301,7 +1314,7 @@ bool SequenceView::eventFilter(QObject *sender, QEvent *event)
 	case QEvent::MouseMove:
 	{
 		// Used for popping in/out of mini map (don't consume it)
-		if (showMiniMap){
+		if (showMiniMap && !fixMiniMap){
 			auto widget = dynamic_cast<QWidget*>(sender);
 			auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
 			auto pt = widget->mapTo(this, mouseEvent->pos());
@@ -1327,7 +1340,7 @@ bool SequenceView::eventFilter(QObject *sender, QEvent *event)
 	}
 	case QEvent::MouseButtonRelease:
 	{
-		if (miniMap->IsPresent()){
+		if (miniMap->IsPresent() && !fixMiniMap){
 			auto ptGlobal = QCursor::pos();
 			auto pt = mapFromGlobal(ptGlobal);
 			auto rectGeom = viewport()->geometry();
@@ -1431,6 +1444,24 @@ void SequenceView::ShowPlayingPaneContextMenu(QPoint globalPos)
 	menu.exec(globalPos);
 }
 
+void SequenceView::ShowMiniMapChanged(bool value)
+{
+	showMiniMap = value;
+	if (miniMap->IsPresent()){
+		miniMap->PopOut();
+	}
+}
+
+void SequenceView::FixMiniMapChanged(bool value)
+{
+	fixMiniMap = value;
+	UpdateViewportMargins();
+	OnViewportResize();
+	if (showMiniMap){
+		miniMap->SetFixed(value);
+	}
+}
+
 void SequenceView::ShowLocation(int location)
 {
 	int my = 4;
@@ -1504,7 +1535,7 @@ void SequenceView::SkinChanged()
 		label->show();
 		playingFooterImages.append(label);
 	}
-	setViewportMargins(timeLineWidth + playingWidth, headerHeight, 0, footerHeight);
+	UpdateViewportMargins();
 	OnViewportResize();
 	playingPane->update();
 }

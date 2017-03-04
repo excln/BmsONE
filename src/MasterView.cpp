@@ -2,6 +2,7 @@
 #include "MasterCache.h"
 #include "MasterView.h"
 #include "SequenceView.h"
+#include "EditConfig.h"
 
 MiniMapView::MiniMapView(SequenceView *sview)
 	: QWidget(sview)
@@ -10,6 +11,7 @@ MiniMapView::MiniMapView(SequenceView *sview)
 	, master(nullptr)
 	, buffer(BufferWidth, BufferHeight, QImage::Format_RGB32)
 	, present(false)
+	, opacity(1)
 {
 	posX = x();
 	posWidth = 50;
@@ -19,6 +21,9 @@ MiniMapView::MiniMapView(SequenceView *sview)
 	hide();
 	rmsCacheInvalid = true;
 	bufferInvalid = true;
+	opacity = EditConfig::GetMiniMapOpacity();
+
+	connect(EditConfig::Instance(), SIGNAL(MiniMapOpacityChanged(double)), this, SLOT(MiniMapOpacityChanged(double)));
 }
 
 MiniMapView::~MiniMapView()
@@ -48,7 +53,9 @@ void MiniMapView::SetPosition(int x, int top, int height)
 	posX = x;
 	posTop = top;
 	posHeight = height;
-	if (isVisible()){
+	if (isVisibleTo(parentWidget()) && fixed){
+		setGeometry(x, top, posWidth, height);
+	}else if (present){
 		setGeometry(x-posWidth, top, posWidth, height);
 	}else{
 		setGeometry(x, top, posWidth, height);
@@ -57,7 +64,7 @@ void MiniMapView::SetPosition(int x, int top, int height)
 
 void MiniMapView::PopIn()
 {
-	if (present)
+	if (fixed || present)
 		return;
 	show();
 	auto anim = new QPropertyAnimation(this, "geometry");
@@ -71,7 +78,7 @@ void MiniMapView::PopIn()
 
 void MiniMapView::PopOut()
 {
-	if (!present)
+	if (fixed ||!present)
 		return;
 	auto anim = new QPropertyAnimation(this, "geometry");
 	anim->setDuration(200);
@@ -83,12 +90,31 @@ void MiniMapView::PopOut()
 	present = false;
 }
 
+void MiniMapView::SetFixed(bool value)
+{
+	fixed = value;
+	if (fixed){
+		present = true;
+		setGeometry(QRect(posX, posTop, posWidth, posHeight));
+		show();
+	}else{
+		PopOut();
+	}
+}
+
 
 void MiniMapView::MasterCacheUpdated(int position, int length)
 {
 	// toriaezu
 	rmsCacheInvalid = true;
 	bufferInvalid = true;
+	// don't update yet
+}
+
+void MiniMapView::MiniMapOpacityChanged(double value)
+{
+	opacity = value;
+	update();
 }
 
 void MiniMapView::ReconstructRmsCache()
@@ -195,7 +221,9 @@ void MiniMapView::PopOutAnimationFinished()
 void MiniMapView::paintEvent(QPaintEvent *event)
 {
 	QPainter painter(this);
-	painter.setOpacity(0.67);
+	if (!fixed){
+		painter.setOpacity(opacity);
+	}
 
 	if (!document){
 		painter.fillRect(rect(), QColor(0, 0, 0));
@@ -212,7 +240,7 @@ void MiniMapView::paintEvent(QPaintEvent *event)
 	double tEnd = sview->viewLength - (scrollY + 0)/sview->zoomY;
 	int yBegin = height() - tBegin * height() / sview->viewLength;
 	int yEnd = height() - tEnd * height() / sview->viewLength;
-	painter.fillRect(QRect(0, yEnd, width(), yBegin - yEnd), QColor(255, 255, 255, 128));
+	painter.fillRect(QRect(0, yEnd, width(), yBegin - yEnd + 1), QColor(255, 255, 255, 128));
 
 }
 
@@ -241,6 +269,7 @@ void MiniMapView::mousePressEvent(QMouseEvent *event)
 		dragVOrigin = sview->verticalScrollBar()->value();
 		dragging = true;
 	}
+	update();
 }
 
 void MiniMapView::mouseMoveEvent(QMouseEvent *event)

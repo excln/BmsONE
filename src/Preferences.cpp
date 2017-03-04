@@ -1,17 +1,86 @@
 #include "Preferences.h"
 #include "MainWindow.h"
-
-const char* Preferences::SettingsFileSaveFormatKey = "File/SaveFormat";
-
+#include "PrefEdit.h"
 
 Preferences::Preferences(MainWindow *mainWindow)
 	: QDialog(mainWindow)
 	, mainWindow(mainWindow)
-	, settings(mainWindow->GetSettings())
 {
-	setWindowTitle(tr("Preferences"));
 	setModal(true);
-	auto bodyLayout = new QFormLayout();
+	setWindowTitle(tr("Preferences"));
+	auto buttonsLayout = new QHBoxLayout();
+	auto closeButton = new QPushButton(tr("Close"));
+	buttonsLayout->addStretch(1);
+	buttonsLayout->addWidget(closeButton);
+
+	list = new QListWidget();
+	list->setIconSize(QSize(32, 32));
+	list->setMovement(QListView::Static);
+	list->setMaximumWidth(120);
+
+	pages = new QStackedWidget;
+
+	// GENERAL
+	generalPage = new PrefGeneralPage(this);
+	pages->addWidget(generalPage);
+	auto generalItem = new QListWidgetItem(list);
+	generalItem->setIcon(QIcon(":/images/config/general.png"));
+	generalItem->setText(tr("General"));
+	generalItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	// EDIT
+	editPage = new PrefEditPage(this);
+	pages->addWidget(editPage);
+	auto editItem = new QListWidgetItem(list);
+	editItem->setIcon(QIcon(":/images/config/general.png"));
+	editItem->setText(tr("Edit"));
+	editItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	list->setCurrentRow(0);
+
+	auto bodyLayout = new QHBoxLayout();
+	bodyLayout->addWidget(list);
+	bodyLayout->addWidget(pages, 1);
+
+	auto mainLayout = new QVBoxLayout();
+	mainLayout->addLayout(bodyLayout, 1);
+	mainLayout->addLayout(buttonsLayout);
+	setLayout(mainLayout);
+
+	connect(list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(PageChanged(QListWidgetItem*,QListWidgetItem*)));
+	connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+}
+
+Preferences::~Preferences()
+{
+}
+
+void Preferences::showEvent(QShowEvent *event)
+{
+	generalPage->load();
+	editPage->load();
+	QDialog::showEvent(event);
+}
+
+void Preferences::hideEvent(QHideEvent *event)
+{
+	generalPage->store();
+	editPage->store();
+	QDialog::hideEvent(event);
+}
+
+void Preferences::PageChanged(QListWidgetItem *current, QListWidgetItem *previous)
+{
+	if (!current){
+		current = previous;
+	}
+	pages->setCurrentIndex(list->row(current));
+}
+
+PrefGeneralPage::PrefGeneralPage(QWidget *parent)
+	: QWidget(parent)
+{
+	auto layout = new QFormLayout();
 	{
 		auto subLayout = new QHBoxLayout();
 		subLayout->setSpacing(10);
@@ -22,52 +91,25 @@ Preferences::Preferences(MainWindow *mainWindow)
 		language->addItem("Japanese"); // 2
 		subLayout->addWidget(language);
 		subLayout->addWidget(new QLabel(tr("(Requires restart)")));
-		bodyLayout->addRow(tr("Language:"), subLayout);
-		QString description = tr("Select a language used in this application. After selecting one, restart BmsONE.");
-		language->setWhatsThis(description);
+		layout->addRow(tr("Language:"), subLayout);
+		language->setWhatsThis(tr("Select a language used in this application. After selecting one, restart BmsONE."));
+		language->setToolTip(language->whatsThis());
 	}
 	{
 		outputFormat = new QComboBox();
-		outputFormat->addItem("Default");
-		outputFormat->addItem("Latest");
+		QStringList strs = BmsonIO::SaveFormatStringList();
+		outputFormat->addItems(strs);
 		outputFormat->insertSeparator(2);
-		outputFormat->addItem("1.0");
-		outputFormat->addItem("0.21");
 		//outputFormat->setEditable(true);
-		bodyLayout->addRow(tr("Save Format:"), outputFormat);
-		QString description = tr("<p>Select a version of BMSON format to save files in.</p>"
-								 "<p><b>Default</b> (recommended): the most suitable version for current BmsONE.</p>");
-		outputFormat->setWhatsThis(description);
+		layout->addRow(tr("Save Format:"), outputFormat);
+		outputFormat->setWhatsThis(tr("<p>Select a version of BMSON format to save files in.</p>"
+									  "<p><b>Default</b> (recommended): the most suitable version for current BmsONE.</p>"));
+		outputFormat->setToolTip(outputFormat->whatsThis());
 	}
-
-	auto buttonsLayout = new QHBoxLayout();
-	auto closeButton = new QPushButton(tr("Close"));
-	buttonsLayout->addStretch(1);
-	buttonsLayout->addWidget(closeButton);
-
-	auto mainLayout = new QVBoxLayout();
-	mainLayout->addLayout(bodyLayout);
-	mainLayout->addStretch(1);
-	mainLayout->addSpacing(12);
-	mainLayout->addLayout(buttonsLayout);
-	setLayout(mainLayout);
-
-	connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
-
-	connect(language,SIGNAL(currentIndexChanged(int)), this, SLOT(LanguageChanged(int)));
-	connect(outputFormat, SIGNAL(currentTextChanged(QString)), this, SLOT(OutputFormatChanged(QString)));
+	setLayout(layout);
 }
 
-Preferences::~Preferences()
-{
-}
-
-BmsonIO::BmsonVersion Preferences::GetSaveFormat()
-{
-	return OutputVersionOf(settings->value(SettingsFileSaveFormatKey, "Default").toString());
-}
-
-QString Preferences::LanguageKeyOf(int index)
+QString PrefGeneralPage::LanguageKeyOf(int index)
 {
 	switch (index){
 	case 1:
@@ -80,7 +122,7 @@ QString Preferences::LanguageKeyOf(int index)
 	}
 }
 
-int Preferences::LanguageIndexOf(QString key)
+int PrefGeneralPage::LanguageIndexOf(QString key)
 {
 	if (key == "en"){
 		return 1;
@@ -91,38 +133,17 @@ int Preferences::LanguageIndexOf(QString key)
 	}
 }
 
-BmsonIO::BmsonVersion Preferences::OutputVersionOf(QString text)
+void PrefGeneralPage::load()
 {
-	if (text == "Default"){
-		return BmsonIO::NativeVersion;
-	}else if (text == "Latest"){
-		return BmsonIO::LatestVersion;
-	}else if (text == "1.0"){
-		return BmsonIO::BMSON_V_1_0;
-	}else if (text == "0.21"){
-		return BmsonIO::BMSON_V_0_21;
-	}else{
-		return BmsonIO::NativeVersion;
-	}
+	outputFormat->setCurrentText(BmsonIO::GetSaveFormatString());
+	language->setCurrentIndex(LanguageIndexOf(App::Instance()->GetSettings()->value(App::SettingsLanguageKey).toString()));
 }
 
-void Preferences::showEvent(QShowEvent *event)
+void PrefGeneralPage::store()
 {
-	outputFormat->setCurrentText(settings->value(SettingsFileSaveFormatKey, "Default").toString());
-	language->setCurrentIndex(LanguageIndexOf(settings->value(App::SettingsLanguageKey).toString()));
-	QDialog::showEvent(event);
+	// Language
+	QString languageKey = LanguageKeyOf(language->currentIndex());
+	App::Instance()->GetSettings()->setValue(App::SettingsLanguageKey, languageKey);
+	// Format
+	BmsonIO::SetSaveFormatString(outputFormat->currentText());
 }
-
-void Preferences::LanguageChanged(int index)
-{
-	QString languageKey = LanguageKeyOf(index);
-	settings->setValue(App::SettingsLanguageKey, languageKey);
-}
-
-void Preferences::OutputFormatChanged(QString text)
-{
-	settings->setValue(SettingsFileSaveFormatKey, text);
-	emit SaveFormatChanged(OutputVersionOf(text));
-}
-
-

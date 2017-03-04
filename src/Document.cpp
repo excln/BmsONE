@@ -6,6 +6,7 @@
 #include "MasterCache.h"
 #include <QFile>
 #include "Bmson.h"
+#include "EditConfig.h"
 
 const double BmsConsts::MaxBpm = 1.e+6;
 const double BmsConsts::MinBpm = 1.e-6;
@@ -31,6 +32,9 @@ Document::Document(QObject *parent)
 	outputVersion = BmsonIO::NativeVersion;
 	savedVersion = BmsonIO::NativeVersion;
 	connect(&info, SIGNAL(InitBpmChanged(double)), this, SLOT(OnInitBpmChanged()));
+
+	masterEnabled = EditConfig::GetEnableMasterChannel();
+	connect(EditConfig::Instance(), SIGNAL(EnableMasterChannelChanged(bool)), this, SLOT(EnableMasterChannelChanged(bool)));
 }
 
 Document::~Document()
@@ -347,6 +351,14 @@ void Document::OnInitBpmChanged()
 	emit TimeMappingChanged();
 }
 
+void Document::EnableMasterChannelChanged(bool enabled)
+{
+	if (masterEnabled != enabled){
+		masterEnabled = enabled;
+		ReconstructMasterCache();
+	}
+}
+
 bool Document::InsertBarLine(BarLine bar)
 {
 	if (barLines.contains(bar.Location) && barLines[bar.Location] == bar)
@@ -550,6 +562,8 @@ Document::DocumentUpdateSoundNotesContext *Document::BeginModalEditSoundNotes(co
 
 void Document::ReconstructMasterCache()
 {
+	if (!masterEnabled)
+		return;
 	master->ClearAll();
 	for (auto channel : soundChannels){
 		channel->AddAllIntoMasterCache(master);

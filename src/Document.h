@@ -133,6 +133,9 @@ private:
 	int actualLength;
 	int totalLength;
 
+	// config
+	bool masterEnabled;
+
 private:
 	void InsertSoundChannelInternal(SoundChannel *channel, int index);
 	void RemoveSoundChannelInternal(SoundChannel *channel, int index);
@@ -140,6 +143,7 @@ private:
 
 private slots:
 	void OnInitBpmChanged();
+	void EnableMasterChannelChanged(bool enabled);
 
 public:
 	Document(QObject *parent=nullptr);

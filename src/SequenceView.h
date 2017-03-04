@@ -41,7 +41,6 @@ private:
 	static const char* SettingsSnappedHitTestInEditMode;
 	static const char* SettingsCoarseGridKey;
 	static const char* SettingsFineGridKey;
-	static const char* SettingsShowMiniMapKey;
 
 private:
 	class Context{
@@ -149,6 +148,7 @@ private:
 	bool snapToGrid;
 	bool snappedHitTestInEditMode;
 	bool showMiniMap;
+	bool fixMiniMap;
 
 	qreal zoomY;	// pixels per tick
 	qreal zoomXKey;	// 1 = default
@@ -166,6 +166,7 @@ private:
 	int lockCommands;
 
 private:
+	void UpdateViewportMargins();
 	void ReplaceSkin(Skin *newSkin);
 	qreal Time2Y(qreal time) const;
 	qreal Y2Time(qreal y) const;
@@ -255,6 +256,8 @@ private slots:
 	void MoveSoundChannelRight(SoundChannelView *cview);
 	void CursorChanged();
 	void ShowPlayingPaneContextMenu(QPoint globalPos);
+	void ShowMiniMapChanged(bool value);
+	void FixMiniMapChanged(bool value);
 
 public slots:
 	void ShowLocation(int location);

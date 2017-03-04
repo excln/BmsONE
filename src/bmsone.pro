@@ -84,7 +84,9 @@ SOURCES += main.cpp\
     Skin.cpp \
     ViewMode.cpp \
     MasterCache.cpp \
-    MasterView.cpp
+    MasterView.cpp \
+    EditConfig.cpp \
+    PrefEdit.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -149,7 +151,9 @@ HEADERS  += MainWindow.h \
     Skin.h \
     ViewMode.h \
     MasterCache.h \
-    MasterView.h
+    MasterView.h \
+    EditConfig.h \
+    PrefEdit.h
 
 FORMS    +=
 

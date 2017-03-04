@@ -7,41 +7,50 @@
 
 class MainWindow;
 
+class PrefEditPage;
+
+
+class PrefGeneralPage : public QWidget
+{
+	Q_OBJECT
+
+private:
+	QComboBox *language;
+	QComboBox *outputFormat;
+
+	QString LanguageKeyOf(int index);
+	int LanguageIndexOf(QString key);
+
+public:
+	PrefGeneralPage(QWidget *parent);
+
+	void load();
+	void store();
+
+};
+
 
 class Preferences : public QDialog
 {
 	Q_OBJECT
 
 private:
-	static const char* SettingsFileSaveFormatKey;
-
-private:
 	MainWindow *mainWindow;
-	QSettings *settings;
+	QListWidget *list;
+	QStackedWidget *pages;
 
-	QComboBox *language;
-	QComboBox *outputFormat;
+	PrefGeneralPage *generalPage;
+	PrefEditPage *editPage;
 
-private:
-	QString LanguageKeyOf(int index);
-	int LanguageIndexOf(QString key);
-	BmsonIO::BmsonVersion OutputVersionOf(QString text);
-
-private:
 	virtual void showEvent(QShowEvent *event);
+	virtual void hideEvent(QHideEvent *event);
 
 private slots:
-	void LanguageChanged(int index);
-	void OutputFormatChanged(QString text);
+	void PageChanged(QListWidgetItem *current, QListWidgetItem *previous);
 
 public:
 	Preferences(MainWindow *mainWindow);
 	virtual ~Preferences();
-
-	BmsonIO::BmsonVersion GetSaveFormat();
-
-signals:
-	void SaveFormatChanged(BmsonIO::BmsonVersion version);
 
 };
 

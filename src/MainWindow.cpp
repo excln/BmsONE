@@ -318,7 +318,7 @@ MainWindow::MainWindow(QSettings *settings)
 
 	preferences = new Preferences(this);
 	UIUtil::SetFont(preferences);
-	connect(preferences, SIGNAL(SaveFormatChanged(BmsonIO::BmsonVersion)), this, SLOT(SaveFormatChanged(BmsonIO::BmsonVersion)));
+	connect(BmsonIO::Instance(), SIGNAL(SaveFormatChanged(BmsonIO::BmsonVersion)), this, SLOT(SaveFormatChanged(BmsonIO::BmsonVersion)));
 
 	sequenceTools = new SequenceTools("Sequence Tools", tr("Sequence Tools"), this);
 	UIUtil::SetFont(sequenceTools);
@@ -738,7 +738,7 @@ void MainWindow::ReplaceDocument(Document *newDocument)
 	channelInfoView->ReplaceDocument(document);
 	sequenceView->ReplaceDocument(document);
 
-	document->SetOutputVersion(preferences->GetSaveFormat());
+	document->SetOutputVersion(BmsonIO::GetSaveFormat());
 
 	HistoryChanged(); // calls FilePathChanged()
 	OnCurrentChannelChanged(-1);

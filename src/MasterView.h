@@ -28,6 +28,8 @@ private:
 	int posX, posWidth;
 	int posTop, posHeight;
 	bool present;
+	bool fixed;
+	double opacity;
 
 	bool rmsCacheInvalid;
 	QVector<RmsCachePacket> rmsCacheOfTicks;
@@ -47,6 +49,8 @@ private slots:
 	void PopOutAnimationFinished();
 	void MasterCacheUpdated(int position, int length);
 
+	void MiniMapOpacityChanged(double value);
+
 public:
 	MiniMapView(SequenceView *sview);
 	~MiniMapView();
@@ -63,6 +67,7 @@ public:
 	bool IsPresent() const{ return present; }
 	void PopIn();
 	void PopOut();
+	void SetFixed(bool value);
 };
 
 

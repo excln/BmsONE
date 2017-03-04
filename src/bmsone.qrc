@@ -29,5 +29,6 @@
         <file>images/keys/p-red.png</file>
         <file>images/keys/p-white.png</file>
         <file>images/keys/p-yellow.png</file>
+        <file>images/config/general.png</file>
     </qresource>
 </RCC>
