@@ -3,7 +3,6 @@
 
 #include <QtCore>
 #include "Wave.h"
-#include "Bmson.h"
 #include "DocumentDef.h"
 #include "SoundChannelDef.h"
 

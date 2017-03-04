@@ -8,6 +8,7 @@
 #include <QtMultimedia/QMediaPlayer>
 #include "UIDef.h"
 #include "SymbolIconManager.h"
+#include "Preferences.h"
 
 const char* MainWindow::SettingsGroup = "MainWindow";
 const char* MainWindow::SettingsGeometryKey = "Geometry";
@@ -122,6 +123,10 @@ MainWindow::MainWindow(QSettings *settings)
 	actionEditPlay = new QAction(tr("Play"), this);
 	actionEditPlay->setShortcut(Qt::ControlModifier + Qt::Key_P);
 
+	actionEditPreferences = new QAction(tr("Preferences..."), this);
+	actionEditPreferences->setShortcut(QKeySequence::Preferences);
+	connect(actionEditPreferences, SIGNAL(triggered()), this, SLOT(EditPreferences()));
+
 	actionViewFullScreen = new QAction(tr("Toggle Full Screen"), this);
 	actionViewFullScreen->setShortcut(QKeySequence::FullScreen);
 	connect(actionViewFullScreen, SIGNAL(triggered()), this, SLOT(ViewFullScreen()));
@@ -212,6 +217,8 @@ MainWindow::MainWindow(QSettings *settings)
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditPlay);
 #endif
+	menuEdit->addSeparator();
+	menuEdit->addAction(actionEditPreferences);
 	auto *menuView = menuBar()->addMenu(tr("View"));
 	auto *menuViewDockBars = menuView->addMenu(tr("Views"));
 	actionViewDockSeparator = menuViewDockBars->addSeparator();
@@ -269,6 +276,9 @@ MainWindow::MainWindow(QSettings *settings)
 	editTools->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(editTools);
 	menuViewToolBars->insertAction(actionViewTbSeparator, editTools->toggleViewAction());
+
+	preferences = new Preferences(this);
+	connect(preferences, SIGNAL(SaveFormatChanged(BmsonIO::BmsonVersion)), this, SLOT(SaveFormatChanged(BmsonIO::BmsonVersion)));
 
 	sequenceTools = new SequenceTools("Sequence Tools", tr("Sequence Tools"), this);
 	sequenceTools->setIconSize(UIUtil::ToolBarIconSize);
@@ -475,6 +485,11 @@ void MainWindow::EditRedo()
 	document->GetHistory()->Redo();
 }
 
+void MainWindow::EditPreferences()
+{
+	preferences->exec();
+}
+
 void MainWindow::ViewFullScreen()
 {
 	if (isFullScreen()){
@@ -653,6 +668,13 @@ void MainWindow::OnBpmEdited()
 	document->UpdateBpmEvents(bpmEvents);
 }
 
+void MainWindow::SaveFormatChanged(BmsonIO::BmsonVersion version)
+{
+	if (!document)
+		return;
+	document->SetOutputVersion(version);
+}
+
 void MainWindow::ReplaceDocument(Document *newDocument)
 {
 	if (document){
@@ -670,6 +692,8 @@ void MainWindow::ReplaceDocument(Document *newDocument)
 	infoView->ReplaceDocument(document);
 	channelInfoView->ReplaceDocument(document);
 	sequenceView->ReplaceDocument(document);
+
+	document->SetOutputVersion(preferences->GetSaveFormat());
 
 	HistoryChanged(); // calls FilePathChanged()
 	OnCurrentChannelChanged(-1);

@@ -2,8 +2,6 @@
 #define DOCUMENTDEF_H
 
 #include <QtCore>
-#include "Bmson.h"
-
 
 class BmsConsts
 {

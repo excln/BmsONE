@@ -4,7 +4,7 @@
 #include "History.h"
 #include "HistoryUtil.h"
 #include <QFile>
-
+#include "Bmson.h"
 
 const double BmsConsts::MaxBpm = 1.e+6;
 const double BmsConsts::MinBpm = 1.e-6;
@@ -26,6 +26,8 @@ Document::Document(QObject *parent)
 	, history(new EditHistory(this))
 	, info(this)
 {
+	outputVersion = BmsonIO::NativeVersion;
+	savedVersion = BmsonIO::NativeVersion;
 	connect(&info, SIGNAL(InitBpmChanged(double)), this, SLOT(OnInitBpmChanged()));
 }
 
@@ -43,6 +45,9 @@ void Document::Initialize()
 	info.Initialize();
 	barLines.insert(0, BarLine(0, 0));
 	UpdateTotalLength();
+
+	savedVersion = BmsonIO::NativeVersion;
+	history->SetReservedAction(false); // in spite of outputVersion
 }
 
 void Document::LoadFile(QString filePath)
@@ -64,7 +69,11 @@ void Document::LoadFile(QString filePath)
 	if (!json.isObject()){
 		throw tr("Malformed bmson file.");
 	}
-	bmsonFields = json.object();
+	BmsonConvertContext cx;
+	bmsonFields = BmsonIO::NormalizeBmson(cx, json.object());
+	if (cx.GetState() == BmsonConvertContext::BMSON_ERROR){
+		throw cx.GetCombinedMessage();
+	}
 	timeBase = 240;
 	actualLength = 0;
 	totalLength = 0;
@@ -87,6 +96,14 @@ void Document::LoadFile(QString filePath)
 	}
 	UpdateTotalLength();
 	this->filePath = filePath;
+
+	// conversion is not revertible by Undo.
+	if (cx.IsConverted()){
+		history->MarkAbsolutelyDirty();
+	}
+	savedVersion = BmsonIO::NativeVersion; // in spite of actual version
+	history->SetReservedAction(outputVersion != savedVersion);
+
 	emit FilePathChanged();
 }
 
@@ -136,7 +153,17 @@ void Document::Save()
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
 		throw tr("Failed to open file.");
 	}
-	file.write(QJsonDocument(bmsonFields).toJson());
+
+	// TODO: configuration
+	BmsonConvertContext cxt;
+	QJsonObject obj = BmsonIO::Convert(cxt, bmsonFields, outputVersion);
+	if (cxt.GetState() == BmsonConvertContext::BMSON_ERROR){
+		throw tr("Failed to convert bmson format:") + "\n" + cxt.GetCombinedMessage();
+	}
+	savedVersion = outputVersion;
+	history->SetReservedAction(false);
+
+	file.write(QJsonDocument(obj).toJson());
 	history->MarkClean();
 }
 
@@ -145,6 +172,13 @@ void Document::SaveAs(const QString &filePath)
 	this->filePath = filePath;
 	Save();
 	emit FilePathChanged();
+}
+
+void Document::SetOutputVersion(BmsonIO::BmsonVersion version)
+{
+	outputVersion = version;
+	// if untitled, savedVersion is ignored and reserved action is disabled.
+	history->SetReservedAction(!directory.isRoot() && version != savedVersion);
 }
 
 int Document::GetTotalLength() const

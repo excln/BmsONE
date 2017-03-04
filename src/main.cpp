@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
 {
 	qRegisterMetaType<QList<RmsCacheEntry>>("QList<RmsCacheEntry>");
 	qRegisterMetaType<QList<QString>>("QList<QString>");
+	qRegisterMetaType<BmsonIO::BmsonVersion>("BmsonIO::BmsonVersion");
 
 	Q_INIT_RESOURCE(bmsone);
 

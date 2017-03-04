@@ -33,6 +33,7 @@ private:
 	QStack<EditAction*> undoActions;
 	QStack<EditAction*> redoActions;
 	EditAction *savedAction;
+	bool reservedAction;
 
 	void ClearFutureActions();
 	void ClearPastActions();
@@ -42,7 +43,9 @@ public:
 	~EditHistory();
 
 	void Clear();
+	void MarkAbsolutelyDirty();
 	void MarkClean();
+	void SetReservedAction(bool exists);
 	bool IsDirty() const;
 	void Add(EditAction *action); // `action` must be in DONE state
 	bool CanUndo(QString *out_name=nullptr) const;

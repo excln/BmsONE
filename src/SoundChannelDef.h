@@ -2,7 +2,6 @@
 #define SOUNDCHANNELDEF_H
 
 #include <QtCore>
-#include "Bmson.h"
 
 struct RmsCacheEntry
 {

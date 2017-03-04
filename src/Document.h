@@ -6,8 +6,8 @@
 #include <QtMultimedia>
 #include <string>
 #include <functional>
-#include "Bmson.h"
 #include "DocumentDef.h"
+#include "Bmson.h"
 
 class Document;
 class DocumentInfo;
@@ -114,6 +114,8 @@ private:
 	QDir directory;
 	QString filePath;
 	EditHistory *history;
+	BmsonIO::BmsonVersion savedVersion;
+	BmsonIO::BmsonVersion outputVersion;
 
 	// data
 	DocumentInfo info;
@@ -149,6 +151,8 @@ public:
 	QString GetAbsolutePath(QString fileName) const;
 	void Save();
 	void SaveAs(const QString &filePath);
+
+	void SetOutputVersion(BmsonIO::BmsonVersion version);
 
 	int GetTimeBase() const{ return timeBase; }
 	DocumentInfo *GetInfo(){ return &info; }

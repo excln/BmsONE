@@ -3,6 +3,7 @@
 EditHistory::EditHistory(QObject *parent)
 	: QObject(parent)
 	, savedAction(nullptr)
+	, reservedAction(false)
 {
 }
 
@@ -17,6 +18,12 @@ void EditHistory::Clear()
 	ClearPastActions();
 }
 
+void EditHistory::MarkAbsolutelyDirty()
+{
+	savedAction = reinterpret_cast<EditAction*>(1);
+	emit OnHistoryChanged();
+}
+
 void EditHistory::MarkClean()
 {
 	if (undoActions.empty()){
@@ -27,12 +34,18 @@ void EditHistory::MarkClean()
 	emit OnHistoryChanged();
 }
 
+void EditHistory::SetReservedAction(bool exists)
+{
+	reservedAction = exists;
+	emit OnHistoryChanged();
+}
+
 bool EditHistory::IsDirty() const
 {
 	if (undoActions.empty()){
-		return savedAction != nullptr;
+		return savedAction != nullptr || reservedAction;
 	}else{
-		return savedAction != undoActions.top();
+		return savedAction != undoActions.top() || reservedAction;
 	}
 }
 

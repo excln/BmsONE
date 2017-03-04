@@ -5,7 +5,7 @@
 #include "History.h"
 #include <cstdlib>
 #include <cmath>
-
+#include "Bmson.h"
 
 
 SoundChannel::SoundChannel(Document *document)

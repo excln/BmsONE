@@ -13,6 +13,7 @@ class InfoView;
 class ChannelInfoView;
 class BpmEditView;
 class SelectedObjectView;
+class Preferences;
 class MainWindow;
 
 
@@ -84,6 +85,7 @@ public:
 
 private:
 	QSettings *settings;
+	Preferences *preferences;
 	StatusBar *statusBar;
 	AudioPlayer *audioPlayer;
 	SequenceTools *sequenceTools;
@@ -120,6 +122,7 @@ private:
 	QAction *actionEditLockDeletion;
 	QAction *actionEditLockVerticalMove;
 	QAction *actionEditPlay;
+	QAction *actionEditPreferences;
 
 	QAction *actionViewTbSeparator;
 	QAction *actionViewDockSeparator;
@@ -158,6 +161,7 @@ private slots:
 	void FileSaveAs();
 	void EditUndo();
 	void EditRedo();
+	void EditPreferences();
 	void ViewFullScreen();
 	void ChannelNew();
 	void ChannelPrev();
@@ -176,6 +180,8 @@ private slots:
 	void OnCurrentChannelChanged(int ichannel);
 	void OnTimeMappingChanged();
 	void OnBpmEdited();
+
+	void SaveFormatChanged(BmsonIO::BmsonVersion version);
 
 signals:
 	void CurrentChannelChanged(int ichannel);

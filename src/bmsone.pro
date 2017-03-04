@@ -32,7 +32,6 @@ SOURCES += main.cpp\
     WaveStream.cpp \
     ScrollableForm.cpp \
     Util.cpp \
-    Bmson.cpp \
     BpmEditTool.cpp \
     SelectedObjectView.cpp \
     JsonExtension.cpp \
@@ -74,11 +73,17 @@ SOURCES += main.cpp\
     libvorbis/window.c \
     SequenceViewPreview.cpp \
     SoundChannelPreview.cpp \
-    SequenceViewChannelInternal.cpp
+    SequenceViewChannelInternal.cpp \
+    Versioning.cpp \
+	bmson/Bmson021.cpp \
+	bmson/Bmson100.cpp \
+	bmson/Bmson100Convert.cpp \
+    Bmson.cpp \
+    bmson/BmsonConvertDef.cpp \
+    Preferences.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
-    Bmson.h \
     SequenceView.h \
     Document.h \
     InfoView.h \
@@ -129,7 +134,14 @@ HEADERS  += MainWindow.h \
     libvorbis/modes/setup_44p51.h \
     libvorbis/modes/setup_44u.h \
     libvorbis/modes/setup_X.h \
-    SequenceViewChannelInternal.h
+    SequenceViewChannelInternal.h \
+    Versioning.h \
+	bmson/Bmson100.h \
+	bmson/Bmson021.h \
+	bmson/Bmson100Convert.h \
+    Bmson.h \
+    bmson/BmsonConvertDef.h \
+    Preferences.h
 
 FORMS    +=
 

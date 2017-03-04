@@ -1,77 +1,34 @@
 #ifndef BMSON_H
 #define BMSON_H
 
+#include "bmson/BmsonConvertDef.h"
+#include "bmson/Bmson021.h"
 #include <QtCore>
 
-namespace Bmson
+using namespace Bmson021;
+
+
+
+
+class BmsonIO
 {
-	struct BmsInfo
-	{
-		static const char* TitleKey;
-		static const char* GenreKey;
-		static const char* ArtistKey;
-		static const char* JudgeRankKey;
-		static const char* TotalKey;
-		static const char* InitBpmKey;
-		static const char* LevelKey;
-	};
+	static const char* VersionKey;
+public:
 
-	struct SoundNote
+	enum BmsonVersion
 	{
-		static const char* LaneKey;
-		static const char* LocationKey;
-		static const char* LengthKey;
-		static const char* CutKey;
+		BMSON_V_0_21,
+		BMSON_V_1_0,
 	};
+	static const BmsonVersion NativeVersion;
+	static const BmsonVersion LatestVersion;
 
-	struct SoundChannel
-	{
-		static const char* NameKey;
-		static const char* NotesKey;
-	};
+	// various format -> normal format
+	static QJsonObject NormalizeBmson(BmsonConvertContext &cxt, const QJsonObject &bms, BmsonVersion *version=nullptr);
 
-	struct EventNote
-	{
-		static const char* LocationKey;
-		static const char* ValueKey;
-	};
-
-	struct BgaDefinition
-	{
-		static const char* IdKey;
-		static const char* NameKey;
-	};
-
-	struct BgaNote
-	{
-		static const char* IdKey;
-		static const char* LocationKey;
-	};
-
-	struct Bga
-	{
-		static const char* DefinitionsKey;
-		static const char* BgaNotesKey;
-		static const char* LayerNotesKey;
-		static const char* MissNotesKey;
-	};
-
-	struct BarLine
-	{
-		static const char* LocationKey;
-		static const char* KindKey;
-	};
-
-	struct Bms
-	{
-		static const char* InfoKey;
-		static const char* BarLinesKey;
-		static const char* BpmNotesKey;
-		static const char* SoundChannelsKey;
-		static const char* BgaKey;
-	};
-}
-
+	// normal format -> particular format
+	static QJsonObject Convert(BmsonConvertContext &cxt, const QJsonObject &bms, BmsonVersion version=NativeVersion);
+};
 
 
 #endif // BMSON_H
