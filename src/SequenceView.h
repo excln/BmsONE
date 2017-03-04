@@ -61,6 +61,41 @@ private:
 	static const char* SettingsFineGridKey;
 
 private:
+	class Context{
+		SequenceView *sview;
+	protected:
+		Context(SequenceView *sview) : sview(sview){}
+	public:
+		virtual ~Context(){}
+		virtual bool IsTop() const{ return true; }
+		virtual Context* Escape(){ return this; }
+
+		virtual Context* KeyPress(QKeyEvent*){ return this; }
+		//virtual Context* KeyUp(QKeyEvent*){ return this; }
+		//virtual Context* Enter(QEnterEvent*){ return this; }
+		//virtual Context* Leave(QEnterEvent*){ return this; }
+		virtual Context* PlayingPane_MouseMove(QMouseEvent*){ return this; }
+		virtual Context* PlayingPane_MousePress(QMouseEvent*){ return this; }
+		virtual Context* PlayingPane_MouseRelease(QMouseEvent*){ return this; }
+
+		virtual Context* MeasureArea_MouseMove(QMouseEvent*);
+		virtual Context* MeasureArea_MousePress(QMouseEvent*);
+		virtual Context* MeasureArea_MouseRelease(QMouseEvent*);
+
+		virtual Context* BpmArea_MouseMove(QMouseEvent*);
+		virtual Context* BpmArea_MousePress(QMouseEvent*);
+		virtual Context* BpmArea_MouseRelease(QMouseEvent*);
+
+		virtual void DeleteSelectedObjects();
+		virtual void TransferSelectedNotes();
+	};
+	class EditModeContext;
+	class EditModeSelectNotesContext;
+	class EditModeDragNotesContext;
+	class EditModeSelectBpmEventsContext;
+	class WriteModeContext;
+
+private:
 	MainWindow *mainWindow;
 
 	//QWidget *headerCornerEntry;
@@ -122,15 +157,14 @@ private:
 	qreal zoomXKey;	// 1 = default
 	qreal zoomXBgm;	// 1 = default
 
+	Context *context;
+
 	bool playing;
 	int currentChannel;
 	SequenceEditSelection selection;
 	QSet<SoundNoteView*> selectedNotes;
 	QMap<int, BpmEvent> selectedBpmEvents;
 	SequenceViewCursor *cursor;
-	QRubberBand *rubberBand;
-	int rubberBandOriginLaneX;
-	int rubberBandOriginTime;
 
 private:
 	qreal Time2Y(qreal time) const;
@@ -165,6 +199,8 @@ private:
 	void ClearBpmEventsSelection();
 	void SelectSingleBpmEvent(BpmEvent event);
 	void ToggleBpmEventSelection(BpmEvent event);
+	void SelectAdditionalBpmEvent(BpmEvent event);
+	void DeselectBpmEvent(BpmEvent event);
 
 	void DeleteSelectedNotes();
 	void TransferSelectedNotesToBgm();
@@ -201,9 +237,6 @@ private:
 	//bool paintEventPlayingHeader(QWidget *widget, QPaintEvent *event);
 	bool paintEventPlayingFooter(QWidget *widget, QPaintEvent *event);
 
-	void mouseEventPlayingPaneEditMode(QMouseEvent *event);
-	void mouseEventPlayingPaneWriteMode(QMouseEvent *event);
-
 private slots:
 	void SoundChannelInserted(int index, SoundChannel *channel);
 	void SoundChannelRemoved(int index, SoundChannel *channel);
@@ -215,6 +248,7 @@ private slots:
 	void MoveSoundChannelLeft(SoundChannelView *cview);
 	void MoveSoundChannelRight(SoundChannelView *cview);
 	void CursorChanged();
+	void ShowPlayingPaneContextMenu(QPoint globalPos);
 
 public slots:
 	void ShowLocation(int location);
@@ -225,6 +259,9 @@ public slots:
 	void SetMediumGrid(GridSize grid);
 	void DeleteSelectedObjects();
 	void TransferSelectedNotes();
+	void ZoomIn();
+	void ZoomOut();
+	void ZoomReset();
 
 signals:
 	void CurrentChannelChanged(int index);

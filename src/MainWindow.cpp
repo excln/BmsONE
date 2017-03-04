@@ -94,9 +94,11 @@ MainWindow::MainWindow(QSettings *settings)
 	actionEditSelectAll->setEnabled(false);
 
 	actionEditDelete = new QAction(tr("Delete"), this);
+	//actionEditDelete->setShortcut(Qt::ControlModifier + Qt::Key_D);
 	actionEditDelete->setEnabled(false);
 
 	actionEditTransfer = new QAction(tr("Switch Key/BGM"), this);
+	//actionEditTransfer->setShortcut(Qt::ControlModifier + Qt::Key_G);
 	actionEditTransfer->setEnabled(false);
 
 	actionEditModeEdit = new QAction(tr("Edit Mode"), this);
@@ -123,6 +125,17 @@ MainWindow::MainWindow(QSettings *settings)
 	actionViewFullScreen = new QAction(tr("Toggle Full Screen"), this);
 	actionViewFullScreen->setShortcut(QKeySequence::FullScreen);
 	connect(actionViewFullScreen, SIGNAL(triggered()), this, SLOT(ViewFullScreen()));
+
+	actionViewSnapToGrid = new QAction(tr("Snap to Grid"), this);
+
+	actionViewZoomIn = new QAction(tr("Zoom In"), this);
+	actionViewZoomIn->setShortcut(QKeySequence::ZoomIn);
+
+	actionViewZoomOut = new QAction(tr("Zoom Out"), this);
+	actionViewZoomOut->setShortcut(QKeySequence::ZoomOut);
+
+	actionViewZoomReset = new QAction(tr("Reset", "Zoom"), this);
+	actionViewZoomReset->setShortcut(Qt::ControlModifier + Qt::Key_0);
 
 	actionChannelNew = new QAction(tr("Add..."), this);
 	actionChannelNew->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_N);
@@ -204,6 +217,13 @@ MainWindow::MainWindow(QSettings *settings)
 	actionViewDockSeparator = menuViewDockBars->addSeparator();
 	auto *menuViewToolBars = menuView->addMenu(tr("Toolbars"));
 	actionViewTbSeparator = menuViewToolBars->addSeparator();
+	menuView->addSeparator();
+	menuView->addAction(actionViewSnapToGrid);
+	auto *menuViewZoom = menuView->addMenu(tr("Zoom"));
+	menuViewZoom->addAction(actionViewZoomIn);
+	menuViewZoom->addAction(actionViewZoomOut);
+	menuViewZoom->addSeparator();
+	menuViewZoom->addAction(actionViewZoomReset);
 	menuView->addSeparator();
 	menuView->addAction(actionViewFullScreen);
 

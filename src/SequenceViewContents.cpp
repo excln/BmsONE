@@ -264,320 +264,22 @@ SoundNoteView *SequenceView::HitTestPlayingPane(int lane, int y, int time, bool 
 }
 
 
-void SequenceView::mouseEventPlayingPaneEditMode(QMouseEvent *event)
-{
-	qreal time = Y2Time(event->y());
-	int iTime = time;
-	int iTimeUpper = time;
-	int lane = X2Lane(event->x());
-	if (snapToGrid){
-		iTime = SnapToLowerFineGrid(time);
-		iTimeUpper = SnapToUpperFineGrid(time);
-	}
-	int laneX;
-	if (lane < 0){
-		if (event->x() < sortedLanes[0].left){
-			laneX = 0;
-		}else{
-			laneX = sortedLanes.size() - 1;
-		}
-	}else{
-		laneX = sortedLanes.indexOf(lanes[lane]);
-	}
-	SoundNoteView *noteHit = lane >= 0
-			? HitTestPlayingPane(lane, event->y(), snappedHitTestInEditMode ? iTime : -1, event->modifiers() & Qt::AltModifier)
-			: nullptr;
-	switch (event->type()){
-	case QEvent::MouseMove: {
-		if (rubberBand->isVisibleTo(playingPane)){
-			int cursorTime = iTime;
-			int timeBegin, timeEnd;
-			int laneXBegin, laneXLast;
-			if (laneX > rubberBandOriginLaneX){
-				laneXBegin = rubberBandOriginLaneX;
-				laneXLast = laneX;
-			}else{
-				laneXBegin = laneX;
-				laneXLast = rubberBandOriginLaneX;
-			}
-			if (iTime >= rubberBandOriginTime){
-				timeBegin = rubberBandOriginTime;
-				timeEnd = iTimeUpper;
-				cursorTime = iTimeUpper;
-			}else{
-				timeBegin = iTime;
-				timeEnd = rubberBandOriginTime;
-			}
-			QRect rectRb;
-			QList<int> laneList;
-			rectRb.setBottom(Time2Y(timeBegin) - 2);
-			rectRb.setTop(Time2Y(timeEnd) - 1);
-			rectRb.setLeft(sortedLanes[laneXBegin].left);
-			rectRb.setRight(sortedLanes[laneXLast].left + sortedLanes[laneXLast].width - 1);
-			for (int ix=laneXBegin; ix<=laneXLast; ix++){
-				laneList.append(sortedLanes[ix].lane);
-			}
-			rubberBand->setGeometry(rectRb);
-			playingPane->setCursor(Qt::ArrowCursor);
-			cursor->SetKeyNotesSelection(cursorTime, timeBegin, timeEnd, laneList, -1);
-		}else{
-			if (noteHit){
-				playingPane->setCursor(Qt::SizeAllCursor);
-				cursor->SetExistingSoundNote(noteHit);
-			}else if (lane >= 0){
-				playingPane->setCursor(Qt::ArrowCursor);
-				cursor->SetTimeWithLane(iTime, lane);
-			}else{
-				playingPane->setCursor(Qt::ArrowCursor);
-				cursor->SetNothing();
-			}
-		}
-		return;
-	}
-	case QEvent::MouseButtonPress:
-		ClearBpmEventsSelection();
-		if (noteHit){
-			switch (event->button()){
-			case Qt::LeftButton:
-				// select note
-				if (event->modifiers() & Qt::ControlModifier){
-					ToggleNoteSelection(noteHit);
-				}else{
-					if (selectedNotes.contains(noteHit)){
-						// don't deselect other notes
-					}else{
-						SelectSingleNote(noteHit);
-					}
-				}
-				cursor->SetExistingSoundNote(noteHit);
-				SelectSoundChannel(noteHit->GetChannelView());
-				PreviewSingleNote(noteHit);
-				break;
-			case Qt::RightButton: {
-				// select note & cxt menu
-				if (event->modifiers() & Qt::ControlModifier){
-					SelectAdditionalNote(noteHit);
-				}else{
-					if (!selectedNotes.contains(noteHit)){
-						SelectSingleNote(noteHit);
-						PreviewSingleNote(noteHit);
-					}
-				}
-				cursor->SetExistingSoundNote(noteHit);
-				SelectSoundChannel(noteHit->GetChannelView());
-				QMenu menu(this);
-				menu.addAction(actionDeleteSelectedNotes);
-				menu.addAction(actionTransferSelectedNotes);
-				menu.exec(event->globalPos());
-				break;
-			}
-			case Qt::MidButton:
-				ClearNotesSelection();
-				SelectSoundChannel(noteHit->GetChannelView());
-				break;
-			}
-		}else if (lane >= 0){
-			rubberBandOriginLaneX = laneX;
-			rubberBandOriginTime = iTime;
-			rubberBand->setGeometry(event->x(), event->y(), 0 ,0);
-			rubberBand->show();
-			if (event->modifiers() & Qt::ControlModifier){
-				// don't deselect notes (to add new selections)
-			}else{
-				// clear (to make new selections)
-				ClearNotesSelection();
-			}
-		}
-		return;
-	case QEvent::MouseButtonRelease:
-		if (rubberBand->isVisibleTo(playingPane)){
-			int cursorTime = iTime;
-			int timeBegin, timeEnd;
-			int laneXBegin, laneXLast;
-			if (laneX > rubberBandOriginLaneX){
-				laneXBegin = rubberBandOriginLaneX;
-				laneXLast = laneX;
-			}else{
-				laneXBegin = laneX;
-				laneXLast = rubberBandOriginLaneX;
-			}
-			if (iTime >= rubberBandOriginTime){
-				timeBegin = rubberBandOriginTime;
-				timeEnd = iTimeUpper;
-				cursorTime = iTimeUpper;
-			}else{
-				timeBegin = iTime;
-				timeEnd = rubberBandOriginTime;
-			}
-			QList<int> lns;
-			if (laneX > rubberBandOriginLaneX){
-				for (int ix=rubberBandOriginLaneX; ix<=laneX; ix++){
-					lns.append(sortedLanes[ix].lane);
-				}
-			}else{
-				for (int ix=laneX; ix<=rubberBandOriginLaneX; ix++){
-					lns.append(sortedLanes[ix].lane);
-				}
-			}
-			if (event->modifiers() & Qt::AltModifier){
-				if (currentChannel >= 0){
-					auto *cview = soundChannels[this->currentChannel];
-					for (SoundNoteView *nv : cview->GetNotes()){
-						const SoundNote &note = nv->GetNote();
-						if (lns.contains(note.lane)){
-							if (note.location+note.length >= timeBegin && note.location < timeEnd){
-								if (event->modifiers() & Qt::ShiftModifier){
-									ToggleNoteSelection(nv);
-								}else{
-									SelectAdditionalNote(nv);
-								}
-							}
-						}
-					}
-				}
-			}else{
-				for (SoundChannelView *cview : soundChannels){
-					for (SoundNoteView *nv : cview->GetNotes()){
-						const SoundNote &note = nv->GetNote();
-						if (lns.contains(note.lane)){
-							if (note.location+note.length >= timeBegin && note.location < timeEnd){
-								if (event->modifiers() & Qt::ShiftModifier){
-									ToggleNoteSelection(nv);
-								}else{
-									SelectAdditionalNote(nv);
-								}
-							}
-						}
-					}
-				}
-			}
-			rubberBand->hide();
-		}
-		return;
-	case QEvent::MouseButtonDblClick:
-		/*if (noteHit){
-			if (event->button() == Qt::LeftButton){
-				TransferSelectedNotesToBgm();
-			}
-		}*/
-		return;
-	default:
-		return;
-	}
-}
-
-void SequenceView::mouseEventPlayingPaneWriteMode(QMouseEvent *event)
-{
-	qreal time = Y2Time(event->y());
-	int iTime = time;
-	int lane = X2Lane(event->x());
-	if (snapToGrid){
-		iTime = SnapToLowerFineGrid(iTime);
-	}
-	SoundNoteView *noteHit = lane >= 0 ? HitTestPlayingPane(lane, event->y(), iTime, event->modifiers() & Qt::AltModifier) : nullptr;
-	switch (event->type()){
-	case QEvent::MouseMove: {
-		if (noteHit){
-			playingPane->setCursor(Qt::SizeAllCursor);
-			cursor->SetExistingSoundNote(noteHit);
-		}else if (lane >= 0){
-			if (currentChannel >= 0){
-				playingPane->setCursor(Qt::CrossCursor);
-				cursor->SetNewSoundNote(SoundNote(iTime, lane, 0, event->modifiers() & Qt::ShiftModifier ? 0 : 1));
-			}else{
-				// no current channel
-				playingPane->setCursor(Qt::ArrowCursor);
-				cursor->SetTimeWithLane(iTime, lane);
-			}
-		}else{
-			playingPane->setCursor(Qt::ArrowCursor);
-			cursor->SetNothing();
-		}
-		return;
-	}
-	case QEvent::MouseButtonPress:
-		ClearBpmEventsSelection();
-		if (noteHit){
-			switch (event->button()){
-			case Qt::LeftButton:
-				// select note
-				if (event->modifiers() & Qt::ControlModifier){
-					ToggleNoteSelection(noteHit);
-				}else{
-					SelectSingleNote(noteHit);
-				}
-				cursor->SetExistingSoundNote(noteHit);
-				SelectSoundChannel(noteHit->GetChannelView());
-				PreviewSingleNote(noteHit);
-				break;
-			case Qt::RightButton:
-			{
-				// delete note
-				SoundNote note = noteHit->GetNote();
-				if (soundChannels[currentChannel]->GetNotes().contains(noteHit->GetNote().location)
-					&& soundChannels[currentChannel]->GetChannel()->RemoveNote(note))
-				{
-					ClearNotesSelection();
-					cursor->SetNewSoundNote(note);
-				}else{
-					// noteHit was in inactive channel, or failed to delete note
-					SelectSingleNote(noteHit);
-					cursor->SetExistingSoundNote(noteHit);
-				}
-				SelectSoundChannel(noteHit->GetChannelView());
-				break;
-			}
-			case Qt::MidButton:
-				ClearNotesSelection();
-				SelectSoundChannel(noteHit->GetChannelView());
-				break;
-			}
-		}else{
-			if (currentChannel >= 0 && lane > 0 && event->button() == Qt::LeftButton){
-				// insert note (maybe moving existing note)
-				SoundNote note(iTime, lane, 0, event->modifiers() & Qt::ShiftModifier ? 0 : 1);
-				if (soundChannels[currentChannel]->GetChannel()->InsertNote(note)){
-					// select the note
-					const QMap<int, SoundNoteView*> &notes = soundChannels[currentChannel]->GetNotes();
-					SelectSingleNote(notes[iTime]);
-					PreviewSingleNote(notes[iTime]);
-					cursor->SetExistingSoundNote(notes[iTime]);
-					timeLine->update();
-					playingPane->update();
-					for (auto cview : soundChannels){
-						cview->update();
-					}
-				}else{
-					// note was not created
-					qApp->beep();
-					cursor->SetNewSoundNote(note);
-				}
-			}
-		}
-		return;
-	case QEvent::MouseButtonRelease:
-		return;
-	case QEvent::MouseButtonDblClick:
-		return;
-	default:
-		return;
-	}
-}
-
-
 bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *event)
 {
-	switch (editMode){
-	case SequenceEditMode::EDIT_MODE:
-		mouseEventPlayingPaneEditMode(event);
+	switch (event->type()){
+	case QEvent::MouseMove:
+		context = context->PlayingPane_MouseMove(event);
 		return true;
-	case SequenceEditMode::WRITE_MODE:
-		mouseEventPlayingPaneWriteMode(event);
+	case QEvent::MouseButtonPress:
+		context = context->PlayingPane_MousePress(event);
 		return true;
-	case SequenceEditMode::INTERACTIVE_MODE:
-	default:
-		return false;
+	case QEvent::MouseButtonRelease:
+		context = context->PlayingPane_MouseRelease(event);
+		return true;
+	case QEvent::MouseButtonDblClick:
+		return true;
 	}
+	return false;
 }
 
 
@@ -598,165 +300,36 @@ bool SequenceView::enterEventTimeLine(QWidget *timeLine, QEvent *event)
 
 bool SequenceView::mouseEventTimeLine(QWidget *timeLine, QMouseEvent *event)
 {
-	qreal time = Y2Time(event->y());
-	int iTime = time;
-	if (snapToGrid){
-		iTime = SnapToLowerFineGrid(iTime);
-	}
 	if (event->x() < timeLineMeasureWidth){
-		// on measure area
-		if (event->modifiers() & Qt::ControlModifier){
-			// edit bar lines
-			const auto bars = document->GetBarLines();
-			int hitTime = iTime;
-			if ((event->modifiers() & Qt::AltModifier) == 0){
-				// Alt to bypass absorption
-				auto i = bars.upperBound(iTime);
-				if (i != bars.begin()){
-					i--;
-					if (i != bars.end() && Time2Y(i.key()) - 16 <= event->y()){
-						hitTime = i.key();
-					}
-				}
-			}
-			switch (event->type()){
-			case QEvent::MouseMove:
-				if (bars.contains(hitTime)){
-					timeLine->setCursor(Qt::ArrowCursor);
-					cursor->SetExistingBarLine(bars[hitTime]);
-				}else{
-					timeLine->setCursor(Qt::ArrowCursor);
-					cursor->SetNewBarLine(BarLine(iTime, 0));
-				}
-				return true;
-			case QEvent::MouseButtonPress:
-				ClearNotesSelection();
-				ClearBpmEventsSelection();
-				if (bars.contains(hitTime)){
-					switch (event->button()){
-					case Qt::LeftButton: {
-						// update one
-						BarLine bar = bars[hitTime];
-						bar.Ephemeral = false;
-						document->InsertBarLine(bar);
-						cursor->SetExistingBarLine(bar);
-						break;
-					}
-					case Qt::RightButton: {
-						// delete one
-						document->RemoveBarLine(hitTime);
-						//cursor->SetNewBarLine(BarLine(time, 0));
-						cursor->SetTime(iTime);
-						break;
-					}
-					default:
-						break;
-					}
-				}else{
-					if (event->button() == Qt::LeftButton){
-						// insert one
-						document->InsertBarLine(BarLine(iTime, 0));
-					}
-				}
-				return true;
-			case QEvent::MouseButtonRelease:
-				return true;
-			case QEvent::MouseButtonDblClick:
-				return false;
-			default:
-				return false;
-			}
-		}else{
-			// just show time
-			switch (event->type()){
-			case QEvent::MouseMove:
-				timeLine->setCursor(Qt::ArrowCursor);
-				cursor->SetTime(iTime);
-				return true;
-			case QEvent::MouseButtonPress:
-				ClearNotesSelection();
-				ClearBpmEventsSelection();
-				return true;
-			case QEvent::MouseButtonRelease:
-			case QEvent::MouseButtonDblClick:
-				return false;
-			}
+		switch (event->type()){
+		case QEvent::MouseMove:
+			context = context->MeasureArea_MouseMove(event);
+			return true;
+		case QEvent::MouseButtonPress:
+			context = context->MeasureArea_MousePress(event);
+			return true;
+		case QEvent::MouseButtonRelease:
+			context = context->MeasureArea_MouseRelease(event);
+			return true;
+		case QEvent::MouseButtonDblClick:
 			return true;
 		}
 	}else{
-		// on BPM area
-		const auto events = document->GetBpmEvents();
-		int hitTime = iTime;
-		if ((event->modifiers() & Qt::AltModifier) == 0){
-			// Alt to bypass absorption
-			auto i = events.upperBound(iTime);
-			if (i != events.begin()){
-				i--;
-				if (i != events.end() && Time2Y(i.key()) - 16 <= event->y()){
-					hitTime = i.key();
-				}
-			}
-		}
 		switch (event->type()){
-		case QEvent::MouseMove: {
-			if (events.contains(hitTime)){
-				timeLine->setCursor(Qt::ArrowCursor);
-				cursor->SetExistingBpmEvent(events[hitTime]);
-			}else{
-				auto i = events.upperBound(iTime);
-				double bpm = i==events.begin() ? document->GetInfo()->GetInitBpm() : (i-1)->value;
-				timeLine->setCursor(Qt::ArrowCursor);
-				cursor->SetNewBpmEvent(BpmEvent(iTime, bpm));
-			}
+		case QEvent::MouseMove:
+			context = context->BpmArea_MouseMove(event);
 			return true;
-		}
 		case QEvent::MouseButtonPress:
-			ClearNotesSelection();
-			if (events.contains(hitTime)){
-				switch (event->button()){
-				case Qt::LeftButton:
-					// edit one
-					if (event->modifiers() & Qt::ControlModifier){
-						ToggleBpmEventSelection(events[hitTime]);
-					}else{
-						SelectSingleBpmEvent(events[hitTime]);
-					}
-					break;
-				case Qt::RightButton: {
-					// delete one
-					if (document->RemoveBpmEvent(hitTime)){
-						//auto i = events.upperBound(time);
-						//double bpm = i==events.begin() ? document->GetInfo()->GetInitBpm() : (i-1)->value;
-						//cursor->SetNewBpmEvent(BpmEvent(time, bpm));
-						cursor->SetTime(iTime);
-						ClearBpmEventsSelection();
-					}
-					break;
-				}
-				default:
-					break;
-				}
-			}else{
-				if (event->button() == Qt::LeftButton){
-					// add event
-					auto i = events.upperBound(iTime);
-					double bpm = i==events.begin() ? document->GetInfo()->GetInitBpm() : (i-1)->value;
-					BpmEvent event(iTime, bpm);
-					if (document->InsertBpmEvent(event)){
-						cursor->SetExistingBpmEvent(event);
-						SelectSingleBpmEvent(event);
-					}
-				}
-			}
+			context = context->BpmArea_MousePress(event);
 			return true;
 		case QEvent::MouseButtonRelease:
+			context = context->BpmArea_MouseRelease(event);
 			return true;
 		case QEvent::MouseButtonDblClick:
-			return false;
-		default:
-			return false;
+			return true;
 		}
 	}
+	return false;
 }
 
 bool SequenceView::paintEventTimeLine(QWidget *timeLine, QPaintEvent *event)

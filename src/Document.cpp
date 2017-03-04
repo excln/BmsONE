@@ -204,6 +204,19 @@ void Document::RemoveSoundChannelInternal(SoundChannel *channel, int index)
 	emit AfterSoundChannelsChange();
 }
 
+bool Document::DetectConflictsAroundNotes(const QMultiMap<int, SoundNote> &notes) const
+{
+	for (auto note : notes){
+		// todo: make more efficient
+		auto ns = FindConflictingNotes(note);
+		if (ns.size() > 1){ // one element is the note itself
+			return true;
+		}
+	}
+	return false;
+}
+
+
 
 
 void Document::InsertNewSoundChannels(const QList<QString> &soundFilePaths, int index)
@@ -477,6 +490,170 @@ void Document::MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel *, Soun
 	}
 	actions->Finish();
 	history->Add(actions);
+}
+
+Document::DocumentUpdateSoundNotesContext *Document::BeginModalEditSoundNotes(const QMap<SoundChannel*, QSet<int>> &noteLocations)
+{
+	return new DocumentUpdateSoundNotesContext(this, noteLocations);
+}
+
+Document::DocumentUpdateSoundNotesContext::DocumentUpdateSoundNotesContext(Document *document, QMap<SoundChannel *, QSet<int> > noteLocations)
+	: document(document)
+{
+	// get oldNotes
+	for (auto i=noteLocations.begin(); i!=noteLocations.end(); i++){
+		const QMap<int,SoundNote> &original = i.key()->notes;
+		QMap<int,SoundNote> tmp;
+		for (int loc : i.value()){
+			tmp.insert(loc, original[loc]);
+		}
+		oldNotes.insert(i.key(), tmp);
+	}
+	newNotes = oldNotes;
+}
+
+void Document::DocumentUpdateSoundNotesContext::Update(QMap<SoundChannel *, QMap<int, SoundNote> > notes)
+{
+	// try to update all at once
+	QMultiMap<int, SoundNote> notesMerged;
+	for (auto i=notes.begin(); i!=notes.end(); i++){
+		QMap<int,SoundNote> &n = i.key()->notes;
+		for (auto j=i.value().begin(); j!=i.value().end(); j++){
+			n.insert(j.key(), j.value());
+			notesMerged.insert(j.key(), j.value());
+		}
+	}
+
+	if (document->DetectConflictsAroundNotes(notesMerged)){
+		// rollback (newNotes: latest valid arrangement)
+		for (auto i=newNotes.begin(); i!=newNotes.end(); i++){
+			QMap<int,SoundNote> &n = i.key()->notes;
+			for (auto j=i.value().begin(); j!=i.value().end(); j++){
+				n.insert(j.key(), j.value());
+			}
+		}
+	}else{
+		// accept
+		newNotes = notes;
+		for (auto i=notes.begin(); i!=notes.end(); i++){
+			i.key()->UpdateCache();
+			i.key()->UpdateVisibleRegionsInternal();
+			for (auto j=i.value().begin(); j!=i.value().end(); j++){
+				emit i.key()->NoteChanged(j.key(), j.value());
+			}
+		}
+	}
+}
+
+void Document::DocumentUpdateSoundNotesContext::Cancel()
+{
+	for (auto i=oldNotes.begin(); i!=oldNotes.end(); i++){
+		QMap<int,SoundNote> &n = i.key()->notes;
+		for (auto j=i.value().begin(); j!=i.value().end(); j++){
+			n.insert(j.key(), j.value());
+		}
+	}
+	for (auto i=oldNotes.begin(); i!=oldNotes.end(); i++){
+		i.key()->UpdateCache();
+		i.key()->UpdateVisibleRegionsInternal();
+		for (auto j=i.value().begin(); j!=i.value().end(); j++){
+			emit i.key()->NoteChanged(j.key(), j.value());
+		}
+	}
+}
+
+QMap<SoundChannel *, QMap<int, SoundNote> > Document::DocumentUpdateSoundNotesContext::GetOldNotes() const
+{
+	return oldNotes;
+}
+
+class Document::DocumentUpdateSoundNotesAction : public EditAction
+{
+	Document *document;
+	QMap<SoundChannel*, QMap<int, SoundNote>> oldNotes;
+	QMap<SoundChannel*, QMap<int, SoundNote>> newNotes;
+public:
+	DocumentUpdateSoundNotesAction(Document *document, QMap<SoundChannel*, QMap<int, SoundNote>> oldNotes, QMap<SoundChannel*, QMap<int, SoundNote>> newNotes);
+	virtual ~DocumentUpdateSoundNotesAction();
+	virtual void Undo();
+	virtual void Redo();
+	virtual QString GetName();
+	virtual void Show();
+};
+
+void Document::DocumentUpdateSoundNotesContext::Finish()
+{
+	if (oldNotes == newNotes){
+		return;
+	}
+	document->history->Add(new DocumentUpdateSoundNotesAction(document, oldNotes, newNotes));
+}
+
+Document::DocumentUpdateSoundNotesAction::DocumentUpdateSoundNotesAction(
+		Document *document, QMap<SoundChannel *, QMap<int, SoundNote> > oldNotes, QMap<SoundChannel *, QMap<int, SoundNote> > newNotes
+		)
+	: document(document)
+	, oldNotes(oldNotes)
+	, newNotes(newNotes)
+{
+}
+
+Document::DocumentUpdateSoundNotesAction::~DocumentUpdateSoundNotesAction()
+{
+}
+
+void Document::DocumentUpdateSoundNotesAction::Undo()
+{
+	for (auto i=oldNotes.begin(); i!=oldNotes.end(); i++){
+		QMap<int,SoundNote> &n = i.key()->notes;
+		for (auto j=i.value().begin(); j!=i.value().end(); j++){
+			n.insert(j.key(), j.value());
+		}
+	}
+	for (auto i=oldNotes.begin(); i!=oldNotes.end(); i++){
+		i.key()->UpdateCache();
+		i.key()->UpdateVisibleRegionsInternal();
+		for (auto j=i.value().begin(); j!=i.value().end(); j++){
+			emit i.key()->NoteChanged(j.key(), j.value());
+		}
+	}
+}
+
+void Document::DocumentUpdateSoundNotesAction::Redo()
+{
+	for (auto i=newNotes.begin(); i!=newNotes.end(); i++){
+		QMap<int,SoundNote> &n = i.key()->notes;
+		for (auto j=i.value().begin(); j!=i.value().end(); j++){
+			n.insert(j.key(), j.value());
+		}
+	}
+	for (auto i=newNotes.begin(); i!=newNotes.end(); i++){
+		i.key()->UpdateCache();
+		i.key()->UpdateVisibleRegionsInternal();
+		for (auto j=i.value().begin(); j!=i.value().end(); j++){
+			emit i.key()->NoteChanged(j.key(), j.value());
+		}
+	}
+}
+
+QString Document::DocumentUpdateSoundNotesAction::GetName()
+{
+	return tr("update sound notes");
+}
+
+void Document::DocumentUpdateSoundNotesAction::Show()
+{
+	int minLocation = INT_MAX;
+	SoundChannel *channel = nullptr;
+	for (auto i=newNotes.begin(); i!=newNotes.end(); i++){
+		for (auto j=i.value().begin(); j!=i.value().end(); j++){
+			if (j.key() < minLocation){
+				channel = i.key();
+				minLocation = j.key();
+			}
+		}
+	}
+	channel->ShowNoteLocation(minLocation);
 }
 
 

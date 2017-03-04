@@ -124,6 +124,10 @@ private:
 	QAction *actionViewTbSeparator;
 	QAction *actionViewDockSeparator;
 	QAction *actionViewFullScreen;
+	QAction *actionViewSnapToGrid;
+	QAction *actionViewZoomIn;
+	QAction *actionViewZoomOut;
+	QAction *actionViewZoomReset;
 
 	QAction *actionChannelNew;
 	QAction *actionChannelPrev;

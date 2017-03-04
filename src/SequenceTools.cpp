@@ -26,6 +26,8 @@ SequenceTools::SequenceTools(const QString &objectName, const QString &windowTit
 	connect(mainWindow->actionEditModeEdit, SIGNAL(triggered(bool)), this, SLOT(EditMode()));
 	mainWindow->actionEditModeWrite->setCheckable(true);
 	connect(mainWindow->actionEditModeWrite, SIGNAL(triggered(bool)), this, SLOT(WriteMode()));
+	mainWindow->actionViewSnapToGrid->setCheckable(true);
+	connect(mainWindow->actionViewSnapToGrid, SIGNAL(toggled(bool)), this, SLOT(SnapToGrid(bool)));
 
 	auto modes = new QActionGroup(this);
 
@@ -78,6 +80,9 @@ void SequenceTools::ReplaceSequenceView(SequenceView *newSView)
 		disconnect(sview, SIGNAL(SnapToGridChanged(bool)), this, SLOT(SnapToGridChanged(bool)));
 		disconnect(sview, SIGNAL(SmallGridChanged(GridSize)), this, SLOT(SmallGridChanged(GridSize)));
 		disconnect(sview, SIGNAL(SelectionChanged(SequenceEditSelection)), this, SLOT(SelectionChanged(SequenceEditSelection)));
+		disconnect(mainWindow->actionViewZoomIn, SIGNAL(triggered(bool)), sview, SLOT(ZoomIn()));
+		disconnect(mainWindow->actionViewZoomOut, SIGNAL(triggered(bool)), sview, SLOT(ZoomOut()));
+		disconnect(mainWindow->actionViewZoomReset, SIGNAL(triggered(bool)), sview, SLOT(ZoomReset()));
 	}
 	sview = newSView;
 	if (sview){
@@ -85,6 +90,9 @@ void SequenceTools::ReplaceSequenceView(SequenceView *newSView)
 		connect(sview, SIGNAL(SnapToGridChanged(bool)), this, SLOT(SnapToGridChanged(bool)));
 		connect(sview, SIGNAL(SmallGridChanged(GridSize)), this, SLOT(SmallGridChanged(GridSize)));
 		connect(sview, SIGNAL(SelectionChanged(SequenceEditSelection)), this, SLOT(SelectionChanged(SequenceEditSelection)));
+		connect(mainWindow->actionViewZoomIn, SIGNAL(triggered(bool)), sview, SLOT(ZoomIn()));
+		connect(mainWindow->actionViewZoomOut, SIGNAL(triggered(bool)), sview, SLOT(ZoomOut()));
+		connect(mainWindow->actionViewZoomReset, SIGNAL(triggered(bool)), sview, SLOT(ZoomReset()));
 
 		ModeChanged(sview->GetMode());
 		snapToGrid->setEnabled(true);
@@ -114,9 +122,7 @@ void SequenceTools::SnapToGrid(bool snap)
 {
 	if (!sview)
 		return;
-	disconnect(sview, SIGNAL(SnapToGridChanged(bool)), this, SLOT(SnapToGridChanged(bool)));
 	sview->SetSnapToGrid(snap);
-	connect(sview, SIGNAL(SnapToGridChanged(bool)), this, SLOT(SnapToGridChanged(bool)));
 }
 
 void SequenceTools::SmallGrid(int index)
@@ -172,6 +178,7 @@ void SequenceTools::SnapToGridChanged(bool snap)
 {
 	if (!sview)
 		return;
+	mainWindow->actionViewSnapToGrid->setChecked(snap);
 	snapToGrid->setChecked(snap);
 }
 

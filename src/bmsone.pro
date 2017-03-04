@@ -45,7 +45,9 @@ SOURCES += main.cpp\
     SequenceViewContents.cpp \
     StatusBar.cpp \
     SequenceViewCursor.cpp \
-    CollapseButton.cpp
+    CollapseButton.cpp \
+    SequenceViewEditMode.cpp \
+    SequenceViewWriteMode.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -75,7 +77,8 @@ HEADERS  += MainWindow.h \
     DocumentAux.h \
     SymbolIconManager.h \
     SequenceViewDef.h \
-    CollapseButton.h
+    CollapseButton.h \
+    SequenceViewContexts.h
 
 FORMS    +=
 

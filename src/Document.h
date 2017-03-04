@@ -15,7 +15,7 @@ class SoundChannel;
 struct SoundNote;
 class SoundLoader;
 class EditHistory;
-
+class EditAction;
 
 
 
@@ -84,8 +84,6 @@ signals:
 };
 
 
-
-
 class Document : public QObject, public BmsonObject
 {
 	Q_OBJECT
@@ -95,6 +93,22 @@ class Document : public QObject, public BmsonObject
 	friend class UpdateBpmEventAction;
 	friend class InsertSoundChannelAction;
 	friend class RemoveSoundChannelAction;
+
+	class DocumentUpdateSoundNotesAction;
+
+public:
+	class DocumentUpdateSoundNotesContext
+	{
+		Document *document;
+		QMap<SoundChannel*, QMap<int, SoundNote>> oldNotes;
+		QMap<SoundChannel*, QMap<int, SoundNote>> newNotes;
+	public:
+		DocumentUpdateSoundNotesContext(Document *document, QMap<SoundChannel *, QSet<int> > noteLocations);
+		void Update(QMap<SoundChannel*, QMap<int, SoundNote>> notes);
+		QMap<SoundChannel*, QMap<int, SoundNote>> GetOldNotes() const;
+		void Finish();
+		void Cancel();
+	};
 
 private:
 	QDir directory;
@@ -116,6 +130,7 @@ private:
 private:
 	void InsertSoundChannelInternal(SoundChannel *channel, int index);
 	void RemoveSoundChannelInternal(SoundChannel *channel, int index);
+	bool DetectConflictsAroundNotes(const QMultiMap<int, SoundNote> &notes) const;
 
 private slots:
 	void OnInitBpmChanged();
@@ -160,8 +175,10 @@ public:
 	void UpdateBpmEvents(QList<BpmEvent> events);
 	void RemoveBpmEvents(QList<int> locations);
 
-	void MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel *, SoundNote> &notes);
+	void MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel*, SoundNote> &notes);
 	void MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel*, SoundNote> &notes);
+
+	DocumentUpdateSoundNotesContext *BeginModalEditSoundNotes(const QMap<SoundChannel *, QSet<int> > &noteLocations);
 
 signals:
 	void FilePathChanged();
