@@ -5,10 +5,7 @@ BmsONE
 BmsONE is an editor for bmson files.
 Bmson is a new music game format derived from BMS. See [6. Links] for more information about bmson.
 
-This application currently supports v0.21 bmson. v1.0 bmsons are partially supported, that is,
-they can be input and converted into v0.21 to edit. It is also possible to output them as v1.0
-if you change settings. However, editing data added at v1.0 is not supported properly yet.
-(Some fields in BMS information can be edited with `Extra fields' form.)
+This application currently supports v1.0 and v0.21 bmson, but some features cannot be edited yet.
 
 The latest version of this document can be found at following URL:
 http://sky.geocities.jp/exclusion_bms/bmsone.html
@@ -69,8 +66,8 @@ After placing or selecting a BPM event, a small tool bar to input BPM appears.
 
 BGA data and most extra data cannot be edited, but they will not be lost by this application.
 Only extra data in BMSInfo can be edited by writing fragments of JSON directly as follows:
-  "banner": "my_banner.png",
-  "back_image": "my_back_image.png"
+  "updated_at": "14:00 2015/11/14",
+  "registered_with": "The Forgetalia"
 
 A configuration file is stored in a directory such as:
   [Windows] C:\Users\<USER>\AppData\Local\BmsONE
@@ -138,6 +135,11 @@ bmson specs by flicknote
 
 
 7. History
+
+Nov 14 2015 beta 0.1.0
+  - Improved View Mode functionality.
+  - Implemented Master Cache, Master Lane and Mini Map.
+  - Support of editing bmson v1.0 data. (Now default output format is v1.0.)
 
 Nov 4 2015 alpha 0.0.6
   - Fixed crashes when opening ogg files on Mac.

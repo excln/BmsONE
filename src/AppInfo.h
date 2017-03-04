@@ -3,7 +3,7 @@
 
 
 #define APP_NAME "BmsONE"
-#define APP_VERSION_STRING "alpha 0.1.0"
+#define APP_VERSION_STRING "beta 0.1.0"
 #define APP_URL "http://sky.geocities.jp/exclusion_bms/"
 #define ORGANIZATION_NAME "ExclusionBms"
 
