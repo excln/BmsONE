@@ -35,31 +35,37 @@ MainWindow::MainWindow(QSettings *settings)
 	actionFileNew = new QAction(tr("New"), this);
 	actionFileNew->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::New));
 	actionFileNew->setShortcut(QKeySequence::New);
+	SharedUIHelper::RegisterGlobalShortcut(actionFileNew);
 	QObject::connect(actionFileNew, SIGNAL(triggered()), this, SLOT(FileNew()));
 
 	actionFileOpen = new QAction(tr("Open..."), this);
 	actionFileOpen->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Open));
 	actionFileOpen->setShortcut(QKeySequence::Open);
+	SharedUIHelper::RegisterGlobalShortcut(actionFileOpen);
 	QObject::connect(actionFileOpen, SIGNAL(triggered()), this, SLOT(FileOpen()));
 
 	actionFileSave = new QAction(tr("Save"), this);
 	actionFileSave->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Save));
 	actionFileSave->setShortcut(QKeySequence::Save);
+	SharedUIHelper::RegisterGlobalShortcut(actionFileSave);
 	QObject::connect(actionFileSave, SIGNAL(triggered()), this, SLOT(FileSave()));
 
 	actionFileSaveAs = new QAction(tr("Save As..."), this);
 	actionFileSaveAs->setShortcut(QKeySequence::SaveAs);
+	SharedUIHelper::RegisterGlobalShortcut(actionFileSaveAs);
 	QObject::connect(actionFileSaveAs, SIGNAL(triggered()), this, SLOT(FileSaveAs()));
 
 	actionFileQuit = new QAction(tr("Quit"), this);
 #ifdef Q_OS_WIN
 	actionFileQuit->setShortcut(Qt::ControlModifier + Qt::Key_Q);
 #endif
+	SharedUIHelper::RegisterGlobalShortcut(actionFileQuit);
 	QObject::connect(actionFileQuit, SIGNAL(triggered()), this, SLOT(close()));
 
 	actionEditUndo = new QAction(tr("Undo"), this);
 	actionEditUndo->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Undo));
 	actionEditUndo->setShortcut(QKeySequence::Undo);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditUndo);
 	QObject::connect(actionEditUndo, SIGNAL(triggered()), this, SLOT(EditUndo()));
 
 	actionEditRedo = new QAction(tr("Redo"), this);
@@ -74,109 +80,139 @@ MainWindow::MainWindow(QSettings *settings)
 #else
 	actionEditRedo->setShortcut(QKeySequence::Redo);
 #endif
+	SharedUIHelper::RegisterGlobalShortcut(actionEditRedo);
 	QObject::connect(actionEditRedo, SIGNAL(triggered()), this, SLOT(EditRedo()));
 
 	actionEditCut = new QAction(tr("Cut"), this);
 	actionEditCut->setShortcut(QKeySequence::Cut);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditCut);
 	actionEditCut->setEnabled(false);
 
 	actionEditCopy = new QAction(tr("Copy"), this);
 	actionEditCopy->setShortcut(QKeySequence::Copy);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditCopy);
 	actionEditCopy->setEnabled(false);
 
 	actionEditPaste = new QAction(tr("Paste"), this);
 	actionEditPaste->setShortcut(QKeySequence::Paste);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditPaste);
 	actionEditPaste->setEnabled(false);
 
 	actionEditSelectAll = new QAction(tr("Select All"), this);
 	actionEditSelectAll->setShortcut(QKeySequence::SelectAll);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditSelectAll);
 	actionEditSelectAll->setEnabled(false);
 
 	actionEditDelete = new QAction(tr("Delete"), this);
 	//actionEditDelete->setShortcut(Qt::ControlModifier + Qt::Key_D);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditDelete);
 	actionEditDelete->setEnabled(false);
 
 	actionEditTransfer = new QAction(tr("Switch Key/BGM"), this);
 	//actionEditTransfer->setShortcut(Qt::ControlModifier + Qt::Key_G);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditTransfer);
 	actionEditTransfer->setEnabled(false);
 
 	actionEditModeEdit = new QAction(tr("Edit Mode"), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditModeEdit);
 	actionEditModeEdit->setShortcut(Qt::ControlModifier + Qt::Key_1);
 
 	actionEditModeWrite = new QAction(tr("Write Mode"), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditModeWrite);
 	actionEditModeWrite->setShortcut(Qt::ControlModifier + Qt::Key_2);
 
 	actionEditModeInteractive = new QAction(tr("Interactive Mode"), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditModeInteractive);
 	actionEditModeInteractive->setShortcut(Qt::ControlModifier + Qt::Key_3);
 
 	actionEditLockCreation = new QAction(tr("Lock Note Creation"), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditLockCreation);
 	actionEditLockCreation->setShortcut(Qt::AltModifier + Qt::ShiftModifier + Qt::Key_N);
 
 	actionEditLockDeletion = new QAction(tr("Lock Note Deletion"), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditLockDeletion);
 	actionEditLockDeletion->setShortcut(Qt::AltModifier + Qt::ShiftModifier + Qt::Key_D);
 
 	actionEditLockVerticalMove = new QAction(tr("Lock Vertical Move"), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditLockVerticalMove);
 	actionEditLockVerticalMove->setShortcut(Qt::AltModifier + Qt::ShiftModifier + Qt::Key_V);
 
 	actionEditPlay = new QAction(tr("Play"), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditPlay);
 	actionEditPlay->setShortcut(Qt::ControlModifier + Qt::Key_P);
 
 	actionEditPreferences = new QAction(tr("Preferences..."), this);
 	actionEditPreferences->setShortcut(QKeySequence::Preferences);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditPreferences);
 	connect(actionEditPreferences, SIGNAL(triggered()), this, SLOT(EditPreferences()));
 
 	actionViewFullScreen = new QAction(tr("Toggle Full Screen"), this);
 	actionViewFullScreen->setShortcut(QKeySequence::FullScreen);
+	SharedUIHelper::RegisterGlobalShortcut(actionViewFullScreen);
 	connect(actionViewFullScreen, SIGNAL(triggered()), this, SLOT(ViewFullScreen()));
 
 	actionViewSnapToGrid = new QAction(tr("Snap to Grid"), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionViewSnapToGrid);
 
 	actionViewZoomIn = new QAction(tr("Zoom In"), this);
 	actionViewZoomIn->setShortcut(QKeySequence::ZoomIn);
+	SharedUIHelper::RegisterGlobalShortcut(actionViewZoomIn);
 
 	actionViewZoomOut = new QAction(tr("Zoom Out"), this);
 	actionViewZoomOut->setShortcut(QKeySequence::ZoomOut);
+	SharedUIHelper::RegisterGlobalShortcut(actionViewZoomOut);
 
 	actionViewZoomReset = new QAction(tr("Reset", "Zoom"), this);
 	actionViewZoomReset->setShortcut(Qt::ControlModifier + Qt::Key_0);
+	SharedUIHelper::RegisterGlobalShortcut(actionViewZoomReset);
 
 	actionChannelNew = new QAction(tr("Add..."), this);
 	actionChannelNew->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_N);
+	SharedUIHelper::RegisterGlobalShortcut(actionChannelNew);
 	connect(actionChannelNew, SIGNAL(triggered()), this, SLOT(ChannelNew()));
 
 	actionChannelPrev = new QAction(tr("Select Previous"), this);
 	actionChannelPrev->setShortcut(QKeySequence::Back);
+	SharedUIHelper::RegisterGlobalShortcut(actionChannelPrev);
 	connect(actionChannelPrev, SIGNAL(triggered()), this, SLOT(ChannelPrev()));
 
 	actionChannelNext = new QAction(tr("Select Next"), this);
 	actionChannelNext->setShortcut(QKeySequence::Forward);
+	SharedUIHelper::RegisterGlobalShortcut(actionChannelNext);
 	connect(actionChannelNext, SIGNAL(triggered()), this, SLOT(ChannelNext()));
 
 	actionChannelMoveLeft = new QAction(tr("Move Left"), this);
 	actionChannelMoveLeft->setShortcut(Qt::ControlModifier + Qt::AltModifier + Qt::Key_Left);
+	SharedUIHelper::RegisterGlobalShortcut(actionChannelMoveLeft);
 	connect(actionChannelMoveLeft, SIGNAL(triggered()), this, SLOT(ChannelMoveLeft()));
 
 	actionChannelMoveRight = new QAction(tr("Move Right"), this);
 	actionChannelMoveRight->setShortcut(Qt::ControlModifier + Qt::AltModifier + Qt::Key_Right);
+	SharedUIHelper::RegisterGlobalShortcut(actionChannelMoveRight);
 	connect(actionChannelMoveRight, SIGNAL(triggered()), this, SLOT(ChannelMoveRight()));
 
 	actionChannelDestroy = new QAction(tr("Delete"), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionChannelDestroy);
 	connect(actionChannelDestroy, SIGNAL(triggered()), this, SLOT(ChannelDestroy()));
 
 	actionChannelSelectFile = new QAction(tr("Select File..."), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionChannelSelectFile);
 	connect(actionChannelSelectFile, SIGNAL(triggered()), this, SLOT(ChannelSelectFile()));
 
 	actionChannelPreviewSource = new QAction(tr("Preview Source Sound"), this);
 	actionChannelPreviewSource->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Sound));
+	SharedUIHelper::RegisterGlobalShortcut(actionChannelPreviewSource);
 	connect(actionChannelPreviewSource, SIGNAL(triggered(bool)), this, SLOT(ChannelPreviewSource()));
 
 	actionHelpAbout = new QAction(tr("About BmsONE..."), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionHelpAbout);
 	connect(actionHelpAbout, SIGNAL(triggered()), this, SLOT(HelpAbout()));
 #ifdef Q_OS_MACX
 	actionHelpAboutQt = new QAction(tr("Qt..."), this);
 #else
 	actionHelpAboutQt = new QAction(tr("About Qt..."), this);
 #endif
+	SharedUIHelper::RegisterGlobalShortcut(actionHelpAboutQt);
 	connect(actionHelpAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
 	auto *menuFile = menuBar()->addMenu(tr("File"));

@@ -740,6 +740,21 @@ void SoundChannelFooter::contextMenuEvent(QContextMenuEvent *event)
 
 
 
+SoundChannelView::Context::Context(SoundChannelView *cview, SoundChannelView::Context *parent)
+	: cview(cview), sview(cview->sview), parent(parent)
+{
+	if (!IsTop()){
+		SharedUIHelper::LockGlobalShortcuts();
+	}
+}
+
+SoundChannelView::Context::~Context()
+{
+	if (!IsTop()){
+		SharedUIHelper::UnlockGlobalShortcuts();
+	}
+}
+
 SoundChannelView::Context *SoundChannelView::Context::Escape()
 {
 	if (IsTop()){

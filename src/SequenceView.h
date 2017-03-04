@@ -45,9 +45,9 @@ private:
 	protected:
 		SequenceView *sview;
 		Context *parent;
-		Context(SequenceView *sview, Context *parent=nullptr) : sview(sview), parent(parent){}
+		Context(SequenceView *sview, Context *parent=nullptr);
 	public:
-		virtual ~Context(){}
+		virtual ~Context();
 		virtual bool IsTop() const{ return parent == nullptr; }
 		virtual Context* Escape();
 

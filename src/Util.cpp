@@ -4,6 +4,8 @@
 
 
 IEdit *SharedUIHelper::globallyDirtyEdit = nullptr;
+QSet<QAction*> SharedUIHelper::globalShortcuts;
+int SharedUIHelper::globalShortcutsLockCounter = 0;
 
 
 void SharedUIHelper::SetGloballyDirtyEdit(IEdit *edit)
@@ -17,6 +19,29 @@ void SharedUIHelper::CommitDirtyEdit()
 	if (globallyDirtyEdit){
 		globallyDirtyEdit->Commit();
 		globallyDirtyEdit = nullptr;
+	}
+}
+
+void SharedUIHelper::RegisterGlobalShortcut(QAction *action)
+{
+	globalShortcuts.insert(action);
+}
+
+void SharedUIHelper::LockGlobalShortcuts()
+{
+	if (globalShortcutsLockCounter++ == 0){
+		for (auto action : globalShortcuts){
+			action->blockSignals(true);
+		}
+	}
+}
+
+void SharedUIHelper::UnlockGlobalShortcuts()
+{
+	if (--globalShortcutsLockCounter == 0){
+		for (auto action : globalShortcuts){
+			action->blockSignals(false);
+		}
 	}
 }
 

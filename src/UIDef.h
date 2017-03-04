@@ -38,11 +38,16 @@ public:
 class SharedUIHelper
 {
 	static IEdit *globallyDirtyEdit;
+	static QSet<QAction*> globalShortcuts;
+	static int globalShortcutsLockCounter;
 
 public:
 	static void SetGloballyDirtyEdit(IEdit *edit=nullptr);
 	static void CommitDirtyEdit();
 
+	static void RegisterGlobalShortcut(QAction *action);
+	static void LockGlobalShortcuts();
+	static void UnlockGlobalShortcuts();
 };
 
 

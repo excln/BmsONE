@@ -1396,6 +1396,21 @@ bool SequenceView::paintEventFooterEntity(QWidget *widget, QPaintEvent *event)
 
 // Context default implementations
 
+SequenceView::Context::Context(SequenceView *sview, SequenceView::Context *parent)
+	: sview(sview), parent(parent)
+{
+	if (!IsTop()){
+		SharedUIHelper::LockGlobalShortcuts();
+	}
+}
+
+SequenceView::Context::~Context()
+{
+	if (!IsTop()){
+		SharedUIHelper::UnlockGlobalShortcuts();
+	}
+}
+
 SequenceView::Context *SequenceView::Context::Escape()
 {
 	if (IsTop()){

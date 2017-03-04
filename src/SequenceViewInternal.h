@@ -100,9 +100,9 @@ private:
 		SoundChannelView *cview;
 		SequenceView *sview;
 		Context *parent;
-		Context(SoundChannelView *cview, Context *parent=nullptr) : cview(cview), sview(cview->sview), parent(parent){}
+		Context(SoundChannelView *cview, Context *parent=nullptr);
 	public:
-		virtual ~Context(){}
+		virtual ~Context();
 		virtual bool IsTop() const{ return parent == nullptr; }
 		virtual Context* Escape();
 
