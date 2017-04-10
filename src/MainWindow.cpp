@@ -225,21 +225,6 @@ MainWindow::MainWindow(QSettings *settings)
 	SharedUIHelper::RegisterGlobalShortcut(actionChannelPreviewSource);
 	connect(actionChannelPreviewSource, SIGNAL(triggered(bool)), this, SLOT(ChannelPreviewSource()));
 
-	actionChannelFind = new QAction(tr("Find..."), this);
-	actionChannelFind->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Search));
-	actionChannelFind->setShortcut(QKeySequence::Find);
-	SharedUIHelper::RegisterGlobalShortcut(actionChannelFind);
-
-	actionChannelFindNext = new QAction(tr("Find Next"), this);
-	actionChannelFindNext->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Next));
-	actionChannelFindNext->setShortcuts(QKeySequence::FindNext);
-	SharedUIHelper::RegisterGlobalShortcut(actionChannelFindNext);
-
-	actionChannelFindPrev = new QAction(tr("Find Previous"), this);
-	actionChannelFindPrev->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Previous));
-	actionChannelFindPrev->setShortcuts(QKeySequence::FindPrevious);
-	SharedUIHelper::RegisterGlobalShortcut(actionChannelFindPrev);
-
 	actionHelpAbout = new QAction(tr("About BmsONE..."), this);
 	SharedUIHelper::RegisterGlobalShortcut(actionHelpAbout);
 	connect(actionHelpAbout, SIGNAL(triggered()), this, SLOT(HelpAbout()));
@@ -317,10 +302,7 @@ MainWindow::MainWindow(QSettings *settings)
 	menuChannel->addSeparator();
 	menuChannel->addAction(actionChannelPrev);
 	menuChannel->addAction(actionChannelNext);
-	auto *menuChannelFind = menuChannel->addMenu(tr("Find"));
-	menuChannelFind->addAction(actionChannelFind);
-	menuChannelFind->addAction(actionChannelFindNext);
-	menuChannelFind->addAction(actionChannelFindPrev);
+	menuChannelFind = menuChannel->addMenu(tr("Find"));
 	menuChannel->addSeparator();
 	menuChannel->addAction(actionChannelMoveLeft);
 	menuChannel->addAction(actionChannelMoveRight);

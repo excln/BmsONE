@@ -156,9 +156,6 @@ private:
 	QAction *actionChannelDestroy;
 	QAction *actionChannelSelectFile;
 	QAction *actionChannelPreviewSource;
-	QAction *actionChannelFind;
-	QAction *actionChannelFindNext;
-	QAction *actionChannelFindPrev;
 
 	QAction *actionHelpAbout;
 	QAction *actionHelpAboutQt;
@@ -170,6 +167,7 @@ private:
 	QMenu *menuView;
 	QMenu *menuViewMode;
 	QMenu *menuViewChannelLane;
+	QMenu *menuChannelFind;
 	QAction *actionViewSkinSettingSeparator;
 	QMenu *menuPreview;
 

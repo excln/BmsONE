@@ -21,8 +21,14 @@ private:
 
 	QuasiModalEdit *keyword;
 	QAction *clear;
-	QAction *prev;
-	QAction *next;
+	QAction *actionChannelFind;
+	QAction *actionChannelFindNext;
+	QAction *actionChannelFindPrev;
+	QAction *actionChannelFindFilterActive;
+	QAction *actionChannelFindHideOthers;
+
+	virtual void hideEvent(QHideEvent *event);
+	virtual void showEvent(QShowEvent *event);
 
 private slots:
 	void Activate();
@@ -37,11 +43,17 @@ signals:
 	void FindNext(QString keyword);
 	void FindPrev(QString keyword);
 
+	void Activated();
+	void Inactivated();
+
 public:
 	ChannelFindTools(const QString &objectName, const QString &windowTitle, MainWindow *mainWindow=nullptr);
 	virtual ~ChannelFindTools();
 
 	void ReplaceSequenceView(SequenceView *sview);
+
+	bool FiltersActive() const{ return actionChannelFindFilterActive->isChecked(); }
+	bool HidesOthers() const{ return actionChannelFindHideOthers->isChecked(); }
 
 };
 
