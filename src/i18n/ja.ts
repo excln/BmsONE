@@ -1102,6 +1102,11 @@ All files (*.*)</source>
         <source>&lt;p&gt;Select a version of BMSON format to save files in.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Default&lt;/b&gt; (recommended): the most suitable version for current BmsONE.&lt;/p&gt;</source>
         <translation>&lt;p&gt;保存する際の BMSON フォーマットのバージョンを選択します。&lt;/p&gt;&lt;p&gt;&lt;b&gt;Default&lt;/b&gt; (推奨): 現在のBmsONEに最も適したバージョンが選択されます。&lt;/p&gt;</translation>
     </message>
+    <message>
+        <location filename="../Preferences.cpp" line="125"/>
+        <source>Save JSON Format:</source>
+        <translation>JSON保存フォーマット:</translation>
+    </message>
 </context>
 <context>
     <name>PrefPreviewPage</name>

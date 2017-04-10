@@ -19,6 +19,8 @@ private:
 	QComboBox *language;
 	QComboBox *outputFormat;
 	QStringList outputFormatList;
+	QComboBox *saveJsonFormat;
+	QStringList saveJsonFormatList;
 
 	QString LanguageKeyOf(int index);
 	int LanguageIndexOf(QString key);

@@ -170,7 +170,7 @@ void Document::ExportTo(const QString &exportFilePath)
 		throw tr("Failed to convert bmson format:") + "\n" + cxt.GetCombinedMessage();
 	}
 	// savedVersion = outputVersion;
-	file.write(QJsonDocument(obj).toJson());
+	file.write(QJsonDocument(obj).toJson(BmsonIO::GetSaveJsonFormat()));
 }
 
 void Document::Save()

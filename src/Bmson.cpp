@@ -14,6 +14,7 @@ const BmsonIO::BmsonVersion BmsonIO::LatestVersion = BmsonIO::BMSON_V_1_0;
 
 
 const char* BmsonIO::SettingsFileSaveFormatKey = "File/SaveFormat";
+const char* BmsonIO::SettingsFileSaveJsonFormatKey = "File/SaveJsonFormat";
 
 
 BmsonIO *BmsonIO::instance = nullptr;
@@ -104,6 +105,7 @@ BmsonIO::BmsonVersion BmsonIO::GetSaveFormat()
 {
 	return OutputVersionOf(App::Instance()->GetSettings()->value(SettingsFileSaveFormatKey, "Default").toString());
 }
+
 /*
 void BmsonIO::SetSaveFormat(BmsonIO::BmsonVersion format)
 {
@@ -167,5 +169,47 @@ void BmsonIO::SetSaveFormatString(QString format)
 	emit Instance()->SaveFormatChanged(OutputVersionOf(format));
 }
 
+QStringList BmsonIO::SaveJsonFormatStringList()
+{
+	return QStringList() << "Default" << "Compact";
+}
+
+void BmsonIO::SetSaveJsonFormat(QJsonDocument::JsonFormat format)
+{
+	QString str;
+	switch (format){
+	case QJsonDocument::Compact:
+		str = "Compact";
+		break;
+	case QJsonDocument::Indented:
+		str = "Default";
+		break;
+	}
+	SetSaveJsonFormatString(str);
+}
+
+void BmsonIO::SetSaveJsonFormatString(QString format)
+{
+	App::Instance()->GetSettings()->setValue(SettingsFileSaveJsonFormatKey, format);
+}
+
+QString BmsonIO::GetSaveJsonFormatString()
+{
+	return App::Instance()->GetSettings()->value(SettingsFileSaveJsonFormatKey, "Default").toString();
+}
+
+QJsonDocument::JsonFormat BmsonIO::GetSaveJsonFormatOfString(QString format)
+{
+	if (format == "Compact"){
+		return QJsonDocument::Compact;
+	}else{
+		return QJsonDocument::Indented;
+	}
+}
+
+QJsonDocument::JsonFormat BmsonIO::GetSaveJsonFormat()
+{
+	return GetSaveJsonFormatOfString(GetSaveJsonFormatString());
+}
 
 

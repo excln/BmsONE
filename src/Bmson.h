@@ -19,6 +19,7 @@ private:
 
 
 	static const char* SettingsFileSaveFormatKey;
+	static const char *SettingsFileSaveJsonFormatKey;
 
 	static BmsonIO *instance;
 	BmsonIO();
@@ -47,12 +48,20 @@ public:
 	static BmsonVersion GetSaveFormat();
 	//static void SetSaveFormat(BmsonVersion format);
 
+	static QJsonDocument::JsonFormat GetSaveJsonFormat();
+
 	static QStringList SaveFormatStringList();
 	static QStringList SaveFormatDescriptionList();
 	static BmsonVersion OutputVersionOf(QString format);
 	static QString SpecificOutputVersionOf(BmsonVersion format);
 	static QString GetSaveFormatString();
 	static void SetSaveFormatString(QString format);
+
+	static QStringList SaveJsonFormatStringList();
+	static void SetSaveJsonFormat(QJsonDocument::JsonFormat format);
+	static void SetSaveJsonFormatString(QString format);
+	static QString GetSaveJsonFormatString();
+	static QJsonDocument::JsonFormat GetSaveJsonFormatOfString(QString format);
 
 signals:
 	void SaveFormatChanged(BmsonIO::BmsonVersion format);

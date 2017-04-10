@@ -118,6 +118,12 @@ PrefGeneralPage::PrefGeneralPage(QWidget *parent)
 									  "<p><b>Default</b> (recommended): the most suitable version for current BmsONE.</p>"));
 		outputFormat->setToolTip(outputFormat->whatsThis());
 	}
+	{
+		saveJsonFormat = new QComboBox();
+		saveJsonFormatList = BmsonIO::SaveJsonFormatStringList();
+		saveJsonFormat->addItems(saveJsonFormatList);
+		layout->addRow(tr("Save JSON Format:"), saveJsonFormat);
+	}
 	setLayout(layout);
 }
 
@@ -149,6 +155,7 @@ void PrefGeneralPage::load()
 {
 	outputFormat->setCurrentText(BmsonIO::GetSaveFormatString());
 	language->setCurrentIndex(LanguageIndexOf(App::Instance()->GetSettings()->value(App::SettingsLanguageKey).toString()));
+	saveJsonFormat->setCurrentText(BmsonIO::GetSaveJsonFormatString());
 }
 
 void PrefGeneralPage::store()
@@ -158,4 +165,6 @@ void PrefGeneralPage::store()
 	App::Instance()->GetSettings()->setValue(App::SettingsLanguageKey, languageKey);
 	// Format
 	BmsonIO::SetSaveFormatString(outputFormatList[outputFormat->currentIndex()]);
+	// Json Format
+	BmsonIO::SetSaveJsonFormatString(saveJsonFormat->currentText());
 }
