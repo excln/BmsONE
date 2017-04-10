@@ -1,4 +1,4 @@
-#include "Stabilizer.h"
+#include "SignalFunction.h"
 
 Stabilizer::Stabilizer(int msecInterval, QObject *parent)
 	: QObject(parent)

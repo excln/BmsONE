@@ -2,7 +2,7 @@
 #include "MasterCache.h"
 #include "Document.h"
 #include "SoundChannelInternal.h"
-#include "Stabilizer.h"
+#include "SignalFunction.h"
 #include "UIDef.h"
 
 

@@ -26,7 +26,6 @@ SOURCES += main.cpp\
     QuasiModalEdit.cpp \
     AudioPlayer.cpp \
     SequenceTools.cpp \
-    Stabilizer.cpp \
     SoundChannel.cpp \
     WaveData.cpp \
     WaveStream.cpp \
@@ -88,7 +87,8 @@ SOURCES += main.cpp\
     EditConfig.cpp \
     PrefEdit.cpp \
     ScalarRegion.cpp \
-    ChannelFindTools.cpp
+    ChannelFindTools.cpp \
+    SignalFunction.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -100,7 +100,6 @@ HEADERS  += MainWindow.h \
     QuasiModalEdit.h \
     AudioPlayer.h \
     SequenceTools.h \
-    Stabilizer.h \
     SequenceDef.h \
     ScrollableForm.h \
     UIDef.h \
@@ -159,7 +158,8 @@ HEADERS  += MainWindow.h \
     ScalarRegion.h \
     AppInfo.h \
     ResolutionUtil.h \
-    ChannelFindTools.h
+    ChannelFindTools.h \
+    SignalFunction.h
 
 FORMS    +=
 

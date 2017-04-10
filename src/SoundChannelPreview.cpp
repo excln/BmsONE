@@ -1,7 +1,7 @@
 #include "Document.h"
 #include "SoundChannel.h"
 #include "SoundChannelInternal.h"
-#include "Stabilizer.h"
+#include "SignalFunction.h"
 #include "UIDef.h"
 
 SoundChannelSourceFilePreviewer::SoundChannelSourceFilePreviewer(SoundChannel *channel, QObject *parent)

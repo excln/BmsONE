@@ -1,5 +1,5 @@
-#ifndef STABILIZER_H
-#define STABILIZER_H
+#ifndef SIGNAL_FUNCTION_H
+#define SIGNAL_FUNCTION_H
 
 #include <QtCore>
 
@@ -75,4 +75,4 @@ signals:
 
 
 
-#endif // STABILIZER_H
+#endif // SIGNAL_FUNCTION_H
