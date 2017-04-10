@@ -43,12 +43,18 @@ struct NoteConflict
 	QList<QPair<SoundChannel*, SoundNote>> involvedNotes;
 
 	enum ConflictFlags{
-		ILLEGAL_FLAG         = 0x10000000,
-		LAYERING_FLAG        = 0x00001000,
-		OVERLAPPING_FLAG     = 0x10002000,
+		ILLEGAL_FLAG             = 0x10000000,
+		LAYERING_FLAG            = 0x00001000,
+		NONUNIFORM_LAYERING_FLAG = 0x10003000,
+		OVERLAPPING_FLAG         = 0x10010000,
 	};
 	typedef int ConflictFlagsType;
 	ConflictFlagsType type;
+
+	bool IsIllegal() const{ return (type & ILLEGAL_FLAG) == ILLEGAL_FLAG; }
+	bool IsLayering() const{ return (type & LAYERING_FLAG) == LAYERING_FLAG; }
+	bool IsNonuniformLayering() const{ return (type & NONUNIFORM_LAYERING_FLAG) == NONUNIFORM_LAYERING_FLAG; }
+	bool IsOverlapping() const{ return (type & OVERLAPPING_FLAG) == OVERLAPPING_FLAG; }
 };
 
 

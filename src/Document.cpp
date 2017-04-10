@@ -289,12 +289,13 @@ QMap<int, QMap<int, NoteConflict>> Document::FindConflictsByLanes(int timeBegin,
 				if (n.value().location == location){
 					conf.type |= NoteConflict::LAYERING_FLAG;
 					if (n.value().length != pair.second.length){
-						conf.type |= NoteConflict::ILLEGAL_FLAG;
+						conf.type |= NoteConflict::NONUNIFORM_LAYERING_FLAG;
 					}
 				}else{
 					conf.type |= NoteConflict::OVERLAPPING_FLAG;
 				}
 			}
+			conf.involvedNotes << pair;
 			conflictsByLanes[lane][location] = conf;
 		}
 		currentNotesByLanes[lane].insert(pair.first, pair.second);

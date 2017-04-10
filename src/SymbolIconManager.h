@@ -32,6 +32,7 @@ public:
 		Event,
 		SoundNote,
 		SlicingSoundNote,
+		LayeredSoundNotes,
 		Settings,
 		Solo,
 		Search,

@@ -190,6 +190,8 @@ private:
 	void UpdateVerticalScrollBar(qreal newTimeBegin=-1.0);
 	void VisibleRangeChanged() const;
 	SoundNoteView *HitTestPlayingPane(int lane, int y, int time, bool excludeInactiveChannels=false);
+	QList<SoundNoteView *> HitTestPlayingPaneMulti(int lane, int y, int time, bool excludeInactiveChannels=false,
+												   bool *isConflict=nullptr, NoteConflict *conflict=nullptr);
 	void SetCurrentChannel(SoundChannelView *cview, bool preserveSelection=false);
 	//void LeftClickOnExistingNote();
 	//void RightClickOnExistingNote();
@@ -310,6 +312,7 @@ public:
 	bool HasNotesSelection() const;
 	bool HasBpmEventsSelection() const;
 	int GetCurrentLocation() const;
+	SoundChannelView *GetSoundChannelView(SoundChannel *channel);
 };
 
 

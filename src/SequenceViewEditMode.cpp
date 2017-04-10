@@ -65,12 +65,19 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MouseMove(QMou
 	}else{
 		laneX = sview->sortedLanes.indexOf(sview->lanes[lane]);
 	}
-	SoundNoteView *noteHit = lane >= 0
-			? sview->HitTestPlayingPane(lane, event->y(), EditConfig::SnappedHitTestInEditMode() ? iTime : -1, event->modifiers() & Qt::AltModifier)
-			: nullptr;
-	if (noteHit){
+	QList<SoundNoteView *> notes;
+	bool conflicts = false;
+	NoteConflict conf;
+	if (lane >= 0)
+		notes = sview->HitTestPlayingPaneMulti(lane, event->y(), EditConfig::SnappedHitTestInEditMode() ? iTime : -1,
+											   event->modifiers() & Qt::AltModifier, &conflicts, &conf);
+	if (notes.size() > 0){
 		sview->playingPane->setCursor(Qt::SizeAllCursor);
-		sview->cursor->SetExistingSoundNote(noteHit);
+		if (conflicts){
+			sview->cursor->SetLayeredSoundNotesWithConflict(notes, conf);
+		}else{
+			sview->cursor->SetExistingSoundNote(notes[0]);
+		}
 	}else if (lane >= 0){
 		sview->playingPane->setCursor(Qt::ArrowCursor);
 		sview->cursor->SetTimeWithLane(EditConfig::SnappedHitTestInEditMode() ? iTime : time, lane);
@@ -101,30 +108,47 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 	}else{
 		laneX = sview->sortedLanes.indexOf(sview->lanes[lane]);
 	}
-	SoundNoteView *noteHit = lane >= 0
-			? sview->HitTestPlayingPane(lane, event->y(), EditConfig::SnappedHitTestInEditMode() ? iTime : time, event->modifiers() & Qt::AltModifier)
-			: nullptr;
+	QList<SoundNoteView *> notes;
+	bool conflicts = false;
+	NoteConflict conf;
+	if (lane >= 0)
+		notes = sview->HitTestPlayingPaneMulti(lane, event->y(), EditConfig::SnappedHitTestInEditMode() ? iTime : time,
+										  event->modifiers() & Qt::AltModifier, &conflicts, &conf);
 	sview->ClearBpmEventsSelection();
 	if (event->button() == Qt::RightButton && (event->modifiers() & Qt::AltModifier)){
 		sview->ClearNotesSelection();
 		return new PreviewContext(this, sview, event->pos(), event->button(), iTime);
 	}
-	if (noteHit){
+	if (notes.size() > 0){
 		switch (event->button()){
 		case Qt::LeftButton: {
 			// select note
 			if (event->modifiers() & Qt::ControlModifier){
-				sview->ToggleNoteSelection(noteHit);
+				for (auto note : notes)
+					sview->ToggleNoteSelection(note);
 			}else{
-				if (sview->selectedNotes.contains(noteHit)){
+				if (sview->selectedNotes.intersects(notes.toSet())){
 					// don't deselect other notes
 				}else{
-					sview->SelectSingleNote(noteHit);
+					sview->ClearNotesSelection();
 				}
+				for (auto note : notes)
+					sview->SelectAdditionalNote(note);
 			}
-			sview->cursor->SetExistingSoundNote(noteHit);
-			sview->SetCurrentChannel(noteHit->GetChannelView(), (event->modifiers() & Qt::ControlModifier) != 0);
-			sview->PreviewSingleNote(noteHit);
+			if (conflicts){
+				sview->cursor->SetLayeredSoundNotesWithConflict(notes, conf);
+			}else{
+				sview->cursor->SetExistingSoundNote(notes[0]);
+			}
+			if ((event->modifiers() & Qt::ControlModifier) == 0){
+				sview->ClearChannelSelection();
+			}
+			for (auto note : notes){
+				sview->SetCurrentChannel(note->GetChannelView(), true);
+			}
+			for (auto note : notes){
+				sview->PreviewSingleNote(note);
+			}
 
 			//if (event->modifiers() & Qt::ShiftModifier){
 			//	// edit long notes
@@ -148,21 +172,39 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 		case Qt::RightButton: {
 			// select note & cxt menu
 			if (event->modifiers() & Qt::ControlModifier){
-				sview->SelectAdditionalNote(noteHit);
+				for (auto note : notes)
+					sview->SelectAdditionalNote(note);
 			}else{
-				if (!sview->selectedNotes.contains(noteHit)){
-					sview->SelectSingleNote(noteHit);
-					sview->PreviewSingleNote(noteHit);
+				// check wheter some of `notes` are not selected yet
+				auto temp = notes;
+				for (auto sn : sview->selectedNotes)
+					temp.removeAll(sn);
+				if (!temp.empty()){
+					sview->ClearNotesSelection();
+					for (auto note : notes){
+						sview->SelectAdditionalNote(note);
+						sview->PreviewSingleNote(note);
+					}
 				}
 			}
-			sview->cursor->SetExistingSoundNote(noteHit);
-			sview->SetCurrentChannel(noteHit->GetChannelView());
+			if (conflicts){
+				sview->cursor->SetLayeredSoundNotesWithConflict(notes, conf);
+			}else{
+				sview->cursor->SetExistingSoundNote(notes[0]);
+			}
+			if ((event->modifiers() & Qt::ControlModifier) == 0){
+				sview->ClearChannelSelection();
+			}
+			for (auto note : notes){
+				sview->SetCurrentChannel(note->GetChannelView(), true);
+			}
 			QMetaObject::invokeMethod(sview, "ShowPlayingPaneContextMenu", Qt::QueuedConnection, Q_ARG(QPoint, event->globalPos()));
 			break;
 		}
 		case Qt::MidButton:
+			// preview only one channel
 			sview->ClearNotesSelection();
-			sview->SetCurrentChannel(noteHit->GetChannelView());
+			sview->SetCurrentChannel(notes[0]->GetChannelView());
 			return new PreviewContext(this, sview, event->pos(), event->button(), iTime);
 		}
 	}else if (lane >= 0){

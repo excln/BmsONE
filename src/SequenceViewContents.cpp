@@ -202,9 +202,9 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 				if (lanes.contains(conflict.lane)){
 					LaneDef &laneDef = lanes[conflict.lane];
 					QPoint pos(laneDef.left + laneDef.width/2, std::round(Time2Y(conflict.location)));
-					if (conflict.type & NoteConflict::ILLEGAL_FLAG){
+					if (conflict.IsIllegal()){
 						painter.drawImage(pos - QPoint(imageWarningMark.width()/2, 4 + imageWarningMark.height()/2), imageWarningMark);
-					}else if (conflict.type & NoteConflict::LAYERING_FLAG){
+					}else if (conflict.IsLayering()){
 						painter.drawImage(pos - QPoint(imageLayeredMark.width()/2, 4 + imageLayeredMark.height()/2), imageLayeredMark);
 					}
 				}
@@ -301,6 +301,41 @@ SoundNoteView *SequenceView::HitTestPlayingPane(int lane, int y, int time, bool 
 	}
 	return nviewT;
 }
+
+
+QList<SoundNoteView *> SequenceView::HitTestPlayingPaneMulti(int lane, int y, int time, bool excludeInactiveChannels, bool *isConflict, NoteConflict *conflict)
+{
+	QList<SoundNoteView*> notes;
+	if (isConflict != nullptr)
+		*isConflict = false;
+	SoundNoteView *hit = HitTestPlayingPane(lane, y, time, excludeInactiveChannels);
+	if (hit != nullptr){
+		int lane = hit->GetNote().lane;
+		int location = hit->GetNote().location;
+
+		// TODO: use more efficient function?
+		auto conflicts = document->FindConflictsByLanes(location, location+1);
+		if (conflicts.contains(lane) && conflicts[lane].contains(location)){
+			auto conf = conflicts[lane][location];
+			if (isConflict != nullptr){
+				*isConflict = true;
+				if (conflict != nullptr){
+					*conflict = conf;
+				}
+			}
+			for (auto member : conf.involvedNotes){
+				// select notes that are of the same length as `hit` only
+				if (member.second.location == location && member.second.length == hit->GetNote().length){
+					notes.append(GetSoundChannelView(member.first)->GetNotes()[member.second.location]);
+				}
+			}
+		}else{
+			notes << hit;
+		}
+	}
+	return notes;
+}
+
 
 
 bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *event)

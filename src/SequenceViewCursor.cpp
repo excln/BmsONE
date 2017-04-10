@@ -187,6 +187,40 @@ void SequenceViewCursor::SetExistingSoundNote(SoundNoteView *note)
 	emit Changed();
 }
 
+void SequenceViewCursor::SetLayeredSoundNotesWithConflict(QList<SoundNoteView *> layeredNotes, NoteConflict conflict)
+{
+	if (layeredNotes.empty())
+		return;
+	//bool layered = (conflict.type & NoteConflict::LAYERING_FLAG) != 0;
+	bool layered = layeredNotes.size() > 1;
+	time = layeredNotes[0]->GetNote().location;
+	lane = layeredNotes[0]->GetNote().lane;
+	state = State::LAYERED_SOUND_NOTES_WITH_CONFLICT;
+	layeredSoundNotes = layeredNotes;
+	auto icon = layered
+			? SymbolIconManager::Icon::LayeredSoundNotes
+			: (layeredNotes[0]->GetNote().noteType == 0 ? SymbolIconManager::Icon::SoundNote : SymbolIconManager::Icon::SlicingSoundNote);
+	QStringList errorMessages;
+	if (conflict.IsNonuniformLayering()){
+		errorMessages << tr("Layered notes have different lengths");
+	}
+	if (conflict.IsOverlapping()){
+		errorMessages << tr("Overlapping with a long note");
+	}
+	QString errorStr;
+	for (auto mes : errorMessages){
+		errorStr += "  [" + mes + "]";
+	}
+	statusBar->GetObjectSection()->SetIcon(SymbolIconManager::GetIcon(icon));
+	statusBar->GetObjectSection()->SetText((layered ? tr("Layered sound note") : tr("Sound note")) + errorStr);
+	statusBar->GetAbsoluteLocationSection()->SetText(GetAbsoluteLocationString());
+	statusBar->GetCompositeLocationSection()->SetText(GetCompositeLocationString());
+	statusBar->GetRealTimeSection()->SetText(GetRealTimeString());
+	statusBar->GetLaneSection()->SetText(GetLaneString());
+	statusBar->clearMessage();
+	emit Changed();
+}
+
 void SequenceViewCursor::SetNewBpmEvent(BpmEvent event)
 {
 	if (state == State::NEW_BPM_EVENT && bpmEvent == event)
@@ -332,6 +366,7 @@ bool SequenceViewCursor::HasTime() const
 	case State::TIME_WITH_LANE:
 	case State::NEW_SOUND_NOTE:
 	case State::EXISTING_SOUND_NOTE:
+	case State::LAYERED_SOUND_NOTES_WITH_CONFLICT:
 	case State::NEW_BPM_EVENT:
 	case State::EXISTING_BPM_EVENT:
 	case State::NEW_BAR_LINE:
@@ -356,6 +391,7 @@ bool SequenceViewCursor::HasLane() const
 	case State::TIME_WITH_LANE:
 	case State::NEW_SOUND_NOTE:
 	case State::EXISTING_SOUND_NOTE:
+	case State::LAYERED_SOUND_NOTES_WITH_CONFLICT:
 		return true;
 	case State::NEW_BPM_EVENT:
 	case State::EXISTING_BPM_EVENT:
@@ -379,6 +415,7 @@ bool SequenceViewCursor::HasTimeRange() const
 	case State::TIME_WITH_LANE:
 	case State::NEW_SOUND_NOTE:
 	case State::EXISTING_SOUND_NOTE:
+	case State::LAYERED_SOUND_NOTES_WITH_CONFLICT:
 	case State::NEW_BPM_EVENT:
 	case State::EXISTING_BPM_EVENT:
 	case State::NEW_BAR_LINE:
@@ -402,6 +439,7 @@ bool SequenceViewCursor::HasItemCount() const
 	case State::TIME_WITH_LANE:
 	case State::NEW_SOUND_NOTE:
 	case State::EXISTING_SOUND_NOTE:
+	case State::LAYERED_SOUND_NOTES_WITH_CONFLICT:
 	case State::NEW_BPM_EVENT:
 	case State::EXISTING_BPM_EVENT:
 	case State::NEW_BAR_LINE:

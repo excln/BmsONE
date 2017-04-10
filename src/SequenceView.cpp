@@ -384,6 +384,15 @@ int SequenceView::GetCurrentLocation() const
 	return SnapToLowerFineGrid(tBegin);
 }
 
+SoundChannelView *SequenceView::GetSoundChannelView(SoundChannel *channel)
+{
+	for (auto cview : soundChannels){
+		if (cview->GetChannel() == channel)
+			return cview;
+	}
+	return nullptr;
+}
+
 void SequenceView::ClearAnySelection()
 {
 	selectedNotes.clear();

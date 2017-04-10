@@ -204,6 +204,7 @@ public:
 		TIME_WITH_LANE,
 		NEW_SOUND_NOTE,
 		EXISTING_SOUND_NOTE,
+		LAYERED_SOUND_NOTES_WITH_CONFLICT,
 		NEW_BPM_EVENT,
 		EXISTING_BPM_EVENT,
 		NEW_BAR_LINE,
@@ -222,6 +223,7 @@ private:
 	int lane;
 	SoundNote newSoundNote;
 	SoundNoteView *existingSoundNote;
+	QList<SoundNoteView*> layeredSoundNotes;
 	BpmEvent bpmEvent;
 	BarLine barLine;
 	int timeBegin, timeEnd;
@@ -259,6 +261,7 @@ public:
 	void SetTimeWithLane(int time, int lane);
 	void SetNewSoundNote(SoundNote note);
 	void SetExistingSoundNote(SoundNoteView *note);
+	void SetLayeredSoundNotesWithConflict(QList<SoundNoteView*> layeredNotes, NoteConflict conflict);
 	void SetNewBpmEvent(BpmEvent event);
 	void SetExistingBpmEvent(BpmEvent event);
 	void SetNewBarLine(BarLine bar);
