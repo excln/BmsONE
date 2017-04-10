@@ -10,6 +10,7 @@ const char *ExternalViewer::SettingsCurrentViewerKey = "CurrentViewer";
 const char *ExternalViewer::SettingsViewerGroupFormat = "Viewer%1";
 const char *ExternalViewer::SettingsViewerDisplayNameKey = "Name";
 const char *ExternalViewer::SettingsViewerProgramPathKey = "Path";
+const char *ExternalViewer::SettingsViewerIconPathKey = "Icon";
 const char *ExternalViewer::SettingsViewerArgumentFormatPlayBegKey = "ArgumentPlayBegin";
 const char *ExternalViewer::SettingsViewerArgumentFormatPlayHereKey = "ArgumentPlayHere";
 const char *ExternalViewer::SettingsViewerArgumentFormatStopKey = "ArgumentStop";
@@ -30,6 +31,7 @@ ExternalViewer::ExternalViewer(MainWindow *mainWindow)
 			ExternalViewerConfig c;
 			c.displayName = settings->value(SettingsViewerDisplayNameKey, "").toString();
 			c.programPath = settings->value(SettingsViewerProgramPathKey, "").toString();
+			c.iconPath = settings->value(SettingsViewerIconPathKey, "").toString();
 			c.argumentFormatPlayBeg = settings->value(SettingsViewerArgumentFormatPlayBegKey, "").toString();
 			c.argumentFormatPlayHere = settings->value(SettingsViewerArgumentFormatPlayHereKey, "").toString();
 			c.argumentFormatStop = settings->value(SettingsViewerArgumentFormatStopKey, "").toString();
@@ -57,6 +59,7 @@ ExternalViewer::~ExternalViewer()
 			ExternalViewerConfig &c = config[i];
 			settings->setValue(SettingsViewerDisplayNameKey, c.displayName);
 			settings->setValue(SettingsViewerProgramPathKey, c.programPath);
+			settings->setValue(SettingsViewerIconPathKey, c.iconPath);
 			settings->setValue(SettingsViewerArgumentFormatPlayBegKey, c.argumentFormatPlayBeg);
 			settings->setValue(SettingsViewerArgumentFormatPlayHereKey, c.argumentFormatPlayHere);
 			settings->setValue(SettingsViewerArgumentFormatStopKey, c.argumentFormatStop);

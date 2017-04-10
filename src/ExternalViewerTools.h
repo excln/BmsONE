@@ -29,6 +29,8 @@ public:
 	explicit ExternalViewerTools(const QString &objectName, const QString &windowTitle, MainWindow *mainWindow=nullptr);
 	~ExternalViewerTools();
 
+	static QIcon GetIconForViewer(const ExternalViewerConfig &config);
+
 private slots:
 	void ConfigChanged();
 	void ConfigIndexChanged(int i);
@@ -53,6 +55,7 @@ private:
 	int index;
 
 	QListWidget *list;
+	QToolButton *addButton, *removeButton, *upButton, *downButton;
 	QToolButton *selectProgramButton;
 	QLineEdit *displayName;
 	QLineEdit *programPath;
@@ -70,6 +73,8 @@ public:
 	int GetIndex() const{ return index; }
 
 private slots:
+	void Up();
+	void Down();
 	void Add();
 	void Remove();
 	void PageChanged(int i);
@@ -84,8 +89,30 @@ private slots:
 	void SelectProgram();
 
 private:
+	QListWidgetItem *NewListItem(const ExternalViewerConfig &c);
 	QWidget *VarLabel(QString var);
+	QWidget *VarDescription(QString desc);
 	QWidget *LabelWithIcon(QIcon icon, QString text);
+};
+
+
+class ElidableLabel : public QLabel
+{
+	Q_OBJECT
+
+private:
+	QString originalText;
+	Qt::TextElideMode elideMode;
+
+	virtual void resizeEvent(QResizeEvent *event);
+
+public:
+	ElidableLabel(QString text=QString(), QWidget *parent=nullptr);
+
+	QString GetOriginalText() const{ return originalText; }
+	void SetOriginalText(QString text);
+	Qt::TextElideMode GetElideMode() const{ return elideMode; }
+	void SetElideMode(Qt::TextElideMode mode);
 };
 
 

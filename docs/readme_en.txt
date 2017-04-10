@@ -143,7 +143,7 @@ bmson specs by flicknote
 
 7. History
 
-Oct  2016 beta 0.1.3
+Dec 8 2016 beta 0.1.3
   - Implemented preview on Mini Map.
   - Fixed waveform display that had been inverted in Master Lane and Mini Map.
   - Modified waveform display in Channel Info View.

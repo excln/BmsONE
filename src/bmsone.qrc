@@ -50,5 +50,14 @@
         <file>images/keys/g-white.png</file>
         <file>images/symbols/play.png</file>
         <file>images/symbols/play0.png</file>
+        <file>images/symbols/down.png</file>
+        <file>images/symbols/minus.png</file>
+        <file>images/symbols/plus.png</file>
+        <file>images/symbols/up.png</file>
+        <file>images/symbols_large/down.png</file>
+        <file>images/symbols_large/minus.png</file>
+        <file>images/symbols_large/plus.png</file>
+        <file>images/symbols_large/up.png</file>
+        <file>images/missing64.png</file>
     </qresource>
 </RCC>

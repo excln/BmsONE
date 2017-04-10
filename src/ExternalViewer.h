@@ -11,6 +11,7 @@ struct ExternalViewerConfig
 {
 	QString displayName;
 	QString programPath;
+	QString iconPath;
 	QString argumentFormatPlayBeg;
 	QString argumentFormatPlayHere;
 	QString argumentFormatStop;
@@ -37,6 +38,7 @@ private:
 	static const char *SettingsViewerGroupFormat;
 	static const char *SettingsViewerDisplayNameKey;
 	static const char *SettingsViewerProgramPathKey;
+	static const char *SettingsViewerIconPathKey;
 	static const char *SettingsViewerArgumentFormatPlayBegKey;
 	static const char *SettingsViewerArgumentFormatPlayHereKey;
 	static const char *SettingsViewerArgumentFormatStopKey;

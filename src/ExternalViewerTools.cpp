@@ -21,6 +21,7 @@ ExternalViewerTools::ExternalViewerTools(const QString &objectName, const QStrin
 	actionPlayHere->setShortcuts(QList<QKeySequence>() << Qt::Key_F6 << Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_R);
 
 	addWidget(viewersConfig = new QComboBox(this));
+	viewersConfig->setMinimumWidth(100);
 	actionConfigure = addAction(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Settings), tr("Configure External Viewers..."));
 
 	mainWindow->GetMenuPreview()->addAction(actionPlayBeg);
@@ -47,6 +48,19 @@ ExternalViewerTools::~ExternalViewerTools()
 {
 }
 
+QIcon ExternalViewerTools::GetIconForViewer(const ExternalViewerConfig &config)
+{
+	QFileInfo info(config.iconPath);
+	if (info.isRoot() || !info.exists()){
+		info = QFileInfo(config.programPath);
+	}
+	if (info.isRoot() || !info.exists()){
+		return QIcon(":/images/missing64.png");
+	}else{
+		return QFileIconProvider().icon(info);
+	}
+}
+
 void ExternalViewerTools::ConfigChanged()
 {
 	SetPlayable(viewer->IsPlayable());
@@ -59,7 +73,7 @@ void ExternalViewerTools::ConfigChanged()
 	auto config = viewer->GetConfig();
 	for (int i=0; i<config.size(); i++){
 		auto c = config[i];
-		viewersConfig->addItem(c.displayName);
+		viewersConfig->addItem(GetIconForViewer(c), c.displayName);
 		auto action = new QAction(c.displayName);
 		action->setCheckable(true);
 		connect(action, &QAction::triggered, [=](){
@@ -148,26 +162,50 @@ ExternalViewerConfigDialog::ExternalViewerConfigDialog(MainWindow *mainWindow, Q
 	list = new QListWidget();
 	list->setIconSize(QSize(32, 32));
 	list->setMovement(QListView::Static);
-	list->setMaximumWidth(160);
+	//list->setMaximumWidth(160);
+	list->setMinimumSize(80, 80);
+	list->setMaximumWidth(200);
+	list->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-	auto addButton = new QPushButton();
-	auto removeButton = new QPushButton();
-	addButton->setText("+");
-	removeButton->setText("-");
-	addButton->setMaximumWidth(45);
-	removeButton->setMaximumWidth(45);
+	upButton = new QToolButton();
+	downButton = new QToolButton();
+	addButton = new QToolButton();
+	removeButton = new QToolButton();
+	upButton->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Up));
+	downButton->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Down));
+	addButton->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Plus));
+	removeButton->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Minus));
+	upButton->setToolTip(tr("Up"));
+	downButton->setToolTip(tr("Down"));
+	addButton->setToolTip(tr("Add"));
+	removeButton->setToolTip(tr("Remove"));
+	upButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	downButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	addButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	removeButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	QSize iconSize(20, 20);
+	upButton->setIconSize(iconSize);
+	downButton->setIconSize(iconSize);
+	addButton->setIconSize(iconSize);
+	removeButton->setIconSize(iconSize);
+	connect(upButton, SIGNAL(clicked(bool)), this, SLOT(Up()));
+	connect(downButton, SIGNAL(clicked(bool)), this, SLOT(Down()));
 	connect(addButton, SIGNAL(clicked(bool)), this, SLOT(Add()));
 	connect(removeButton, SIGNAL(clicked(bool)), this, SLOT(Remove()));
 	auto listEditButtonsLayout = new QHBoxLayout();
 	listEditButtonsLayout->addStretch(1);
-	listEditButtonsLayout->addWidget(addButton);
+	listEditButtonsLayout->addWidget(upButton);
+	listEditButtonsLayout->addWidget(downButton);
 	listEditButtonsLayout->addWidget(removeButton);
+	listEditButtonsLayout->addWidget(addButton);
 
 	auto listLayout = new QVBoxLayout();
 	listLayout->addWidget(list);
 	listLayout->addLayout(listEditButtonsLayout);
 
 	auto content = new QFormLayout();
+	content->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+	content->setSizeConstraint(QLayout::SetNoConstraint);
 	content->addRow(tr("Name:"), displayName = new QLineEdit());
 	programPath = new QLineEdit();
 	auto programField = new QHBoxLayout();
@@ -180,6 +218,8 @@ ExternalViewerConfigDialog::ExternalViewerConfigDialog(MainWindow *mainWindow, Q
 	content->addRow(tr("Working Directory:"), execDirectory = new QLineEdit());
 	auto argsWidget = new QGroupBox(tr("Arguments"));
 	auto argsLayout = new QFormLayout();
+	argsLayout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+	argsLayout->setSizeConstraint(QLayout::SetNoConstraint);
 	argsLayout->addRow(LabelWithIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::PlayZero), tr("Play from Beginning:")), argPlayBeg = new QLineEdit());
 	argsLayout->addRow(LabelWithIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Play), tr("Play from Here:")), argPlayHere = new QLineEdit());
 	argsLayout->addRow(LabelWithIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Stop), tr("Stop:")), argStop = new QLineEdit());
@@ -195,19 +235,18 @@ ExternalViewerConfigDialog::ExternalViewerConfigDialog(MainWindow *mainWindow, Q
 	variableAcceptingWidgets.append(argPlayHere);
 	variableAcceptingWidgets.append(argStop);
 	variableAcceptingWidgets.append(execDirectory);
-	content->addRow(new QLabel(tr("Defined variables:")));
 	auto vars = new QGridLayout();
-	vars->addWidget(VarLabel("$(filename)"), 0, 0); vars->addWidget(new QLabel(tr("file name")), 0, 1);
-	vars->addWidget(VarLabel("$(directory)"), 1, 0); vars->addWidget(new QLabel(tr("document directory")), 1, 1);
-	vars->addWidget(VarLabel("$(exedir)"), 2, 0); vars->addWidget(new QLabel(tr("application directory")), 2, 1);
-	vars->addWidget(VarLabel("$(measure)"), 0, 2); vars->addWidget(new QLabel(tr("current measure")), 0, 3);
-	vars->addWidget(VarLabel("$(time)"), 1, 2); vars->addWidget(new QLabel(tr("current time in seconds")), 1, 3);
-	vars->addWidget(VarLabel("$(ticks)"), 2, 2); vars->addWidget(new QLabel(tr("current time in ticks")), 2, 3);
+	vars->addWidget(VarLabel("$(filename)"), 0, 0); vars->addWidget(VarDescription(tr("file name")), 0, 1);
+	vars->addWidget(VarLabel("$(directory)"), 1, 0); vars->addWidget(VarDescription(tr("document directory")), 1, 1);
+	vars->addWidget(VarLabel("$(exedir)"), 2, 0); vars->addWidget(VarDescription(tr("application directory")), 2, 1);
+	vars->addWidget(VarLabel("$(measure)"), 0, 2); vars->addWidget(VarDescription(tr("current measure")), 0, 3);
+	vars->addWidget(VarLabel("$(time)"), 1, 2); vars->addWidget(VarDescription(tr("current time in seconds")), 1, 3);
+	vars->addWidget(VarLabel("$(ticks)"), 2, 2); vars->addWidget(VarDescription(tr("current time in ticks")), 2, 3);
 	vars->setColumnStretch(1, 1);
 	vars->setColumnStretch(3, 1);
 	vars->setColumnMinimumWidth(1, 20);
 	vars->setColumnMinimumWidth(3, 20);
-	auto varsWidget = new QWidget();
+	auto varsWidget = new QGroupBox(tr("Defined variables"));
 	varsWidget->setLayout(vars);
 	content->addRow(varsWidget);
 
@@ -225,17 +264,46 @@ ExternalViewerConfigDialog::ExternalViewerConfigDialog(MainWindow *mainWindow, Q
 	connect(cancelButton, SIGNAL(clicked()), this, SLOT(close()));
 
 	for (auto c : config){
-		auto item = new QListWidgetItem(c.displayName, list);
-		item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+		auto item = NewListItem(c);
+		list->addItem(item);
 	}
 	list->setCurrentRow(index);
 	if (index < 0){
+		// make sure
 		PageChanged(-1);
 	}
 }
 
 ExternalViewerConfigDialog::~ExternalViewerConfigDialog()
 {
+}
+
+void ExternalViewerConfigDialog::Up()
+{
+	int i = list->currentRow();
+	if (i < 0 || i == 0)
+		return;
+	auto c = config[i];
+	config.removeAt(i);
+	auto item = list->takeItem(i);
+	i--;
+	config.insert(i, c);
+	list->insertItem(i, item);
+	list->setCurrentRow(i);
+}
+
+void ExternalViewerConfigDialog::Down()
+{
+	int i = list->currentRow();
+	if (i < 0 || i == config.size()-1)
+		return;
+	auto c = config[i];
+	config.removeAt(i);
+	auto item = list->takeItem(i);
+	i++;
+	config.insert(i, c);
+	list->insertItem(i, item);
+	list->setCurrentRow(i);
 }
 
 void ExternalViewerConfigDialog::Add()
@@ -245,8 +313,7 @@ void ExternalViewerConfigDialog::Add()
 	if (i < 0)
 		i = 0;
 	config.insert(i, c);
-	auto item = new QListWidgetItem(c.displayName);
-	item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+	auto item = NewListItem(c);
 	list->insertItem(i, item);
 	list->setCurrentRow(i);
 }
@@ -258,7 +325,12 @@ void ExternalViewerConfigDialog::Remove()
 		return;
 	list->takeItem(i);
 	config.removeAt(i);
-	list->setCurrentRow(i >= config.count() ? config.count() - 1 : i);
+	auto newIndex = i >= config.count() ? config.count() - 1 : i;
+	list->setCurrentRow(newIndex);
+	if (newIndex < 0){
+		// make sure
+		PageChanged(-1);
+	}
 }
 
 void ExternalViewerConfigDialog::PageChanged(int i)
@@ -278,6 +350,9 @@ void ExternalViewerConfigDialog::PageChanged(int i)
 		argPlayHere->setEnabled(true);
 		argStop->setEnabled(true);
 		execDirectory->setEnabled(true);
+		upButton->setEnabled(true);
+		downButton->setEnabled(true);
+		removeButton->setEnabled(true);
 		this->index = i;
 	}else{
 		displayName->setText("");
@@ -293,6 +368,9 @@ void ExternalViewerConfigDialog::PageChanged(int i)
 		argPlayHere->setEnabled(false);
 		argStop->setEnabled(false);
 		execDirectory->setEnabled(false);
+		upButton->setEnabled(false);
+		downButton->setEnabled(false);
+		removeButton->setEnabled(false);
 	}
 }
 
@@ -311,6 +389,7 @@ void ExternalViewerConfigDialog::ProgramPathEdited()
 	if (i < 0)
 		return;
 	config[i].programPath = programPath->text();
+	list->item(i)->setIcon(ExternalViewerTools::GetIconForViewer(config[i]));
 }
 
 void ExternalViewerConfigDialog::ArgPlayBegEdited()
@@ -362,6 +441,14 @@ void ExternalViewerConfigDialog::SelectProgram()
 	}
 }
 
+QListWidgetItem *ExternalViewerConfigDialog::NewListItem(const ExternalViewerConfig &c)
+{
+	auto item = new QListWidgetItem(c.displayName);
+	item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+	item->setIcon(ExternalViewerTools::GetIconForViewer(c));
+	return item;
+}
+
 QWidget *ExternalViewerConfigDialog::VarLabel(QString var)
 {
 	auto *label = new QPushButton();
@@ -381,6 +468,15 @@ QWidget *ExternalViewerConfigDialog::VarLabel(QString var)
 	return label;
 }
 
+QWidget *ExternalViewerConfigDialog::VarDescription(QString desc)
+{
+	auto label = new ElidableLabel(desc);
+	label->SetElideMode(Qt::ElideRight);
+	label->setMinimumWidth(20);
+	label->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	return label;
+}
+
 QWidget *ExternalViewerConfigDialog::LabelWithIcon(QIcon icon, QString text)
 {
 	auto widget = new QWidget();
@@ -393,4 +489,32 @@ QWidget *ExternalViewerConfigDialog::LabelWithIcon(QIcon icon, QString text)
 	layout->addWidget(new QLabel(text), 1);
 	widget->setLayout(layout);
 	return widget;
+}
+
+
+
+ElidableLabel::ElidableLabel(QString text, QWidget *parent)
+	: QLabel(text, parent)
+	, originalText(text)
+	, elideMode(Qt::ElideNone)
+{
+}
+
+void ElidableLabel::SetOriginalText(QString text)
+{
+	originalText = text;
+	this->resize(size());
+}
+
+void ElidableLabel::SetElideMode(Qt::TextElideMode mode)
+{
+	elideMode = mode;
+	this->resize(size());
+}
+
+void ElidableLabel::resizeEvent(QResizeEvent *event)
+{
+	QFontMetrics metrics(font());
+	QString elidedText = metrics.elidedText(originalText, elideMode, width());
+	setText(elidedText);
 }

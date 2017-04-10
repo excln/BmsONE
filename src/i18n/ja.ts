@@ -289,104 +289,128 @@
 <context>
     <name>ExternalViewerConfigDialog</name>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="139"/>
+        <location filename="../ExternalViewerTools.cpp" line="140"/>
         <source>External Viewer Configuration</source>
         <translation>外部ビューワの設定</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="141"/>
+        <location filename="../ExternalViewerTools.cpp" line="142"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="142"/>
+        <location filename="../ExternalViewerTools.cpp" line="143"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="171"/>
+        <location filename="../ExternalViewerTools.cpp" line="165"/>
+        <source>Up</source>
+        <translation>上に移動</translation>
+    </message>
+    <message>
+        <location filename="../ExternalViewerTools.cpp" line="166"/>
+        <source>Down</source>
+        <translation>下に移動</translation>
+    </message>
+    <message>
+        <location filename="../ExternalViewerTools.cpp" line="167"/>
+        <source>Add</source>
+        <translation>追加</translation>
+    </message>
+    <message>
+        <location filename="../ExternalViewerTools.cpp" line="168"/>
+        <source>Remove</source>
+        <translation>削除</translation>
+    </message>
+    <message>
+        <location filename="../ExternalViewerTools.cpp" line="196"/>
         <source>Name:</source>
         <translation>名前:</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="179"/>
+        <location filename="../ExternalViewerTools.cpp" line="204"/>
         <source>Program Path:</source>
         <translation>プログラムパス:</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="180"/>
+        <location filename="../ExternalViewerTools.cpp" line="205"/>
         <source>Working Directory:</source>
         <translation>作業ディレクトリ:</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="181"/>
+        <location filename="../ExternalViewerTools.cpp" line="206"/>
         <source>Arguments</source>
         <translation>引数</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="183"/>
+        <location filename="../ExternalViewerTools.cpp" line="210"/>
         <source>Play from Beginning:</source>
         <translation>最初から再生:</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="184"/>
+        <location filename="../ExternalViewerTools.cpp" line="211"/>
         <source>Play from Here:</source>
         <translation>現在位置から再生:</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="185"/>
+        <location filename="../ExternalViewerTools.cpp" line="212"/>
         <source>Stop:</source>
         <translation>停止:</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="198"/>
         <source>Defined variables:</source>
         <translation>定義済み変数:</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="200"/>
+        <location filename="../ExternalViewerTools.cpp" line="226"/>
         <source>file name</source>
         <translation>ファイル名</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="201"/>
+        <location filename="../ExternalViewerTools.cpp" line="227"/>
         <source>document directory</source>
         <translation>Bmsonファイルのディレクトリ</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="202"/>
+        <location filename="../ExternalViewerTools.cpp" line="228"/>
         <source>application directory</source>
         <translation>ビューワのディレクトリ</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="203"/>
+        <location filename="../ExternalViewerTools.cpp" line="229"/>
         <source>current measure</source>
         <translation>現在の小節</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="204"/>
+        <location filename="../ExternalViewerTools.cpp" line="230"/>
         <source>current time in seconds</source>
         <translation>現在位置(秒)</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="205"/>
+        <location filename="../ExternalViewerTools.cpp" line="231"/>
         <source>current time in ticks</source>
         <translation>現在位置(ticks)</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="351"/>
+        <location filename="../ExternalViewerTools.cpp" line="236"/>
+        <source>Defined variables</source>
+        <translation>定義済み変数</translation>
+    </message>
+    <message>
+        <location filename="../ExternalViewerTools.cpp" line="417"/>
         <source>Executables (*.exe)
 All files (*.*)</source>
         <translation>実行ファイル (*.exe)
 すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="353"/>
+        <location filename="../ExternalViewerTools.cpp" line="419"/>
         <source>All files (*.*)</source>
         <translation>すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="355"/>
+        <location filename="../ExternalViewerTools.cpp" line="421"/>
         <source>Select program</source>
         <translation>プログラム選択</translation>
     </message>
@@ -409,12 +433,12 @@ All files (*.*)</source>
         <translation>停止</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="24"/>
+        <location filename="../ExternalViewerTools.cpp" line="25"/>
         <source>Configure External Viewers...</source>
         <translation>外部ビューワの設定...</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="30"/>
+        <location filename="../ExternalViewerTools.cpp" line="31"/>
         <source>Viewer</source>
         <translation>ビューワ</translation>
     </message>

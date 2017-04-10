@@ -34,12 +34,14 @@ SymbolIconManager::SymbolIconManager()
 	icons.insert(Icon::Clear, Load("clear"));
 	icons.insert(Icon::Previous, Load("previous"));
 	icons.insert(Icon::Next, Load("next"));
+	icons.insert(Icon::Plus, Load("plus"));
+	icons.insert(Icon::Minus, Load("minus"));
+	icons.insert(Icon::Up, Load("up"));
+	icons.insert(Icon::Down, Load("down"));
 }
 
-QIcon SymbolIconManager::Load(QString name)
+void SymbolIconManager::AddIconOfSize(QIcon *icon, QImage image)
 {
-	QString path = QString(":/images/symbols/%1.png").arg(name);
-	QImage image(path);
 	QImage imageTemp(image.size(), QImage::Format_ARGB32);
 	QImage imageDisabled(image);
 	QImage imageActive(image);
@@ -89,11 +91,31 @@ QIcon SymbolIconManager::Load(QString name)
 			imageSelected.setPixel(x, y, (imageSelected.pixel(x, y) & 0xFF000000) | selectedRGB);
 		}
 	}
+	icon->addPixmap(QPixmap::fromImage(image), QIcon::Normal);
+	icon->addPixmap(QPixmap::fromImage(imageDisabled), QIcon::Disabled);
+	icon->addPixmap(QPixmap::fromImage(imageActive), QIcon::Active);
+	icon->addPixmap(QPixmap::fromImage(imageSelected), QIcon::Selected);
+}
+
+QIcon SymbolIconManager::Load(QString name)
+{
 	QIcon icon;
-	icon.addPixmap(QPixmap::fromImage(image), QIcon::Normal);
-	icon.addPixmap(QPixmap::fromImage(imageDisabled), QIcon::Disabled);
-	icon.addPixmap(QPixmap::fromImage(imageActive), QIcon::Active);
-	icon.addPixmap(QPixmap::fromImage(imageSelected), QIcon::Selected);
+	{
+		// normal (16 x 16)
+		QString path = QString(":/images/symbols/%1.png").arg(name);
+		QImage image(path);
+		if (!image.isNull()){
+			AddIconOfSize(&icon, image);
+		}
+	}
+	{
+		// large (32 x 32)
+		QString path = QString(":/images/symbols_large/%1.png").arg(name);
+		QImage image(path);
+		if (!image.isNull()){
+			AddIconOfSize(&icon, image);
+		}
+	}
 	return icon;
 }
 

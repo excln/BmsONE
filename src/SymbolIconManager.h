@@ -38,6 +38,10 @@ public:
 		Clear,
 		Previous,
 		Next,
+		Plus,
+		Minus,
+		Up,
+		Down,
 	};
 
 private:
@@ -47,6 +51,7 @@ private:
 	QPalette palette;
 	QMap<Icon,QIcon> icons;
 
+	void AddIconOfSize(QIcon *icon, QImage image);
 	QIcon Load(QString name);
 	static SymbolIconManager *Instance();
 	static SymbolIconManager *instance;
