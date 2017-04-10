@@ -18,6 +18,7 @@ public:
 	virtual Context* MouseMove(QMouseEvent*);
 	virtual Context* MousePress(QMouseEvent*);
 	virtual Context* MouseRelease(QMouseEvent*);
+	virtual Context* MouseDoubleClick(QMouseEvent *);
 };
 
 

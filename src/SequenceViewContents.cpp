@@ -277,6 +277,7 @@ bool SequenceView::mouseEventPlayingPane(QWidget *playingPane, QMouseEvent *even
 		context = context->PlayingPane_MouseRelease(event);
 		return true;
 	case QEvent::MouseButtonDblClick:
+		context = context->PlayingPane_MouseDblClick(event);
 		return true;
 	}
 	return false;

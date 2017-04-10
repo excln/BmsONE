@@ -62,6 +62,7 @@ private:
 		virtual Context* PlayingPane_MouseMove(QMouseEvent*){ return this; }
 		virtual Context* PlayingPane_MousePress(QMouseEvent*){ return this; }
 		virtual Context* PlayingPane_MouseRelease(QMouseEvent*){ return this; }
+		virtual Context* PlayingPane_MouseDblClick(QMouseEvent*){ return this; }
 
 		virtual Context* MeasureArea_MouseMove(QMouseEvent*);
 		virtual Context* MeasureArea_MousePress(QMouseEvent*);

@@ -546,6 +546,9 @@ void SoundChannelView::mouseReleaseEvent(QMouseEvent *event)
 
 void SoundChannelView::mouseDoubleClickEvent(QMouseEvent *event)
 {
+	if (!context)
+		return;
+	context = context->MouseDoubleClick(event);
 }
 
 void SoundChannelView::enterEvent(QEvent *event)

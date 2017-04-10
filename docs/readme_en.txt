@@ -143,7 +143,15 @@ bmson specs by flicknote
 
 7. History
 
-Sep 6 2015 beta 0.1.2
+Oct  2016 beta 0.1.3
+  - Implemented preview on Mini Map.
+  - Fixed waveform display that had been inverted in Master Lane and Mini Map.
+  - Modified waveform display in Channel Info View.
+  - Fixed memory leaks that occurred when new documents are opened.
+  - Implemented double clicks on notes to switch them between playable and BGM lanes.
+
+Sep 6 2016 beta 0.1.2
+  - Upgraded Qt to 5.7.0.
   - Added a View Mode for Circular Rhythm.
   - Added a setting whether notes in inactive channels are shown dark.
   - Implemented auto-scrolling in channel preview, and improved display functionality.

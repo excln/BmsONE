@@ -113,6 +113,7 @@ private:
 		virtual Context* MouseMove(QMouseEvent*){ return this; }
 		virtual Context* MousePress(QMouseEvent*){ return this; }
 		virtual Context* MouseRelease(QMouseEvent*){ return this; }
+		virtual Context* MouseDoubleClick(QMouseEvent*){ return this; }
 	};
 	class EditModeContext;
 	class EditModeSelectNotesContext;

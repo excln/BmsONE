@@ -115,6 +115,14 @@ SoundChannelView::Context *SoundChannelView::EditModeContext::MouseRelease(QMous
 	return this;
 }
 
+SoundChannelView::Context *SoundChannelView::EditModeContext::MouseDoubleClick(QMouseEvent *event)
+{
+	if (!sview->selectedNotes.empty()){
+		sview->TransferSelectedNotesToKey();
+	}
+	return this;
+}
+
 
 
 

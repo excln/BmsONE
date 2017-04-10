@@ -16,6 +16,7 @@ public:
 	virtual SequenceView::Context* PlayingPane_MouseMove(QMouseEvent*);
 	virtual SequenceView::Context* PlayingPane_MousePress(QMouseEvent*);
 	virtual SequenceView::Context* PlayingPane_MouseRelease(QMouseEvent*);
+	virtual SequenceView::Context* PlayingPane_MouseDblClick(QMouseEvent*);
 
 	virtual Context* BpmArea_MouseMove(QMouseEvent*);
 	virtual Context* BpmArea_MousePress(QMouseEvent*);

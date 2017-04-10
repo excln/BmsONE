@@ -160,6 +160,14 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MouseRelease(Q
 	return this;
 }
 
+SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MouseDblClick(QMouseEvent *event)
+{
+	if (!sview->selectedNotes.empty()){
+		sview->TransferSelectedNotesToBgm();
+	}
+	return this;
+}
+
 SequenceView::Context *SequenceView::EditModeContext::BpmArea_MouseMove(QMouseEvent *event){
 	qreal time = sview->Y2Time(event->y());
 	int iTime = time;
