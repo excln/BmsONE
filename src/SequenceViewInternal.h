@@ -72,7 +72,7 @@ private:
 	SequenceView *sview;
 	SoundChannelView *cview;
 
-	static int FontSize;
+	static const qreal FontSize;
 
 public:
 	SoundChannelFooter(SequenceView *sview, SoundChannelView *cview);

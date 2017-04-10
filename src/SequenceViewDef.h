@@ -9,5 +9,12 @@ enum class SequenceEditMode{
 };
 
 
+enum class SequenceViewChannelLaneMode{
+	NORMAL,
+	COMPACT,
+	SIMPLE,
+};
+
+
 #endif // SEQUENCEVIEWDEF_H
 

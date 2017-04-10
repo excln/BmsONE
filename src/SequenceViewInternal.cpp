@@ -668,7 +668,7 @@ void SoundChannelHeader::contextMenuEvent(QContextMenuEvent *event)
 
 
 
-int SoundChannelFooter::FontSize = -1;
+const qreal SoundChannelFooter::FontSize = 9.0;
 
 SoundChannelFooter::SoundChannelFooter(SequenceView *sview, SoundChannelView *cview)
 	: QWidget(sview)
@@ -677,15 +677,10 @@ SoundChannelFooter::SoundChannelFooter(SequenceView *sview, SoundChannelView *cv
 {
 	setContextMenuPolicy(Qt::DefaultContextMenu);
 	QFont f = font();
-	if (FontSize <= 0){
-		FontSize = (sview->footerHeight-4)/3+1;
-		do{
-			f.setPixelSize(--FontSize);
-		} while (QFontMetrics(f).height() > (sview->footerHeight-4)/3);
-	}else{
-		f.setPixelSize(FontSize);
-	}
+	f.setPointSizeF(FontSize);
 	setFont(f);
+
+	sview->InstallFooterSizeGrip(this);
 }
 
 SoundChannelFooter::~SoundChannelFooter()
@@ -700,18 +695,38 @@ void SoundChannelFooter::paintEvent(QPaintEvent *event)
 	painter.setPen(palette().dark().color());
 	painter.drawRect(rect.adjusted(0, 0, -1, -1));
 
-	QRect rectText = rect.marginsRemoved(QMargins(2, 2, 2, 2));
+	QRect rectText;
+	int flags;
+	if (width() < 40){
+		// vertical, single line
+		painter.rotate(-90.0);
+		rectText = painter.transform().inverted().mapRect(rect).marginsRemoved(QMargins(6, 2, 8, 2));
+		flags = Qt::TextSingleLine | Qt::AlignVCenter;
+	}else if (height() > 100){
+		// vertical
+		painter.rotate(-90.0);
+		rectText = painter.transform().inverted().mapRect(rect).marginsRemoved(QMargins(6, 2, 8, 2));
+		flags = Qt::TextWrapAnywhere;
+	}else{
+		// horizontal
+		rectText = rect.marginsRemoved(QMargins(2, 8, 2, 2));
+		flags = Qt::TextWrapAnywhere;
+	}
 	QString name = cview->GetName();
-	static const QString prefix = "...";
+	QString prefix = "...";
 	bool prefixed = false;
-	QRect rectBB = painter.boundingRect(rectText, Qt::TextWrapAnywhere, name);
+	QRect rectBB = painter.boundingRect(rectText, flags, name);
 	while (!rectText.contains(rectBB)){
+		if (!prefixed && name.length() > 3){
+			prefix = name.mid(0, 3) + prefix;
+			name = name.mid(3);
+		}
 		name = name.mid(1);
-		rectBB = painter.boundingRect(rectText, Qt::TextWrapAnywhere, prefix + name);
+		rectBB = painter.boundingRect(rectText, flags, prefix + name);
 		prefixed = true;
 	};
 	painter.setPen(QColor(0, 0, 0));
-	painter.drawText(rectText, Qt::TextWrapAnywhere, prefixed ? prefix + name : name);
+	painter.drawText(rectText, flags, prefixed ? prefix + name : name);
 }
 
 void SoundChannelFooter::mouseMoveEvent(QMouseEvent *event)

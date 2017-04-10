@@ -21,11 +21,19 @@ private:
 	QList<GridSize> gridSizePresets;
 	GridSize customGridSize;
 
+	QMenu *menuChannelLaneMode;
+	QActionGroup *actionGroupChannelLaneMode;
+	QAction *actionChannelLaneModeNormal;
+	QAction *actionChannelLaneModeCompact;
+	QAction *actionChannelLaneModeSimple;
+
 	QAction *editMode;
 	QAction *writeMode;
 	QAction *snapToGrid;
 	QAction *darkenNotesInInactiveChannels;
 	QComboBox *gridSize;
+	QToolButton *channelLaneMode;
+
 
 private:
 	static QString TextForGridSize(GridSize grid);
@@ -38,12 +46,14 @@ private slots:
 	void SnapToGrid(bool snap);
 	void DarkenNotesInInactiveChannels(bool darken);
 	void SmallGrid(int index);
+	void ChannelLaneMode(SequenceViewChannelLaneMode mode);
 
 	void ModeChanged(SequenceEditMode mode);
 	void SnapToGridChanged(bool snap);
 	void DarkenNotesInInactiveChannelsChanged(bool darken);
 	void SmallGridChanged(GridSize grid);
 	void SelectionChanged();
+	void ChannelLaneModeChanged(SequenceViewChannelLaneMode mode);
 
 public:
 	SequenceTools(const QString &objectName, const QString &windowTitle, MainWindow *mainWindow=nullptr);

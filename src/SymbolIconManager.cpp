@@ -39,6 +39,7 @@ SymbolIconManager::SymbolIconManager()
 	icons.insert(Icon::Minus, Load("minus"));
 	icons.insert(Icon::Up, Load("up"));
 	icons.insert(Icon::Down, Load("down"));
+	icons.insert(Icon::SoundChannelLanesDisplay, Load("sound_channel_lane"));
 }
 
 void SymbolIconManager::AddIconOfSize(QIcon *icon, QImage image)

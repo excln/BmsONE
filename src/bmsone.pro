@@ -186,3 +186,6 @@ macx: ICON = bmsone.icns
 INCLUDEPATH += $$PWD/ $$PWD/libvorbis
 DEPENDPATH += $$PWD/
 
+DISTFILES += \
+    images/symbols/sound_channel_lane.png
+

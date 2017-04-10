@@ -9,14 +9,26 @@
 #include <cmath>
 #include <cstdlib>
 
-const char* SequenceView::SettingsGroup = "SequenceView";
-const char* SequenceView::SettingsZoomYKey = "ZoomY";
-const char* SequenceView::SettingsModeKey = "Mode";
-const char* SequenceView::SettingsSnapToGridKey = "SnapToGrid";
-const char* SequenceView::SettingsDarkenNotesInInactiveChannels = "DarkenNotesInInactiveChannels";
-const char* SequenceView::SettingsCoarseGridKey = "CoarseGrid";
-const char* SequenceView::SettingsFineGridKey = "FineGrid";
+namespace SequenceViewSettings{
+static const char* SettingsGroup = "SequenceView";
+static const char* SettingsZoomYKey = "ZoomY";
+static const char* SettingsModeKey = "Mode";
+static const char* SettingsSnapToGridKey = "SnapToGrid";
+static const char* SettingsDarkenNotesInInactiveChannels = "DarkenNotesInInactiveChannels";
+static const char* SettingsCoarseGridKey = "CoarseGrid";
+static const char* SettingsFineGridKey = "FineGrid";
+static const char* SettingsFooterHeight = "FooterHeight";
+static const char* SettingsSoundChannelLaneMode = "SoundChannelLaneMode";
+}
+using namespace SequenceViewSettings;
 
+namespace SequenceViewDefaultMetrics{
+static const int FooterGripWidth = 6;
+static const int MinFooterHeight = 48 + FooterGripWidth * 2, MaxFooterHeight = 180;
+static const int LargeSoundChannelWidth = 64;
+static const int SmallSoundChannelWidth = 32;
+}
+using namespace SequenceViewDefaultMetrics;
 
 QWidget *SequenceView::NewWidget(
 		bool(SequenceView::*paintEventHandler)(QWidget *, QPaintEvent *),
@@ -56,7 +68,7 @@ SequenceView::SequenceView(MainWindow *parent)
 		timeLineBpmWidth = 34;
 		timeLineWidth = timeLineMeasureWidth + timeLineBpmWidth;
 		headerHeight = 0;
-		footerHeight = 52;
+		//footerHeight = 52;
 		masterLaneWidth = 64;
 
 		penBigV = QPen(QBrush(QColor(180, 180, 180)), 1);
@@ -114,6 +126,9 @@ SequenceView::SequenceView(MainWindow *parent)
 	masterLane = new MasterLaneView(this, miniMap);
 	masterLane->installEventFilter(this);
 	footerMasterLane = NewWidget(&SequenceView::paintEventFooterEntity);
+	InstallFooterSizeGrip(footerCornerEntry);
+	InstallFooterSizeGrip(footerPlayingEntry);
+	InstallFooterSizeGrip(footerMasterLane);
 #if 0
 	auto *tb = new QToolBar(headerPlayingEntry);
 	tb->addAction("L");
@@ -154,6 +169,17 @@ SequenceView::SequenceView(MainWindow *parent)
 		snapToGrid = settings->value(SettingsSnapToGridKey, true).toBool();
 		darkenNotesInInactiveChannels = settings->value(SettingsDarkenNotesInInactiveChannels, true).toBool();
 		zoomY = settings->value(SettingsZoomYKey, 48./240.).toDouble();
+		footerHeight = std::max(MinFooterHeight, std::min(MaxFooterHeight, settings->value(SettingsFooterHeight, MinFooterHeight).toInt()));
+		auto channelLaneModeString = settings->value(SettingsSoundChannelLaneMode, "normal").toString().toLower();
+		if (channelLaneModeString == "normal"){
+			channelLaneMode = SequenceViewChannelLaneMode::NORMAL;
+		}else if (channelLaneModeString == "compact"){
+			channelLaneMode = SequenceViewChannelLaneMode::COMPACT;
+		}else if (channelLaneModeString == "simple"){
+			channelLaneMode = SequenceViewChannelLaneMode::SIMPLE;
+		}else{
+			channelLaneMode = SequenceViewChannelLaneMode::NORMAL;
+		}
 	}
 	settings->endGroup();
 
@@ -200,6 +226,22 @@ SequenceView::~SequenceView()
 		settings->setValue(SettingsSnapToGridKey, snapToGrid);
 		settings->setValue(SettingsDarkenNotesInInactiveChannels, darkenNotesInInactiveChannels);
 		settings->setValue(SettingsZoomYKey, zoomY);
+		settings->setValue(SettingsFooterHeight, footerHeight);
+		QString channelLaneModeString;
+		switch (channelLaneMode){
+		case SequenceViewChannelLaneMode::NORMAL:
+			channelLaneModeString = "normal";
+			break;
+		case SequenceViewChannelLaneMode::COMPACT:
+			channelLaneModeString = "compact";
+			break;
+		case SequenceViewChannelLaneMode::SIMPLE:
+			channelLaneModeString = "simple";
+			break;
+		default:
+			channelLaneModeString = "normal";
+		}
+		settings->setValue(SettingsSoundChannelLaneMode, channelLaneModeString);
 	}
 	settings->endGroup();
 }
@@ -395,6 +437,14 @@ SoundChannelView *SequenceView::GetSoundChannelView(SoundChannel *channel)
 			return cview;
 	}
 	return nullptr;
+}
+
+int SequenceView::SetFooterHeight(int height)
+{
+	footerHeight = std::max(MinFooterHeight, std::min(MaxFooterHeight, height));
+	UpdateViewportMargins();
+	OnViewportResize();
+	return footerHeight;
 }
 
 void SequenceView::ClearAnySelection()
@@ -1178,6 +1228,18 @@ void SequenceView::UpdateVerticalScrollBar(qreal newTimeBegin)
 
 void SequenceView::OnViewportResize()
 {
+	int channelLaneWidth;
+	switch (channelLaneMode){
+	case SequenceViewChannelLaneMode::COMPACT:
+	case SequenceViewChannelLaneMode::SIMPLE:
+		channelLaneWidth = SmallSoundChannelWidth;
+		break;
+	case SequenceViewChannelLaneMode::NORMAL:
+	default:
+		channelLaneWidth = LargeSoundChannelWidth;
+		break;
+	}
+
 	QRect vr = viewport()->geometry();
 	timeLine->setGeometry(0, headerHeight, timeLineWidth, vr.height());
 	footerCornerEntry->setGeometry(0, vr.bottom()+1, timeLineWidth, footerHeight);
@@ -1187,6 +1249,7 @@ void SequenceView::OnViewportResize()
 		playingPane->setGeometry(timeLineWidth + masterLaneWidth, headerHeight, playingWidth, vr.height());
 		footerPlayingEntry->setGeometry(timeLineWidth + masterLaneWidth, vr.bottom()+1, playingWidth, footerHeight);
 		footerChannelsArea->setGeometry(timeLineWidth + masterLaneWidth + playingWidth, vr.bottom()+1, vr.width(), footerHeight);
+		masterLane->UpdateWholeBackBuffer();
 	}else{
 		playingPane->setGeometry(timeLineWidth, headerHeight, playingWidth, vr.height());
 		footerPlayingEntry->setGeometry(timeLineWidth, vr.bottom()+1, playingWidth, footerHeight);
@@ -1194,20 +1257,26 @@ void SequenceView::OnViewportResize()
 	}
 	miniMap->SetPosition(vr.right()+1, vr.top()-headerHeight, vr.height()+headerHeight+footerHeight);
 	for (int i=0; i<soundChannels.size(); i++){
-		int x = i * 64 - horizontalScrollBar()->value();
-		soundChannels[i]->setGeometry(x, 0, 64, vr.height());
+		int x = i * channelLaneWidth - horizontalScrollBar()->value();
+		soundChannels[i]->setGeometry(x, 0, channelLaneWidth, vr.height());
 		soundChannels[i]->RemakeBackBuffer();
-		//soundChannelHeaders[i]->setGeometry(x, 0, 64, headerHeight);
-		soundChannelFooters[i]->setGeometry(x, 0, 64, footerHeight);
+		//soundChannelHeaders[i]->setGeometry(x, 0, channelLaneWidth, headerHeight);
+		soundChannelFooters[i]->setGeometry(x, 0, channelLaneWidth, footerHeight);
 	}
 
 	UpdateVerticalScrollBar();
 
-	horizontalScrollBar()->setRange(0, std::max(0, 64*soundChannels.size() - viewport()->width()));
+	horizontalScrollBar()->setRange(0, std::max(0, channelLaneWidth*soundChannels.size() - viewport()->width()));
 	horizontalScrollBar()->setPageStep(viewport()->width());
-	horizontalScrollBar()->setSingleStep(64);
+	horizontalScrollBar()->setSingleStep(channelLaneWidth);
 
 	VisibleRangeChanged();
+}
+
+void SequenceView::InstallFooterSizeGrip(QWidget *footer)
+{
+	auto grip = new SequenceViewFooterSizeGrip(this, footer);
+	grip->setGeometry(0, 0, 1024, FooterGripWidth);
 }
 
 void SequenceView::SoundChannelInserted(int index, SoundChannel *channel)
@@ -1564,6 +1633,13 @@ void SequenceView::NoteEditToolSelectedNotesUpdated(QMultiMap<SoundChannel*, Sou
 	document->MultiChannelUpdateSoundNotes(notes, UpdateNotePolicy::ForceMove);
 }
 
+void SequenceView::SetChannelLaneMode(SequenceViewChannelLaneMode mode)
+{
+	channelLaneMode = mode;
+	OnViewportResize();
+	emit ChannelLaneModeChanged(channelLaneMode);
+}
+
 bool SequenceView::eventFilter(QObject *sender, QEvent *event)
 {
 	switch (event->type()){
@@ -1823,11 +1899,11 @@ void SequenceView::SkinChanged()
 	for (auto lane : lanes){
 		QLabel *label = new QLabel(footerPlayingEntry);
 		if (lane.keyImageName.isEmpty()){
-			label->setGeometry(lane.left, 4, lane.width, 24);
+			label->setGeometry(lane.left, FooterGripWidth, lane.width, 24);
 			label->setAlignment(Qt::AlignCenter);
 			label->setText(QString::number(lane.lane));
 		}else{
-			label->setGeometry(lane.left, (footerHeight-48)/2, lane.width, 48);
+			label->setGeometry(lane.left, FooterGripWidth, lane.width, 48);
 			label->setPixmap(QPixmap(":/images/keys/" + lane.keyImageName));
 		}
 		label->show();
@@ -2018,3 +2094,32 @@ SequenceView::Context *SequenceView::Context::BpmArea_MouseRelease(QMouseEvent *
 
 
 
+
+SequenceViewFooterSizeGrip::SequenceViewFooterSizeGrip(SequenceView *sview, QWidget *parent)
+	: QWidget(parent)
+	, sview(sview)
+{
+	setCursor(QCursor(Qt::SizeVerCursor));
+}
+
+void SequenceViewFooterSizeGrip::mouseMoveEvent(QMouseEvent *event)
+{
+	if (QWidget::mouseGrabber() == this){
+		sview->SetFooterHeight(sview->GetFooterHeight() - event->y() + dragOrig.y());
+	}
+}
+
+void SequenceViewFooterSizeGrip::mousePressEvent(QMouseEvent *event)
+{
+	if (event->button() == Qt::LeftButton){
+		grabMouse();
+		dragOrig = event->pos();
+	}
+}
+
+void SequenceViewFooterSizeGrip::mouseReleaseEvent(QMouseEvent *event)
+{
+	if (QWidget::mouseGrabber() == this){
+		releaseMouse();
+	}
+}

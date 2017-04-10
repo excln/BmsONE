@@ -308,6 +308,7 @@ MainWindow::MainWindow(QSettings *settings)
 	menuViewZoom->addAction(actionViewZoomOut);
 	menuViewZoom->addSeparator();
 	menuViewZoom->addAction(actionViewZoomReset);
+	menuViewChannelLane = menuView->addMenu(tr("Sound Channel Lanes Display"));
 	menuView->addSeparator();
 	menuView->addAction(actionViewFullScreen);
 

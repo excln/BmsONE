@@ -20,6 +20,25 @@ SequenceTools::SequenceTools(const QString &objectName, const QString &windowTit
 	setObjectName(objectName);
 	setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 
+	menuChannelLaneMode = new QMenu(this);
+	actionChannelLaneModeNormal = menuChannelLaneMode->addAction(tr("Normal"), [this](){
+		ChannelLaneMode(SequenceViewChannelLaneMode::NORMAL);
+	});
+	actionChannelLaneModeCompact = menuChannelLaneMode->addAction(tr("Compact"), [this](){
+		ChannelLaneMode(SequenceViewChannelLaneMode::COMPACT);
+	});
+	actionChannelLaneModeSimple = menuChannelLaneMode->addAction(tr("Simple"), [this](){
+		ChannelLaneMode(SequenceViewChannelLaneMode::SIMPLE);
+	});
+	actionChannelLaneModeNormal->setCheckable(true);
+	actionChannelLaneModeCompact->setCheckable(true);
+	actionChannelLaneModeSimple->setCheckable(true);
+	actionGroupChannelLaneMode = new QActionGroup(this);
+	actionGroupChannelLaneMode->addAction(actionChannelLaneModeNormal);
+	actionGroupChannelLaneMode->addAction(actionChannelLaneModeCompact);
+	actionGroupChannelLaneMode->addAction(actionChannelLaneModeSimple);
+	actionGroupChannelLaneMode->setExclusive(true);
+
 	connect(mainWindow->actionEditDelete, SIGNAL(triggered(bool)), this, SLOT(DeleteObjects()));
 	mainWindow->actionEditModeEdit->setCheckable(true);
 	connect(mainWindow->actionEditModeEdit, SIGNAL(triggered(bool)), this, SLOT(EditMode()));
@@ -29,6 +48,7 @@ SequenceTools::SequenceTools(const QString &objectName, const QString &windowTit
 	connect(mainWindow->actionViewSnapToGrid, SIGNAL(toggled(bool)), this, SLOT(SnapToGrid(bool)));
 	mainWindow->actionViewDarkenNotesInInactiveChannels->setCheckable(true);
 	connect(mainWindow->actionViewDarkenNotesInInactiveChannels, SIGNAL(toggled(bool)), this, SLOT(DarkenNotesInInactiveChannels(bool)));
+	mainWindow->menuViewChannelLane->addActions(QList<QAction*>() << actionChannelLaneModeNormal << actionChannelLaneModeCompact << actionChannelLaneModeSimple);
 
 	auto modes = new QActionGroup(this);
 
@@ -71,6 +91,14 @@ SequenceTools::SequenceTools(const QString &objectName, const QString &windowTit
 	gridSize->setToolTip(tr("Grid"));
 	connect(gridSize, SIGNAL(currentIndexChanged(int)), this, SLOT(SmallGrid(int)));
 	addWidget(gridSize);
+
+	addSeparator();
+	channelLaneMode = new QToolButton();
+	addWidget(channelLaneMode);
+	channelLaneMode->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::SoundChannelLanesDisplay));
+	channelLaneMode->setToolTip(tr("Sound Channel Lanes Display"));
+	channelLaneMode->setMenu(menuChannelLaneMode);
+	channelLaneMode->setPopupMode(QToolButton::InstantPopup);
 }
 
 SequenceTools::~SequenceTools()
@@ -84,6 +112,7 @@ void SequenceTools::ReplaceSequenceView(SequenceView *newSView)
 		disconnect(sview, SIGNAL(SnapToGridChanged(bool)), this, SLOT(SnapToGridChanged(bool)));
 		disconnect(sview, SIGNAL(SmallGridChanged(GridSize)), this, SLOT(SmallGridChanged(GridSize)));
 		disconnect(sview, SIGNAL(SelectionChanged(SequenceEditSelection)), this, SLOT(SelectionChanged(SequenceEditSelection)));
+		disconnect(sview, SIGNAL(ChannelLaneModeChanged(SequenceViewChannelLaneMode)), this, SLOT(ChannelLaneModeChanged(SequenceViewChannelLaneMode)));
 		disconnect(mainWindow->actionViewZoomIn, SIGNAL(triggered(bool)), sview, SLOT(ZoomIn()));
 		disconnect(mainWindow->actionViewZoomOut, SIGNAL(triggered(bool)), sview, SLOT(ZoomOut()));
 		disconnect(mainWindow->actionViewZoomReset, SIGNAL(triggered(bool)), sview, SLOT(ZoomReset()));
@@ -97,6 +126,7 @@ void SequenceTools::ReplaceSequenceView(SequenceView *newSView)
 		connect(sview, SIGNAL(SnapToGridChanged(bool)), this, SLOT(SnapToGridChanged(bool)));
 		connect(sview, SIGNAL(SmallGridChanged(GridSize)), this, SLOT(SmallGridChanged(GridSize)));
 		connect(sview, SIGNAL(SelectionChanged()), this, SLOT(SelectionChanged()));
+		connect(sview, SIGNAL(ChannelLaneModeChanged(SequenceViewChannelLaneMode)), this, SLOT(ChannelLaneModeChanged(SequenceViewChannelLaneMode)));
 		connect(mainWindow->actionViewZoomIn, SIGNAL(triggered(bool)), sview, SLOT(ZoomIn()));
 		connect(mainWindow->actionViewZoomOut, SIGNAL(triggered(bool)), sview, SLOT(ZoomOut()));
 		connect(mainWindow->actionViewZoomReset, SIGNAL(triggered(bool)), sview, SLOT(ZoomReset()));
@@ -110,6 +140,7 @@ void SequenceTools::ReplaceSequenceView(SequenceView *newSView)
 		SnapToGridChanged(sview->GetSnapToGrid());
 		DarkenNotesInInactiveChannelsChanged(sview->GetDarkenNotesInInactiveChannels());
 		SmallGridChanged(sview->GetSmallGrid());
+		ChannelLaneModeChanged(sview->GetChannelLaneMode());
 	}else{
 		snapToGrid->setEnabled(false);
 		snapToGrid->setChecked(false);
@@ -157,6 +188,13 @@ void SequenceTools::SmallGrid(int index)
 	disconnect(sview, SIGNAL(SmallGridChanged(GridSize)), this, SLOT(SmallGridChanged(GridSize)));
 	sview->SetSmallGrid(grid);
 	connect(sview, SIGNAL(SmallGridChanged(GridSize)), this, SLOT(SmallGridChanged(GridSize)));
+}
+
+void SequenceTools::ChannelLaneMode(SequenceViewChannelLaneMode mode)
+{
+	if (!sview)
+		return;
+	sview->SetChannelLaneMode(mode);
 }
 
 void SequenceTools::DeleteObjects()
@@ -242,5 +280,24 @@ void SequenceTools::SelectionChanged()
 		mainWindow->actionEditTransferToKey->setEnabled(false);
 		mainWindow->actionEditTransferToBgm->setEnabled(false);
 		mainWindow->actionEditSeparateLayeredNotes->setEnabled(false);
+	}
+}
+
+void SequenceTools::ChannelLaneModeChanged(SequenceViewChannelLaneMode mode)
+{
+	// mainWindow->...
+	switch (mode){
+	case SequenceViewChannelLaneMode::NORMAL:
+		actionChannelLaneModeNormal->setChecked(true);
+		break;
+	case SequenceViewChannelLaneMode::COMPACT:
+		actionChannelLaneModeCompact->setChecked(true);
+		break;
+	case SequenceViewChannelLaneMode::SIMPLE:
+		actionChannelLaneModeSimple->setChecked(true);
+		break;
+	default:
+		actionChannelLaneModeNormal->setChecked(true);
+		break;
 	}
 }

@@ -35,15 +35,6 @@ class SequenceView : public QAbstractScrollArea
 	friend class SoundChannelFooter;
 
 private:
-	static const char* SettingsGroup;
-	static const char* SettingsZoomYKey;
-	static const char* SettingsModeKey;
-	static const char* SettingsSnapToGridKey;
-	static const char* SettingsDarkenNotesInInactiveChannels;
-	static const char* SettingsCoarseGridKey;
-	static const char* SettingsFineGridKey;
-
-private:
 	class Context{
 	protected:
 		SequenceView *sview;
@@ -158,6 +149,7 @@ private:
 	bool showMasterLane;
 	bool showMiniMap;
 	bool fixMiniMap;
+	SequenceViewChannelLaneMode channelLaneMode;
 
 	qreal zoomY;	// pixels per tick
 	qreal zoomXKey;	// 1 = default
@@ -295,6 +287,7 @@ public slots:
 	void ZoomOut();
 	void ZoomReset();
 	void NoteEditToolSelectedNotesUpdated(QMultiMap<SoundChannel *, SoundNote> notes);
+	void SetChannelLaneMode(SequenceViewChannelLaneMode mode);
 
 signals:
 	void CurrentChannelChanged(int index);
@@ -304,6 +297,7 @@ signals:
 	void SmallGridChanged(GridSize grid);
 	void MediumGridChanged(GridSize grid);
 	void SelectionChanged();
+	void ChannelLaneModeChanged(SequenceViewChannelLaneMode show);
 
 public:
 	SequenceView(MainWindow *parent);
@@ -319,8 +313,29 @@ public:
 	bool HasBpmEventsSelection() const;
 	int GetCurrentLocation() const;
 	SoundChannelView *GetSoundChannelView(SoundChannel *channel);
+	int GetFooterHeight() const{ return footerHeight; }
+	int SetFooterHeight(int height);
+	void InstallFooterSizeGrip(QWidget *footer);
+	SequenceViewChannelLaneMode GetChannelLaneMode() const{ return channelLaneMode; }
 };
 
+
+
+class SequenceViewFooterSizeGrip : public QWidget
+{
+	Q_OBJECT
+
+private:
+	SequenceView *sview;
+	QPoint dragOrig;
+
+public:
+	SequenceViewFooterSizeGrip(SequenceView *sview, QWidget *parent=nullptr);
+
+	void mouseMoveEvent(QMouseEvent *event);
+	void mousePressEvent(QMouseEvent *event);
+	void mouseReleaseEvent(QMouseEvent *event);
+};
 
 
 

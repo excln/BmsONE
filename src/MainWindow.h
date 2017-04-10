@@ -169,6 +169,7 @@ private:
 
 	QMenu *menuView;
 	QMenu *menuViewMode;
+	QMenu *menuViewChannelLane;
 	QAction *actionViewSkinSettingSeparator;
 	QMenu *menuPreview;
 

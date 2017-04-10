@@ -43,6 +43,7 @@ public:
 		Minus,
 		Up,
 		Down,
+		SoundChannelLanesDisplay,
 	};
 
 private:
