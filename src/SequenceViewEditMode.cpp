@@ -53,7 +53,7 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MouseMove(QMou
 		sview->cursor->SetExistingSoundNote(noteHit);
 	}else if (lane >= 0){
 		sview->playingPane->setCursor(Qt::ArrowCursor);
-		sview->cursor->SetTimeWithLane(iTime, lane);
+		sview->cursor->SetTimeWithLane(EditConfig::SnappedHitTestInEditMode() ? iTime : time, lane);
 	}else{
 		sview->playingPane->setCursor(Qt::ArrowCursor);
 		sview->cursor->SetNothing();
@@ -120,7 +120,8 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 				}
 				return new EditModeDragNotesContext(
 							this, sview, sview->document->BeginModalEditSoundNotes(noteLocations),
-							laneX, iTime, (event->modifiers() & Qt::ShiftModifier) != 0);
+							laneX, iTime,
+							(event->modifiers() & Qt::ShiftModifier) != 0);
 			}
 			//}
 		}
@@ -152,7 +153,8 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 			// clear (to make new selections)
 			sview->ClearNotesSelection();
 		}
-		return new EditModeSelectNotesContext(this, sview, event->button(), laneX, iTime, event->pos());
+		return new EditModeSelectNotesContext(this, sview, event->button(), laneX,
+											  EditConfig::SnappedSelectionInEditMode() ? iTime : time, event->pos());
 	}
 	return this;
 }
@@ -177,10 +179,10 @@ SequenceView::Context *SequenceView::EditModeContext::BpmArea_MouseMove(QMouseEv
 		iTime = sview->SnapToLowerFineGrid(iTime);
 	}
 	const auto events = sview->document->GetBpmEvents();
-	int hitTime = iTime;
+	int hitTime = time;
 	if ((event->modifiers() & Qt::AltModifier) == 0){
 		// Alt to bypass absorption
-		auto i = events.upperBound(iTime);
+		auto i = events.upperBound(hitTime);
 		if (i != events.begin()){
 			i--;
 			if (i != events.end() && sview->Time2Y(i.key()) - 16 <= event->y()){
@@ -193,7 +195,7 @@ SequenceView::Context *SequenceView::EditModeContext::BpmArea_MouseMove(QMouseEv
 		sview->cursor->SetExistingBpmEvent(events[hitTime]);
 	}else{
 		sview->timeLine->setCursor(Qt::ArrowCursor);
-		sview->cursor->SetTime(iTime);
+		sview->cursor->SetTime(EditConfig::SnappedHitTestInEditMode() ? iTime : time);
 	}
 	return this;
 }
@@ -247,7 +249,8 @@ SequenceView::Context *SequenceView::EditModeContext::BpmArea_MousePress(QMouseE
 			// clear (to make new selections)
 			sview->ClearBpmEventsSelection();
 		}
-		return new EditModeSelectBpmEventsContext(this, sview, event->button(), iTime, event->globalPos());
+		return new EditModeSelectBpmEventsContext(this, sview, event->button(),
+												  EditConfig::SnappedSelectionInEditMode() ? iTime : time, event->globalPos());
 	}
 	return this;
 }
@@ -305,7 +308,7 @@ SequenceView::Context *SequenceView::EditModeSelectNotesContext::PlayingPane_Mou
 	int iTime = time;
 	int iTimeUpper = time;
 	int lane = sview->X2Lane(event->x());
-	if (sview->snapToGrid){
+	if (sview->snapToGrid && EditConfig::SnappedSelectionInEditMode()){
 		iTime = sview->SnapToLowerFineGrid(time);
 		iTimeUpper = sview->SnapToUpperFineGrid(time);
 	}
@@ -371,7 +374,7 @@ SequenceView::Context *SequenceView::EditModeSelectNotesContext::PlayingPane_Mou
 	int iTime = time;
 	int iTimeUpper = time;
 	int lane = sview->X2Lane(event->x());
-	if (sview->snapToGrid){
+	if (sview->snapToGrid && EditConfig::SnappedSelectionInEditMode()){
 		iTime = sview->SnapToLowerFineGrid(time);
 		iTimeUpper = sview->SnapToUpperFineGrid(time);
 	}
@@ -606,7 +609,7 @@ SequenceView::Context *SequenceView::EditModeSelectBpmEventsContext::BpmArea_Mou
 	qreal time = sview->Y2Time(event->y());
 	int iTime = time;
 	int iTimeUpper = time;
-	if (sview->snapToGrid){
+	if (sview->snapToGrid && EditConfig::SnappedSelectionInEditMode()){
 		iTime = sview->SnapToLowerFineGrid(time);
 		iTimeUpper = sview->SnapToUpperFineGrid(time);
 	}

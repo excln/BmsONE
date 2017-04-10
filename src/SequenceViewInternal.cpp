@@ -4,6 +4,7 @@
 #include "MainWindow.h"
 #include "BpmEditTool.h"
 #include "SymbolIconManager.h"
+#include "EditConfig.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -522,7 +523,7 @@ void SoundChannelView::mouseMoveEvent(QMouseEvent *event)
 			iTime = sview->SnapToLowerFineGrid(time);
 		}
 		setCursor(Qt::ArrowCursor);
-		sview->cursor->SetTime(iTime);
+		sview->cursor->SetTime(EditConfig::SnappedHitTestInEditMode() ? iTime : time);
 		return;
 	}
 	if (!context)

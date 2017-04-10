@@ -17,12 +17,14 @@ private:
 
 	static const char* SettingsSnappedHitTestInEditModeKey;
 	static const char* SettingsAlwaysShowCursorLineInEditModeKey;
+	static const char* SettingsSnappedSelectionInEditModeKey;
 
 	static EditConfig *instance;
 	EditConfig();
 
 	bool snappedHitTestInEditMode;
 	bool alwaysShowCursorLineInEditMode;
+	bool snappedSelectionInEditMode;
 
 public:
 	static EditConfig *Instance();
@@ -45,9 +47,11 @@ public:
 
 	static bool SnappedHitTestInEditMode();
 	static bool AlwaysShowCursorLineInEditMode();
+	static bool SnappedSelectionInEditMode();
 
 	static void SetSnappedHitTestInEditMode(bool value);
 	static void SetAlwaysShowCursorLineInEditMode(bool value);
+	static void SetSnappedSelectionInEditMode(bool value);
 
 signals:
 

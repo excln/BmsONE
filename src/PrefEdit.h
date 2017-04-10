@@ -20,6 +20,7 @@ private:
 	QSlider *miniMapOpacity;
 	QCheckBox *snappedHitTestInEditMode;
 	QCheckBox *alwaysShowCursorLineInEditMode;
+	QCheckBox *snappedSelectionInEditMode;
 
 public:
 	PrefEditPage(QWidget *parent);

@@ -1028,31 +1028,40 @@ All files (*.*)</source>
     </message>
     <message>
         <location filename="../PrefEdit.cpp" line="47"/>
+        <source>Always show cursor line</source>
+        <translation>常にカーソル線を表示する</translation>
+    </message>
+    <message>
+        <location filename="../PrefEdit.cpp" line="48"/>
+        <source>Enable snapped-to-grid hit test of clicks</source>
+        <translation>クリックの当たり判定でグリッドにスナップを有効にする</translation>
+    </message>
+    <message>
+        <location filename="../PrefEdit.cpp" line="49"/>
+        <source>Enable snapped-to-grid selection</source>
+        <translation>範囲選択でグリッドにスナップを有効にする</translation>
+    </message>
+    <message>
         <source>Hit Test of Clicks:</source>
         <translation>クリックの当たり判定:</translation>
     </message>
     <message>
-        <location filename="../PrefEdit.cpp" line="50"/>
         <source>Snapped to grid (if available)</source>
         <translation>グリッドにスナップ（可能な場合）</translation>
     </message>
     <message>
-        <location filename="../PrefEdit.cpp" line="48"/>
         <source>Cursor Line Display:</source>
         <translation>カーソル線の表示:</translation>
     </message>
     <message>
-        <location filename="../PrefEdit.cpp" line="51"/>
         <source>Not snapped</source>
         <translation>スナップしない</translation>
     </message>
     <message>
-        <location filename="../PrefEdit.cpp" line="53"/>
         <source>Always</source>
         <translation>常に表示</translation>
     </message>
     <message>
-        <location filename="../PrefEdit.cpp" line="54"/>
         <source>Only when Shift key is pressed</source>
         <translation>Shiftキー押下時のみ</translation>
     </message>
@@ -1526,28 +1535,28 @@ All files (*.*)</source>
 <context>
     <name>SoundChannelView</name>
     <message>
-        <location filename="../SequenceViewInternal.cpp" line="23"/>
+        <location filename="../SequenceViewInternal.cpp" line="24"/>
         <source>Preview Source Sound</source>
         <translation>ソースをプレビュー</translation>
     </message>
     <message>
-        <location filename="../SequenceViewInternal.cpp" line="26"/>
+        <location filename="../SequenceViewInternal.cpp" line="27"/>
         <source>Move Left</source>
         <translation>左に移動</translation>
     </message>
     <message>
-        <location filename="../SequenceViewInternal.cpp" line="28"/>
+        <location filename="../SequenceViewInternal.cpp" line="29"/>
         <source>Move Right</source>
         <translation>右に移動</translation>
     </message>
     <message>
-        <location filename="../SequenceViewInternal.cpp" line="30"/>
-        <location filename="../SequenceViewInternal.cpp" line="33"/>
+        <location filename="../SequenceViewInternal.cpp" line="31"/>
+        <location filename="../SequenceViewInternal.cpp" line="34"/>
         <source>Delete</source>
         <translation>削除</translation>
     </message>
     <message>
-        <location filename="../SequenceViewInternal.cpp" line="35"/>
+        <location filename="../SequenceViewInternal.cpp" line="36"/>
         <source>Move to Key Lanes</source>
         <translation>キーレーンに移動</translation>
     </message>

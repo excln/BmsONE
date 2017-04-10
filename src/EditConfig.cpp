@@ -7,6 +7,7 @@ EditConfig::EditConfig()
 {
 	snappedHitTestInEditMode = App::Instance()->GetSettings()->value(SettingsSnappedHitTestInEditModeKey, false).toBool();
 	alwaysShowCursorLineInEditMode = App::Instance()->GetSettings()->value(SettingsAlwaysShowCursorLineInEditModeKey, false).toBool();
+	snappedSelectionInEditMode = App::Instance()->GetSettings()->value(SettingsSnappedSelectionInEditModeKey, true).toBool();
 }
 
 EditConfig *EditConfig::Instance()
@@ -26,6 +27,7 @@ const char* EditConfig::SettingsMiniMapOpacityKey = "SequenceView/MiniMapOpacity
 
 const char* EditConfig::SettingsSnappedHitTestInEditModeKey = "SequenceView/SnappedHitTestInEditMode";
 const char* EditConfig::SettingsAlwaysShowCursorLineInEditModeKey = "SequenceView/AlwaysShowCursorLineInEditMode";
+const char* EditConfig::SettingsSnappedSelectionInEditModeKey = "SequenceView/SnappedSelectionInEditMode";
 
 
 bool EditConfig::GetEnableMasterChannel()
@@ -113,6 +115,11 @@ bool EditConfig::AlwaysShowCursorLineInEditMode()
 	return Instance()->alwaysShowCursorLineInEditMode;
 }
 
+bool EditConfig::SnappedSelectionInEditMode()
+{
+	return Instance()->snappedSelectionInEditMode;
+}
+
 
 void EditConfig::SetSnappedHitTestInEditMode(bool value)
 {
@@ -122,6 +129,11 @@ void EditConfig::SetSnappedHitTestInEditMode(bool value)
 void EditConfig::SetAlwaysShowCursorLineInEditMode(bool value)
 {
 	App::Instance()->GetSettings()->setValue(SettingsAlwaysShowCursorLineInEditModeKey, Instance()->alwaysShowCursorLineInEditMode = value);
+}
+
+void EditConfig::SetSnappedSelectionInEditMode(bool value)
+{
+	App::Instance()->GetSettings()->setValue(SettingsSnappedSelectionInEditModeKey, Instance()->snappedSelectionInEditMode = value);
 }
 
 

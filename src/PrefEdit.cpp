@@ -44,8 +44,9 @@ PrefEditPage::PrefEditPage(QWidget *parent)
 		auto editModeGroup = new QGroupBox(tr("Edit Mode"));
 		auto editModeLayout = new QFormLayout();
 		{
-			editModeLayout->addRow(snappedHitTestInEditMode = new QCheckBox(tr("Enable snapped-to-grid hit test of clicks")));
 			editModeLayout->addRow(alwaysShowCursorLineInEditMode = new QCheckBox(tr("Always show cursor line")));
+			editModeLayout->addRow(snappedHitTestInEditMode = new QCheckBox(tr("Enable snapped-to-grid hit test of clicks")));
+			editModeLayout->addRow(snappedSelectionInEditMode = new QCheckBox(tr("Enable snapped-to-grid selection")));
 		}
 		editModeGroup->setLayout(editModeLayout);
 		layout->addWidget(editModeGroup);
@@ -79,6 +80,7 @@ void PrefEditPage::load()
 
 	snappedHitTestInEditMode->setChecked(EditConfig::SnappedHitTestInEditMode());
 	alwaysShowCursorLineInEditMode->setChecked(EditConfig::AlwaysShowCursorLineInEditMode());
+	snappedSelectionInEditMode->setChecked(EditConfig::SnappedSelectionInEditMode());
 }
 
 void PrefEditPage::store()
@@ -91,6 +93,7 @@ void PrefEditPage::store()
 
 	EditConfig::SetSnappedHitTestInEditMode(snappedHitTestInEditMode->isChecked());
 	EditConfig::SetAlwaysShowCursorLineInEditMode(alwaysShowCursorLineInEditMode->isChecked());
+	EditConfig::SetSnappedSelectionInEditMode(snappedSelectionInEditMode->isChecked());
 }
 
 void PrefEditPage::MasterChanged(bool value)

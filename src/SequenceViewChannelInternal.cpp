@@ -29,7 +29,7 @@ SoundChannelView::Context *SoundChannelView::EditModeContext::MouseMove(QMouseEv
 		sview->cursor->SetExistingSoundNote(noteHit);
 	}else{
 		cview->setCursor(Qt::ArrowCursor);
-		sview->cursor->SetTimeWithLane(iTime, 0);
+		sview->cursor->SetTimeWithLane(EditConfig::SnappedHitTestInEditMode() ? iTime : time, 0);
 	}
 	return this;
 }
@@ -106,7 +106,7 @@ SoundChannelView::Context *SoundChannelView::EditModeContext::MousePress(QMouseE
 			// clear (to make new selections)
 			sview->ClearNotesSelection();
 		}
-		return new EditModeSelectNotesContext(this, cview, event->button(), iTime, event->pos());
+		return new EditModeSelectNotesContext(this, cview, event->button(), EditConfig::SnappedSelectionInEditMode() ? iTime : time, event->pos());
 	}
 	return this;
 }
@@ -147,7 +147,7 @@ SoundChannelView::Context *SoundChannelView::EditModeSelectNotesContext::MouseMo
 	qreal time = sview->Y2Time(event->y());
 	int iTime = time;
 	int iTimeUpper = time;
-	if (sview->snapToGrid){
+	if (sview->snapToGrid && EditConfig::SnappedSelectionInEditMode()){
 		iTime = sview->SnapToLowerFineGrid(time);
 		iTimeUpper = sview->SnapToUpperFineGrid(time);
 	}
@@ -185,7 +185,7 @@ SoundChannelView::Context *SoundChannelView::EditModeSelectNotesContext::MouseRe
 	qreal time = sview->Y2Time(event->y());
 	int iTime = time;
 	int iTimeUpper = time;
-	if (sview->snapToGrid){
+	if (sview->snapToGrid && EditConfig::SnappedSelectionInEditMode()){
 		iTime = sview->SnapToLowerFineGrid(time);
 		iTimeUpper = sview->SnapToUpperFineGrid(time);
 	}

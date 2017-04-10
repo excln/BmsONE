@@ -711,7 +711,7 @@ MasterLaneView::Context *MasterLaneView::Context::MouseMove(QMouseEvent *event)
 	if (ml->sview->snapToGrid){
 		iTime = ml->sview->SnapToLowerFineGrid(time);
 	}
-	ml->sview->cursor->SetTime(iTime);
+	ml->sview->cursor->SetTime(EditConfig::SnappedHitTestInEditMode() ? iTime : time);
 	return this;
 }
 
@@ -723,7 +723,7 @@ MasterLaneView::Context *MasterLaneView::Context::MousePress(QMouseEvent *event)
 		iTime = ml->sview->SnapToLowerFineGrid(time);
 	}
 	ml->sview->ClearAnySelection();
-	ml->sview->cursor->SetTime(iTime);
+	ml->sview->cursor->SetTime(EditConfig::SnappedHitTestInEditMode() ? iTime : time);
 	return this;
 }
 
@@ -752,7 +752,7 @@ MasterLaneView::Context *MasterLaneView::BaseContext::MousePress(QMouseEvent *ev
 		iTime = ml->sview->SnapToLowerFineGrid(time);
 	}
 	ml->sview->ClearAnySelection();
-	return new PreviewContext(ml, this, event->pos(), event->button(), iTime);
+	return new PreviewContext(ml, this, event->pos(), event->button(), EditConfig::SnappedHitTestInEditMode() ? iTime : time);
 }
 
 
