@@ -143,7 +143,7 @@ bmson specs by flicknote
 
 7. History
 
-Dec 8 2016 beta 0.1.3
+Dec 11 2016 beta 0.1.3
   - Implemented preview on Mini Map.
   - Fixed waveform display that had been inverted in Master Lane and Mini Map.
   - Modified waveform display in Channel Info View.
@@ -152,7 +152,8 @@ Dec 8 2016 beta 0.1.3
   - Drag to input a long note in Write Mode.
   - Added View Modes for Generic 6,7 Keys and the plain View Mode.
   - Implemented functions to invoke external viewers.
-  - Some minor bug fixes on UI.
+  - Fix a bug in updating Master Cache when notes are edited.
+  - Some minor bug fixes and improvements on UI.
 
 Sep 6 2016 beta 0.1.2
   - Upgraded Qt to 5.7.0.
