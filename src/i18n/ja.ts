@@ -374,19 +374,19 @@
         <translation>現在位置(ticks)</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="350"/>
+        <location filename="../ExternalViewerTools.cpp" line="351"/>
         <source>Executables (*.exe)
 All files (*.*)</source>
         <translation>実行ファイル (*.exe)
 すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="352"/>
+        <location filename="../ExternalViewerTools.cpp" line="353"/>
         <source>All files (*.*)</source>
         <translation>すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location filename="../ExternalViewerTools.cpp" line="354"/>
+        <location filename="../ExternalViewerTools.cpp" line="355"/>
         <source>Select program</source>
         <translation>プログラム選択</translation>
     </message>
@@ -1342,63 +1342,87 @@ All files (*.*)</source>
 <context>
     <name>SkinLibrary</name>
     <message>
-        <location filename="../Skin.cpp" line="88"/>
-        <location filename="../Skin.cpp" line="215"/>
-        <location filename="../Skin.cpp" line="359"/>
+        <location filename="../Skin.cpp" line="99"/>
+        <location filename="../Skin.cpp" line="226"/>
+        <location filename="../Skin.cpp" line="370"/>
         <source>Left</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="89"/>
-        <location filename="../Skin.cpp" line="216"/>
-        <location filename="../Skin.cpp" line="360"/>
+        <location filename="../Skin.cpp" line="100"/>
+        <location filename="../Skin.cpp" line="227"/>
+        <location filename="../Skin.cpp" line="371"/>
         <source>Right</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="90"/>
-        <location filename="../Skin.cpp" line="168"/>
-        <location filename="../Skin.cpp" line="217"/>
-        <location filename="../Skin.cpp" line="287"/>
+        <location filename="../Skin.cpp" line="101"/>
+        <location filename="../Skin.cpp" line="179"/>
+        <location filename="../Skin.cpp" line="228"/>
+        <location filename="../Skin.cpp" line="298"/>
         <source>Scratch</source>
         <translation>スクラッチ</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="164"/>
-        <location filename="../Skin.cpp" line="283"/>
-        <location filename="../Skin.cpp" line="420"/>
+        <location filename="../Skin.cpp" line="175"/>
+        <location filename="../Skin.cpp" line="294"/>
+        <location filename="../Skin.cpp" line="431"/>
         <source>Left/Left</source>
         <translation>左/左</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="165"/>
-        <location filename="../Skin.cpp" line="284"/>
-        <location filename="../Skin.cpp" line="421"/>
+        <location filename="../Skin.cpp" line="176"/>
+        <location filename="../Skin.cpp" line="295"/>
+        <location filename="../Skin.cpp" line="432"/>
         <source>Left/Right</source>
         <translation>左/右</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="166"/>
-        <location filename="../Skin.cpp" line="285"/>
-        <location filename="../Skin.cpp" line="422"/>
+        <location filename="../Skin.cpp" line="177"/>
+        <location filename="../Skin.cpp" line="296"/>
+        <location filename="../Skin.cpp" line="433"/>
         <source>Right/Left</source>
         <translation>右/左</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="167"/>
-        <location filename="../Skin.cpp" line="286"/>
-        <location filename="../Skin.cpp" line="423"/>
+        <location filename="../Skin.cpp" line="178"/>
+        <location filename="../Skin.cpp" line="297"/>
+        <location filename="../Skin.cpp" line="434"/>
         <source>Right/Right</source>
         <translation>右/右</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="361"/>
-        <location filename="../Skin.cpp" line="424"/>
+        <location filename="../Skin.cpp" line="372"/>
+        <location filename="../Skin.cpp" line="435"/>
         <source>Lane Order</source>
         <translation>レーン順序</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="468"/>
+        <location filename="../Skin.cpp" line="523"/>
+        <location filename="../Skin.cpp" line="538"/>
+        <source>Default</source>
+        <translation>デフォルト</translation>
+    </message>
+    <message>
+        <location filename="../Skin.cpp" line="523"/>
+        <location filename="../Skin.cpp" line="538"/>
+        <source>Symmetric</source>
+        <translation>Symmetric</translation>
+    </message>
+    <message>
+        <location filename="../Skin.cpp" line="523"/>
+        <location filename="../Skin.cpp" line="538"/>
+        <source>DJ</source>
+        <translation>DJ</translation>
+    </message>
+    <message>
+        <location filename="../Skin.cpp" line="524"/>
+        <location filename="../Skin.cpp" line="539"/>
+        <source>Color Scheme</source>
+        <translation>配色</translation>
+    </message>
+    <message>
+        <location filename="../Skin.cpp" line="577"/>
         <source>Lane Count</source>
         <translation>レーン数</translation>
     </message>

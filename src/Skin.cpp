@@ -8,6 +8,16 @@ Skin::Skin(QString name, QObject *parent)
 	width = 0;
 }
 
+SkinProperty *Skin::GetProperty(QString name) const
+{
+	for (auto p : properties){
+		if (p->objectName() == name){
+			return p;
+		}
+	}
+	return nullptr;
+}
+
 
 SkinLibrary::SkinLibrary()
 {
@@ -74,6 +84,7 @@ void SkinLibrary::SetupSkin7k(Skin *skin, int scratch)
 #define CIRCULAR_ORDER_PROPERTY_KEY "lane-order"
 #define DEFAULT_GENERIC_6KEYS_ID "default-generic-6keys"
 #define DEFAULT_GENERIC_7KEYS_ID "default-generic-7keys"
+#define GENERIC_NKEYS_COLOR_SCHEME_PROPERTY_KEY "color-scheme"
 #define DEFAULT_PLAIN_ID "default-plain"
 #define PLAIN_LANES_PROPERTY_KEY "lane-count"
 
@@ -87,7 +98,7 @@ Skin *SkinLibrary::CreateDefault7k(QObject *parent)
 	QStringList choiceNames;
 	choiceNames.append(tr("Left"));
 	choiceNames.append(tr("Right"));
-	SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, tr("Scratch"), choices, choiceNames, defaultScratch);
+	SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, SCRATCH_PROPERTY_KEY, tr("Scratch"), choices, choiceNames, defaultScratch);
 	scratchPosition->setObjectName(SCRATCH_PROPERTY_KEY);
 	skin->properties.append(scratchPosition);
 	connect(scratchPosition, &SkinProperty::Changed, skin, [=](){
@@ -165,7 +176,7 @@ Skin *SkinLibrary::CreateDefault14k(QObject *parent)
 	choiceNames.append(tr("Left/Right"));
 	choiceNames.append(tr("Right/Left"));
 	choiceNames.append(tr("Right/Right"));
-	SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, tr("Scratch"), choices, choiceNames, defaultScratch);
+	SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, SCRATCH_PROPERTY_KEY, tr("Scratch"), choices, choiceNames, defaultScratch);
 	scratchPosition->setObjectName(SCRATCH_PROPERTY_KEY);
 	skin->properties.append(scratchPosition);
 	connect(scratchPosition, &SkinProperty::Changed, skin, [=](){
@@ -214,7 +225,7 @@ Skin *SkinLibrary::CreateDefault5k(QObject *parent)
 	QStringList choiceNames;
 	choiceNames.append(tr("Left"));
 	choiceNames.append(tr("Right"));
-	SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, tr("Scratch"), choices, choiceNames, defaultScratch);
+	SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, SCRATCH_PROPERTY_KEY, tr("Scratch"), choices, choiceNames, defaultScratch);
 	scratchPosition->setObjectName(SCRATCH_PROPERTY_KEY);
 	skin->properties.append(scratchPosition);
 	connect(scratchPosition, &SkinProperty::Changed, skin, [=](){
@@ -284,7 +295,7 @@ Skin *SkinLibrary::CreateDefault10k(QObject *parent)
 	choiceNames.append(tr("Left/Right"));
 	choiceNames.append(tr("Right/Left"));
 	choiceNames.append(tr("Right/Right"));
-	SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, tr("Scratch"), choices, choiceNames, defaultScratch);
+	SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, SCRATCH_PROPERTY_KEY, tr("Scratch"), choices, choiceNames, defaultScratch);
 	scratchPosition->setObjectName(SCRATCH_PROPERTY_KEY);
 	skin->properties.append(scratchPosition);
 	connect(scratchPosition, &SkinProperty::Changed, skin, [=](){
@@ -358,7 +369,7 @@ Skin *SkinLibrary::CreateDefaultCircularSingle(QObject *parent)
 	QStringList choiceNames;
 	choiceNames.append(tr("Left"));
 	choiceNames.append(tr("Right"));
-	SkinEnumProperty *laneOrderProp = new SkinEnumProperty(skin, tr("Lane Order"), choices, choiceNames, defaultOrder);
+	SkinEnumProperty *laneOrderProp = new SkinEnumProperty(skin, CIRCULAR_ORDER_PROPERTY_KEY, tr("Lane Order"), choices, choiceNames, defaultOrder);
 	laneOrderProp->setObjectName(CIRCULAR_ORDER_PROPERTY_KEY);
 	skin->properties.append(laneOrderProp);
 	connect(laneOrderProp, &SkinProperty::Changed, skin, [=](){
@@ -421,7 +432,7 @@ Skin *SkinLibrary::CreateDefaultCircularDouble(QObject *parent)
 	choiceNames.append(tr("Left/Right"));
 	choiceNames.append(tr("Right/Left"));
 	choiceNames.append(tr("Right/Right"));
-	SkinEnumProperty *laneOrderProp = new SkinEnumProperty(skin, tr("Lane Order"), choices, choiceNames, defaultOrder);
+	SkinEnumProperty *laneOrderProp = new SkinEnumProperty(skin, CIRCULAR_ORDER_PROPERTY_KEY, tr("Lane Order"), choices, choiceNames, defaultOrder);
 	laneOrderProp->setObjectName(CIRCULAR_ORDER_PROPERTY_KEY);
 	skin->properties.append(laneOrderProp);
 	connect(laneOrderProp, &SkinProperty::Changed, skin, [=](){
@@ -435,18 +446,116 @@ Skin *SkinLibrary::CreateDefaultCircularDouble(QObject *parent)
 	return skin;
 }
 
+void SkinLibrary::SetupSkinGeneric6Keys(Skin *skin)
+{
+	const int n = 6;
+	skin->width = lmargin*2 + wwhite*n;
+	skin->lanes.clear();
+	switch (dynamic_cast<SkinEnumProperty*>(skin->GetProperty(GENERIC_NKEYS_COLOR_SCHEME_PROPERTY_KEY))->GetIndexValue()){
+	case 1: // Symmetric
+		skin->lanes.append(LaneDef(1, "g-white", lmargin+wwhite*(1-1), wwhite, QColor(51, 26, 68), QColor(180, 137, 225), cbigv));
+		skin->lanes.append(LaneDef(2, "g-white", lmargin+wwhite*(2-1), wwhite, QColor(68, 20, 34), QColor(240, 137, 150), csmallv));
+		skin->lanes.append(LaneDef(3, "g-white", lmargin+wwhite*(3-1), wwhite, QColor(17, 51, 68), QColor(123, 210, 240), csmallv));
+		skin->lanes.append(LaneDef(4, "g-white", lmargin+wwhite*(4-1), wwhite, QColor(17, 51, 68), QColor(123, 210, 240), csmallv));
+		skin->lanes.append(LaneDef(5, "g-white", lmargin+wwhite*(5-1), wwhite, QColor(68, 20, 34), QColor(240, 137, 150), csmallv));
+		skin->lanes.append(LaneDef(6, "g-white", lmargin+wwhite*(6-1), wwhite, QColor(51, 26, 68), QColor(180, 137, 225), csmallv, cbigv));
+		break;
+	case 2: // DJ
+		skin->lanes.append(LaneDef(1, "g-white", lmargin+wwhite*(1-1), wwhite, pcWhite, pnWhite, cbigv));
+		skin->lanes.append(LaneDef(2, "g-white", lmargin+wwhite*(2-1), wwhite, pcBlue, pnBlue, csmallv));
+		skin->lanes.append(LaneDef(3, "g-white", lmargin+wwhite*(3-1), wwhite, pcWhite, pnWhite, csmallv));
+		skin->lanes.append(LaneDef(4, "g-white", lmargin+wwhite*(4-1), wwhite, pcWhite, pnWhite, csmallv));
+		skin->lanes.append(LaneDef(5, "g-white", lmargin+wwhite*(5-1), wwhite, pcBlue, pnBlue, csmallv));
+		skin->lanes.append(LaneDef(6, "g-white", lmargin+wwhite*(6-1), wwhite, pcWhite, pnWhite, csmallv, cbigv));
+		break;
+	case 0: // default
+	default:
+		for (int i=1; i<=n; i++){
+			skin->lanes.append(LaneDef(i, "g-white", lmargin+wwhite*(i-1), wwhite, QColor(39,39,39), ncwhite,
+									   i==1 ? cbigv :  csmallv,
+									   i!=n ? QColor(0,0,0,0) : cbigv));
+		}
+	}
+}
+
+void SkinLibrary::SetupSkinGeneric7Keys(Skin *skin)
+{
+	const int n = 7;
+	skin->width = lmargin*2 + wwhite*n;
+	skin->lanes.clear();
+	switch (dynamic_cast<SkinEnumProperty*>(skin->GetProperty(GENERIC_NKEYS_COLOR_SCHEME_PROPERTY_KEY))->GetIndexValue()){
+	case 1: // Symmetric
+		skin->lanes.append(LaneDef(1, "g-white", lmargin+wwhite*(1-1), wwhite, QColor(51, 26, 68), QColor(180, 137, 225), cbigv));
+		skin->lanes.append(LaneDef(2, "g-white", lmargin+wwhite*(2-1), wwhite, QColor(68, 20, 34), QColor(240, 137, 150), csmallv));
+		skin->lanes.append(LaneDef(3, "g-white", lmargin+wwhite*(3-1), wwhite, QColor(17, 51, 68), QColor(123, 210, 240), csmallv));
+		skin->lanes.append(LaneDef(4, "g-white", lmargin+wwhite*(4-1), wwhite, QColor(26, 57, 26), QColor(150, 240, 150), csmallv));
+		skin->lanes.append(LaneDef(5, "g-white", lmargin+wwhite*(5-1), wwhite, QColor(17, 51, 68), QColor(123, 210, 240), csmallv));
+		skin->lanes.append(LaneDef(6, "g-white", lmargin+wwhite*(6-1), wwhite, QColor(68, 20, 34), QColor(240, 137, 150), csmallv));
+		skin->lanes.append(LaneDef(7, "g-white", lmargin+wwhite*(7-1), wwhite, QColor(51, 26, 68), QColor(180, 137, 225), csmallv, cbigv));
+		break;
+	case 2: // DJ
+		skin->lanes.append(LaneDef(1, "g-white", lmargin+wwhite*(1-1), wwhite, pcWhite, pnWhite, cbigv));
+		skin->lanes.append(LaneDef(2, "g-white", lmargin+wwhite*(2-1), wwhite, pcBlue, pnBlue, csmallv));
+		skin->lanes.append(LaneDef(3, "g-white", lmargin+wwhite*(3-1), wwhite, pcWhite, pnWhite, csmallv));
+		skin->lanes.append(LaneDef(4, "g-white", lmargin+wwhite*(4-1), wwhite, QColor(60, 39, 20), QColor(225, 180, 137), csmallv));
+		skin->lanes.append(LaneDef(5, "g-white", lmargin+wwhite*(5-1), wwhite, pcWhite, pnWhite, csmallv));
+		skin->lanes.append(LaneDef(6, "g-white", lmargin+wwhite*(6-1), wwhite, pcBlue, pnBlue, csmallv));
+		skin->lanes.append(LaneDef(7, "g-white", lmargin+wwhite*(7-1), wwhite, pcWhite, pnWhite, csmallv, cbigv));
+		break;
+	case 0: // default
+	default:
+		for (int i=1; i<=n; i++){
+			skin->lanes.append(LaneDef(i, "g-white", lmargin+wwhite*(i-1), wwhite, QColor(39,39,39), ncwhite,
+									   i==1 ? cbigv :  csmallv,
+									   i!=n ? QColor(0,0,0,0) : cbigv));
+		}
+	}
+}
+
 Skin *SkinLibrary::CreateDefaultGenericNKeys(QObject *parent, int n)
 {
 	Skin *skin = new Skin(QString("default-generic-%1-keys").arg(n), parent);
 
-	skin->width = lmargin*2 + wwhite*n;
-	skin->lanes.clear();
-	for (int i=1; i<=n; i++){
-		skin->lanes.append(LaneDef(i, "g-white", lmargin+wwhite*(i-1), wwhite, QColor(39,39,39), ncwhite,
-								   i==1 ? cbigv :  csmallv,
-								   i==n ? QColor(0,0,0,0) : cbigv));
+	switch (n){
+	case 6: {
+		auto defaultScheme = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_GENERIC_6KEYS_ID, GENERIC_NKEYS_COLOR_SCHEME_PROPERTY_KEY), "default").toString();
+		QStringList choices = QStringList() << "default" << "symmetric" << "dj";
+		QStringList choiceNames = QStringList() << tr("Default") << tr("Symmetric") << tr("DJ");
+		SkinEnumProperty *colorScheme = new SkinEnumProperty(skin, GENERIC_NKEYS_COLOR_SCHEME_PROPERTY_KEY, tr("Color Scheme"), choices, choiceNames, defaultScheme);
+		skin->properties.append(colorScheme);
+		connect(colorScheme, &SkinProperty::Changed, skin, [=](){
+			SetupSkinGeneric6Keys(skin);
+			App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_GENERIC_6KEYS_ID, GENERIC_NKEYS_COLOR_SCHEME_PROPERTY_KEY), colorScheme->GetChoiceValue());
+			emit skin->Changed();
+			return;
+		});
+		SetupSkinGeneric6Keys(skin);
+		break;
 	}
-
+	case 7: {
+		auto defaultScheme = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_GENERIC_7KEYS_ID, GENERIC_NKEYS_COLOR_SCHEME_PROPERTY_KEY), "default").toString();
+		QStringList choices = QStringList() << "default" << "symmetric" << "dj";
+		QStringList choiceNames = QStringList() << tr("Default") << tr("Symmetric") << tr("DJ");
+		SkinEnumProperty *colorScheme = new SkinEnumProperty(skin, GENERIC_NKEYS_COLOR_SCHEME_PROPERTY_KEY, tr("Color Scheme"), choices, choiceNames, defaultScheme);
+		skin->properties.append(colorScheme);
+		connect(colorScheme, &SkinProperty::Changed, skin, [=](){
+			SetupSkinGeneric7Keys(skin);
+			App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_GENERIC_7KEYS_ID, GENERIC_NKEYS_COLOR_SCHEME_PROPERTY_KEY), colorScheme->GetChoiceValue());
+			emit skin->Changed();
+			return;
+		});
+		SetupSkinGeneric7Keys(skin);
+		break;
+	}
+	default:
+		skin->width = lmargin*2 + wwhite*n;
+		skin->lanes.clear();
+		for (int i=1; i<=n; i++){
+			skin->lanes.append(LaneDef(i, "g-white", lmargin+wwhite*(i-1), wwhite, QColor(39,39,39), ncwhite,
+									   i==1 ? cbigv :  csmallv,
+									   i!=n ? QColor(0,0,0,0) : cbigv));
+		}
+	}
 	return skin;
 }
 
@@ -465,7 +574,7 @@ Skin *SkinLibrary::CreateDefaultPlain(QObject *parent)
 {
 	int defaultCount = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_PLAIN_ID, PLAIN_LANES_PROPERTY_KEY), "4").toInt();
 	Skin *skin = new Skin(DEFAULT_PLAIN_ID, parent);
-	SkinIntegerProperty *laneCountProp = new SkinIntegerProperty(skin, tr("Lane Count"), 1, 99, defaultCount);
+	SkinIntegerProperty *laneCountProp = new SkinIntegerProperty(skin, PLAIN_LANES_PROPERTY_KEY, tr("Lane Count"), 1, 99, defaultCount);
 	laneCountProp->setObjectName(PLAIN_LANES_PROPERTY_KEY);
 	skin->properties.append(laneCountProp);
 	connect(laneCountProp, &SkinProperty::Changed, skin, [=](){
@@ -521,37 +630,41 @@ SkinLibrary *SkinLibrary::GetDefaultSkinLibrary()
 
 
 
-SkinProperty::SkinProperty(Skin *parent, QString name, SkinBoolProperty *th)
+SkinProperty::SkinProperty(Skin *parent, QString name, QString displayName, SkinBoolProperty *th)
 	: QObject(parent)
-	, name(name), type(PROP_BOOL)
+	, displayName(displayName), type(PROP_BOOL)
 {
+	setObjectName(name);
 	dataBool = th;
 }
 
-SkinProperty::SkinProperty(Skin *parent, QString name, SkinEnumProperty *th)
+SkinProperty::SkinProperty(Skin *parent, QString name, QString displayName, SkinEnumProperty *th)
 	: QObject(parent)
-	, name(name), type(PROP_ENUM)
+	, displayName(displayName), type(PROP_ENUM)
 {
+	setObjectName(name);
 	dataEnum = th;
 }
 
-SkinProperty::SkinProperty(Skin *parent, QString name, SkinIntegerProperty *th)
+SkinProperty::SkinProperty(Skin *parent, QString name, QString displayName, SkinIntegerProperty *th)
 	: QObject(parent)
-	, name(name), type(PROP_INT)
+	, displayName(displayName), type(PROP_INT)
 {
+	setObjectName(name);
 	dataInt = th;
 }
 
-SkinProperty::SkinProperty(Skin *parent, QString name, SkinFloatProperty *th)
+SkinProperty::SkinProperty(Skin *parent, QString name, QString displayName, SkinFloatProperty *th)
 	: QObject(parent)
-	, name(name), type(PROP_FLOAT)
+	, displayName(displayName), type(PROP_FLOAT)
 {
+	setObjectName(name);
 	dataFloat = th;
 }
 
 
-SkinBoolProperty::SkinBoolProperty(Skin *parent, QString name, bool value)
-	: SkinProperty(parent, name, this)
+SkinBoolProperty::SkinBoolProperty(Skin *parent, QString name, QString displayname, bool value)
+	: SkinProperty(parent, name, displayname, this)
 	, value(value)
 {
 }
@@ -570,16 +683,16 @@ void SkinBoolProperty::SetValue(QVariant va)
 
 
 
-SkinEnumProperty::SkinEnumProperty(Skin *parent, QString name, QStringList choices, QStringList displayChoices, int value)
-	: SkinProperty(parent, name, this)
+SkinEnumProperty::SkinEnumProperty(Skin *parent, QString name, QString displayName, QStringList choices, QStringList displayChoices, int value)
+	: SkinProperty(parent, name, displayName, this)
 	, choices(choices)
 	, displayChoices(displayChoices)
 	, value(value)
 {
 }
 
-SkinEnumProperty::SkinEnumProperty(Skin *parent, QString name, QStringList choices, QStringList displayChoices, QVariant value)
-	: SkinProperty(parent, name, this)
+SkinEnumProperty::SkinEnumProperty(Skin *parent, QString name, QString displayName, QStringList choices, QStringList displayChoices, QVariant value)
+	: SkinProperty(parent, name, displayName, this)
 	, choices(choices)
 	, displayChoices(displayChoices)
 {
@@ -625,8 +738,8 @@ QString SkinEnumProperty::GetChoiceValue() const
 
 
 
-SkinIntegerProperty::SkinIntegerProperty(Skin *parent, QString name, int min, int max, int value)
-	: SkinProperty(parent, name, this)
+SkinIntegerProperty::SkinIntegerProperty(Skin *parent, QString name, QString displayName, int min, int max, int value)
+	: SkinProperty(parent, name, displayName, this)
 	, min(min)
 	, max(max)
 	, value(value)
@@ -634,8 +747,8 @@ SkinIntegerProperty::SkinIntegerProperty(Skin *parent, QString name, int min, in
 	Normalize();
 }
 
-SkinIntegerProperty::SkinIntegerProperty(Skin *parent, QString name, int min, int max, QVariant value)
-	: SkinProperty(parent, name, this)
+SkinIntegerProperty::SkinIntegerProperty(Skin *parent, QString name, QString displayName, int min, int max, QVariant value)
+	: SkinProperty(parent, name, displayName, this)
 	, min(min)
 	, max(max)
 {
@@ -682,8 +795,8 @@ void SkinIntegerProperty::Normalize()
 }
 
 
-SkinFloatProperty::SkinFloatProperty(Skin *parent, QString name, qreal min, qreal max, qreal value)
-	: SkinProperty(parent, name, this)
+SkinFloatProperty::SkinFloatProperty(Skin *parent, QString name, QString displayName, qreal min, qreal max, qreal value)
+	: SkinProperty(parent, name, displayName, this)
 	, min(min)
 	, max(max)
 	, value(value)
@@ -691,8 +804,8 @@ SkinFloatProperty::SkinFloatProperty(Skin *parent, QString name, qreal min, qrea
 	Normalize();
 }
 
-SkinFloatProperty::SkinFloatProperty(Skin *parent, QString name, qreal min, qreal max, QVariant value)
-	: SkinProperty(parent, name, this)
+SkinFloatProperty::SkinFloatProperty(Skin *parent, QString name, QString displayName, qreal min, qreal max, QVariant value)
+	: SkinProperty(parent, name, displayName, this)
 	, min(min)
 	, max(max)
 {

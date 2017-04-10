@@ -46,7 +46,7 @@ public:
 	};
 
 private:
-	QString name;
+	QString displayName;
 	Type type;
 	union {
 		SkinBoolProperty *dataBool;
@@ -56,10 +56,10 @@ private:
 	};
 
 protected:
-	SkinProperty(Skin *parent, QString name, SkinBoolProperty *th);
-	SkinProperty(Skin *parent, QString name, SkinEnumProperty *th);
-	SkinProperty(Skin *parent, QString name, SkinIntegerProperty *th);
-	SkinProperty(Skin *parent, QString name, SkinFloatProperty *th);
+	SkinProperty(Skin *parent, QString name, QString displayName, SkinBoolProperty *th);
+	SkinProperty(Skin *parent, QString name, QString displayName, SkinEnumProperty *th);
+	SkinProperty(Skin *parent, QString name, QString displayName, SkinIntegerProperty *th);
+	SkinProperty(Skin *parent, QString name, QString displayName, SkinFloatProperty *th);
 
 public:
 	SkinBoolProperty *ToBoolProperty() const{ return dataBool; }
@@ -67,7 +67,7 @@ public:
 	SkinIntegerProperty *ToIntegerProperty() const{ return dataInt; }
 	SkinFloatProperty *ToFloatProperty() const{ return dataFloat; }
 
-	QString GetName() const{ return name; }
+	QString GetDisplayName() const{ return displayName; }
 	Type GetType() const{ return type; }
 	virtual QVariant GetValue() const=0;
 	virtual void SetValue(QVariant va)=0;
@@ -85,7 +85,7 @@ private:
 	bool value;
 
 public:
-	SkinBoolProperty(Skin *parent, QString name, bool value);
+	SkinBoolProperty(Skin *parent, QString displayName, QString displayname, bool value);
 
 	virtual QVariant GetValue() const;
 	virtual void SetValue(QVariant va);
@@ -104,8 +104,8 @@ private:
 	int value;
 
 public:
-	SkinEnumProperty(Skin *parent, QString name, QStringList choices, QStringList displayChoices, int value);
-	SkinEnumProperty(Skin *parent, QString name, QStringList choices, QStringList displayChoices, QVariant value);
+	SkinEnumProperty(Skin *parent, QString name, QString displayName, QStringList choices, QStringList displayChoices, int value);
+	SkinEnumProperty(Skin *parent, QString name, QString displayName, QStringList choices, QStringList displayChoices, QVariant value);
 
 	virtual QVariant GetValue() const;
 	virtual void SetValue(QVariant va);
@@ -128,8 +128,8 @@ private:
 	void Normalize();
 
 public:
-	SkinIntegerProperty(Skin *parent, QString name, int min, int max, int value);
-	SkinIntegerProperty(Skin *parent, QString name, int min, int max, QVariant value);
+	SkinIntegerProperty(Skin *parent, QString name, QString displayName, int min, int max, int value);
+	SkinIntegerProperty(Skin *parent, QString name, QString displayName, int min, int max, QVariant value);
 
 	virtual QVariant GetValue() const;
 	virtual void SetValue(QVariant va);
@@ -151,8 +151,8 @@ private:
 	void Normalize();
 
 public:
-	SkinFloatProperty(Skin *parent, QString name, qreal min, qreal max, qreal value);
-	SkinFloatProperty(Skin *parent, QString name, qreal min, qreal max, QVariant value);
+	SkinFloatProperty(Skin *parent, QString name, QString displayName, qreal min, qreal max, qreal value);
+	SkinFloatProperty(Skin *parent, QString name, QString displayName, qreal min, qreal max, QVariant value);
 
 	virtual QVariant GetValue() const;
 	virtual void SetValue(QVariant va);
@@ -183,6 +183,8 @@ public:
 	QList<LaneDef> GetLanes() const{ return lanes; }
 	int GetWidth() const{ return width; }
 	QList<SkinProperty*> GetProperties() const{ return properties; }
+
+	SkinProperty *GetProperty(QString name) const;
 
 signals:
 	void Changed();
@@ -246,6 +248,8 @@ private:
 	void SetupSkinCircularDouble(Skin *skin, int order);
 	Skin *CreateDefaultCircularDouble(QObject *parent);
 
+	void SetupSkinGeneric6Keys(Skin *skin);
+	void SetupSkinGeneric7Keys(Skin *skin);
 	Skin *CreateDefaultGenericNKeys(QObject *parent, int n);
 
 	void SetupSkinDefaultPlain(Skin *skin, int lanes);

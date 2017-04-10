@@ -227,7 +227,7 @@ void SequenceView::ReplaceSkin(Skin *newSkin)
 		switch (p->GetType()){
 		case SkinProperty::PROP_BOOL: {
 			auto prop = p->ToBoolProperty();
-			auto action = new QAction(prop->GetName(), menuView);
+			auto action = new QAction(prop->GetDisplayName(), menuView);
 			action->setCheckable(true);
 			action->setChecked(prop->GetBoolValue());
 			menuView->insertAction(mainWindow->GetViewSkinSettingSeparator(), action);
@@ -239,7 +239,7 @@ void SequenceView::ReplaceSkin(Skin *newSkin)
 		}
 		case SkinProperty::PROP_ENUM: {
 			auto prop = p->ToEnumProperty();
-			auto menu = new QMenu(prop->GetName());
+			auto menu = new QMenu(prop->GetDisplayName());
 			auto group = new QActionGroup(prop); // parent is ok?
 			for (int i=0; i<prop->GetDisplayChoices().size(); i++){
 				auto action = menu->addAction(prop->GetDisplayChoices()[i]);
@@ -257,12 +257,12 @@ void SequenceView::ReplaceSkin(Skin *newSkin)
 		case SkinProperty::PROP_INT: {
 			auto prop = p->ToIntegerProperty();
 			auto actionName = [prop](){
-				return QString("%1: %2").arg(prop->GetName()).arg(prop->GetIntValue());
+				return QString("%1: %2").arg(prop->GetDisplayName()).arg(prop->GetIntValue());
 			};
 			auto action = new QAction(actionName(), menuView);
 			connect(action, &QAction::triggered, this, [=](){
 				auto dialog = new QInputDialog(mainWindow);
-				dialog->setLabelText(tr("%1:").arg(prop->GetName()));
+				dialog->setLabelText(tr("%1:").arg(prop->GetDisplayName()));
 				dialog->setInputMode(QInputDialog::IntInput);
 				dialog->setIntValue(prop->GetIntValue());
 				dialog->setIntMinimum(prop->GetMin());
