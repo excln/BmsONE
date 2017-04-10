@@ -373,25 +373,39 @@ void MiniMapView::mousePressEvent(QMouseEvent *event)
 	double tEnd = sview->viewLength - (scrollY + 0)/sview->zoomY;
 	int yBegin = height() - tBegin * height() / sview->viewLength;
 	int yEnd = height() - tEnd * height() / sview->viewLength;
-	if (event->y() >= yEnd && event->y() < yBegin){
-		grabMouse();
-		dragYOrigin = event->y();
-		dragVOrigin = sview->verticalScrollBar()->value();
-		dragging = true;
-	}else{// if (event->y() < yEnd){
-		//sview->verticalScrollBar()->setValue(sview->verticalScrollBar()->value() - sview->verticalScrollBar()->pageStep());
-	//}else{
-		//sview->verticalScrollBar()->setValue(sview->verticalScrollBar()->value() + sview->verticalScrollBar()->pageStep());
-		int dy = event->y() - (yEnd + yBegin)/2;
-		int ds = dy * sview->zoomY * sview->viewLength / height();
-		sview->verticalScrollBar()->setValue(sview->verticalScrollBar()->value() + ds);
 
-		grabMouse();
-		dragYOrigin = event->y();
-		dragVOrigin = sview->verticalScrollBar()->value();
-		dragging = true;
+	if (event->button() == Qt::MiddleButton || (event->modifiers() & Qt::AltModifier)){
+		// preview on master lane
+		if (!(event->y() >= yEnd && event->y() < yBegin)){
+			int dy = event->y() - (yEnd + yBegin)/2;
+			int ds = dy * sview->zoomY * sview->viewLength / height();
+			sview->verticalScrollBar()->setValue(sview->verticalScrollBar()->value() + ds);
+		}
+		int time = (height() - event->y()) * sview->viewLength / height();
+		sview->masterLane->EnterPreviewContext(time, event->pos(), event->button());
+		update();
+	}else{
+		// drag to scroll
+		if (event->y() >= yEnd && event->y() < yBegin){
+			grabMouse();
+			dragYOrigin = event->y();
+			dragVOrigin = sview->verticalScrollBar()->value();
+			dragging = true;
+		}else{// if (event->y() < yEnd){
+			//sview->verticalScrollBar()->setValue(sview->verticalScrollBar()->value() - sview->verticalScrollBar()->pageStep());
+		//}else{
+			//sview->verticalScrollBar()->setValue(sview->verticalScrollBar()->value() + sview->verticalScrollBar()->pageStep());
+			int dy = event->y() - (yEnd + yBegin)/2;
+			int ds = dy * sview->zoomY * sview->viewLength / height();
+			sview->verticalScrollBar()->setValue(sview->verticalScrollBar()->value() + ds);
+
+			grabMouse();
+			dragYOrigin = event->y();
+			dragVOrigin = sview->verticalScrollBar()->value();
+			dragging = true;
+		}
+		update();
 	}
-	update();
 }
 
 void MiniMapView::mouseMoveEvent(QMouseEvent *event)
@@ -638,6 +652,13 @@ void MasterLaneView::ScrollContents(int dy)
 	}
 	update();
 	return;
+}
+
+void MasterLaneView::EnterPreviewContext(int time, QPoint mousePos, Qt::MouseButton mouseButton)
+{
+	if (!cxt->IsTop())
+		return;
+	cxt = new PreviewContext(this, cxt, mousePos, mouseButton, time);
 }
 
 MasterLaneView::Context::Context(MasterLaneView *ml, MasterLaneView::Context *parent)

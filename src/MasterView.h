@@ -133,6 +133,7 @@ public:
 	void UpdateWholeBackBuffer();
 	void UpdateBackBuffer(const QRect &rect);
 	void ScrollContents(int dy);
+	void EnterPreviewContext(int time, QPoint mousePos, Qt::MouseButton mouseButton);
 };
 
 
