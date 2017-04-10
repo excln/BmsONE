@@ -132,9 +132,8 @@ BMSまとめ @wiki - how to bmson
   How to create and play bmson. (Japanese)
 
 bmson specs by flicknote
-  https://docs.google.com/document/d/1ZDjfjWud8UG3RPjyhN-dd1rVjPaactcMT3PIODTap9s/edit
+  http://bmson-spec.readthedocs.io/en/master/
   A draft and detailed explanation of bmson format specification. (English)
-  Note that this includes many features not supported by bmson applications yet.
 
 #bmson Creation Notes by ドルフィン
   https://docs.google.com/document/d/1gQKPWApeL03aO09-II7slxTeuvm3HO_FmY1D4chRvOQ/edit
@@ -142,6 +141,17 @@ bmson specs by flicknote
 
 
 7. History
+
+Dec 25 2016 beta 0.1.4
+  - Fixed a problem with invoking external viewers that contain white spaces in their paths.
+  - Fixed some bugs in commands "Move to BGM Lanes" and "Move to Key Lanes".
+  - Modified influence of "Snap to Grid" on hit test in Edit Mode.
+  - Modified display in Sequence View.
+  - Sequence View does not prohibit notes from overlapping but instead show warnings.
+  - Sequence View supports layered notes editing.
+  - Press number keys to move selected notes to specific lanes.
+  - You can choose "Compact" format so that the BMSON file is as small as possible.
+  - Provisional support for HiDPI displays.
 
 Dec 11 2016 beta 0.1.3
   - Implemented preview on Mini Map.

@@ -17,7 +17,7 @@ http://sky.geocities.jp/exclusion_bms/bmsone.html
 2.1 注意
 
 Windows版で「MSVCP140.dll が見つかりません」というようなエラーが発生した場合は、下記リンクより
-「Visual Studio 2015 の Visual C++ 再頒布可能パッケージ」をインストールしてください。 
+「Visual Studio 2015 の Visual C++ 再頒布可能パッケージ」をインストールしてください。
 （お使いのコンピュータによらず x86 を選択してください）
 https://www.microsoft.com/ja-JP/download/details.aspx?id=48145
 
@@ -144,10 +144,8 @@ BMSまとめ @wiki - how to bmson
   bmsonの作り方とプレイ方法が書かれています。（日本語）
 
 bmson specs (flicknote様)
-  https://docs.google.com/document/d/1ZDjfjWud8UG3RPjyhN-dd1rVjPaactcMT3PIODTap9s/edit
+  http://bmson-spec.readthedocs.io/en/master/
   bmsonフォーマットの仕様案と詳細な解説が書かれています。（英語）
-  次期仕様を話し合うための場なので、各種ソフトが対応していない要素が含まれます。
-  興味のある方はぜひコメント等を書き込んでみてください。
 
 #bmson Creation Notes (ドルフィン様)
   https://docs.google.com/document/d/1gQKPWApeL03aO09-II7slxTeuvm3HO_FmY1D4chRvOQ/edit
@@ -155,6 +153,17 @@ bmson specs (flicknote様)
 
 
 7. 履歴
+
+2016年12月25日 beta 0.1.4
+  - パスにスペースを含む外部ビューワを起動できない問題を修正した。
+  - 選択ノーツを「BGMレーンに移動」「演奏レーンに移動」に関するバグを修正した。
+  - 編集モードでのマウスカーソルの当たり判定に対する「グリッドにスナップ」の影響を変更した。
+  - シーケンスビューの表示を微修正した。
+  - ノーツが重なるような移動を禁止するのではなく警告を表示するようにした。
+  - ノーツの重なりがレイヤーノートと見なせる場合はレイヤーノートとして編集できるようにした。
+  - 数字キーで選択ノーツを特定のレーンに移動できるようにした。
+  - BMSONファイルが小さくなるような「Compact」保存形式を選択できるようにした。
+  - 高DPIディスプレイ用の仮対応を行った。
 
 2016年12月11日 beta 0.1.3
   - ミニマップ上でプレビューできるようにした。
