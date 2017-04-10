@@ -184,6 +184,7 @@ void Document::Save()
 void Document::SaveAs(const QString &filePath)
 {
 	this->filePath = filePath;
+	this->directory = QFileInfo(filePath).absoluteDir();
 	Save();
 	emit FilePathChanged();
 }
