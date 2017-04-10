@@ -309,6 +309,8 @@ void SoundChannel::UpdateVisibleRegionsInternal()
 		const int endAt = reg.second;
 		int ticks = reg.first;
 		QMap<int, CacheEntry>::const_iterator icache = cache.lowerBound(reg.first);
+		if (icache == cache.end())
+			break;
 		if (icache->prevSamplePosition >= 0){
 			// first interval
 			double pos = icache->prevSamplePosition - (icache.key() - ticks)*(60.0 * samplesPerSec / (icache->prevTempo * ticksPerBeat));
@@ -323,7 +325,7 @@ void SoundChannel::UpdateVisibleRegionsInternal()
 		ticks = icache.key();
 		int pos = icache->currentSamplePosition;
 		icache++;
-		while (icache.key() < endAt){
+		while (icache != cache.end() && icache.key() < endAt){
 			// middle intervals
 			int posEnd = icache->prevSamplePosition;
 			if (pos >= 0 && posEnd >= 0){
