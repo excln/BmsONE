@@ -46,6 +46,7 @@ SequenceView::SequenceView(MainWindow *parent)
 	, lockCommands(0)
 	, viewMode(nullptr)
 	, skin(nullptr)
+	, playingWidth(1)
 {
 	qRegisterMetaType<SoundChannelView*>("SoundChannelView*");
 	qRegisterMetaType<GridSize>("GridSize");
@@ -68,22 +69,6 @@ SequenceView::SequenceView(MainWindow *parent)
 		penBeat.setCosmetic(true);
 		penStep = QPen(QBrush(QColor(90, 90, 90)), 1);
 		penStep.setCosmetic(true);
-	}
-
-	{
-		viewMode = ViewMode::ViewModeBeat7k();
-		playingWidth = 1;
-		auto group = new QActionGroup(this);
-		auto modes = ViewMode::GetAllViewModes();
-		for (auto mode : modes){
-			auto action = mainWindow->GetMenuViewMode()->addAction(mode->GetName());
-			action->setCheckable(true);
-			action->setChecked(mode == viewMode);
-			connect(action, &QAction::triggered, this, [mode, this](){
-				ViewModeChanged(mode);
-			});
-			group->addAction(action);
-		}
 	}
 
 	setMouseTracking(true);
@@ -193,7 +178,7 @@ SequenceView::SequenceView(MainWindow *parent)
 		break;
 	}
 
-	ViewModeChanged(ViewMode::ViewModeBeat7k());
+	ViewModeChanged(mainWindow->GetCurrentViewMode());
 	FixMiniMapChanged(fixMiniMap);
 }
 

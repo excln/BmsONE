@@ -10,11 +10,19 @@ ViewMode::~ViewMode()
 {
 }
 
-QMap<QString, ViewMode*> ViewMode::ModeLibrary;
-
-ViewMode *ViewMode::GetViewMode(QString modeHint)
+void ViewMode::PrepareModeLibrary()
 {
 	if (ModeLibrary.empty()){
+		ModeHints.append("beat-7k");
+		ModeHints.append("beat-14k");
+		ModeHints.append("beat-7k-battle");
+		ModeHints.append("beat-5k");
+		ModeHints.append("beat-10k");
+		ModeHints.append("beat-5k-battle");
+		ModeHints.append("popn-5k");
+		ModeHints.append("popn-9k");
+		ModeHints.append("circularrhythm-single");
+		ModeHints.append("circularrhythm-double");
 		ModeLibrary.insert("beat-5k", ViewModeBeat5k());
 		ModeLibrary.insert("beat-7k", ViewModeBeat7k());
 		ModeLibrary.insert("beat-10k", ViewModeBeat10k());
@@ -26,10 +34,28 @@ ViewMode *ViewMode::GetViewMode(QString modeHint)
 		ModeLibrary.insert("circularrhythm-single", ViewModeCircularSingle());
 		ModeLibrary.insert("circularrhythm-double", ViewModeCircularDouble());
 	}
+}
+
+QStringList ViewMode::ModeHints;
+QMap<QString, ViewMode*> ViewMode::ModeLibrary;
+
+ViewMode *ViewMode::GetViewMode(QString modeHint)
+{
+	PrepareModeLibrary();
 	if (ModeLibrary.contains(modeHint)){
 		return ModeLibrary[modeHint];
 	}else{
 		return ViewModeBeat7k();
+	}
+}
+
+ViewMode *ViewMode::GetViewModeNf(QString modeHint)
+{
+	PrepareModeLibrary();
+	if (ModeLibrary.contains(modeHint)){
+		return ModeLibrary[modeHint];
+	}else{
+		return nullptr;
 	}
 }
 
@@ -45,6 +71,12 @@ QList<ViewMode *> ViewMode::GetAllViewModes()
 	modes.append(ViewModeCircularSingle());
 	modes.append(ViewModeCircularDouble());
 	return modes;
+}
+
+QStringList ViewMode::GetAllModeHints()
+{
+	PrepareModeLibrary();
+	return ModeHints;
 }
 
 ViewMode *ViewMode::VM_Beat5k = nullptr;

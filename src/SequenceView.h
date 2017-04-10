@@ -249,7 +249,6 @@ private:
 	bool contextMenuEventPlayingFooter(QContextMenuEvent * event);
 
 private slots:
-	void ViewModeChanged(ViewMode *mode);
 	void SkinChanged();
 	void SoundChannelInserted(int index, SoundChannel *channel);
 	void SoundChannelRemoved(int index, SoundChannel *channel);
@@ -270,6 +269,7 @@ private slots:
 public slots:
 	void ShowLocation(int location);
 	void ScrollToLocation(int location, int y);
+	void ViewModeChanged(ViewMode *mode);
 	void OnCurrentChannelChanged(int index);
 	void SetMode(SequenceEditMode mode);
 	void SetSnapToGrid(bool snap);

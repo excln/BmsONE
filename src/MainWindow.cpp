@@ -10,6 +10,7 @@
 #include "AppInfo.h"
 #include "SymbolIconManager.h"
 #include "Preferences.h"
+#include "ViewMode.h"
 
 
 const char* MainWindow::SettingsGroup = "MainWindow";
@@ -26,6 +27,7 @@ MainWindow::MainWindow(QSettings *settings)
 	: QMainWindow()
 	, settings(settings)
 	, document(nullptr)
+	, viewMode(ViewMode::ViewModeBeat7k())
 	, currentChannel(-1)
 	, closing(false)
 {
@@ -309,6 +311,22 @@ MainWindow::MainWindow(QSettings *settings)
 	menuHelp->addAction(actionHelpAbout);
 	menuHelp->addAction(actionHelpAboutQt);
 
+	{
+		auto viewModeGroup = new QActionGroup(this);
+		auto viewModes = ViewMode::GetAllViewModes();
+		for (auto mode : viewModes){
+			auto action = menuViewMode->addAction(mode->GetName());
+			action->setCheckable(true);
+			action->setChecked(mode == viewMode);
+			connect(action, &QAction::triggered, this, [mode, this](){
+				viewMode = mode;
+				emit ViewModeChanged(mode);
+			});
+			viewModeGroup->addAction(action);
+			viewModeActionMap.insert(mode, action);
+		}
+	}
+
 	//setStatusBar(statusBar = new StatusBar(this));
 	auto *statusToolBar = new QToolBar(tr("Status Bar"));
 	UIUtil::SetFont(statusToolBar);
@@ -387,6 +405,8 @@ MainWindow::MainWindow(QSettings *settings)
 	dock2->resize(334, dock2->height());
 	menuViewDockBars->insertAction(actionViewDockSeparator, dock2->toggleViewAction());
 
+	// View Mdoe Binding
+	connect(this, SIGNAL(ViewModeChanged(ViewMode*)), sequenceView, SLOT(ViewModeChanged(ViewMode*)));
 
 	// Current Channel Binding
 	connect(channelInfoView, SIGNAL(CurrentChannelChanged(int)), this, SLOT(OnCurrentChannelChanged(int)));
@@ -820,6 +840,13 @@ void MainWindow::ChannelFindPrev(QString keyword)
 	qApp->beep();
 }
 
+void MainWindow::SetViewMode(ViewMode *mode)
+{
+	viewMode = mode;
+	viewModeActionMap[viewMode]->setChecked(true);
+	emit ViewModeChanged(mode);
+}
+
 
 void MainWindow::ReplaceDocument(Document *newDocument)
 {
@@ -845,6 +872,7 @@ void MainWindow::ReplaceDocument(Document *newDocument)
 	OnCurrentChannelChanged(-1);
 
 	// begin interaction
+	SetViewMode(ViewMode::GetViewMode(document->GetInfo()->GetModeHint()));
 	channelInfoView->Begin();
 }
 

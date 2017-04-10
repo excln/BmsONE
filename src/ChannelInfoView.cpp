@@ -1,6 +1,7 @@
 #include "ChannelInfoView.h"
 #include "MainWindow.h"
 #include "SymbolIconManager.h"
+#include "ViewMode.h"
 
 ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	: QWidget(mainWindow)

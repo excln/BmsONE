@@ -57,6 +57,28 @@ signals:
 
 
 
+class QuasiModalEditableComboBox : public QComboBox, public IEdit
+{
+	Q_OBJECT
+
+private slots:
+	void OnTextChanged();
+	void OnCurrentIndexChanged(QString s);
+
+private:
+	virtual void keyPressEvent(QKeyEvent *event);
+	virtual void focusOutEvent(QFocusEvent *event);
+	virtual void Commit();
+
+public:
+	QuasiModalEditableComboBox(QWidget *parent=nullptr);
+	~QuasiModalEditableComboBox();
+
+signals:
+	void EditingFinished();
+	void EscPressed();
+};
+
 
 
 #endif // QUASIMODALEDIT_H

@@ -33,6 +33,7 @@ private:
 	QString name;
 	QMap<int, LaneDef> lanes;
 
+	static QStringList ModeHints;
 	static QMap<QString, ViewMode*> ModeLibrary;
 
 	static ViewMode *VM_Beat5k;
@@ -49,6 +50,7 @@ private:
 private:
 	ViewMode(QString name, Mode mode);
 	virtual ~ViewMode();
+	static void PrepareModeLibrary();
 
 public:
 	Mode GetMode() const{ return mode; }
@@ -56,7 +58,9 @@ public:
 	QMap<int, LaneDef> GetLaneDefinitions() const{ return lanes; }
 
 	static ViewMode *GetViewMode(QString modeHint);
+	static ViewMode *GetViewModeNf(QString modeHint);
 	static QList<ViewMode*> GetAllViewModes();
+	static QStringList GetAllModeHints();
 
 	static ViewMode *ViewModeBeat5k();
 	static ViewMode *ViewModeBeat7k();

@@ -9,6 +9,7 @@
 #include "SequenceTools.h"
 #include "ChannelFindTools.h"
 
+class ViewMode;
 class SequenceView;
 class InfoView;
 class ChannelInfoView;
@@ -101,6 +102,7 @@ private:
 
 	Document *document;
 
+	ViewMode *viewMode;
 	int currentChannel;
 
 private:
@@ -151,6 +153,8 @@ private:
 	QAction *actionHelpAbout;
 	QAction *actionHelpAboutQt;
 
+	QMap<ViewMode*, QAction*> viewModeActionMap;
+
 	bool closing;
 
 	QMenu *menuView;
@@ -198,7 +202,11 @@ private slots:
 	void ChannelFindNext(QString keyword);
 	void ChannelFindPrev(QString keyword);
 
+public slots:
+	void SetViewMode(ViewMode *mode);
+
 signals:
+	void ViewModeChanged(ViewMode *mode);
 	void CurrentChannelChanged(int ichannel);
 
 public:
@@ -218,8 +226,10 @@ public:
 	BpmEditView *GetBpmEditTool() const{ return bpmEditView; }
 
 	QMenu *GetMenuView() const{ return menuView; }
-	QMenu *GetMenuViewMode() const{ return menuViewMode; }
 	QAction *GetViewSkinSettingSeparator() const{ return actionViewSkinSettingSeparator; }
+
+	int GetCurrentChannel() const{ return currentChannel; }
+	ViewMode *GetCurrentViewMode() const{ return viewMode; }
 
 	void OpenFiles(QStringList filePaths);
 

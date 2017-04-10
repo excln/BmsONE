@@ -29,7 +29,7 @@ private:
 	CollapseButton *buttonShowSubartists;
 	QuasiModalMultiLineEdit *editSubartists;
 	QuasiModalEdit *editChartName;
-	QuasiModalEdit *editModeHint;
+	QuasiModalEditableComboBox *editModeHint;
 	QToolButton *buttonResolution;
 	QuasiModalEdit *editJudgeRank;
 	QuasiModalEdit *editTotal;
@@ -52,7 +52,7 @@ private:
 	void SetArtist(QString value){ editArtist->setText(value); }
 	void SetSubartists(QStringList value);
 	void SetChartName(QString value){ editChartName->setText(value); }
-	void SetModeHint(QString value){ editModeHint->setText(value); }
+	void SetModeHint(QString value){ editModeHint->setEditText(value); }
 	void SetResolution(int value){ buttonResolution->setText(QString::number(value)); }
 	void SetJudgeRank(double value){ editJudgeRank->setText(QString::number(value)); }
 	void SetTotal(double value){ editTotal->setText(QString::number(value)); }

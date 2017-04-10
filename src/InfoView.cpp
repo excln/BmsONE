@@ -2,6 +2,7 @@
 #include "MainWindow.h"
 #include "JsonExtension.h"
 #include "CollapseButton.h"
+#include "ViewMode.h"
 
 const char* InfoView::SettingsGroup = "DocumentInfoView";
 const char* InfoView::SettingsShowSubartists = "ShowSubartists";
@@ -22,7 +23,7 @@ InfoView::InfoView(MainWindow *mainWindow)
 	layout->addRow(tr("Subartists:"), buttonShowSubartists = new CollapseButton(editSubartists, this));
 	layout->addRow(editSubartists);
 	layout->addRow(tr("Chart Name:"), editChartName = new QuasiModalEdit());
-	layout->addRow(tr("Mode Hint:"), editModeHint = new QuasiModalEdit());
+	layout->addRow(tr("Mode Hint:"), editModeHint = new QuasiModalEditableComboBox());
 	layout->addRow(tr("Resolution:"), buttonResolution = new QToolButton());
 	layout->addRow(tr("Judge Rank:"), editJudgeRank = new QuasiModalEdit());
 	layout->addRow(tr("Initial Bpm:"), editInitBpm = new QuasiModalEdit());
@@ -45,6 +46,8 @@ InfoView::InfoView(MainWindow *mainWindow)
 	//editSubartists->setMaximumHeight(999999); // (チート)
 	//editSubartists->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	editSubartists->SetSizeHint(QSize(200, 60)); // (普通)
+	editModeHint->setInsertPolicy(QComboBox::InsertAtBottom);
+	editModeHint->insertItems(0, ViewMode::GetAllModeHints());
 	editExtraFields->setAcceptRichText(false);
 	editExtraFields->setAcceptDrops(false);
 	editExtraFields->setTabStopWidth(24);
@@ -70,7 +73,7 @@ InfoView::InfoView(MainWindow *mainWindow)
 	connect(editArtist, &QLineEdit::editingFinished, this, &InfoView::ArtistEdited);
 	connect(editSubartists, &QuasiModalMultiLineEdit::EditingFinished, this, &InfoView::SubartistsEdited);
 	connect(editChartName, &QLineEdit::editingFinished, this, &InfoView::ChartNameEdited);
-	connect(editModeHint, &QLineEdit::editingFinished, this, &InfoView::ModeHintEdited);
+	connect(editModeHint, &QuasiModalEditableComboBox::EditingFinished, this, &InfoView::ModeHintEdited);
 	connect(editJudgeRank, &QLineEdit::editingFinished, this, &InfoView::JudgeRankEdited);
 	connect(editInitBpm, &QLineEdit::editingFinished, this, &InfoView::InitBpmEdited);
 	connect(editTotal, &QLineEdit::editingFinished, this, &InfoView::TotalEdited);
@@ -86,7 +89,7 @@ InfoView::InfoView(MainWindow *mainWindow)
 	connect(editArtist, &QuasiModalEdit::EscPressed, this, &InfoView::ArtistEditCanceled);
 	connect(editSubartists, &QuasiModalMultiLineEdit::EscPressed, this, &InfoView::SubartistsEditCanceled);
 	connect(editChartName, &QuasiModalEdit::EscPressed, this, &InfoView::ChartNameEditCanceled);
-	connect(editModeHint, &QuasiModalEdit::EscPressed, this, &InfoView::ModeHintEditCanceled);
+	connect(editModeHint, &QuasiModalEditableComboBox::EscPressed, this, &InfoView::ModeHintEditCanceled);
 	connect(editJudgeRank, &QuasiModalEdit::EscPressed, this, &InfoView::JudgeRankEditCanceled);
 	connect(editInitBpm, &QuasiModalEdit::EscPressed, this, &InfoView::InitBpmEditCanceled);
 	connect(editTotal, &QuasiModalEdit::EscPressed, this, &InfoView::TotalEditCanceled);
@@ -251,7 +254,7 @@ void InfoView::ChartNameEdited()
 
 void InfoView::ModeHintEdited()
 {
-	document->GetInfo()->SetModeHint(editModeHint->text());
+	document->GetInfo()->SetModeHint(editModeHint->currentText());
 }
 
 void InfoView::JudgeRankEdited()
@@ -504,6 +507,10 @@ void InfoView::ChartNameChanged(QString value)
 void InfoView::ModeHintChanged(QString value)
 {
 	SetModeHint(value);
+	auto *viewMode = ViewMode::GetViewModeNf(value);
+	if (viewMode){
+		mainWindow->SetViewMode(viewMode);
+	}
 }
 
 void InfoView::ResolutionChanged(int value)
