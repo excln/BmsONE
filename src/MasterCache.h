@@ -6,6 +6,7 @@
 #include <functional>
 #include "Wave.h"
 #include "SoundChannel.h"
+#include "SignalFunction.h"
 
 class Document;
 class SoundChannel;
@@ -89,15 +90,17 @@ class MasterPlayer : public AudioPlaySource
 
 private:
 	MasterCache *master;
+	Delay *delay;
 	Smoother *smoother;
 	int position;
 
 private slots:
+	void DelayedValue(QVariant value);
 	void SmoothedValue(qreal value);
 
 signals:
 	void Progress(int position);
-	void SmoothedProgress(int position);
+	void SmoothedDelayedProgress(int position);
 	void Stopped();
 
 public:

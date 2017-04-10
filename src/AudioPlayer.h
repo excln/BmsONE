@@ -16,9 +16,11 @@ private:
 	typedef QAudioBuffer::S16S SampleTypePlay;
 	typedef QAudioBuffer::S32F SampleTypeRead;
 	typedef QAudioBuffer::S32F SampleTypeTemp;
-	static const qint64 BufferSampleCount;
 	static const float EnvPrevRelease;
 	static const float EnvPrevThreshold;
+
+public:
+	static const qint64 BufferSampleCount;
 
 private:
 	QMutex mutex;

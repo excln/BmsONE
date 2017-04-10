@@ -32,8 +32,30 @@ signals:
 
 
 
+class Delay : public QObject
+{
+	Q_OBJECT
 
+private:
+	int delay;
+	QQueue<QVariant> queue;
 
+private slots:
+	void OnTimer();
+
+public:
+	Delay(int msecDelay, QObject *parent=nullptr);
+	~Delay();
+
+	int GetDelay() const{ return delay; }
+	void SetDelay(int msecDelay);
+
+public slots:
+	void Value(QVariant value);
+
+signals:
+	void DelayedValue(QVariant value);
+};
 
 
 class Smoother : public QObject

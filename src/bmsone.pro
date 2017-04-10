@@ -88,7 +88,9 @@ SOURCES += main.cpp\
     PrefEdit.cpp \
     ScalarRegion.cpp \
     ChannelFindTools.cpp \
-    SignalFunction.cpp
+    SignalFunction.cpp \
+    PreviewConfig.cpp \
+    PrefPreview.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -159,7 +161,9 @@ HEADERS  += MainWindow.h \
     AppInfo.h \
     ResolutionUtil.h \
     ChannelFindTools.h \
-    SignalFunction.h
+    SignalFunction.h \
+    PreviewConfig.h \
+    PrefPreview.h
 
 FORMS    +=
 

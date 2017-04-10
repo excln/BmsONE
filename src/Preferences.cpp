@@ -1,6 +1,7 @@
 #include "Preferences.h"
 #include "MainWindow.h"
 #include "PrefEdit.h"
+#include "PrefPreview.h"
 
 Preferences::Preferences(MainWindow *mainWindow)
 	: QDialog(mainWindow)
@@ -36,6 +37,14 @@ Preferences::Preferences(MainWindow *mainWindow)
 	editItem->setText(tr("Edit"));
 	editItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
+	// PREVIEW
+	previewPage = new PrefPreviewPage(this);
+	pages->addWidget(previewPage);
+	auto previewItem = new QListWidgetItem(list);
+	previewItem->setIcon(QIcon(":/images/config/preview.png"));
+	previewItem->setText(tr("Preview"));
+	previewItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
 	list->setCurrentRow(0);
 
 	auto bodyLayout = new QHBoxLayout();
@@ -59,6 +68,7 @@ void Preferences::showEvent(QShowEvent *event)
 {
 	generalPage->load();
 	editPage->load();
+	previewPage->load();
 	QDialog::showEvent(event);
 }
 
@@ -66,6 +76,7 @@ void Preferences::hideEvent(QHideEvent *event)
 {
 	generalPage->store();
 	editPage->store();
+	previewPage->store();
 	QDialog::hideEvent(event);
 }
 

@@ -5,6 +5,7 @@
 #include "Wave.h"
 #include "DocumentDef.h"
 #include "SoundChannelDef.h"
+#include "SignalFunction.h"
 
 class Document;
 class MasterCache;
@@ -207,14 +208,16 @@ private:
 	int currentSamplePos;
 	double currentBpm;
 	double currentTicks;
+	Delay *delay;
 	Smoother *smoother;
 
 private slots:
+	void DelayedValue(QVariant value);
 	void SmoothedValue(qreal value);
 
 signals:
 	void Progress(int currentTicks);
-	void SmoothedProgress(int currentTicks);
+	void SmoothedDelayedProgress(int currentTicks);
 	void Stopped();
 
 public slots:

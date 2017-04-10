@@ -90,3 +90,38 @@ void Smoother::OnTimer()
 	emit SmoothedValue(currentValue);
 }
 
+
+
+
+
+
+Delay::Delay(int msecDelay, QObject *parent)
+	: QObject(parent)
+	, delay(msecDelay)
+{
+}
+
+Delay::~Delay()
+{
+}
+
+void Delay::SetDelay(int msecDelay)
+{
+	delay = msecDelay;
+}
+
+void Delay::Value(QVariant value)
+{
+	queue.push_back(value);
+	QTimer::singleShot(delay, this, SLOT(OnTimer()));
+}
+
+void Delay::OnTimer()
+{
+	auto value = queue.front();
+	queue.pop_front();
+	emit DelayedValue(value);
+}
+
+
+

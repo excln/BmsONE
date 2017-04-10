@@ -14,7 +14,7 @@ SequenceView::PreviewContext::PreviewContext(SequenceView::Context *parent, Sequ
 		return;
 	auto *cview = sview->soundChannels[sview->currentChannel];
 	previewer = new SoundChannelPreviewer(cview->GetChannel(), time, cview);
-	connect(previewer, SIGNAL(SmoothedProgress(int)), this, SLOT(Progress(int)));
+	connect(previewer, SIGNAL(SmoothedDelayedProgress(int)), this, SLOT(Progress(int)));
 	connect(previewer, SIGNAL(Stopped()), previewer, SLOT(deleteLater()));
 	connect(this, SIGNAL(stop()), previewer, SLOT(Stop()), Qt::QueuedConnection);
 	sview->mainWindow->GetAudioPlayer()->Play(previewer);

@@ -743,7 +743,7 @@ MasterLaneView::PreviewContext::PreviewContext(MasterLaneView *ml, MasterLaneVie
 	previewer = new MasterPlayer(ml->mview->master, realTime * MasterCache::SampleRate, ml->mview->master);
 	connect(previewer, SIGNAL(Stopped()), previewer, SLOT(deleteLater()));
 	connect(previewer, SIGNAL(destroyed(QObject*)), this, SLOT(PreviewerDestroyed()));
-	connect(previewer, SIGNAL(SmoothedProgress(int)), this, SLOT(Progress(int)));
+	connect(previewer, SIGNAL(SmoothedDelayedProgress(int)), this, SLOT(Progress(int)));
 	ml->sview->mainWindow->GetAudioPlayer()->Play(previewer);
 	ml->grabMouse();
 }

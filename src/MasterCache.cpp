@@ -4,6 +4,8 @@
 #include "SoundChannelInternal.h"
 #include "SignalFunction.h"
 #include "UIDef.h"
+#include "AudioPlayer.h"
+#include "PreviewConfig.h"
 
 
 MasterCache::MasterCache(Document *document)
@@ -382,7 +384,9 @@ MasterPlayer::MasterPlayer(MasterCache *master, int position, QObject *parent)
 	, master(master)
 	, position(position)
 {
+	delay = new Delay(PreviewConfig::GetPreviewDelayRatio() * AudioPlayerInternal::BufferSampleCount / (44100 / 1000.0), this);
 	smoother = new Smoother(UIUtil::HeavyAnimationInterval, 44100 / 1000.0, this);
+	connect(delay, SIGNAL(DelayedValue(QVariant)), this, SLOT(DelayedValue(QVariant)));
 	connect(smoother, SIGNAL(SmoothedValue(qreal)), this, SLOT(SmoothedValue(qreal)));
 }
 
@@ -398,7 +402,8 @@ void MasterPlayer::AudioPlayRelease()
 int MasterPlayer::AudioPlayRead(AudioPlaySource::SampleType *buffer, int bufferSampleCount)
 {
 	int i=0;
-	QMetaObject::invokeMethod(smoother, "SetCurrentValue", Qt::QueuedConnection, Q_ARG(qreal, position));
+	QMetaObject::invokeMethod(delay, "Value", Qt::QueuedConnection, Q_ARG(QVariant, QVariant(position)));
+	//QMetaObject::invokeMethod(smoother, "SetCurrentValue", Qt::QueuedConnection, Q_ARG(qreal, position));
 	emit Progress(position);
 	QMutexLocker locker(&master->dataMutex);
 	for (; i<bufferSampleCount && position < master->data.size(); i++,position++){
@@ -410,9 +415,18 @@ int MasterPlayer::AudioPlayRead(AudioPlaySource::SampleType *buffer, int bufferS
 	return i;
 }
 
+void MasterPlayer::DelayedValue(QVariant value)
+{
+	if (PreviewConfig::GetPreviewSmoothing()){
+		smoother->SetCurrentValue(value.toReal());
+	}else{
+		emit SmoothedDelayedProgress((int)value.toReal());
+	}
+}
+
 void MasterPlayer::SmoothedValue(qreal value)
 {
-	emit SmoothedProgress((int)value);
+	emit SmoothedDelayedProgress((int)value);
 }
 
 

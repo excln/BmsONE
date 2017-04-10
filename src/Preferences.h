@@ -8,6 +8,7 @@
 class MainWindow;
 
 class PrefEditPage;
+class PrefPreviewPage;
 
 
 class PrefGeneralPage : public QWidget
@@ -42,6 +43,7 @@ private:
 
 	PrefGeneralPage *generalPage;
 	PrefEditPage *editPage;
+	PrefPreviewPage *previewPage;
 
 	virtual void showEvent(QShowEvent *event);
 	virtual void hideEvent(QHideEvent *event);
