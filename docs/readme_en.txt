@@ -80,6 +80,15 @@ A configuration file is stored in a directory such as:
   [Windows] C:\Users\<USER>\AppData\Local\BmsONE
   [Mac OS X] ~/Library/Preferences/BmsONE
 
+If this application often crashes when scrolling Sequence View, please choose [View] -
+[Sound Channel Lane Display] - [Simple] so that drawing process becomes stable though
+waveforms are not displayed.
+
+If you feel hard to edit objects in bmson with a number of channels, then try the following:
+  * Select [View] - [Sound Channel Lane Display] - [Compact] or [Simple] to make lanes thin.
+  * Check [Channel] - [Find] - [Active Channels Only] and [Show Hit Channels Only] to hide
+    channels that are not playing near the current position.
+
 
 3. License
 
@@ -141,6 +150,16 @@ bmson specs by flicknote
 
 
 7. History
+
+Feb 12 2017 beta 0.1.5
+  - You can edit "title_image" and "preview_music" in the Information window, which are in bmson 1.0.0 spec.
+  - You can change UI font. The default font on Windows was changed.
+  - Fixed crashes when previewing sound channels across BPM changes.
+  - Fixed crashes when many BPM events are edited at once.
+  - You can edit extra data of each sound note and BPM event.
+  - You can choose styles "Compact" and "Simple" of sound channel lane display in Sequence View.
+  - Improved channel search so that inactive channels can be filtered and Sequence View can show hit channels only.
+  - Implemented WAV export.
 
 Dec 25 2016 beta 0.1.4
   - Fixed a problem with invoking external viewers that contain white spaces in their paths.
