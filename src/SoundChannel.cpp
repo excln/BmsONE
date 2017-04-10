@@ -409,7 +409,7 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 						rmsL += entries[b].L*entries[b].L;
 						rmsR += entries[b].R*entries[b].R;
 					}
-					if (!drawer(Rms(std::sqrtf(float(rmsL) / (bxEnd-bxBegin)) / 127.f, std::sqrtf(float(rmsR) / (bxEnd-bxBegin)) / 127.f))){
+                    if (!drawer(Rms(std::sqrt(float(rmsL) / (bxEnd-bxBegin)) / 127.f, std::sqrt(float(rmsR) / (bxEnd-bxBegin)) / 127.f))){
 						return;
 					}
 				}else{

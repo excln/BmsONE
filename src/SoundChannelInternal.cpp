@@ -380,7 +380,7 @@ void SoundChannelResourceManager::TaskDrawOverallWaveformAndRmsCache()
 		rmsCur.first += sqv;
 		rmsCur.second += sqv;
 		if (++rmsCurSize >= RmsCacheBlockSize){
-			RmsCacheEntry entry(std::sqrtf(rmsCur.first / RmsCacheBlockSize) * 127.0f, std::sqrtf(rmsCur.second / RmsCacheBlockSize) * 127.0f);
+            RmsCacheEntry entry(std::sqrt(rmsCur.first / RmsCacheBlockSize) * 127.0f, std::sqrt(rmsCur.second / RmsCacheBlockSize) * 127.0f);
 			rmsBuf.append(entry);
 			rmsCur.first = 0.0f;
 			rmsCur.second = 0.0f;
@@ -393,10 +393,10 @@ void SoundChannelResourceManager::TaskDrawOverallWaveformAndRmsCache()
 			}
 		}
 		wfRms.L += sqv;
-		if (std::fabsf(v) > wfPeak.L) wfPeak.L = std::fabsf(v);
+        if (std::fabs(v) > wfPeak.L) wfPeak.L = std::fabs(v);
 		if (++ismpPx >= samplesPerPixel){
 			waveformPeak.append(RmsCacheEntry(wfPeak.L * 255, wfPeak.L * 255));
-			waveformRms.append(RmsCacheEntry(std::sqrtf(wfRms.L*dx) * 255, std::sqrtf(wfRms.L*dx) * 255));
+            waveformRms.append(RmsCacheEntry(std::sqrt(wfRms.L*dx) * 255, std::sqrt(wfRms.L*dx) * 255));
 			wfPeak = Rms();
 			wfRms = Rms();
 			ismpPx = 0;
@@ -406,7 +406,7 @@ void SoundChannelResourceManager::TaskDrawOverallWaveformAndRmsCache()
 		rmsCur.first += l*l;
 		rmsCur.second += r*r;
 		if (++rmsCurSize >= RmsCacheBlockSize){
-			RmsCacheEntry entry(std::sqrtf(rmsCur.first / RmsCacheBlockSize) * 127.0f, std::sqrtf(rmsCur.second / RmsCacheBlockSize) * 127.0f);
+            RmsCacheEntry entry(std::sqrt(rmsCur.first / RmsCacheBlockSize) * 127.0f, std::sqrt(rmsCur.second / RmsCacheBlockSize) * 127.0f);
 			rmsBuf.append(entry);
 			rmsCur.first = 0.0f;
 			rmsCur.second = 0.0f;
@@ -420,11 +420,11 @@ void SoundChannelResourceManager::TaskDrawOverallWaveformAndRmsCache()
 		}
 		wfRms.L += l*l;
 		wfRms.R += r*r;
-		if (std::fabsf(l) > wfPeak.L) wfPeak.L = std::fabsf(l);
-		if (std::fabsf(r) > wfPeak.R) wfPeak.R = std::fabsf(r);
+        if (std::fabs(l) > wfPeak.L) wfPeak.L = std::fabs(l);
+        if (std::fabs(r) > wfPeak.R) wfPeak.R = std::fabs(r);
 		if (++ismpPx >= samplesPerPixel){
 			waveformPeak.append(RmsCacheEntry(wfPeak.L * 255, wfPeak.R * 255));
-			waveformRms.append(RmsCacheEntry(std::sqrtf(wfRms.L*dx) * 255, std::sqrtf(wfRms.R*dx) * 255));
+            waveformRms.append(RmsCacheEntry(std::sqrt(wfRms.L*dx) * 255, std::sqrt(wfRms.R*dx) * 255));
 			wfPeak = Rms();
 			wfRms = Rms();
 			ismpPx = 0;

@@ -328,8 +328,8 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 		for (int i=0; i<samplesToRead; i++){
 			float l = saturate(0.95f, tmp[i].left * volume);
 			float r = saturate(0.95f, tmp[i].right * volume);
-			float absL = std::fabsf(l);
-			float absR = std::fabsf(r);
+            float absL = std::fabs(l);
+            float absR = std::fabs(r);
 			if (absL > peakL){
 				peakL = absL;
 			}
@@ -346,14 +346,14 @@ qint64 AudioPlayerInternal::readData(char *data, qint64 maxSize)
 			}
 		}
 	}
-	emit AudioIndicator(peakL, peakR, std::sqrtf(rmsL/samplesToRead), std::sqrtf(rmsR/samplesToRead));
+    emit AudioIndicator(peakL, peakR, std::sqrt(rmsL/samplesToRead), std::sqrt(rmsR/samplesToRead));
 	//qDebug() << QString("%1 samples processed in %2 ms").arg(samplesToRead).arg(t0.msecsTo(QTime::currentTime()));
 	return samplesToRead * (qint64)sizeof(SampleTypePlay);
 }
 
 float AudioPlayerInternal::saturate(float t, float x)
 {
-	if (std::fabsf(x) < t){
+    if (std::fabs(x) < t){
 		return x;
 	}
 	return x > 0.f
@@ -363,7 +363,7 @@ float AudioPlayerInternal::saturate(float t, float x)
 
 float AudioPlayerInternal::sigmoid(float x)
 {
-	return std::fabsf(x) < 1.f
+    return std::fabs(x) < 1.f
 		? x*(1.5f - 0.5f*x*x)
 		: (x > 0.f
 		   ? 1.f

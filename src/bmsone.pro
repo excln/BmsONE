@@ -11,10 +11,10 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = BmsONE
 TEMPLATE = app
 
-QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
+macx_clang: QMAKE_CXXFLAGS += -std=c++11 -stdlib=libc++
 
-win32: QMAKE_LFLAGS_DEBUG += /NODEFAULTLIB:MSVCRT /NODEFAULTLIB:libcmt
-win32: QMAKE_LFLAGS_RELEASE += /NODEFAULTLIB:libcmt
+win32_msvc2015: QMAKE_LFLAGS_DEBUG += /NODEFAULTLIB:MSVCRT /NODEFAULTLIB:libcmt
+win32_msvc2015: QMAKE_LFLAGS_RELEASE += /NODEFAULTLIB:libcmt
 
 SOURCES += main.cpp\
         MainWindow.cpp \

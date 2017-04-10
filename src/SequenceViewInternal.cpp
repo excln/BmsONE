@@ -7,6 +7,7 @@
 #include "EditConfig.h"
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 
 
 SoundChannelView::SoundChannelView(SequenceView *sview, SoundChannel *channel)

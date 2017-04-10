@@ -1,6 +1,6 @@
 #include "Wave.h"
 #include "QOggVorbisAdapter.h"
-
+#include <cstring>
 
 
 WaveData::WaveData()

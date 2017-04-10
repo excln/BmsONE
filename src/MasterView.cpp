@@ -9,6 +9,7 @@
 #include "Wave.h"
 #include "UIDef.h"
 #include <cstdlib>
+#include <cstring>
 
 MiniMapView::MiniMapView(SequenceView *sview)
 	: QWidget(sview)
@@ -179,8 +180,8 @@ void MiniMapView::ReconstructRmsCache()
 			packet.available &= pending == 0;
 			packet.rms.L += signal.left * signal.left;
 			packet.rms.R += signal.right * signal.right;
-			packet.peak.L = std::max(packet.peak.L, std::fabsf(signal.left));
-			packet.peak.R = std::max(packet.peak.R, std::fabsf(signal.right));
+            packet.peak.L = std::max(packet.peak.L, std::fabs(signal.left));
+            packet.peak.R = std::max(packet.peak.R, std::fabs(signal.right));
 			return ++s < smp;
 		});
 #else
@@ -248,8 +249,8 @@ void MiniMapView::UpdateRmsCachePartially()
 				packet.available &= pending == 0;
 				packet.rms.L += signal.left * signal.left;
 				packet.rms.R += signal.right * signal.right;
-				packet.peak.L = std::max(packet.peak.L, std::fabsf(signal.left));
-				packet.peak.R = std::max(packet.peak.R, std::fabsf(signal.right));
+                packet.peak.L = std::max(packet.peak.L, std::fabs(signal.left));
+                packet.peak.R = std::max(packet.peak.R, std::fabs(signal.right));
 				return ++s < smp;
 			});
 #else
