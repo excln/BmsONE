@@ -500,7 +500,7 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 		const int graphWidth = backBuffer->width();
 		const int rx = graphWidth/2 - graphWidth/8;
 		const int rw = graphWidth/4;
-		channel->DrawActivityGraph(tBegin, tEnd, [=, &painter, this](bool laneType, int beg, int end){
+		channel->DrawActivityGraph(tBegin, tEnd, [&](bool laneType, int beg, int end){
 			int y1 = sview->Time2Y(beg);
 			int y2 = sview->Time2Y(end);
 			painter.fillRect(QRect(rx, y2, rw, y1 - y2),
@@ -798,7 +798,7 @@ void SoundChannelFooter::mouseReleaseEvent(QMouseEvent *event)
 
 void SoundChannelFooter::mouseDoubleClickEvent(QMouseEvent *event)
 {
-
+	cview->Preview();
 }
 
 void SoundChannelFooter::contextMenuEvent(QContextMenuEvent *event)
