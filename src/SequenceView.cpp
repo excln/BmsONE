@@ -13,6 +13,7 @@ const char* SequenceView::SettingsZoomYKey = "ZoomY";
 const char* SequenceView::SettingsModeKey = "Mode";
 const char* SequenceView::SettingsSnapToGridKey = "SnapToGrid";
 const char* SequenceView::SettingsSnappedHitTestInEditMode = "SnappedHitTestInEditMode";
+const char* SequenceView::SettingsDarkenNotesInInactiveChannels = "DarkenNotesInInactiveChannels";
 const char* SequenceView::SettingsCoarseGridKey = "CoarseGrid";
 const char* SequenceView::SettingsFineGridKey = "FineGrid";
 
@@ -162,6 +163,7 @@ SequenceView::SequenceView(MainWindow *parent)
 		fineGrid = GridSize(ptFineGrid.y(), ptFineGrid.x());
 		snapToGrid = settings->value(SettingsSnapToGridKey, true).toBool();
 		snappedHitTestInEditMode = settings->value(SettingsSnappedHitTestInEditMode, true).toBool();
+		darkenNotesInInactiveChannels = settings->value(SettingsDarkenNotesInInactiveChannels, true).toBool();
 		zoomY = settings->value(SettingsZoomYKey, 48./240.).toDouble();
 	}
 	settings->endGroup();
@@ -208,6 +210,7 @@ SequenceView::~SequenceView()
 		settings->setValue(SettingsFineGridKey, QPoint(fineGrid.Denominator, fineGrid.Numerator));
 		settings->setValue(SettingsModeKey, (int)editMode);
 		settings->setValue(SettingsSnapToGridKey, snapToGrid);
+		settings->setValue(SettingsDarkenNotesInInactiveChannels, darkenNotesInInactiveChannels);
 		settings->setValue(SettingsZoomYKey, zoomY);
 	}
 	settings->endGroup();
@@ -777,6 +780,8 @@ g:
 
 void SequenceView::SetNoteColor(QLinearGradient &g, int lane, bool active) const
 {
+	if (!darkenNotesInInactiveChannels)
+		active = true;
 	QColor c = lane==0 ? QColor(210, 210, 210) : lanes[lane].noteColor;
 	QColor cl = active ? c : QColor(c.red()/2, c.green()/2, c.blue()/2);
 	QColor cd(cl.red()*2/3, cl.green()*2/3, cl.blue()*2/3);
@@ -1213,6 +1218,13 @@ void SequenceView::SetSnapToGrid(bool snap)
 {
 	snapToGrid = snap;
 	emit SnapToGridChanged(snapToGrid);
+}
+
+void SequenceView::SetDarkenNotesInInactiveChannels(bool darken)
+{
+	darkenNotesInInactiveChannels = darken;
+	playingPane->update();
+	emit DarkenNotesInInactiveChannelsChanged(darkenNotesInInactiveChannels);
 }
 
 void SequenceView::SetSmallGrid(GridSize grid)

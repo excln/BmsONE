@@ -28,6 +28,8 @@ SequenceTools::SequenceTools(const QString &objectName, const QString &windowTit
 	connect(mainWindow->actionEditModeWrite, SIGNAL(triggered(bool)), this, SLOT(WriteMode()));
 	mainWindow->actionViewSnapToGrid->setCheckable(true);
 	connect(mainWindow->actionViewSnapToGrid, SIGNAL(toggled(bool)), this, SLOT(SnapToGrid(bool)));
+	mainWindow->actionViewDarkenNotesInInactiveChannels->setCheckable(true);
+	connect(mainWindow->actionViewDarkenNotesInInactiveChannels, SIGNAL(toggled(bool)), this, SLOT(DarkenNotesInInactiveChannels(bool)));
 
 	auto modes = new QActionGroup(this);
 
@@ -42,6 +44,9 @@ SequenceTools::SequenceTools(const QString &objectName, const QString &windowTit
 	modes->addAction(writeMode);
 
 	addSeparator();
+	darkenNotesInInactiveChannels = addAction(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Solo), tr("Darken Notes in Inactive Channels"));
+	darkenNotesInInactiveChannels->setCheckable(true);
+	connect(darkenNotesInInactiveChannels, SIGNAL(toggled(bool)), this, SLOT(DarkenNotesInInactiveChannels(bool)));
 	snapToGrid = addAction(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Snap), tr("Snap to Grid"));
 	snapToGrid->setCheckable(true);
 	connect(snapToGrid, SIGNAL(toggled(bool)), this, SLOT(SnapToGrid(bool)));
@@ -96,11 +101,15 @@ void SequenceTools::ReplaceSequenceView(SequenceView *newSView)
 
 		ModeChanged(sview->GetMode());
 		snapToGrid->setEnabled(true);
+		darkenNotesInInactiveChannels->setEnabled(true);
 		SnapToGridChanged(sview->GetSnapToGrid());
+		DarkenNotesInInactiveChannelsChanged(sview->GetDarkenNotesInInactiveChannels());
 		SmallGridChanged(sview->GetSmallGrid());
 	}else{
 		snapToGrid->setEnabled(false);
 		snapToGrid->setChecked(false);
+		darkenNotesInInactiveChannels->setEnabled(false);
+		darkenNotesInInactiveChannels->setChecked(true);
 	}
 }
 
@@ -123,6 +132,13 @@ void SequenceTools::SnapToGrid(bool snap)
 	if (!sview)
 		return;
 	sview->SetSnapToGrid(snap);
+}
+
+void SequenceTools::DarkenNotesInInactiveChannels(bool darken)
+{
+	if (!sview)
+		return;
+	sview->SetDarkenNotesInInactiveChannels(darken);
 }
 
 void SequenceTools::SmallGrid(int index)
@@ -180,6 +196,14 @@ void SequenceTools::SnapToGridChanged(bool snap)
 		return;
 	mainWindow->actionViewSnapToGrid->setChecked(snap);
 	snapToGrid->setChecked(snap);
+}
+
+void SequenceTools::DarkenNotesInInactiveChannelsChanged(bool darken)
+{
+	if (!sview)
+		return;
+	mainWindow->actionViewDarkenNotesInInactiveChannels->setChecked(darken);
+	darkenNotesInInactiveChannels->setChecked(darken);
 }
 
 void SequenceTools::SmallGridChanged(GridSize grid)

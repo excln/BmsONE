@@ -40,6 +40,7 @@ private:
 	static const char* SettingsModeKey;
 	static const char* SettingsSnapToGridKey;
 	static const char* SettingsSnappedHitTestInEditMode;
+	static const char* SettingsDarkenNotesInInactiveChannels;
 	static const char* SettingsCoarseGridKey;
 	static const char* SettingsFineGridKey;
 
@@ -150,6 +151,7 @@ private:
 	GridSize fineGrid;
 	bool snapToGrid;
 	bool snappedHitTestInEditMode;
+	bool darkenNotesInInactiveChannels;
 	bool showMasterLane;
 	bool showMiniMap;
 	bool fixMiniMap;
@@ -270,6 +272,7 @@ public slots:
 	void OnCurrentChannelChanged(int index);
 	void SetMode(SequenceEditMode mode);
 	void SetSnapToGrid(bool snap);
+	void SetDarkenNotesInInactiveChannels(bool darken);
 	void SetSmallGrid(GridSize grid);
 	void SetMediumGrid(GridSize grid);
 	void DeleteSelectedObjects();
@@ -282,6 +285,7 @@ signals:
 	void CurrentChannelChanged(int index);
 	void ModeChanged(SequenceEditMode mode);
 	void SnapToGridChanged(bool snap);
+	void DarkenNotesInInactiveChannelsChanged(bool darken);
 	void SmallGridChanged(GridSize grid);
 	void MediumGridChanged(GridSize grid);
 	void SelectionChanged(SequenceEditSelection selection);
@@ -293,6 +297,7 @@ public:
 	void ReplaceDocument(Document *newDocument);
 	SequenceEditMode GetMode() const{ return editMode; }
 	bool GetSnapToGrid() const{ return snapToGrid; }
+	bool GetDarkenNotesInInactiveChannels() const{ return darkenNotesInInactiveChannels; }
 	GridSize GetSmallGrid() const{ return fineGrid; }
 	GridSize GetMediumGrid() const{ return coarseGrid; }
 	SequenceEditSelection GetSelection() const{ return selection; }

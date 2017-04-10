@@ -155,7 +155,12 @@ MainWindow::MainWindow(QSettings *settings)
 	connect(actionViewFullScreen, SIGNAL(triggered()), this, SLOT(ViewFullScreen()));
 
 	actionViewSnapToGrid = new QAction(tr("Snap to Grid"), this);
+	actionViewSnapToGrid->setShortcut(Qt::ControlModifier + Qt::Key_T);
 	SharedUIHelper::RegisterGlobalShortcut(actionViewSnapToGrid);
+
+	actionViewDarkenNotesInInactiveChannels = new QAction(tr("Darken Notes in Inactive Channels"), this);
+	actionViewDarkenNotesInInactiveChannels->setShortcut(Qt::ControlModifier + Qt::Key_D);
+	SharedUIHelper::RegisterGlobalShortcut(actionViewDarkenNotesInInactiveChannels);
 
 	actionViewZoomIn = new QAction(tr("Zoom In"), this);
 	actionViewZoomIn->setShortcut(QKeySequence::ZoomIn);
@@ -264,6 +269,7 @@ MainWindow::MainWindow(QSettings *settings)
 	menuView->addSeparator();
 	menuViewMode = menuView->addMenu(tr("View Mode"));
 	actionViewSkinSettingSeparator = menuView->addSeparator();
+	menuView->addAction(actionViewDarkenNotesInInactiveChannels);
 	menuView->addAction(actionViewSnapToGrid);
 	auto *menuViewZoom = menuView->addMenu(tr("Zoom"));
 	menuViewZoom->addAction(actionViewZoomIn);

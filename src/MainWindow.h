@@ -128,6 +128,7 @@ private:
 	QAction *actionViewDockSeparator;
 	QAction *actionViewFullScreen;
 	QAction *actionViewSnapToGrid;
+	QAction *actionViewDarkenNotesInInactiveChannels;
 	QAction *actionViewZoomIn;
 	QAction *actionViewZoomOut;
 	QAction *actionViewZoomReset;

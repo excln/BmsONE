@@ -429,14 +429,18 @@ void InfoView::ResolutionClicked()
 	layout->addRow(tr("New resolution:"), edit);
 	mainLayout->addLayout(layout);
 	auto btnLayout = new QHBoxLayout();
+	auto btnCancel = new QPushButton(tr("Cancel"));
 	auto btn = new QPushButton(tr("OK"));
+	btn->setDefault(true);
 	btnLayout->addStretch(1);
+	btnLayout->addWidget(btnCancel);
 	btnLayout->addWidget(btn);
 	mainLayout->addLayout(btnLayout);
 	dialog->setLayout(mainLayout);
 	dialog->setModal(true);
 	dialog->setWindowTitle(tr("Convert Resolution"));
 	UIUtil::SetFont(dialog);
+	connect(btnCancel, &QPushButton::clicked, dialog, &QDialog::close);
 	connect(btn, &QPushButton::clicked, dialog, [=](){
 		auto newRes = edit->text().toInt();
 		if (newRes < 48 || newRes > 24000){

@@ -31,6 +31,7 @@ public:
 		SoundNote,
 		SlicingSoundNote,
 		Settings,
+		Solo,
 	};
 
 private:

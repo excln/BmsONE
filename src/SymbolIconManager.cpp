@@ -27,6 +27,7 @@ SymbolIconManager::SymbolIconManager()
 	icons.insert(Icon::SoundNote, Load("sound_note"));
 	icons.insert(Icon::SlicingSoundNote, Load("slicing_sound_note"));
 	icons.insert(Icon::Settings, Load("settings"));
+	icons.insert(Icon::Solo, Load("solo"));
 }
 
 QIcon SymbolIconManager::Load(QString name)

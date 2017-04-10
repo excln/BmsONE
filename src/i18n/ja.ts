@@ -348,21 +348,26 @@
     </message>
     <message>
         <location filename="../InfoView.cpp" line="432"/>
+        <source>Cancel</source>
+        <translation>キャンセル</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="433"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="438"/>
+        <location filename="../InfoView.cpp" line="441"/>
         <source>Convert Resolution</source>
         <translation>分解能変換</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="448"/>
+        <location filename="../InfoView.cpp" line="452"/>
         <source>Some information will be lost through this conversion and it is IRREVERSIBLE. Are you sure?</source>
         <translation>この変換によって一部の情報が失われ、元に戻すことができなくなります。よろしいですか?</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="449"/>
+        <location filename="../InfoView.cpp" line="453"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -389,7 +394,7 @@
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="49"/>
-        <location filename="../MainWindow.cpp" line="761"/>
+        <location filename="../MainWindow.cpp" line="765"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
@@ -405,13 +410,13 @@
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="67"/>
-        <location filename="../MainWindow.cpp" line="667"/>
+        <location filename="../MainWindow.cpp" line="671"/>
         <source>Undo</source>
         <translation>元に戻す</translation>
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="73"/>
-        <location filename="../MainWindow.cpp" line="674"/>
+        <location filename="../MainWindow.cpp" line="678"/>
         <source>Redo</source>
         <translation>やり直し</translation>
     </message>
@@ -492,126 +497,131 @@
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="160"/>
+        <source>Darken Notes in Inactive Channels</source>
+        <translation>非アクティブなチャネルのノーツを暗くする</translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.cpp" line="163"/>
         <source>Zoom In</source>
         <translation>拡大</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="164"/>
+        <location filename="../MainWindow.cpp" line="167"/>
         <source>Zoom Out</source>
         <translation>縮小</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="168"/>
+        <location filename="../MainWindow.cpp" line="171"/>
         <source>Reset</source>
         <comment>Zoom</comment>
         <translation>リセット</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="172"/>
+        <location filename="../MainWindow.cpp" line="175"/>
         <source>Add...</source>
         <translation>追加...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="177"/>
+        <location filename="../MainWindow.cpp" line="180"/>
         <source>Select Previous</source>
         <translation>前を選択</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="182"/>
+        <location filename="../MainWindow.cpp" line="185"/>
         <source>Select Next</source>
         <translation>次を選択</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="187"/>
+        <location filename="../MainWindow.cpp" line="190"/>
         <source>Move Left</source>
         <translation>左に移動</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="192"/>
+        <location filename="../MainWindow.cpp" line="195"/>
         <source>Move Right</source>
         <translation>右に移動</translation>
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="108"/>
-        <location filename="../MainWindow.cpp" line="197"/>
+        <location filename="../MainWindow.cpp" line="200"/>
         <source>Delete</source>
         <translation>削除</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="201"/>
+        <location filename="../MainWindow.cpp" line="204"/>
         <source>Select File...</source>
         <translation>ファイル選択...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="205"/>
+        <location filename="../MainWindow.cpp" line="208"/>
         <source>Preview Source Sound</source>
         <translation>ソースをプレビュー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="210"/>
+        <location filename="../MainWindow.cpp" line="213"/>
         <source>About BmsONE...</source>
         <translation>BmsONE について...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="216"/>
+        <location filename="../MainWindow.cpp" line="219"/>
         <source>About Qt...</source>
         <translation>Qt について...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="641"/>
+        <location filename="../MainWindow.cpp" line="645"/>
         <source>About BmsONE</source>
         <translation>BmsONE について</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="221"/>
-        <location filename="../MainWindow.cpp" line="303"/>
+        <location filename="../MainWindow.cpp" line="224"/>
+        <location filename="../MainWindow.cpp" line="307"/>
         <source>File</source>
         <translation>ファイル</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="214"/>
+        <location filename="../MainWindow.cpp" line="217"/>
         <source>Qt...</source>
         <translation>Qt について...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="231"/>
-        <location filename="../MainWindow.cpp" line="313"/>
+        <location filename="../MainWindow.cpp" line="234"/>
+        <location filename="../MainWindow.cpp" line="317"/>
         <source>Edit</source>
         <translation>編集</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="259"/>
+        <location filename="../MainWindow.cpp" line="262"/>
         <source>View</source>
         <translation>表示</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="260"/>
+        <location filename="../MainWindow.cpp" line="263"/>
         <source>Views</source>
         <translation>ビュー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="262"/>
+        <location filename="../MainWindow.cpp" line="265"/>
         <source>Toolbars</source>
         <translation>ツールバー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="265"/>
+        <location filename="../MainWindow.cpp" line="268"/>
         <source>View Mode</source>
         <translation>表示モード</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="268"/>
+        <location filename="../MainWindow.cpp" line="272"/>
         <source>Zoom</source>
         <translation>ズーム</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="276"/>
-        <location filename="../MainWindow.cpp" line="358"/>
+        <location filename="../MainWindow.cpp" line="280"/>
+        <location filename="../MainWindow.cpp" line="362"/>
         <source>Channel</source>
         <translation>チャンネル</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="290"/>
+        <location filename="../MainWindow.cpp" line="294"/>
         <source>Help</source>
         <translation>ヘルプ</translation>
     </message>
@@ -620,98 +630,98 @@
         <translation>Qt について</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="295"/>
+        <location filename="../MainWindow.cpp" line="299"/>
         <source>Status Bar</source>
         <translation>ステータスバー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="326"/>
+        <location filename="../MainWindow.cpp" line="330"/>
         <source>Sequence Tools</source>
         <translation>シーケンスツール</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="332"/>
+        <location filename="../MainWindow.cpp" line="336"/>
         <source>Sound Output</source>
         <translation>音声出力</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="351"/>
+        <location filename="../MainWindow.cpp" line="355"/>
         <source>Info</source>
         <translation>情報</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="437"/>
+        <location filename="../MainWindow.cpp" line="441"/>
         <source>bmson files (*.bmson);;old bms files (*.bms *.bme *.bml *.pms);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;旧BMSファイル (*.bms *.bme *.bml *.pms);;すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="440"/>
+        <location filename="../MainWindow.cpp" line="444"/>
         <source>Open</source>
         <translation>開く</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="450"/>
-        <location filename="../MainWindow.cpp" line="471"/>
-        <location filename="../MainWindow.cpp" line="498"/>
-        <location filename="../MainWindow.cpp" line="772"/>
-        <location filename="../MainWindow.cpp" line="885"/>
+        <location filename="../MainWindow.cpp" line="454"/>
+        <location filename="../MainWindow.cpp" line="475"/>
+        <location filename="../MainWindow.cpp" line="502"/>
+        <location filename="../MainWindow.cpp" line="776"/>
+        <location filename="../MainWindow.cpp" line="889"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="488"/>
-        <location filename="../MainWindow.cpp" line="758"/>
+        <location filename="../MainWindow.cpp" line="492"/>
+        <location filename="../MainWindow.cpp" line="762"/>
         <source>bmson files (*.bmson);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="491"/>
+        <location filename="../MainWindow.cpp" line="495"/>
         <source>Save As</source>
         <translation>名前を付けて保存</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="499"/>
-        <location filename="../MainWindow.cpp" line="773"/>
+        <location filename="../MainWindow.cpp" line="503"/>
+        <location filename="../MainWindow.cpp" line="777"/>
         <source>Failed to save file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="554"/>
+        <location filename="../MainWindow.cpp" line="558"/>
         <source>sound files (*.wav *.ogg);;all files (*.*)</source>
         <translation>音声ファイル (*.wav *.ogg);;すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="557"/>
+        <location filename="../MainWindow.cpp" line="561"/>
         <source>Select Sound Files</source>
         <translation>音声ファイル選択</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="648"/>
+        <location filename="../MainWindow.cpp" line="652"/>
         <source>untitled</source>
         <translation>無題</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="664"/>
+        <location filename="../MainWindow.cpp" line="668"/>
         <source>Undo - </source>
         <translation>元に戻す - </translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="671"/>
+        <location filename="../MainWindow.cpp" line="675"/>
         <source>Redo - </source>
         <translation>やり直し - </translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="787"/>
+        <location filename="../MainWindow.cpp" line="791"/>
         <source>Confirmation</source>
         <translation>確認</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="788"/>
+        <location filename="../MainWindow.cpp" line="792"/>
         <source>Save changes before closing?</source>
         <translation>変更を保存しますか?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="886"/>
+        <location filename="../MainWindow.cpp" line="890"/>
         <source>Unknown File Type</source>
         <translation>ファイルの種類が不明です</translation>
     </message>
@@ -942,22 +952,27 @@
 <context>
     <name>SequenceTools</name>
     <message>
-        <location filename="../SequenceTools.cpp" line="34"/>
+        <location filename="../SequenceTools.cpp" line="36"/>
         <source>Edit Mode</source>
         <translation>編集モード</translation>
     </message>
     <message>
-        <location filename="../SequenceTools.cpp" line="39"/>
+        <location filename="../SequenceTools.cpp" line="41"/>
         <source>Write Mode</source>
         <translation>書込モード</translation>
     </message>
     <message>
-        <location filename="../SequenceTools.cpp" line="45"/>
+        <location filename="../SequenceTools.cpp" line="47"/>
+        <source>Darken Notes in Inactive Channels</source>
+        <translation>非アクティブなチャネルのノーツを暗くする</translation>
+    </message>
+    <message>
+        <location filename="../SequenceTools.cpp" line="50"/>
         <source>Snap to Grid</source>
         <translation>グリッドにスナップ</translation>
     </message>
     <message>
-        <location filename="../SequenceTools.cpp" line="67"/>
+        <location filename="../SequenceTools.cpp" line="72"/>
         <source>Grid</source>
         <translation>グリッド</translation>
     </message>
@@ -965,12 +980,12 @@
 <context>
     <name>SequenceView</name>
     <message>
-        <location filename="../SequenceView.cpp" line="136"/>
+        <location filename="../SequenceView.cpp" line="137"/>
         <source>Delete</source>
         <translation>削除</translation>
     </message>
     <message>
-        <location filename="../SequenceView.cpp" line="138"/>
+        <location filename="../SequenceView.cpp" line="139"/>
         <source>Move to BGM Lanes</source>
         <translation>BGMレーンに移動</translation>
     </message>
@@ -1058,48 +1073,60 @@
 <context>
     <name>SkinLibrary</name>
     <message>
-        <location filename="../Skin.cpp" line="81"/>
-        <location filename="../Skin.cpp" line="208"/>
+        <location filename="../Skin.cpp" line="84"/>
+        <location filename="../Skin.cpp" line="211"/>
+        <location filename="../Skin.cpp" line="355"/>
         <source>Left</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="82"/>
-        <location filename="../Skin.cpp" line="209"/>
+        <location filename="../Skin.cpp" line="85"/>
+        <location filename="../Skin.cpp" line="212"/>
+        <location filename="../Skin.cpp" line="356"/>
         <source>Right</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="83"/>
-        <location filename="../Skin.cpp" line="161"/>
-        <location filename="../Skin.cpp" line="210"/>
-        <location filename="../Skin.cpp" line="280"/>
+        <location filename="../Skin.cpp" line="86"/>
+        <location filename="../Skin.cpp" line="164"/>
+        <location filename="../Skin.cpp" line="213"/>
+        <location filename="../Skin.cpp" line="283"/>
         <source>Scratch</source>
         <translation>スクラッチ</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="157"/>
-        <location filename="../Skin.cpp" line="276"/>
+        <location filename="../Skin.cpp" line="160"/>
+        <location filename="../Skin.cpp" line="279"/>
+        <location filename="../Skin.cpp" line="416"/>
         <source>Left/Left</source>
         <translation>左/左</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="158"/>
-        <location filename="../Skin.cpp" line="277"/>
+        <location filename="../Skin.cpp" line="161"/>
+        <location filename="../Skin.cpp" line="280"/>
+        <location filename="../Skin.cpp" line="417"/>
         <source>Left/Right</source>
         <translation>左/右</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="159"/>
-        <location filename="../Skin.cpp" line="278"/>
+        <location filename="../Skin.cpp" line="162"/>
+        <location filename="../Skin.cpp" line="281"/>
+        <location filename="../Skin.cpp" line="418"/>
         <source>Right/Left</source>
         <translation>右/左</translation>
     </message>
     <message>
-        <location filename="../Skin.cpp" line="160"/>
-        <location filename="../Skin.cpp" line="279"/>
+        <location filename="../Skin.cpp" line="163"/>
+        <location filename="../Skin.cpp" line="282"/>
+        <location filename="../Skin.cpp" line="419"/>
         <source>Right/Right</source>
         <translation>右/右</translation>
+    </message>
+    <message>
+        <location filename="../Skin.cpp" line="357"/>
+        <location filename="../Skin.cpp" line="420"/>
+        <source>Lane Order</source>
+        <translation>レーン順序</translation>
     </message>
 </context>
 <context>

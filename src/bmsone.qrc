@@ -41,5 +41,6 @@
         <file>images/keys/c-R-green.png</file>
         <file>images/keys/c-R-red.png</file>
         <file>images/keys/c-R-yellow.png</file>
+        <file>images/symbols/solo.png</file>
     </qresource>
 </RCC>

@@ -24,6 +24,7 @@ private:
 	QAction *editMode;
 	QAction *writeMode;
 	QAction *snapToGrid;
+	QAction *darkenNotesInInactiveChannels;
 	QComboBox *gridSize;
 
 private:
@@ -36,10 +37,12 @@ private slots:
 	void EditMode();
 	void WriteMode();
 	void SnapToGrid(bool snap);
+	void DarkenNotesInInactiveChannels(bool darken);
 	void SmallGrid(int index);
 
 	void ModeChanged(SequenceEditMode mode);
 	void SnapToGridChanged(bool snap);
+	void DarkenNotesInInactiveChannelsChanged(bool darken);
 	void SmallGridChanged(GridSize grid);
 	void SelectionChanged(SequenceEditSelection selection);
 
