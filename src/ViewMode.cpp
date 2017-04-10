@@ -50,8 +50,9 @@ ViewMode *ViewMode::GetViewMode(QString modeHint)
 	PrepareModeLibrary();
 	if (ModeLibrary.contains(modeHint)){
 		return ModeLibrary[modeHint];
+	}else if (modeHint.isEmpty()){
+		return ViewModeBeat7k();
 	}else{
-		//return ViewModeBeat7k();
 		return ViewModePlain();
 	}
 }
