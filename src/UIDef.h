@@ -13,6 +13,7 @@ public:
 	static const int LightAnimationInterval;
 	static const int HeavyAnimationInterval;
 	static void SetFont(QWidget *widget);
+	static bool DragBegins(QPoint origin, QPoint pos);
 };
 
 

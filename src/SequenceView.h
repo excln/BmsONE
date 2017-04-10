@@ -77,6 +77,7 @@ private:
 	class EditModeDragNotesContext;
 	class EditModeSelectBpmEventsContext;
 	class WriteModeContext;
+	class WriteModeDrawNoteContext;
 	class PreviewContext;
 
 	class CommandsLocker

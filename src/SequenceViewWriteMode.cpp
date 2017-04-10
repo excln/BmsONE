@@ -2,6 +2,7 @@
 #include "SequenceView.h"
 #include "SequenceViewContexts.h"
 #include "SequenceViewInternal.h"
+#include "UIDef.h"
 
 SequenceView::WriteModeContext::WriteModeContext(SequenceView *sview)
 	: Context(sview)
@@ -116,6 +117,10 @@ SequenceView::Context *SequenceView::WriteModeContext::PlayingPane_MousePress(QM
 				for (auto cview : sview->soundChannels){
 					cview->update();
 				}
+
+				// Enter Draw-Note Mode
+				return new WriteModeDrawNoteContext(this, sview, iTime, event->pos());
+
 			}else{
 				// note was not created
 				qApp->beep();
@@ -320,6 +325,113 @@ SequenceView::Context *SequenceView::WriteModeContext::BpmArea_MousePress(QMouse
 SequenceView::Context *SequenceView::WriteModeContext::BpmArea_MouseRelease(QMouseEvent *){
 	return this;
 }
+
+
+
+
+
+
+
+SequenceView::WriteModeDrawNoteContext::WriteModeDrawNoteContext(SequenceView::WriteModeContext *parent, SequenceView *sview,
+		int notePos,
+		QPoint dragOrigin)
+	: Context(sview, parent)
+	, locker(sview)
+	, notePos(notePos)
+	, dragOrigin(dragOrigin)
+	, dragBegan(false)
+{
+	auto *channel = sview->soundChannels[sview->currentChannel]->GetChannel();
+	QMap<SoundChannel *, QSet<int> > locs;
+	locs.insert(channel, QSet<int>());
+	locs[channel].insert(notePos);
+	updateNotesCxt = new Document::DocumentUpdateSoundNotesContext(sview->document, locs);
+	dragNotesPreviousTime = notePos;
+}
+
+
+SequenceView::WriteModeDrawNoteContext::~WriteModeDrawNoteContext()
+{
+	if (updateNotesCxt){
+		updateNotesCxt->Cancel();
+		delete updateNotesCxt;
+	}
+}
+
+/*
+SequenceView::Context *SequenceView::WriteModeDrawNoteContext::Enter(QEnterEvent *)
+{
+	return this;
+}
+
+SequenceView::Context *SequenceView::WriteModeDrawNoteContext::Leave(QEnterEvent *)
+{
+	return this;
+}
+*/
+SequenceView::Context *SequenceView::WriteModeDrawNoteContext::PlayingPane_MouseMove(QMouseEvent *event)
+{
+	if (!dragBegan){
+		if (UIUtil::DragBegins(dragOrigin, event->pos())){
+			dragBegan = true;
+		}else{
+			return this;
+		}
+	}
+	qreal time = sview->Y2Time(event->y());
+	int iTime = time;
+	int iTimeUpper = time;
+	int lane = sview->X2Lane(event->x());
+	if (sview->snapToGrid){
+		iTime = sview->SnapToLowerFineGrid(time);
+		iTimeUpper = sview->SnapToUpperFineGrid(time);
+	}
+	int laneX;
+	if (lane < 0){
+		if (event->x() < sview->sortedLanes[0].left){
+			laneX = 0;
+		}else{
+			laneX = sview->sortedLanes.size() - 1;
+		}
+	}else{
+		laneX = sview->sortedLanes.indexOf(sview->lanes[lane]);
+	}
+	if (iTime != dragNotesPreviousTime){
+		QMap<SoundChannel*, QMap<int, SoundNote>> notes;
+		QMap<SoundChannel*, QMap<int, SoundNote>> originalNotes = updateNotesCxt->GetOldNotes();
+		for (SoundNoteView *nv : sview->selectedNotes){
+			auto *channel = nv->GetChannelView()->GetChannel();
+			if (!notes.contains(channel)){
+				notes.insert(channel, QMap<int, SoundNote>());
+			}
+			SoundNote note = originalNotes[channel][nv->GetNote().location];
+			note.length = std::max(0, note.length + iTime - notePos);
+			notes[channel].insert(note.location, note);
+		}
+		updateNotesCxt->Update(notes);
+	}
+	dragNotesPreviousTime = iTime;
+	return this;
+}
+
+SequenceView::Context *SequenceView::WriteModeDrawNoteContext::PlayingPane_MousePress(QMouseEvent *event)
+{
+	return this;
+}
+
+SequenceView::Context *SequenceView::WriteModeDrawNoteContext::PlayingPane_MouseRelease(QMouseEvent *event)
+{
+	if (event->button() != Qt::LeftButton){
+		// ignore
+		return this;
+	}
+	updateNotesCxt->Finish();
+	delete updateNotesCxt;
+	updateNotesCxt = nullptr;
+	return Escape();
+}
+
+
 
 
 

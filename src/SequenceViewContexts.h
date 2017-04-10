@@ -114,6 +114,31 @@ public:
 };
 
 
+class SequenceView::WriteModeDrawNoteContext
+		: public SequenceView::Context
+{
+	SequenceView::CommandsLocker locker;
+	Document::DocumentUpdateSoundNotesContext *updateNotesCxt;
+	int notePos;
+	QPoint dragOrigin;
+	bool dragBegan;
+	int dragNotesPreviousTime;
+
+	virtual ~WriteModeDrawNoteContext();
+public:
+	WriteModeDrawNoteContext(SequenceView::WriteModeContext *parent, SequenceView *sview,
+							 int notePos, QPoint dragOrigin);
+
+	//virtual SequenceView::Context* Enter(QEnterEvent*);
+	//virtual SequenceView::Context* Leave(QEnterEvent*);
+	virtual SequenceView::Context* PlayingPane_MouseMove(QMouseEvent*);
+	virtual SequenceView::Context* PlayingPane_MousePress(QMouseEvent*);
+	virtual SequenceView::Context* PlayingPane_MouseRelease(QMouseEvent*);
+};
+
+
+
+
 class SoundChannelPreviewer;
 
 class SequenceView::PreviewContext

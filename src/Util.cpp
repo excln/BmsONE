@@ -55,4 +55,11 @@ void UIUtil::SetFont(QWidget *widget)
 #endif
 }
 
+bool UIUtil::DragBegins(QPoint origin, QPoint pos)
+{
+	static const int DRAG_THRESHOLD = 8;
+	return std::abs(pos.x() - origin.x()) > DRAG_THRESHOLD
+			|| std::abs(pos.y() - origin.y()) > DRAG_THRESHOLD;
+}
+
 

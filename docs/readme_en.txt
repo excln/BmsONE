@@ -149,6 +149,7 @@ Oct  2016 beta 0.1.3
   - Modified waveform display in Channel Info View.
   - Fixed memory leaks that occurred when new documents are opened.
   - Implemented double clicks on notes to switch them between playable and BGM lanes.
+  - Drag to input a long note in Write Mode.
   - Added View Modes for Generic 6,7 Keys and the plain View Mode.
   - Some minor bug fixes on UI.
 
