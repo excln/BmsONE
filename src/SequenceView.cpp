@@ -254,6 +254,34 @@ void SequenceView::ReplaceSkin(Skin *newSkin)
 			skinPropertyMenuItems.append(menu);
 			break;
 		}
+		case SkinProperty::PROP_INT: {
+			auto prop = p->ToIntegerProperty();
+			auto actionName = [prop](){
+				return QString("%1: %2").arg(prop->GetName()).arg(prop->GetIntValue());
+			};
+			auto action = new QAction(actionName(), menuView);
+			connect(action, &QAction::triggered, this, [=](){
+				auto dialog = new QInputDialog(mainWindow);
+				dialog->setLabelText(tr("%1:").arg(prop->GetName()));
+				dialog->setInputMode(QInputDialog::IntInput);
+				dialog->setIntValue(prop->GetIntValue());
+				dialog->setIntMinimum(prop->GetMin());
+				dialog->setIntMaximum(prop->GetMax());
+				dialog->setIntStep(1);
+				UIUtil::SetFont(dialog);
+				dialog->setModal(true);
+				if (dialog->exec() == QDialog::Accepted){
+					prop->SetValue(dialog->intValue());
+					action->setText(actionName());
+				}
+			});
+			menuView->insertAction(mainWindow->GetViewSkinSettingSeparator(), action);
+			skinPropertyMenuItems.append(action);
+			break;
+		}
+		case SkinProperty::PROP_FLOAT: {
+			break;
+		}
 		default:
 			break;
 		}
@@ -1585,8 +1613,14 @@ void SequenceView::SkinChanged()
 	playingFooterImages.clear();
 	for (auto lane : lanes){
 		QLabel *label = new QLabel(footerPlayingEntry);
-		label->setGeometry(lane.left, (footerHeight-48)/2, lane.width, 48);
-		label->setPixmap(QPixmap(":/images/keys/" + lane.keyImageName));
+		if (lane.keyImageName.isEmpty()){
+			label->setGeometry(lane.left, 4, lane.width, 24);
+			label->setAlignment(Qt::AlignCenter);
+			label->setText(QString::number(lane.lane));
+		}else{
+			label->setGeometry(lane.left, (footerHeight-48)/2, lane.width, 48);
+			label->setPixmap(QPixmap(":/images/keys/" + lane.keyImageName));
+		}
 		label->show();
 		playingFooterImages.append(label);
 	}

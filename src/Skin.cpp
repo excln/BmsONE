@@ -72,6 +72,10 @@ void SkinLibrary::SetupSkin7k(Skin *skin, int scratch)
 #define DEFAULT_CIRCULAR_SINGLE_ID "default-circular-single"
 #define DEFAULT_CIRCULAR_DOUBLE_ID "default-circular-double"
 #define CIRCULAR_ORDER_PROPERTY_KEY "lane-order"
+#define DEFAULT_GENERIC_6KEYS_ID "default-generic-6keys"
+#define DEFAULT_GENERIC_7KEYS_ID "default-generic-7keys"
+#define DEFAULT_PLAIN_ID "default-plain"
+#define PLAIN_LANES_PROPERTY_KEY "lane-count"
 
 Skin *SkinLibrary::CreateDefault7k(QObject *parent)
 {
@@ -431,6 +435,49 @@ Skin *SkinLibrary::CreateDefaultCircularDouble(QObject *parent)
 	return skin;
 }
 
+Skin *SkinLibrary::CreateDefaultGenericNKeys(QObject *parent, int n)
+{
+	Skin *skin = new Skin(QString("default-generic-%1-keys").arg(n), parent);
+
+	skin->width = lmargin*2 + wwhite*n;
+	skin->lanes.clear();
+	for (int i=1; i<=n; i++){
+		skin->lanes.append(LaneDef(i, "g-white", lmargin+wwhite*(i-1), wwhite, QColor(39,39,39), ncwhite,
+								   i==1 ? cbigv :  csmallv,
+								   i==n ? QColor(0,0,0,0) : cbigv));
+	}
+
+	return skin;
+}
+
+void SkinLibrary::SetupSkinDefaultPlain(Skin *skin, int lanes)
+{
+	skin->width = lmargin*2 + wwhite*lanes;
+	skin->lanes.clear();
+	for (int i=1; i<=lanes; i++){
+		skin->lanes.append(LaneDef(i, "", lmargin+wwhite*(i-1), wwhite, QColor(39,39,39), ncwhite,
+								   i==1 ? cbigv :  csmallv,
+								   i==lanes ? QColor(0,0,0,0) : cbigv));
+	}
+}
+
+Skin *SkinLibrary::CreateDefaultPlain(QObject *parent)
+{
+	int defaultCount = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_PLAIN_ID, PLAIN_LANES_PROPERTY_KEY), "4").toInt();
+	Skin *skin = new Skin(DEFAULT_PLAIN_ID, parent);
+	SkinIntegerProperty *laneCountProp = new SkinIntegerProperty(skin, tr("Lane Count"), 1, 99, defaultCount);
+	laneCountProp->setObjectName(PLAIN_LANES_PROPERTY_KEY);
+	skin->properties.append(laneCountProp);
+	connect(laneCountProp, &SkinProperty::Changed, skin, [=](){
+		SetupSkinDefaultPlain(skin, laneCountProp->GetIntValue());
+		App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_PLAIN_ID, PLAIN_LANES_PROPERTY_KEY), laneCountProp->GetValue());
+		emit skin->Changed();
+		return;
+	});
+	SetupSkinDefaultPlain(skin, laneCountProp->GetIntValue());
+	return skin;
+}
+
 Skin *SkinLibrary::CreateSkin(ViewMode *mode, QObject *parent)
 {
 	switch (mode->GetMode()){
@@ -450,6 +497,12 @@ Skin *SkinLibrary::CreateSkin(ViewMode *mode, QObject *parent)
 		return CreateDefaultCircularSingle(parent);
 	case ViewMode::MODE_CIRC_DOUBLE:
 		return CreateDefaultCircularDouble(parent);
+	case ViewMode::MODE_GENERIC_6KEYS:
+		return CreateDefaultGenericNKeys(parent, 6);
+	case ViewMode::MODE_GENERIC_7KEYS:
+		return CreateDefaultGenericNKeys(parent, 7);
+	case ViewMode::MODE_PLAIN:
+		return CreateDefaultPlain(parent);
 	default:
 		return CreateDefault7k(parent);
 	}
@@ -480,6 +533,20 @@ SkinProperty::SkinProperty(Skin *parent, QString name, SkinEnumProperty *th)
 	, name(name), type(PROP_ENUM)
 {
 	dataEnum = th;
+}
+
+SkinProperty::SkinProperty(Skin *parent, QString name, SkinIntegerProperty *th)
+	: QObject(parent)
+	, name(name), type(PROP_INT)
+{
+	dataInt = th;
+}
+
+SkinProperty::SkinProperty(Skin *parent, QString name, SkinFloatProperty *th)
+	: QObject(parent)
+	, name(name), type(PROP_FLOAT)
+{
+	dataFloat = th;
 }
 
 
@@ -557,3 +624,116 @@ QString SkinEnumProperty::GetChoiceValue() const
 }
 
 
+
+SkinIntegerProperty::SkinIntegerProperty(Skin *parent, QString name, int min, int max, int value)
+	: SkinProperty(parent, name, this)
+	, min(min)
+	, max(max)
+	, value(value)
+{
+	Normalize();
+}
+
+SkinIntegerProperty::SkinIntegerProperty(Skin *parent, QString name, int min, int max, QVariant value)
+	: SkinProperty(parent, name, this)
+	, min(min)
+	, max(max)
+{
+	SetValue(value);
+}
+
+QVariant SkinIntegerProperty::GetValue() const
+{
+	return QVariant(value);
+}
+
+void SkinIntegerProperty::SetValue(QVariant va)
+{
+	switch (va.type()){
+	case QVariant::Int:
+		value = va.toInt();
+		Normalize();
+		emit Changed();
+		return;
+	case QVariant::Double:
+		value = va.toDouble();
+		Normalize();
+		emit Changed();
+		return;
+	case QVariant::String:
+		value = va.toString().toInt();
+		Normalize();
+		emit Changed();
+		return;
+	default:
+		value = va.toInt();
+		Normalize();
+		emit Changed();
+		return;
+	}
+}
+
+void SkinIntegerProperty::Normalize()
+{
+	if (value < min)
+		value = min;
+	else if (value > max)
+		value = max;
+}
+
+
+SkinFloatProperty::SkinFloatProperty(Skin *parent, QString name, qreal min, qreal max, qreal value)
+	: SkinProperty(parent, name, this)
+	, min(min)
+	, max(max)
+	, value(value)
+{
+	Normalize();
+}
+
+SkinFloatProperty::SkinFloatProperty(Skin *parent, QString name, qreal min, qreal max, QVariant value)
+	: SkinProperty(parent, name, this)
+	, min(min)
+	, max(max)
+{
+	SetValue(value);
+}
+
+QVariant SkinFloatProperty::GetValue() const
+{
+	return QVariant(value);
+}
+
+void SkinFloatProperty::SetValue(QVariant va)
+{
+	switch (va.type()){
+	case QVariant::Int:
+		value = va.toInt();
+		Normalize();
+		emit Changed();
+		return;
+	case QVariant::Double:
+		value = va.toDouble();
+		Normalize();
+		emit Changed();
+		return;
+	case QVariant::String:
+		value = va.toString().toInt();
+		Normalize();
+		emit Changed();
+		return;
+	default:
+		value = va.toDouble();
+		Normalize();
+		emit Changed();
+		return;
+	}
+}
+
+void SkinFloatProperty::Normalize()
+{
+	if (value < min)
+		value = min;
+	else if (value > max)
+		value = max;
+}

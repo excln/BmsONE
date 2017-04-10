@@ -136,6 +136,8 @@ void SequenceTools::SnapToGrid(bool snap)
 
 void SequenceTools::DarkenNotesInInactiveChannels(bool darken)
 {
+	darkenNotesInInactiveChannels->setChecked(darken);
+	mainWindow->actionViewDarkenNotesInInactiveChannels->setChecked(darken);
 	if (!sview)
 		return;
 	sview->SetDarkenNotesInInactiveChannels(darken);

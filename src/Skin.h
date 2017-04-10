@@ -30,6 +30,8 @@ struct LaneDef{
 class Skin;
 class SkinBoolProperty;
 class SkinEnumProperty;
+class SkinIntegerProperty;
+class SkinFloatProperty;
 
 class SkinProperty : public QObject
 {
@@ -39,6 +41,8 @@ public:
 	enum Type{
 		PROP_BOOL,
 		PROP_ENUM,
+		PROP_INT,
+		PROP_FLOAT,
 	};
 
 private:
@@ -47,15 +51,21 @@ private:
 	union {
 		SkinBoolProperty *dataBool;
 		SkinEnumProperty *dataEnum;
+		SkinIntegerProperty *dataInt;
+		SkinFloatProperty *dataFloat;
 	};
 
 protected:
 	SkinProperty(Skin *parent, QString name, SkinBoolProperty *th);
 	SkinProperty(Skin *parent, QString name, SkinEnumProperty *th);
+	SkinProperty(Skin *parent, QString name, SkinIntegerProperty *th);
+	SkinProperty(Skin *parent, QString name, SkinFloatProperty *th);
 
 public:
 	SkinBoolProperty *ToBoolProperty() const{ return dataBool; }
 	SkinEnumProperty *ToEnumProperty() const{ return dataEnum; }
+	SkinIntegerProperty *ToIntegerProperty() const{ return dataInt; }
+	SkinFloatProperty *ToFloatProperty() const{ return dataFloat; }
 
 	QString GetName() const{ return name; }
 	Type GetType() const{ return type; }
@@ -104,6 +114,54 @@ public:
 	QString GetChoiceValue() const;
 	QStringList GetDisplayChoices() const{ return displayChoices; }
 };
+
+
+class SkinIntegerProperty : public SkinProperty
+{
+	Q_OBJECT
+
+private:
+	int min;
+	int max;
+	int value;
+
+	void Normalize();
+
+public:
+	SkinIntegerProperty(Skin *parent, QString name, int min, int max, int value);
+	SkinIntegerProperty(Skin *parent, QString name, int min, int max, QVariant value);
+
+	virtual QVariant GetValue() const;
+	virtual void SetValue(QVariant va);
+
+	int GetIntValue() const{ return value; }
+	int GetMin() const{ return min; }
+	int GetMax() const{ return max; }
+};
+
+class SkinFloatProperty : public SkinProperty
+{
+	Q_OBJECT
+
+private:
+	qreal min;
+	qreal max;
+	qreal value;
+
+	void Normalize();
+
+public:
+	SkinFloatProperty(Skin *parent, QString name, qreal min, qreal max, qreal value);
+	SkinFloatProperty(Skin *parent, QString name, qreal min, qreal max, QVariant value);
+
+	virtual QVariant GetValue() const;
+	virtual void SetValue(QVariant va);
+
+	qreal GetFloatValue() const{ return value; }
+	qreal GetMin() const{ return min; }
+	qreal GetMax() const{ return max; }
+};
+
 
 
 
@@ -187,6 +245,11 @@ private:
 
 	void SetupSkinCircularDouble(Skin *skin, int order);
 	Skin *CreateDefaultCircularDouble(QObject *parent);
+
+	Skin *CreateDefaultGenericNKeys(QObject *parent, int n);
+
+	void SetupSkinDefaultPlain(Skin *skin, int lanes);
+	Skin *CreateDefaultPlain(QObject *parent);
 
 public:
 	Skin *CreateSkin(ViewMode *mode, QObject *parent=nullptr);

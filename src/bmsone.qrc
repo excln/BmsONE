@@ -47,5 +47,6 @@
         <file>images/symbols/next.png</file>
         <file>images/symbols/previous.png</file>
         <file>images/config/preview.png</file>
+        <file>images/keys/g-white.png</file>
     </qresource>
 </RCC>

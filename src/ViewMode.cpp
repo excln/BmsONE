@@ -23,6 +23,9 @@ void ViewMode::PrepareModeLibrary()
 		ModeHints.append("popn-9k");
 		ModeHints.append("circularrhythm-single");
 		ModeHints.append("circularrhythm-double");
+		ModeHints.append("generic-6keys");
+		ModeHints.append("generic-7keys");
+		//ModeHints.append("plain");
 		ModeLibrary.insert("beat-5k", ViewModeBeat5k());
 		ModeLibrary.insert("beat-7k", ViewModeBeat7k());
 		ModeLibrary.insert("beat-10k", ViewModeBeat10k());
@@ -33,6 +36,9 @@ void ViewMode::PrepareModeLibrary()
 		ModeLibrary.insert("popn-9k", ViewModePopn9k());
 		ModeLibrary.insert("circularrhythm-single", ViewModeCircularSingle());
 		ModeLibrary.insert("circularrhythm-double", ViewModeCircularDouble());
+		ModeLibrary.insert("generic-6keys", ViewModeGenericNKeys(6));
+		ModeLibrary.insert("generic-7keys", ViewModeGenericNKeys(7));
+		//ModeLibrary.insert("plain", ViewModePlain());
 	}
 }
 
@@ -45,7 +51,8 @@ ViewMode *ViewMode::GetViewMode(QString modeHint)
 	if (ModeLibrary.contains(modeHint)){
 		return ModeLibrary[modeHint];
 	}else{
-		return ViewModeBeat7k();
+		//return ViewModeBeat7k();
+		return ViewModePlain();
 	}
 }
 
@@ -70,6 +77,9 @@ QList<ViewMode *> ViewMode::GetAllViewModes()
 	modes.append(ViewModePopn9k());
 	modes.append(ViewModeCircularSingle());
 	modes.append(ViewModeCircularDouble());
+	modes.append(ViewModeGenericNKeys(6));
+	modes.append(ViewModeGenericNKeys(7));
+	modes.append(ViewModePlain());
 	return modes;
 }
 
@@ -87,6 +97,9 @@ ViewMode *ViewMode::VM_Popn5k = nullptr;
 ViewMode *ViewMode::VM_Popn9k = nullptr;
 ViewMode *ViewMode::VM_CircularSingle = nullptr;
 ViewMode *ViewMode::VM_CircularDouble = nullptr;
+ViewMode *ViewMode::VM_Generic6Keys = nullptr;
+ViewMode *ViewMode::VM_Generic7Keys = nullptr;
+ViewMode *ViewMode::VM_Plain = nullptr;
 
 ViewMode *ViewMode::ViewModeBeat5k()
 {
@@ -220,5 +233,39 @@ ViewMode *ViewMode::ViewModeCircularDouble()
 	VM_CircularDouble->lanes.insert(8, LaneDef(8, tr("Right Key Blue")));
 	VM_CircularDouble->lanes.insert(9, LaneDef(9, tr("Space")));
 	return VM_CircularDouble;
+}
+
+ViewMode *ViewMode::ViewModeGenericNKeys(int n)
+{
+	ViewMode *temp = nullptr;
+	ViewMode **pvm = &temp;
+	switch (n){
+	case 6:
+		pvm = &VM_Generic6Keys;
+		break;
+	case 7:
+		pvm = &VM_Generic7Keys;
+		break;
+	}
+	if (*pvm)
+		return *pvm;
+	*pvm = new ViewMode(tr("Generic %1 Keys").arg(n), MODE_GENERIC_N_KEYS(n));
+	for (int i=1; i<=n; i++){
+		(*pvm)->lanes.insert(i, LaneDef(i, tr("Key %1").arg(i)));
+	}
+	return *pvm;
+}
+
+#define PLAIN_LANE_DEFINITION_MAX 99
+
+ViewMode *ViewMode::ViewModePlain()
+{
+	if (VM_Plain)
+		return VM_Plain;
+	VM_Plain = new ViewMode(tr("Plain"), MODE_PLAIN);
+	for (int i=1; i<=PLAIN_LANE_DEFINITION_MAX; i++){
+		VM_Plain->lanes.insert(i, LaneDef(i, tr("Lane %1").arg(i)));
+	}
+	return VM_Plain;
 }
 
