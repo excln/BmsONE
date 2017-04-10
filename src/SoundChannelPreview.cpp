@@ -95,6 +95,12 @@ SoundChannelNotePreviewer::SoundChannelNotePreviewer(SoundChannel *channel, int 
 		currentSamplePos = icache->prevSamplePosition - (icache.key() - location)*(60.0 * SamplesPerSec / (icache->prevTempo * TicksPerBeat));
 	}
 	currentTicks = location;
+
+	durationInSamples = PreviewConfig::GetSingleMaxDuration() * 44100;
+	currentSampleCount = 0;
+	fadeRate = PreviewConfig::GetSingleSoftFadeOut() ? 0.9998 : 0.9992;
+	fade = 1.0;
+
 	QString srcPath = channel->document->GetAbsolutePath(channel->fileName);
 	AudioStreamSource *native = SoundChannelUtil::OpenSourceFile(srcPath, this);
 	if (!native)
@@ -125,6 +131,18 @@ int SoundChannelNotePreviewer::AudioPlayRead(AudioPlaySource::SampleType *buffer
 	const int samplesRead = wave->Read(buffer, bufferSampleCount);
 	if (samplesRead == 0){
 		return 0;
+	}
+	if (durationInSamples > 0 && currentSampleCount + samplesRead > durationInSamples){
+		for (int i=0; i<samplesRead; i++){
+			//if (currentSampleCount + i > durationInSamples){
+				buffer[i].left *= fade;
+				buffer[i].right *= fade;
+				fade *= fadeRate;
+			//}
+		}
+		currentSampleCount += samplesRead;
+	}else{
+		currentSampleCount += samplesRead;
 	}
 	double samples = samplesRead;
 	while (true){

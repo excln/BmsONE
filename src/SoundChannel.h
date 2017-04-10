@@ -179,6 +179,11 @@ private:
 	double currentBpm;
 	double currentTicks;
 
+	int durationInSamples;
+	int currentSampleCount;
+	qreal fadeRate;
+	qreal fade;
+
 signals:
 	void Progress(int ticksOffset);
 	void Stopped();
