@@ -16,6 +16,11 @@ http://sky.geocities.jp/exclusion_bms/bmsone.html
 
 2.1 注意
 
+Windows版で「MSVCP140.dll が見つかりません」というようなエラーが発生した場合は、下記リンクより
+「Visual Studio 2015 の Visual C++ 再頒布可能パッケージ」をインストールしてください。 
+（お使いのコンピュータによらず x86 を選択してください）
+https://www.microsoft.com/ja-JP/download/details.aspx?id=48145
+
 このソフトは開発途上のため、機能が不十分であったり、不安定な動作をすることがあります。
 Mac版は特に頻繁にクラッシュすることがあるので気を付けてください。
 bmson 制作時にはこまめにセーブすることをお勧めします。
