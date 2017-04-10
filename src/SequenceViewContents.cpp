@@ -43,7 +43,7 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 		{
 			QVector<QLine> lines;
 			for (int t : fineGrids){
-				int y = Time2Y(t) - 1;
+				int y = std::round(Time2Y(t)) - 1;
 				lines.append(QLine(left, y, right, y));
 			}
 			painter.setPen(penStep);
@@ -52,7 +52,7 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 		{
 			QVector<QLine> lines;
 			for (int t : coarseGrids){
-				int y = Time2Y(t) - 1;
+				int y = std::round(Time2Y(t)) - 1;
 				lines.append(QLine(left, y, right, y));
 			}
 			painter.setPen(penBeat);
@@ -61,7 +61,7 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 		{
 			QVector<QLine> lines;
 			for (int t : bars.keys()){
-				int y = Time2Y(t) - 1;
+				int y = std::round(Time2Y(t)) - 1;
 				lines.append(QLine(left, y, right, y));
 			}
 			painter.setPen(penBar);
@@ -73,48 +73,43 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 	painter.drawLine(0, 0, 0, playingPane->height());
 	painter.drawLine(playingPane->width()-1, 0, playingPane->width()-1, playingPane->height());
 
+	QMultiMap<int, QPair<SoundChannelView *, SoundNoteView*> > allNotes;
+	for (auto channel : soundChannels){
+		const auto &notes = channel->GetNotes();
+		for (auto note : notes){
+			if (note->GetNote().location >= tEnd) break;
+			allNotes.insert(note->GetNote().location, QPair<SoundChannelView*, SoundNoteView*>(channel, note));
+		}
+	}
+
 	// notes
 	{
-		QMultiMap<int, QPair<SoundChannelView *, SoundNoteView*> > allNotes;
-		for (auto channel : soundChannels){
-			const auto &notes = channel->GetNotes();
-			for (auto note : notes){
-				if (note->GetNote().location >= tEnd) break;
-				allNotes.insert(note->GetNote().location, QPair<SoundChannelView*, SoundNoteView*>(channel, note));
-			}
-		}
 		for (auto pair : allNotes){
 			SoundChannelView *cview = pair.first;
 			SoundNoteView* nview = pair.second;
 			SoundNote note = nview->GetNote();
-			if (note.location > tEnd){
-				break;
-			}
 			if (note.location + note.length < tBegin){
 				continue;
 			}
 			if (note.lane > 0 && lanes.contains(note.lane)){
+				LaneDef &laneDef = lanes[note.lane];
+				QRect rect(laneDef.left+1,
+							std::round(Time2Y(note.location + note.length) - 8),
+							laneDef.width-2,
+							std::round(Time2Y(note.location)) - std::round(Time2Y(note.location + note.length)) + 7);
+				QLinearGradient g(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
+				QLinearGradient g2(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
 				if (cursor->GetState() == SequenceViewCursor::State::EXISTING_SOUND_NOTE && nview == cursor->GetExistingSoundNote()){
 					// hover
-					LaneDef &laneDef = lanes[note.lane];
-					QRect rect(laneDef.left+1, Time2Y(note.location + note.length) - 8, laneDef.width-1, TimeSpan2DY(note.length) + 8);
-					QLinearGradient g(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
-					SetNoteColor(g, note.lane, true);
-					painter.fillRect(rect, QBrush(g));
+					SetNoteColor(g, g2, note.lane, true);
 				}else if (selectedNotes.contains(nview)){
-					LaneDef &laneDef = lanes[note.lane];
-					QRect rect(laneDef.left+1, Time2Y(note.location + note.length) - 8, laneDef.width-1, TimeSpan2DY(note.length) + 8);
-					QLinearGradient g(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
-					SetNoteColor(g, note.lane, cview->IsCurrent());
-					painter.fillRect(rect, QBrush(g));
-					painter.setBrush(Qt::NoBrush);
+					SetNoteColor(g, g2, note.lane, cview->IsCurrent());
 				}else{
-					LaneDef &laneDef = lanes[note.lane];
-					QRect rect(laneDef.left+1, Time2Y(note.location + note.length) - 8, laneDef.width-1, TimeSpan2DY(note.length) + 8);
-					QLinearGradient g(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
-					SetNoteColor(g, note.lane, cview->IsCurrent());
-					painter.fillRect(rect, QBrush(g));
+					SetNoteColor(g, g2, note.lane, cview->IsCurrent());
 				}
+				painter.setBrush(QBrush(g));
+				painter.setPen(QPen(QBrush(g2), 1));
+				painter.drawRect(rect);
 			}
 		}
 	}
@@ -128,58 +123,92 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 
 	// selected notes or cursor(hover) (border)
 	{
+		auto drawFocusLines = [this](QPainter &painter, SoundNote note){
+			LaneDef &laneDef = lanes[note.lane];
+			QRect rect(laneDef.left+1,
+						std::round(Time2Y(note.location + note.length) - 8),
+						laneDef.width-2,
+						std::round(Time2Y(note.location)) - std::round(Time2Y(note.location + note.length)) + 7);
+			switch (note.noteType){
+			case 0: {
+				QPolygon polygon;
+				polygon.append(QPoint(rect.left(), rect.bottom()+1));
+				polygon.append(QPoint(rect.right(), rect.bottom()+1));
+				polygon.append(QPoint(rect.right(), rect.bottom()));
+				polygon.append(QPoint(rect.center().x()+0.5, rect.bottom() - 5));
+				polygon.append(QPoint(rect.left(), rect.bottom()));
+				painter.drawPolygon(polygon);
+				if (note.length > 0){
+					painter.drawRect(rect);
+				}
+				break;
+			}
+			case 1: {
+				painter.drawRect(rect);
+				break;
+			}
+			default:
+				break;
+			}
+		};
 		painter.setBrush(Qt::NoBrush);
-		int i=0;
-		for (SoundChannelView *channelView : soundChannels){
-			for (SoundNoteView *nview : channelView->GetNotes()){
-				SoundNote note = nview->GetNote();
-				if (note.location > tEnd){
-					break;
+		for (auto pair : allNotes){
+			//SoundChannelView *cview = pair.first;
+			SoundNoteView* nview = pair.second;
+			SoundNote note = nview->GetNote();
+			if (note.location + note.length < tBegin){
+				continue;
+			}
+			if (note.lane > 0 && lanes.contains(note.lane)){
+				bool selected = selectedNotes.contains(nview);
+				bool hover = cursor->GetState() == SequenceViewCursor::State::EXISTING_SOUND_NOTE && nview == cursor->GetExistingSoundNote();
+				if (selected && !hover){
+					//LaneDef &laneDef = lanes[note.lane];
+					//QRect rect(laneDef.left+1,
+					//			std::round(Time2Y(note.location + note.length) - 8),
+					//			laneDef.width-2,
+					//			std::round(Time2Y(note.location)) - std::round(Time2Y(note.location + note.length)) + 7);
+					//QLinearGradient g(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
+					//QLinearGradient g2(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
+					//SetNoteColor(g, g2, note.lane, channelView->IsCurrent());
+					//painter.setPen(QPen(QBrush(g2), 3, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+					painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 3, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+					drawFocusLines(painter, note);
 				}
-				if (note.location + note.length < tBegin){
-					continue;
+			}
+		}
+		for (auto pair : allNotes){
+			SoundNoteView* nview = pair.second;
+			SoundNote note = nview->GetNote();
+			if (note.location + note.length < tBegin){
+				continue;
+			}
+			if (note.lane > 0 && lanes.contains(note.lane)){
+				bool selected = selectedNotes.contains(nview);
+				bool hover = cursor->GetState() == SequenceViewCursor::State::EXISTING_SOUND_NOTE && nview == cursor->GetExistingSoundNote();
+				if (hover){
+					painter.setPen(QPen(QBrush(QColor(255, 255, 255)), selected ? 3 : 1, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+					drawFocusLines(painter, note);
 				}
-				if (note.lane > 0 && lanes.contains(note.lane)){
-					bool selected = selectedNotes.contains(nview);
-					bool hover = cursor->GetState() == SequenceViewCursor::State::EXISTING_SOUND_NOTE && nview == cursor->GetExistingSoundNote();
-					if (selected || hover){
-						if (selected){
-							if (hover){
-								painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 3, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
-							}else{
-								painter.setPen(QPen(QBrush(QColor(255, 0, 0)), 3, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
-							}
-						}else{
-							painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
-						}
-						LaneDef &laneDef = lanes[note.lane];
-						int noteStartY = Time2Y(note.location);
-						int noteEndY = Time2Y(note.location + note.length);
-						switch (note.noteType){
-						case 0: {
-							QPolygon polygon;
-							polygon.append(QPoint(laneDef.left, noteStartY - 1));
-							polygon.append(QPoint(laneDef.left+laneDef.width-1, noteStartY - 1));
-							polygon.append(QPoint(laneDef.left+laneDef.width/2-1, noteStartY - 8));
-							painter.drawPolygon(polygon);
-							if (note.length > 0){
-								QRect rect2(laneDef.left+1, noteEndY - 8, laneDef.width-2, noteStartY - noteEndY + 7);
-								painter.drawRect(rect2);
-							}
-							break;
-						}
-						case 1: {
-							QRect rect2(laneDef.left+1, noteEndY - 8, laneDef.width-2, noteStartY - noteEndY + 7);
-							painter.drawRect(rect2);
-							break;
-						}
-						default:
-							break;
-						}
+			}
+		}
+	}
+
+	// conflict marks
+	{
+		auto conflictsAll = document->FindConflictsByLanes(tBegin, tEnd);
+		for (auto conflictsInLane : conflictsAll){
+			for (auto conflict : conflictsInLane){
+				if (lanes.contains(conflict.lane)){
+					LaneDef &laneDef = lanes[conflict.lane];
+					QPoint pos(laneDef.left + laneDef.width/2, std::round(Time2Y(conflict.location)));
+					if (conflict.type & NoteConflict::ILLEGAL_FLAG){
+						painter.drawImage(pos - QPoint(imageWarningMark.width()/2, 4 + imageWarningMark.height()/2), imageWarningMark);
+					}else if (conflict.type & NoteConflict::LAYERING_FLAG){
+						painter.drawImage(pos - QPoint(imageLayeredMark.width()/2, 4 + imageLayeredMark.height()/2), imageLayeredMark);
 					}
 				}
 			}
-			i++;
 		}
 	}
 
@@ -243,10 +272,12 @@ SoundNoteView *SequenceView::HitTestPlayingPane(int lane, int y, int time, bool 
 			for (SoundNoteView *nv : cview->GetNotes()){
 				const SoundNote &note = nv->GetNote();
 				if (note.lane == lane && Time2Y(note.location + note.length) - 8 < y && Time2Y(note.location) >= y){
-					nviewS = nv;
+					if (nviewS == nullptr || nviewS->GetNote().location < note.location)
+						nviewS = nv;
 				}
 				if (note.lane == lane && time >= note.location && time <= note.location+note.length){ // LN contains its End
-					nviewT = nv;
+					if (nviewT == nullptr || nviewT->GetNote().location < note.location)
+						nviewT = nv;
 				}
 			}
 		}
@@ -255,10 +286,12 @@ SoundNoteView *SequenceView::HitTestPlayingPane(int lane, int y, int time, bool 
 			for (SoundNoteView *nv : cview->GetNotes()){
 				const SoundNote &note = nv->GetNote();
 				if (note.lane == lane && Time2Y(note.location + note.length) - 8 < y && Time2Y(note.location) >= y){
-					nviewS = nv;
+					if (nviewS == nullptr || nviewS->GetNote().location < note.location)
+						nviewS = nv;
 				}
 				if (note.lane == lane && time >= note.location && time <= note.location+note.length){ // LN contains its End
-					nviewT = nv;
+					if (nviewT == nullptr || nviewT->GetNote().location < note.location)
+						nviewT = nv;
 				}
 			}
 		}

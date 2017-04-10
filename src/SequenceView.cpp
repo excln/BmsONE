@@ -68,6 +68,9 @@ SequenceView::SequenceView(MainWindow *parent)
 		penBeat.setCosmetic(true);
 		penStep = QPen(QBrush(QColor(90, 90, 90)), 1);
 		penStep.setCosmetic(true);
+
+		imageWarningMark = QImage(":/images/sview/warning.png");
+		imageLayeredMark = QImage(":/images/sview/layered.png");
 	}
 
 	setMouseTracking(true);
@@ -927,7 +930,7 @@ g:
 	return 0;
 }
 
-void SequenceView::SetNoteColor(QLinearGradient &g, int lane, bool active) const
+void SequenceView::SetNoteColor(QLinearGradient &g, QLinearGradient &g2, int lane, bool active) const
 {
 	if (!darkenNotesInInactiveChannels)
 		active = true;
@@ -938,6 +941,10 @@ void SequenceView::SetNoteColor(QLinearGradient &g, int lane, bool active) const
 	g.setColorAt(0.3, cl);
 	g.setColorAt(0.7, cl);
 	g.setColorAt(1, cd);
+	g2.setColorAt(0, cd.darker());
+	g2.setColorAt(0.3, cl.darker());
+	g2.setColorAt(0.7, cl.darker());
+	g2.setColorAt(1, cd.darker());
 }
 
 void SequenceView::VisibleRangeChanged() const

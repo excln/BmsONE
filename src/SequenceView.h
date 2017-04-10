@@ -125,6 +125,8 @@ private:
 	QPen penBar;
 	QPen penBeat;
 	QPen penStep;
+	QImage imageWarningMark;
+	QImage imageLayeredMark;
 
 	ViewMode *viewMode;
 	Skin *skin;
@@ -184,7 +186,7 @@ private:
 	int SnapToLowerFineGrid(qreal time) const;
 	int SnapToUpperFineGrid(qreal time) const;
 	int GetSomeVacantLane(int location);
-	void SetNoteColor(QLinearGradient &g, int lane, bool active) const;
+	void SetNoteColor(QLinearGradient &g, QLinearGradient &g2, int lane, bool active) const;
 	void UpdateVerticalScrollBar(qreal newTimeBegin=-1.0);
 	void VisibleRangeChanged() const;
 	SoundNoteView *HitTestPlayingPane(int lane, int y, int time, bool excludeInactiveChannels=false);

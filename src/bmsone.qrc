@@ -59,5 +59,7 @@
         <file>images/symbols_large/plus.png</file>
         <file>images/symbols_large/up.png</file>
         <file>images/missing64.png</file>
+        <file>images/sview/layered.png</file>
+        <file>images/sview/warning.png</file>
     </qresource>
 </RCC>
