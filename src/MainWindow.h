@@ -15,7 +15,11 @@ class InfoView;
 class ChannelInfoView;
 class BpmEditView;
 class SelectedObjectView;
+class ExternalViewer;
 class Preferences;
+class SequenceTools;
+class ChannelFindTools;
+class ExternalViewerTools;
 class MainWindow;
 
 
@@ -93,9 +97,11 @@ private:
 	AudioPlayer *audioPlayer;
 	SequenceTools *sequenceTools;
 	ChannelFindTools *channelFindTools;
+	ExternalViewerTools *externalViewerTools;
 	SequenceView *sequenceView;
 	InfoView *infoView;
 	ChannelInfoView *channelInfoView;
+	ExternalViewer *externalViewer;
 
 	SelectedObjectView *selectedObjectView;
 	BpmEditView *bpmEditView;
@@ -160,6 +166,7 @@ private:
 	QMenu *menuView;
 	QMenu *menuViewMode;
 	QAction *actionViewSkinSettingSeparator;
+	QMenu *menuPreview;
 
 private:
 	void ReplaceDocument(Document *newDocument);
@@ -224,9 +231,15 @@ public:
 	StatusBar *GetStatusBar() const{ return statusBar; }
 	AudioPlayer *GetAudioPlayer() const{ return audioPlayer; }
 	BpmEditView *GetBpmEditTool() const{ return bpmEditView; }
+	ExternalViewer *GetExternalViewer() const{ return externalViewer; }
+
+	SequenceView *GetActiveSequenceView() const;
 
 	QMenu *GetMenuView() const{ return menuView; }
 	QAction *GetViewSkinSettingSeparator() const{ return actionViewSkinSettingSeparator; }
+	QMenu *GetMenuPreview() const{ return menuPreview; }
+
+	ExternalViewerTools *GetExternalViewerTools() const{ return externalViewerTools; }
 
 	int GetCurrentChannel() const{ return currentChannel; }
 	ViewMode *GetCurrentViewMode() const{ return viewMode; }

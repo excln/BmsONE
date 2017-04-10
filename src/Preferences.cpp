@@ -11,6 +11,7 @@ Preferences::Preferences(MainWindow *mainWindow)
 	setWindowTitle(tr("Preferences"));
 	auto buttonsLayout = new QHBoxLayout();
 	auto closeButton = new QPushButton(tr("Close"));
+	closeButton->setDefault(true);
 	buttonsLayout->addStretch(1);
 	buttonsLayout->addWidget(closeButton);
 
@@ -38,7 +39,7 @@ Preferences::Preferences(MainWindow *mainWindow)
 	editItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
 	// PREVIEW
-	previewPage = new PrefPreviewPage(this);
+	previewPage = new PrefPreviewPage(this, mainWindow);
 	pages->addWidget(previewPage);
 	auto previewItem = new QListWidgetItem(list);
 	previewItem->setIcon(QIcon(":/images/config/preview.png"));

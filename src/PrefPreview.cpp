@@ -1,9 +1,11 @@
 #include "PrefPreview.h"
 #include "PreviewConfig.h"
+#include "ExternalViewerTools.h"
+#include "MainWindow.h"
 
 const int PrefPreviewPage::DelayRatioSliderLevels = 16;
 
-PrefPreviewPage::PrefPreviewPage(QWidget *parent)
+PrefPreviewPage::PrefPreviewPage(QWidget *parent, MainWindow *mainWindow)
 	: QWidget(parent)
 {
 	durationValues.push_back(0.05);
@@ -84,6 +86,11 @@ PrefPreviewPage::PrefPreviewPage(QWidget *parent)
 	}
 	groupNotePreview->setLayout(layoutNotePreview);
 	mainLayout->addWidget(groupNotePreview);
+
+	auto configureExternalViewerButton = new QPushButton(tr("Configure External Viewers..."));
+	connect(configureExternalViewerButton, SIGNAL(clicked(bool)), mainWindow->GetExternalViewerTools(), SLOT(Configure()));
+	mainLayout->addWidget(configureExternalViewerButton);
+
 	setLayout(mainLayout);
 }
 

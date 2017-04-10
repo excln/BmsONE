@@ -19,6 +19,8 @@ public:
 		Collapse,
 		Sound,
 		Mute,
+		Play,
+		PlayZero,
 		Stop,
 		EditMode,
 		WriteMode,

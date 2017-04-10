@@ -199,6 +199,7 @@ public:
 	QString GetFilePath() const { return filePath; }
 	QString GetRelativePath(QString filePath);
 	QString GetAbsolutePath(QString fileName) const;
+	void ExportTo(const QString &exportFilePath);
 	void Save();
 	void SaveAs(const QString &filePath);
 

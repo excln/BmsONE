@@ -151,6 +151,7 @@ Oct  2016 beta 0.1.3
   - Implemented double clicks on notes to switch them between playable and BGM lanes.
   - Drag to input a long note in Write Mode.
   - Added View Modes for Generic 6,7 Keys and the plain View Mode.
+  - Implemented functions to invoke external viewers.
   - Some minor bug fixes on UI.
 
 Sep 6 2016 beta 0.1.2

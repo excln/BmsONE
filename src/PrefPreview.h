@@ -5,6 +5,8 @@
 #include <QtWidgets>
 #include <QVector>
 
+class MainWindow;
+
 class PrefPreviewPage : public QWidget
 {
 	Q_OBJECT
@@ -21,7 +23,7 @@ private:
 	QCheckBox *singleSoftFadeOut;
 
 public:
-	PrefPreviewPage(QWidget *parent);
+	PrefPreviewPage(QWidget *parent, MainWindow *mainWindow);
 
 	void load();
 	void store();

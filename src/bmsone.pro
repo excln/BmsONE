@@ -90,7 +90,9 @@ SOURCES += main.cpp\
     ChannelFindTools.cpp \
     SignalFunction.cpp \
     PreviewConfig.cpp \
-    PrefPreview.cpp
+    PrefPreview.cpp \
+    ExternalViewer.cpp \
+    ExternalViewerTools.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -163,7 +165,9 @@ HEADERS  += MainWindow.h \
     ChannelFindTools.h \
     SignalFunction.h \
     PreviewConfig.h \
-    PrefPreview.h
+    PrefPreview.h \
+    ExternalViewer.h \
+    ExternalViewerTools.h
 
 FORMS    +=
 

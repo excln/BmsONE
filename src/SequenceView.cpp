@@ -365,6 +365,15 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 	OnViewportResize();
 }
 
+int SequenceView::GetCurrentLocation() const
+{
+	int bottom = timeLine->height();
+	qreal tBegin = viewLength - (verticalScrollBar()->value() + bottom)/zoomY;
+	if (tBegin < 0)
+		tBegin = 0;
+	return SnapToLowerFineGrid(tBegin);
+}
+
 void SequenceView::ClearAnySelection()
 {
 	selectedNotes.clear();

@@ -138,7 +138,7 @@ QString Document::GetAbsolutePath(QString fileName) const
 
 
 
-void Document::Save()
+void Document::ExportTo(const QString &exportFilePath)
 {
 	bmsonFields[Bmson::Bms::InfoKey] = info.SaveBmson();
 	QJsonArray jsonBarLines;
@@ -158,7 +158,7 @@ void Document::Save()
 		jsonSoundChannels.append(channel->SaveBmson());
 	}
 	bmsonFields[Bmson::Bms::SoundChannelsKey] = jsonSoundChannels;
-	QFile file(filePath);
+	QFile file(exportFilePath);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
 		throw tr("Failed to open file.");
 	}
@@ -169,10 +169,15 @@ void Document::Save()
 	if (cxt.GetState() == BmsonConvertContext::BMSON_ERROR){
 		throw tr("Failed to convert bmson format:") + "\n" + cxt.GetCombinedMessage();
 	}
+	// savedVersion = outputVersion;
+	file.write(QJsonDocument(obj).toJson());
+}
+
+void Document::Save()
+{
+	ExportTo(filePath);
 	savedVersion = outputVersion;
 	history->SetReservedAction(false);
-
-	file.write(QJsonDocument(obj).toJson());
 	history->MarkClean();
 }
 

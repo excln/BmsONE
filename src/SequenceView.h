@@ -303,7 +303,7 @@ public:
 	GridSize GetSmallGrid() const{ return fineGrid; }
 	GridSize GetMediumGrid() const{ return coarseGrid; }
 	SequenceEditSelection GetSelection() const{ return selection; }
-
+	int GetCurrentLocation() const;
 };
 
 

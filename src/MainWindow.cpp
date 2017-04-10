@@ -11,6 +11,8 @@
 #include "SymbolIconManager.h"
 #include "Preferences.h"
 #include "ViewMode.h"
+#include "ExternalViewer.h"
+#include "ExternalViewerTools.h"
 
 
 const char* MainWindow::SettingsGroup = "MainWindow";
@@ -37,6 +39,8 @@ MainWindow::MainWindow(QSettings *settings)
 	setDockOptions(QMainWindow::AnimatedDocks);
 	setUnifiedTitleAndToolBarOnMac(true);
 	setAcceptDrops(true);
+
+	externalViewer = new ExternalViewer(this);
 
 	actionFileNew = new QAction(tr("New"), this);
 	actionFileNew->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::New));
@@ -307,6 +311,8 @@ MainWindow::MainWindow(QSettings *settings)
 	menuChannel->addAction(actionChannelSelectFile);
 	menuChannel->addAction(actionChannelPreviewSource);
 
+	menuPreview = menuBar()->addMenu(tr("Preview"));
+
 	auto *menuHelp = menuBar()->addMenu(tr("Help"));
 	menuHelp->addAction(actionHelpAbout);
 	menuHelp->addAction(actionHelpAboutQt);
@@ -355,10 +361,6 @@ MainWindow::MainWindow(QSettings *settings)
 	addToolBar(editTools);
 	menuViewToolBars->insertAction(actionViewTbSeparator, editTools->toggleViewAction());
 
-	preferences = new Preferences(this);
-	UIUtil::SetFont(preferences);
-	connect(BmsonIO::Instance(), SIGNAL(SaveFormatChanged(BmsonIO::BmsonVersion)), this, SLOT(SaveFormatChanged(BmsonIO::BmsonVersion)));
-
 	sequenceTools = new SequenceTools("Sequence Tools", tr("Sequence Tools"), this);
 	UIUtil::SetFont(sequenceTools);
 	sequenceTools->setIconSize(UIUtil::ToolBarIconSize);
@@ -370,6 +372,12 @@ MainWindow::MainWindow(QSettings *settings)
 	audioPlayer->setIconSize(UIUtil::ToolBarIconSize);
 	addToolBar(audioPlayer);
 	menuViewToolBars->insertAction(actionViewTbSeparator, audioPlayer->toggleViewAction());
+
+	externalViewerTools = new ExternalViewerTools("External Viewer Tools", tr("Preview"), this);
+	UIUtil::SetFont(externalViewerTools);
+	externalViewerTools->setIconSize(UIUtil::ToolBarIconSize);
+	addToolBar(externalViewerTools);
+	menuViewToolBars->insertAction(actionViewTbSeparator, externalViewerTools->toggleViewAction());
 
 	channelFindTools = new ChannelFindTools("Channel Find Tools", tr("Find Channels"), this);
 	UIUtil::SetFont(channelFindTools);
@@ -389,6 +397,10 @@ MainWindow::MainWindow(QSettings *settings)
 	sequenceView = new SequenceView(this);
 	setCentralWidget(sequenceView);
 	//sequenceView->installEventFilter(this);
+
+	preferences = new Preferences(this);
+	UIUtil::SetFont(preferences);
+	connect(BmsonIO::Instance(), SIGNAL(SaveFormatChanged(BmsonIO::BmsonVersion)), this, SLOT(SaveFormatChanged(BmsonIO::BmsonVersion)));
 
 	auto dock = new QDockWidget(tr("Info"));
 	UIUtil::SetFont(dock);
@@ -560,6 +572,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	}
 	closing = true;
 	event->accept();
+}
+
+SequenceView *MainWindow::GetActiveSequenceView() const
+{
+	return sequenceView;
 }
 
 void MainWindow::EditUndo()
@@ -865,6 +882,7 @@ void MainWindow::ReplaceDocument(Document *newDocument)
 	infoView->ReplaceDocument(document);
 	channelInfoView->ReplaceDocument(document);
 	sequenceView->ReplaceDocument(document);
+	externalViewer->ReplaceDocument(document);
 
 	document->SetOutputVersion(BmsonIO::GetSaveFormat());
 
