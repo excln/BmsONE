@@ -2,6 +2,7 @@
 #include "SequenceView.h"
 #include "SequenceViewContexts.h"
 #include "SequenceViewInternal.h"
+#include "UIDef.h"
 
 SequenceView::EditModeContext::EditModeContext(SequenceView *sview)
 	: Context(sview)
@@ -80,7 +81,7 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 		laneX = sview->sortedLanes.indexOf(sview->lanes[lane]);
 	}
 	SoundNoteView *noteHit = lane >= 0
-			? sview->HitTestPlayingPane(lane, event->y(), sview->snappedHitTestInEditMode ? iTime : -1, event->modifiers() & Qt::AltModifier)
+			? sview->HitTestPlayingPane(lane, event->y(), sview->snappedHitTestInEditMode ? iTime : time, event->modifiers() & Qt::AltModifier)
 			: nullptr;
 	sview->ClearBpmEventsSelection();
 	if (event->button() == Qt::RightButton && (event->modifiers() & Qt::AltModifier)){
@@ -264,6 +265,8 @@ SequenceView::EditModeSelectNotesContext::EditModeSelectNotesContext(SequenceVie
 		)
 	: Context(sview, parent), locker(sview)
 	, mouseButton(button)
+	, dragBegan(false)
+	, dragOrigin(pos)
 {
 	rubberBand = new QRubberBand(QRubberBand::Rectangle, sview->playingPane);
 	rubberBandOriginLaneX = laneX;
@@ -290,6 +293,13 @@ SequenceView::Context *SequenceView::EditModeSelectNotesContext::Leave(QEnterEve
 */
 SequenceView::Context *SequenceView::EditModeSelectNotesContext::PlayingPane_MouseMove(QMouseEvent *event)
 {
+	if (!dragBegan){
+		if (UIUtil::DragBegins(dragOrigin, event->pos())){
+			dragBegan = true;
+		}else{
+			return this;
+		}
+	}
 	qreal time = sview->Y2Time(event->y());
 	int iTime = time;
 	int iTimeUpper = time;
@@ -351,6 +361,10 @@ SequenceView::Context *SequenceView::EditModeSelectNotesContext::PlayingPane_Mou
 	if (event->button() != mouseButton){
 		// ignore
 		return this;
+	}
+	if (!dragBegan){
+		// release before drag began
+		return Escape();
 	}
 	qreal time = sview->Y2Time(event->y());
 	int iTime = time;

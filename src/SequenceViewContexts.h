@@ -29,6 +29,8 @@ class SequenceView::EditModeSelectNotesContext
 {
 	SequenceView::CommandsLocker locker;
 	Qt::MouseButton mouseButton;
+	bool dragBegan;
+	QPoint dragOrigin;
 	QRubberBand *rubberBand;
 	int rubberBandOriginLaneX;
 	int rubberBandOriginTime;
