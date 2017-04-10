@@ -13,6 +13,7 @@
 #include "ViewMode.h"
 #include "ExternalViewer.h"
 #include "ExternalViewerTools.h"
+#include "EditConfig.h"
 
 
 const char* MainWindow::SettingsGroup = "MainWindow";
@@ -141,6 +142,10 @@ MainWindow::MainWindow(QSettings *settings)
 	actionEditPlay = new QAction(tr("Play"), this);
 	SharedUIHelper::RegisterGlobalShortcut(actionEditPlay);
 	actionEditPlay->setShortcut(Qt::ControlModifier + Qt::Key_P);
+
+	actionEditClearMasterCache = new QAction(tr("Clear Master Cache"), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditClearMasterCache);
+	connect(actionEditClearMasterCache, SIGNAL(triggered(bool)), this, SLOT(ClearMasterCache()));
 
 	actionEditPreferences = new QAction(tr("Preferences..."), this);
 	actionEditPreferences->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Settings));
@@ -273,6 +278,8 @@ MainWindow::MainWindow(QSettings *settings)
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditPlay);
 #endif
+	menuEdit->addSeparator();
+	menuEdit->addAction(actionEditClearMasterCache);
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditPreferences);
 	menuView = menuBar()->addMenu(tr("View"));
@@ -432,6 +439,9 @@ MainWindow::MainWindow(QSettings *settings)
 	sequenceTools->ReplaceSequenceView(sequenceView);
 	channelFindTools->ReplaceSequenceView(sequenceView);
 
+	// Other Binding
+	connect(EditConfig::Instance(), SIGNAL(EnableMasterChannelChanged(bool)), this, SLOT(EnableMasterChannelChanged(bool)));
+	EnableMasterChannelChanged(EditConfig::Instance()->GetEnableMasterChannel());
 
 	// Initial Document
 	auto newDocument = new Document(this);
@@ -855,6 +865,19 @@ void MainWindow::ChannelFindPrev(QString keyword)
 		}
 	}
 	qApp->beep();
+}
+
+void MainWindow::EnableMasterChannelChanged(bool value)
+{
+	actionEditClearMasterCache->setEnabled(value);
+}
+
+void MainWindow::ClearMasterCache()
+{
+	if (!document)
+		return;
+	// show confirmation?
+	document->ReconstructMasterCache();
 }
 
 void MainWindow::SetViewMode(ViewMode *mode)

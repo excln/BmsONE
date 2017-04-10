@@ -133,6 +133,7 @@ private:
 	QAction *actionEditLockDeletion;
 	QAction *actionEditLockVerticalMove;
 	QAction *actionEditPlay;
+	QAction *actionEditClearMasterCache;
 	QAction *actionEditPreferences;
 
 	QAction *actionViewTbSeparator;
@@ -208,6 +209,9 @@ private slots:
 	void ChannelFindKeywordChanged(QString keyword);
 	void ChannelFindNext(QString keyword);
 	void ChannelFindPrev(QString keyword);
+
+	void EnableMasterChannelChanged(bool value);
+	void ClearMasterCache();
 
 public slots:
 	void SetViewMode(ViewMode *mode);

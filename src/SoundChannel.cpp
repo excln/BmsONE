@@ -167,7 +167,7 @@ void SoundChannel::RemoveNoteImpl(SoundNote note)
 
 void SoundChannel::UpdateNoteImpl(SoundNote note)
 {
-	bool updatesMasterCache = note.noteType == 0;
+	bool updatesMasterCache = note.noteType == 0 || notes[note.location].noteType == 0;
 	if (updatesMasterCache){
 		MasterCacheAddPreviousNoteInernal(note.location, -1);
 		MasterCacheAddNoteInternal(note.location, -1);
