@@ -95,7 +95,7 @@ SequenceView::SequenceView(MainWindow *parent)
 	setLineWidth(0);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-//#ifndef Q_OS_MACX
+//#ifndef Q_OS_MACOS
 //	QSizeGrip *grip = new QSizeGrip(this);
 //	setCornerWidget(grip);
 //#endif
