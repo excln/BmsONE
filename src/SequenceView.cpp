@@ -1179,8 +1179,10 @@ void SequenceView::pinchEvent(QPinchGesture *pinch)
 	//headerChannelsArea->update();
 	footerChannelsArea->update();
 	for (SoundChannelView *cview : soundChannels){
-		cview->UpdateWholeBackBuffer();
-		cview->update();
+		if (cview->geometry().intersects(viewport()->rect())){
+			cview->UpdateWholeBackBuffer();
+			cview->update();
+		}
 	}
 	VisibleRangeChanged();
 }
@@ -1222,7 +1224,9 @@ void SequenceView::scrollContentsBy(int dx, int dy)
 	// This may be a bug in QAbstractScrollArea.
 	if (dy){
 		for (SoundChannelView *cview : soundChannels){
-			cview->ScrollContents(dy);
+			if (cview->geometry().intersects(viewport()->rect())){
+				cview->ScrollContents(dy);
+			}
 		}
 		timeLine->scroll(0, dy);
 		playingPane->scroll(0, dy);
@@ -1232,6 +1236,24 @@ void SequenceView::scrollContentsBy(int dx, int dy)
 	}
 	if (dx){
 		viewport()->scroll(dx, 0);
+		// 横方向の表示幅が増加する(スクロールだけでは足りない)部分を再描画する
+		if (dx < 0){
+			QRect updateRect(viewport()->rect().right() + dx, viewport()->rect().top(), -dx, viewport()->rect().height());
+			for (SoundChannelView *cview : soundChannels){
+				if (cview->geometry().intersects(updateRect)){
+					cview->UpdateWholeBackBuffer();
+					cview->update();
+				}
+			}
+		}else{
+			QRect updateRect(0, viewport()->rect().top(), dx, viewport()->rect().height());
+			for (SoundChannelView *cview : soundChannels){
+				if (cview->geometry().intersects(updateRect)){
+					cview->UpdateWholeBackBuffer();
+					cview->update();
+				}
+			}
+		}
 		//headerChannelsArea->scroll(dx, 0);
 		footerChannelsArea->scroll(dx, 0);
 	}
@@ -1293,10 +1315,18 @@ void SequenceView::SetChannelsGeometry()
 				? channelLaneWidth * easing(anim)
 				: channelLaneWidth * easing(1 - anim);
 		if (visualWidth > 0){
+			bool heightChanges = vr.height() != soundChannels[i]->height();
 			soundChannels[i]->show();
 			soundChannelFooters[i]->show();
 			soundChannels[i]->setGeometry(x, 0, visualWidth, vr.height());
-			soundChannels[i]->RemakeBackBuffer();
+			if (heightChanges){
+				soundChannels[i]->RemakeBackBuffer();
+			}else if (soundChannels[i]->geometry().intersects(viewport()->rect())){
+				// 一度に大量のチャンネルが縮むと画面内のチャンネル数が見えて重くなるので、できるだけ更新をサボりたいが、なかなか塩梅が難しい
+				// 例えば、  visualWidth == channelLaneWidth なものだけを更新することが考えられる(もっと絞れるかも)が、
+				// そうすると非表示状態から伸びる途中のチャンネルや、縮む途中で画面に入ってきたチャンネルが汚くなる
+				soundChannels[i]->UpdateWholeBackBuffer();
+			}
 			//soundChannelHeaders[i]->setGeometry(x, 0, visualWidth, headerHeight);
 			soundChannelFooters[i]->setGeometry(x, 0, visualWidth, footerHeight);
 			x += visualWidth;
@@ -1653,8 +1683,10 @@ void SequenceView::ZoomIn()
 	//headerChannelsArea->update();
 	footerChannelsArea->update();
 	for (SoundChannelView *cview : soundChannels){
-		cview->UpdateWholeBackBuffer();
-		cview->update();
+		if (cview->geometry().intersects(viewport()->rect())){
+			cview->UpdateWholeBackBuffer();
+			cview->update();
+		}
 	}
 	VisibleRangeChanged();
 }
@@ -1673,8 +1705,10 @@ void SequenceView::ZoomOut()
 	//headerChannelsArea->update();
 	footerChannelsArea->update();
 	for (SoundChannelView *cview : soundChannels){
-		cview->UpdateWholeBackBuffer();
-		cview->update();
+		if (cview->geometry().intersects(viewport()->rect())){
+			cview->UpdateWholeBackBuffer();
+			cview->update();
+		}
 	}
 	VisibleRangeChanged();
 
@@ -1690,8 +1724,10 @@ void SequenceView::ZoomReset()
 	//headerChannelsArea->update();
 	footerChannelsArea->update();
 	for (SoundChannelView *cview : soundChannels){
-		cview->UpdateWholeBackBuffer();
-		cview->update();
+		if (cview->geometry().intersects(viewport()->rect())){
+			cview->UpdateWholeBackBuffer();
+			cview->update();
+		}
 	}
 	VisibleRangeChanged();
 }
@@ -1729,6 +1765,7 @@ void SequenceView::ChannelDisplayFilteringConditionsChanged(bool hideOthers, QSt
 		bool show = !hideOthers
 				|| (SequenceViewUtil::MatchChannelNameKeyword(channel->GetName(), keyword)
 					&& (!filterActive || channel->IsActiveInRegion(range.first, range.second)));
+		soundChannels[i]->SetInternalWidth(ChannelLaneWidth());
 		if (soundChannels[i]->IsCollapsed() == show){
 			soundChannels[i]->SetCollapsed(!show);
 			soundChannels[i]->SetAnimation(init);

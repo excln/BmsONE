@@ -189,6 +189,7 @@ public:
 	void SetCollapsed(bool c){ collapsed = c; }
 	qreal GetAnimation() const{ return animation; }
 	void SetAnimation(qreal a){ animation = a; }
+	int GetInternalWidth() const{ return internalWidth; }
 
 	virtual void paintEvent(QPaintEvent *event);
 	virtual void mouseMoveEvent(QMouseEvent *event);

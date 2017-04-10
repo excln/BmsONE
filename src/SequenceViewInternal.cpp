@@ -381,8 +381,11 @@ void SoundChannelView::ScrollContents(int dy)
 
 void SoundChannelView::SetInternalWidth(int width)
 {
-	internalWidth = width;
-	update();
+	if (internalWidth != width || backBuffer == nullptr){
+		internalWidth = width;
+		RemakeBackBuffer();
+		update();
+	}
 }
 
 void SoundChannelView::RemakeBackBuffer()
@@ -391,7 +394,7 @@ void SoundChannelView::RemakeBackBuffer()
 	if (backBuffer){
 		delete backBuffer;
 	}
-	backBuffer = new QImage(size(), QImage::Format_RGB32);
+	backBuffer = new QImage(QSize(internalWidth, height()), QImage::Format_RGB32);
 	//backBuffer = new QImage(size(), QImage::Format_ARGB32_Premultiplied);
 	UpdateWholeBackBuffer();
 }
@@ -400,7 +403,7 @@ void SoundChannelView::UpdateWholeBackBuffer()
 {
 	// if backBuffer already exists, don't resize
 	if (!backBuffer){
-		backBuffer = new QImage(size(), QImage::Format_RGB32);
+		backBuffer = new QImage(QSize(internalWidth, height()), QImage::Format_RGB32);
 		//backBuffer = new QImage(size(), QImage::Format_ARGB32_Premultiplied);
 	}
 	UpdateBackBuffer(rect());
