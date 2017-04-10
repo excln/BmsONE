@@ -1343,6 +1343,8 @@ void SequenceView::SetChannelsGeometry()
 		QTimer::singleShot(30, this, SLOT(SoundChannelViewCollapseAnimation()));
 		channelsCollapseAnimationWaiting = true;
 	}
+
+	VisibleRangeChanged();
 }
 
 void SequenceView::AnimateChannelsGeometry()
