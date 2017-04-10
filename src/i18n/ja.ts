@@ -565,7 +565,129 @@ All files (*.*)</source>
         <translation>拡張情報:</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="461"/>
+        <location filename="../InfoView.cpp" line="84"/>
+        <source>string</source>
+        <translation>文字列</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="85"/>
+        <source>array of strings</source>
+        <translation>文字列の配列</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="86"/>
+        <source>integer</source>
+        <translation>整数値</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="87"/>
+        <source>real number</source>
+        <translation>実数値</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="92"/>
+        <source>Enter one entry per line. Example:</source>
+        <translation>1行に1エントリー入力してください。例:</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="96"/>
+        <source>Specify the number of pulses per beat (one quarter note in a 4/4 measure). Every note will located at some pulse number.</source>
+        <translation>1拍(4/4拍子の場合4分音符)の分解能を指定します。</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="97"/>
+        <source>Specify the relative width (100 = default) of judgment window. The actual width is calculated by players. Larger values make looser judgment.</source>
+        <translation>判定の幅を、プレイヤーによって自動的に計算される標準値を100として相対的に指定します。大きいほど緩くなります。</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="99"/>
+        <source>Specify the relative amount (100 = default) of gauge increase. The actual amount is calculated by players.</source>
+        <translation>ゲージの増加量を、プレイヤーによって自動的に計算される標準値を100として相対的に指定します。</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="105"/>
+        <source>The filename of a sound that will be used to preview the song.</source>
+        <translation>プレビュー用の音声ファイル名を指定します。</translation>
+    </message>
+    <message>
+        <source>The title of the song.</source>
+        <translation>曲のタイトルです。</translation>
+    </message>
+    <message>
+        <source>The subtitle of the song.</source>
+        <translation>曲のサブタイトルです。</translation>
+    </message>
+    <message>
+        <source>The genre of the song.</source>
+        <translation>曲のジャンルです。</translation>
+    </message>
+    <message>
+        <source>The primary artist.</source>
+        <translation>代表のアーティストです。</translation>
+    </message>
+    <message>
+        <source>The other artists. Example:</source>
+        <translation>他のアーティストです。例:</translation>
+    </message>
+    <message>
+        <source>The chart name of this bmson file.</source>
+        <translation>このbmsonファイルの譜面名です。</translation>
+    </message>
+    <message>
+        <source>The game mode in which this chart should be played.</source>
+        <translation>この譜面がどのゲームモードでプレイされるかを指定します。</translation>
+    </message>
+    <message>
+        <source>The number of pulses per beat (one quarter note in a 4/4 measure). Every note will located at some pulse number.</source>
+        <translation>1拍(4/4拍子における4分音符)の分解能を指定します。</translation>
+    </message>
+    <message>
+        <source>The width of judgment window. Default value is 100. Larger values are looser.</source>
+        <translation>判定の幅を指定します。プレイヤーによって自動的に計算される標準値を100として相対的に指定します。大きいほど緩くなります。</translation>
+    </message>
+    <message>
+        <source>The tempo at the start of the song.</source>
+        <translation>曲開始時のテンポを指定します。</translation>
+    </message>
+    <message>
+        <source>The relative amount of gauge increase. Default value is 100. Larger values are easier.</source>
+        <translation>ゲージの増加量を指定します。プレイヤーによって自動的に計算される標準値を100として相対的に指定します。大きいほど簡単になります。</translation>
+    </message>
+    <message>
+        <source>The level of this chart. It should not be negative number.</source>
+        <translation>譜面のレベルを指定します。負の数は指定できません。</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="101"/>
+        <source>The filename of an image that will be displayed during game play.</source>
+        <translation>ゲームプレイ中に表示される画像のファイル名を指定します。</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="102"/>
+        <source>The filename of an image that will be displayed during song loading.</source>
+        <translation>曲のローディング時に表示される画像ファイル名を指定します。</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="103"/>
+        <source>The filename of an image that will be displayed before song starts.</source>
+        <translation>曲開始前に表示される画像のファイル名を指定します。</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="104"/>
+        <source>The filename of an image that will be displayed in song selection or result screen.</source>
+        <translation>選曲画面やリザルト画面で表示されるバナー画像のファイル名を指定します。</translation>
+    </message>
+    <message>
+        <source>The name of an audio file that previews the song.</source>
+        <translation>プレビュー用の音声ファイル名を指定します。</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="106"/>
+        <source>Enter extra fields that are not supported by BmsONE. Example:</source>
+        <translation>BmsONEでサポートされていない拡張フィールドを入力します。例:</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="500"/>
         <source>Current resolution:</source>
         <translation>現在の分解能:</translation>
     </message>
@@ -574,32 +696,32 @@ All files (*.*)</source>
         <translation>古い分解能:</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="462"/>
+        <location filename="../InfoView.cpp" line="501"/>
         <source>New resolution:</source>
         <translation>新しい分解能:</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="465"/>
+        <location filename="../InfoView.cpp" line="504"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="466"/>
+        <location filename="../InfoView.cpp" line="505"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="474"/>
+        <location filename="../InfoView.cpp" line="513"/>
         <source>Convert Resolution</source>
         <translation>分解能変換</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="485"/>
+        <location filename="../InfoView.cpp" line="524"/>
         <source>Some information will be lost through this conversion and it is IRREVERSIBLE. Are you sure?</source>
         <translation>この変換によって一部の情報が失われ、元に戻すことができなくなります。よろしいですか?</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="486"/>
+        <location filename="../InfoView.cpp" line="525"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
