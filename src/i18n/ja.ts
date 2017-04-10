@@ -156,7 +156,7 @@
     <name>Document</name>
     <message>
         <location filename="../Document.cpp" line="68"/>
-        <location filename="../Document.cpp" line="163"/>
+        <location filename="../Document.cpp" line="188"/>
         <source>Failed to open file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
     </message>
@@ -168,64 +168,64 @@
         <translation>不正な形式のファイルです。</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="170"/>
+        <location filename="../Document.cpp" line="195"/>
         <source>Failed to convert bmson format:</source>
         <translation>BMSON フォーマットの変換に失敗しました:</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="397"/>
+        <location filename="../Document.cpp" line="422"/>
         <source>move sound channel</source>
         <translation>音声チャンネル移動</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="467"/>
+        <location filename="../Document.cpp" line="492"/>
         <source>add bar line</source>
         <translation>小節線追加</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="482"/>
+        <location filename="../Document.cpp" line="507"/>
         <source>remove bar line</source>
         <translation>小節線削除</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="501"/>
+        <location filename="../Document.cpp" line="526"/>
         <source>update BPM event</source>
         <translation>小節線更新</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="512"/>
+        <location filename="../Document.cpp" line="537"/>
         <source>add BPM event</source>
         <translation>BPMイベント追加</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="532"/>
-        <location filename="../Document.cpp" line="597"/>
+        <location filename="../Document.cpp" line="557"/>
+        <location filename="../Document.cpp" line="622"/>
         <source>remove BPM event</source>
         <translation>BPMイベント削除</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="554"/>
+        <location filename="../Document.cpp" line="579"/>
         <source>update BPM events</source>
         <translation>BPMイベント更新</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="587"/>
+        <location filename="../Document.cpp" line="612"/>
         <source>remove BPM events</source>
         <translation>BPMイベント削除</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="619"/>
+        <location filename="../Document.cpp" line="644"/>
         <source>delete sound notes</source>
         <translation>音声ノート削除</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="656"/>
-        <location filename="../Document.cpp" line="913"/>
+        <location filename="../Document.cpp" line="681"/>
+        <location filename="../Document.cpp" line="938"/>
         <source>update sound notes</source>
         <translation>音声ノート変更</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="749"/>
+        <location filename="../Document.cpp" line="774"/>
         <source>convert resolution</source>
         <translation>分解能変換</translation>
     </message>
@@ -773,7 +773,7 @@ All files (*.*)</source>
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="58"/>
-        <location filename="../MainWindow.cpp" line="955"/>
+        <location filename="../MainWindow.cpp" line="965"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
@@ -789,13 +789,13 @@ All files (*.*)</source>
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="76"/>
-        <location filename="../MainWindow.cpp" line="750"/>
+        <location filename="../MainWindow.cpp" line="760"/>
         <source>Undo</source>
         <translation>元に戻す</translation>
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="82"/>
-        <location filename="../MainWindow.cpp" line="757"/>
+        <location filename="../MainWindow.cpp" line="767"/>
         <source>Redo</source>
         <translation>やり直し</translation>
     </message>
@@ -936,6 +936,16 @@ All files (*.*)</source>
         <translation>プレビュー</translation>
     </message>
     <message>
+        <location filename="../MainWindow.cpp" line="1104"/>
+        <source>Warning</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.cpp" line="1105"/>
+        <source>The following files are not in the current bmson directory. Are you sure to add these files?</source>
+        <translation>以下のファイルは現在のbmsonディレクトリの中にありません。追加してもよろしいですか?</translation>
+    </message>
+    <message>
         <location filename="../MainWindow.cpp" line="108"/>
         <location filename="../MainWindow.cpp" line="215"/>
         <source>Delete</source>
@@ -981,7 +991,7 @@ All files (*.*)</source>
         <translation>チャンネル検索</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="724"/>
+        <location filename="../MainWindow.cpp" line="734"/>
         <source>About BmsONE</source>
         <translation>BmsONE について</translation>
     </message>
@@ -1107,14 +1117,14 @@ All files (*.*)</source>
         <location filename="../MainWindow.cpp" line="516"/>
         <location filename="../MainWindow.cpp" line="537"/>
         <location filename="../MainWindow.cpp" line="564"/>
-        <location filename="../MainWindow.cpp" line="966"/>
-        <location filename="../MainWindow.cpp" line="1079"/>
+        <location filename="../MainWindow.cpp" line="976"/>
+        <location filename="../MainWindow.cpp" line="1089"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="554"/>
-        <location filename="../MainWindow.cpp" line="952"/>
+        <location filename="../MainWindow.cpp" line="962"/>
         <source>bmson files (*.bmson);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;すべてのファイル (*.*)</translation>
     </message>
@@ -1125,7 +1135,7 @@ All files (*.*)</source>
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="565"/>
-        <location filename="../MainWindow.cpp" line="967"/>
+        <location filename="../MainWindow.cpp" line="977"/>
         <source>Failed to save file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
     </message>
@@ -1140,32 +1150,32 @@ All files (*.*)</source>
         <translation>音声ファイル選択</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="731"/>
+        <location filename="../MainWindow.cpp" line="741"/>
         <source>untitled</source>
         <translation>無題</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="747"/>
+        <location filename="../MainWindow.cpp" line="757"/>
         <source>Undo - </source>
         <translation>元に戻す - </translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="754"/>
+        <location filename="../MainWindow.cpp" line="764"/>
         <source>Redo - </source>
         <translation>やり直し - </translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="981"/>
+        <location filename="../MainWindow.cpp" line="991"/>
         <source>Confirmation</source>
         <translation>確認</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="982"/>
+        <location filename="../MainWindow.cpp" line="992"/>
         <source>Save changes before closing?</source>
         <translation>変更を保存しますか?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1080"/>
+        <location filename="../MainWindow.cpp" line="1090"/>
         <source>Unknown File Type</source>
         <translation>ファイルの種類が不明です</translation>
     </message>

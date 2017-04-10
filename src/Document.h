@@ -210,6 +210,8 @@ public:
 	QString GetFilePath() const { return filePath; }
 	QString GetRelativePath(QString filePath);
 	QString GetAbsolutePath(QString fileName) const;
+	bool IsFilePathTraversal(QString path) const;
+	QStringList FindTraversalFilePaths(const QStringList &filePaths) const;
 	void ExportTo(const QString &exportFilePath);
 	void Save();
 	void SaveAs(const QString &filePath);

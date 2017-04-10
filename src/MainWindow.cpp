@@ -640,6 +640,11 @@ void MainWindow::ChannelNew()
 	QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Select Sound Files"), dir, filters, 0);
 	if (fileNames.empty())
 		return;
+	auto traversalPaths = document->FindTraversalFilePaths(fileNames);
+	if (!traversalPaths.isEmpty()){
+		if (!WarningFileTraversals(traversalPaths))
+			return;
+	}
 	document->InsertNewSoundChannels(fileNames);
 }
 
@@ -706,6 +711,11 @@ void MainWindow::ChannelsNew(QList<QString> filePaths)
 {
 	if (!document)
 		return;
+	auto traversalPaths = document->FindTraversalFilePaths(filePaths);
+	if (!traversalPaths.isEmpty()){
+		if (!WarningFileTraversals(traversalPaths))
+			return;
+	}
 	document->InsertNewSoundChannels(filePaths);
 }
 
@@ -1082,6 +1092,27 @@ void MainWindow::OpenFiles(QStringList filePaths)
 					this);
 		msgbox->show();
 	}
+}
+
+bool MainWindow::WarningFileTraversals(QStringList filePaths)
+{
+	QString paths;
+	int i=0;
+	for (auto path : filePaths){
+		paths += QDir::toNativeSeparators(path) += "\n";
+		if (++i >= 10){
+			paths += "...";
+			break;
+		}
+	}
+	QMessageBox msg(this);
+	msg.setWindowTitle(tr("Warning"));
+	msg.setText(tr("The following files are not in the current bmson directory. Are you sure to add these files?"));
+	msg.setInformativeText(paths);
+	msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+	msg.setDefaultButton(QMessageBox::No);
+	int r = msg.exec();
+	return r == QMessageBox::Yes;
 }
 
 

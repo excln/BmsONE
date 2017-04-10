@@ -257,6 +257,7 @@ public:
 
 	void OpenFiles(QStringList filePaths);
 
+	bool WarningFileTraversals(QStringList filePaths);
 };
 
 
