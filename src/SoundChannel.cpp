@@ -206,9 +206,6 @@ retry:
 				acceptableLanes.pop_front();
 				goto retry;
 			case UpdateNotePolicy::ForceMove:
-				// TODO: pass
-				return nullptr;
-				//
 				break;
 			}
 		}else if (!conflictingNotes.empty()){
