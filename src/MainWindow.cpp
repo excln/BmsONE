@@ -402,15 +402,6 @@ MainWindow::MainWindow(QSettings *settings)
 	addToolBar(channelFindTools);
 	menuViewToolBars->insertAction(actionViewTbSeparator, channelFindTools->toggleViewAction());
 
-	selectedObjectsDockWidget = new QDockWidget(tr("Selected Objects"));
-	UIUtil::SetFont(selectedObjectsDockWidget);
-	selectedObjectsDockWidget->setObjectName("SelectedObjectsDock");
-	addDockWidget(Qt::LeftDockWidgetArea, selectedObjectsDockWidget);
-	menuViewDockBars->insertAction(actionViewDockSeparator, selectedObjectsDockWidget->toggleViewAction());
-
-	bpmEditView = new BpmEditView(this);
-	connect(bpmEditView, SIGNAL(Updated()), this, SLOT(OnBpmEdited()));
-
 	sequenceView = new SequenceView(this);
 	setCentralWidget(sequenceView);
 	//sequenceView->installEventFilter(this);
@@ -433,6 +424,15 @@ MainWindow::MainWindow(QSettings *settings)
 	addDockWidget(Qt::LeftDockWidgetArea, dock2);
 	dock2->resize(334, dock2->height());
 	menuViewDockBars->insertAction(actionViewDockSeparator, dock2->toggleViewAction());
+
+	selectedObjectsDockWidget = new QDockWidget(tr("Selected Objects"));
+	UIUtil::SetFont(selectedObjectsDockWidget);
+	selectedObjectsDockWidget->setObjectName("SelectedObjectsDock");
+	addDockWidget(Qt::LeftDockWidgetArea, selectedObjectsDockWidget);
+	menuViewDockBars->insertAction(actionViewDockSeparator, selectedObjectsDockWidget->toggleViewAction());
+
+	bpmEditView = new BpmEditView(this);
+	connect(bpmEditView, SIGNAL(Updated()), this, SLOT(OnBpmEdited()));
 
 	// View Mdoe Binding
 	connect(this, SIGNAL(ViewModeChanged(ViewMode*)), sequenceView, SLOT(ViewModeChanged(ViewMode*)));
@@ -792,14 +792,8 @@ void MainWindow::OnTimeMappingChanged()
 {
 	if (!document)
 		return;
-	auto allBpmEvents = document->GetBpmEvents();
-	auto selectedBpmEvents = bpmEditView->GetBpmEvents();
-	for (auto event : selectedBpmEvents){
-		if (!allBpmEvents.contains(event.location)){
-			bpmEditView->UnsetBpmEvents();
-			return;
-		}
-	}
+	// don't manage bpmEditView's BPM events
+	// (active SequenceView should do)
 }
 
 void MainWindow::OnBpmEdited()

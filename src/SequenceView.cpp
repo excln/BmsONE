@@ -1285,25 +1285,26 @@ void SequenceView::TimeMappingChanged()
 	if (documentReady){
 		resolution = document->GetInfo()->GetResolution();
 		auto allBpmEvents = document->GetBpmEvents();
-		auto selectedBpmEvents = mainWindow->GetBpmEditTool()->GetBpmEvents();
-		for (auto event : selectedBpmEvents){
-			if (!allBpmEvents.contains(event.location)){
-				mainWindow->GetBpmEditTool()->UnsetBpmEvents();
-				break;
+		for (auto i=selectedBpmEvents.begin(); i!=selectedBpmEvents.end(); i++){
+			if (allBpmEvents.contains(i.key())){
+				*i = allBpmEvents[i.key()];
+			}else{
+				i = selectedBpmEvents.erase(i);
 			}
 		}
-		selectedBpmEvents.clear();
-		for (auto event : mainWindow->GetBpmEditTool()->GetBpmEvents()){
-			this->selectedBpmEvents.insert(event.location, event);
-		}
+		mainWindow->GetBpmEditTool()->SetBpmEvents(selectedBpmEvents.values());
 		timeLine->update();
 		if (showMasterLane){
+			masterLane->UpdateWholeBackBuffer();
 			masterLane->update();
 		}
 		if (showMiniMap){
 			miniMap->update();
 		}
-		// update of each channel view is triggered by each channel
+		for (auto *cv : soundChannels){
+			cv->UpdateWholeBackBuffer();
+			cv->update();
+		}
 	}
 }
 

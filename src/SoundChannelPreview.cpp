@@ -315,7 +315,9 @@ int SoundChannelPreviewer::AudioPlayRead(AudioPlaySource::SampleType *buffer, in
 			int endSamples = (currentSamplePos >= 0 && icache->prevSamplePosition >= 0)
 					? icache->prevSamplePosition - currentSamplePos
 					: (icache.key()-currentTicks) * (60.0 * SamplesPerSec / (currentBpm * TicksPerBeat));
-			//qDebug() << "some event at" << endSamples << "samples";
+			if (endSamples > samples)
+				endSamples = samples;
+			//qDebug() << "some event at" << endSamples << "samples" << samples;
 			if (currentSamplePos >= 0){
 				int r = endSamples;
 				while (r > 0){
@@ -340,13 +342,18 @@ int SoundChannelPreviewer::AudioPlayRead(AudioPlaySource::SampleType *buffer, in
 				// seek only if restart note
 				wave->SeekAbsolute(0);
 			}
+			//if (currentBpm != icache->currentTempo){
+			//	qDebug() << "change tempo:" << currentBpm << icache->currentTempo;
+			//}
 			currentBpm = icache->currentTempo;
 			currentTicks = icache.key();
 			icache++;
 			samples -= endSamples;
+			nextExpectedTicks = currentTicks + (samples/SamplesPerSec)*currentBpm*TicksPerBeat/60.0;
 		}
 	}
 	currentTicks = nextExpectedTicks;
+	//qDebug() << "end";
 	return bufferSampleCount;
 }
 

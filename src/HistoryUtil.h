@@ -12,6 +12,7 @@ private:
 	bool done;
 	QString name;
 	std::function<void()> shower;
+	std::function<void()> afterUndo, afterRedo;
 	QList<EditAction*> actions;
 
 public:
@@ -32,12 +33,14 @@ public:
 			i--;
 			(*i)->Undo();
 		}
+		afterUndo();
 		done = false;
 	}
 	virtual void Redo(){
 		for (auto i=actions.begin(); i!=actions.end(); i++){
 			(*i)->Redo();
 		}
+		afterRedo();
 		done = false;
 	}
 	virtual QString GetName(){
@@ -72,6 +75,12 @@ public:
 
 	void Finish(){
 		done = true;
+	}
+
+	void Finish(std::function<void()> afterUndo, std::function<void()> afterRedo){
+		done = true;
+		this->afterUndo = afterUndo;
+		this->afterRedo = afterRedo;
 	}
 
 	int Count() const{

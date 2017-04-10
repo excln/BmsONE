@@ -548,12 +548,14 @@ changed:
 	auto shower = [=](){
 		emit ShowBpmEventLocation(events.first().location);
 	};
+	auto afterDo = [=](){
+		emit TimeMappingChanged();
+	};
 	auto *actions = new MultiAction(tr("update BPM events"), shower);
 	for (auto event : events){
 		if (bpmEvents.contains(event.location)){
 			auto updater = [this](BpmEvent value){
 				bpmEvents.insert(value.location, value);
-				emit TimeMappingChanged();
 			};
 			actions->AddAction(new EditValueAction<BpmEvent>(updater, bpmEvents[event.location], event, QString(), true));
 		}else{
@@ -563,12 +565,12 @@ changed:
 			};
 			auto remover = [this](BpmEvent value){
 				bpmEvents.remove(value.location);
-				emit TimeMappingChanged();
 			};
 			actions->AddAction(new AddValueAction<BpmEvent>(adder, remover, event, QString(), true));
 		}
 	}
-	actions->Finish();
+	actions->Finish(afterDo, afterDo);
+	afterDo();
 	history->Add(actions);
 }
 
@@ -579,21 +581,23 @@ void Document::RemoveBpmEvents(QList<int> locations)
 	auto shower = [=](){
 		emit ShowBpmEventLocation(locations.first());
 	};
+	auto afterDo = [=](){
+		emit TimeMappingChanged();
+	};
 	auto *actions = new MultiAction(tr("remove BPM events"), shower);
 	for (auto location : locations){
 		if (!bpmEvents.contains(location)) continue;
 		BpmEvent event = bpmEvents.take(location);
 		auto adder = [this](BpmEvent value){
 			bpmEvents.insert(value.location, value);
-			emit TimeMappingChanged();
 		};
 		auto remover = [this](BpmEvent value){
 			bpmEvents.remove(value.location);
-			emit TimeMappingChanged();
 		};
 		actions->AddAction(new RemoveValueAction<BpmEvent>(adder, remover, event, tr("remove BPM event"), true, shower));
 	}
-	actions->Finish();
+	actions->Finish(afterDo, afterDo);
+	afterDo();
 	history->Add(actions);
 }
 
@@ -932,6 +936,38 @@ QJsonValue BarLine::SaveBmson()
 	return bmsonFields;
 }
 
+QMap<QString, QJsonValue> BarLine::GetExtraFields() const
+{
+	QMap<QString, QJsonValue> fields;
+	for (QJsonObject::const_iterator i=bmsonFields.begin(); i!=bmsonFields.end(); i++){
+		if (i.key() != Bmson::BarLine::LocationKey){
+			fields.insert(i.key(), i.value());
+		}
+	}
+	return fields;
+}
+
+void BarLine::SetExtraFields(const QMap<QString, QJsonValue> &fields)
+{
+	for (auto i=fields.begin(); i!=fields.end(); i++){
+		if (i.key() != Bmson::BarLine::LocationKey){
+			bmsonFields[i.key()] = i.value();
+		}
+	}
+}
+
+QJsonObject BarLine::AsJson() const
+{
+	QJsonObject obj = bmsonFields;
+	obj[Bmson::BarLine::LocationKey] = Location;
+	return obj;
+}
+
+bool BarLine::operator ==(const BarLine &r) const
+{
+	return AsJson() == r.AsJson();
+}
+
 BpmEvent::BpmEvent(const QJsonValue &json)
 	: BmsonObject(json)
 {
@@ -944,4 +980,38 @@ QJsonValue BpmEvent::SaveBmson()
 	bmsonFields[Bmson::BpmEvent::LocationKey] = location;
 	bmsonFields[Bmson::BpmEvent::BpmKey] = value;
 	return bmsonFields;
+}
+
+QMap<QString, QJsonValue> BpmEvent::GetExtraFields() const
+{
+	QMap<QString, QJsonValue> fields;
+	for (QJsonObject::const_iterator i=bmsonFields.begin(); i!=bmsonFields.end(); i++){
+		if (i.key() != Bmson::BpmEvent::LocationKey && i.key() != Bmson::BpmEvent::BpmKey){
+			fields.insert(i.key(), i.value());
+		}
+	}
+	return fields;
+}
+
+void BpmEvent::SetExtraFields(const QMap<QString, QJsonValue> &fields)
+{
+	bmsonFields = QJsonObject();
+	for (auto i=fields.begin(); i!=fields.end(); i++){
+		if (i.key() != Bmson::BpmEvent::LocationKey && i.key() != Bmson::BpmEvent::BpmKey){
+			bmsonFields[i.key()] = i.value();
+		}
+	}
+}
+
+QJsonObject BpmEvent::AsJson() const
+{
+	QJsonObject obj = bmsonFields;
+	obj[Bmson::BpmEvent::LocationKey] = location;
+	obj[Bmson::BpmEvent::BpmKey] = value;
+	return obj;
+}
+
+bool BpmEvent::operator ==(const BpmEvent &r) const
+{
+	return AsJson() == r.AsJson();
 }

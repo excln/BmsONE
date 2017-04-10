@@ -20,7 +20,7 @@ ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)
 	labelImage = new OverallWaveformLabel();
 	labelImage->setMinimumWidth(48);
 	labelImage->setMinimumHeight(1);
-	labelImage->setMaximumHeight(999999);
+	labelImage->setMaximumHeight(320);
 	labelImage->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	labelImage->setScaledContents(true);
 	buttonPreview = new QToolButton();

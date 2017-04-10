@@ -24,6 +24,7 @@ public:
 	BmsonObject(){}
 	BmsonObject(const QJsonValue &json) : bmsonFields(json.toObject()){}
 	BmsonObject(const QJsonObject &json) : bmsonFields(json){}
+	virtual QJsonObject AsJson() const{ return bmsonFields; }
 };
 
 
@@ -52,10 +53,11 @@ struct BarLine : public BmsonObject
 
 	BarLine(const QJsonValue &json);
 	QJsonValue SaveBmson();
+	QMap<QString, QJsonValue> GetExtraFields() const;
+	void SetExtraFields(const QMap<QString, QJsonValue> &fields);
 
-	bool operator ==(const BarLine &r) const{
-		return Location == r.Location && Kind == r.Kind && Ephemeral == r.Ephemeral;
-	}
+	QJsonObject AsJson() const;
+	bool operator ==(const BarLine &r) const;
 };
 
 
@@ -69,10 +71,11 @@ struct BpmEvent : public BmsonObject
 
 	BpmEvent(const QJsonValue &json);
 	QJsonValue SaveBmson();
+	QMap<QString, QJsonValue> GetExtraFields() const;
+	void SetExtraFields(const QMap<QString, QJsonValue> &fields);
 
-	bool operator ==(const BpmEvent &r) const{
-		return location == r.location && value == r.value;
-	}
+	QJsonObject AsJson() const;
+	bool operator ==(const BpmEvent &r) const;
 };
 
 
