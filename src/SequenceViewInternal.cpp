@@ -701,7 +701,7 @@ void SoundChannelHeader::contextMenuEvent(QContextMenuEvent *event)
 
 
 
-const qreal SoundChannelFooter::FontSize = 9.0;
+static const int FontSize = 12;
 
 SoundChannelFooter::SoundChannelFooter(SequenceView *sview, SoundChannelView *cview)
 	: QWidget(sview)
@@ -710,7 +710,7 @@ SoundChannelFooter::SoundChannelFooter(SequenceView *sview, SoundChannelView *cv
 {
 	setContextMenuPolicy(Qt::DefaultContextMenu);
 	QFont f = font();
-	f.setPointSizeF(FontSize);
+	f.setPixelSize(FontSize);
 	setFont(f);
 
 	sview->InstallFooterSizeGrip(this);

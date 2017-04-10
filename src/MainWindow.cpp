@@ -34,7 +34,7 @@ MainWindow::MainWindow(QSettings *settings)
 	, currentChannel(-1)
 	, closing(false)
 {
-	UIUtil::SetFont(this);
+	UIUtil::SetFontMainWindow(this);
 	setWindowIcon(QIcon(":/images/bmsone64.png"));
 	resize(960,640);
 	setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowTabbedDocks | QMainWindow::AllowNestedDocks | QMainWindow::GroupedDragging);

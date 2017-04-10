@@ -1,6 +1,9 @@
 
 #include "UIDef.h"
-
+#ifdef Q_OS_WIN
+//#include <qpa/qplatformnativeinterface.h>
+#include <windows.h>
+#endif
 
 
 IEdit *SharedUIHelper::globallyDirtyEdit = nullptr;
@@ -47,11 +50,34 @@ void SharedUIHelper::UnlockGlobalShortcuts()
 
 
 
+#ifdef Q_OS_WIN
+#pragma comment(lib, "user32.lib")
+static QFont defaultFont;
+static bool defaultFontInitialized = false;
+#endif
+
 
 void UIUtil::SetFont(QWidget *widget)
 {
 #ifdef Q_OS_WIN
-	widget->setFont(QFont("Meiryo"));
+	if (defaultFontInitialized){
+		widget->setFont(defaultFont);
+	}else{
+		LOGFONTW lf;
+		SystemParametersInfoW(SPI_GETICONTITLELOGFONT,sizeof(LOGFONT),&lf,0);
+		defaultFont.setFamily(QString::fromUtf16((const ushort *)&lf.lfFaceName));
+		widget->setFont(defaultFont);
+		defaultFontInitialized = true;
+	}
+#endif
+}
+
+void UIUtil::SetFontMainWindow(QWidget *widget)
+{
+#ifdef Q_OS_WIN
+	SetFont(widget);
+#else
+	SetFont(widget);
 #endif
 }
 
