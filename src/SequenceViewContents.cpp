@@ -75,41 +75,47 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 
 	// notes
 	{
-		int i=0;
-		for (SoundChannelView *channelView : soundChannels){
-			for (SoundNoteView *nview : channelView->GetNotes()){
-				SoundNote note = nview->GetNote();
-				if (note.location > tEnd){
-					break;
-				}
-				if (note.location + note.length < tBegin){
-					continue;
-				}
-				if (note.lane > 0 && lanes.contains(note.lane)){
-					if (cursor->GetState() == SequenceViewCursor::State::EXISTING_SOUND_NOTE && nview == cursor->GetExistingSoundNote()){
-						// hover
-						LaneDef &laneDef = lanes[note.lane];
-						QRect rect(laneDef.left+1, Time2Y(note.location + note.length) - 8, laneDef.width-1, TimeSpan2DY(note.length) + 8);
-						QLinearGradient g(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
-						SetNoteColor(g, note.lane, true);
-						painter.fillRect(rect, QBrush(g));
-					}else if (selectedNotes.contains(nview)){
-						LaneDef &laneDef = lanes[note.lane];
-						QRect rect(laneDef.left+1, Time2Y(note.location + note.length) - 8, laneDef.width-1, TimeSpan2DY(note.length) + 8);
-						QLinearGradient g(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
-						SetNoteColor(g, note.lane, i==currentChannel);
-						painter.fillRect(rect, QBrush(g));
-						painter.setBrush(Qt::NoBrush);
-					}else{
-						LaneDef &laneDef = lanes[note.lane];
-						QRect rect(laneDef.left+1, Time2Y(note.location + note.length) - 8, laneDef.width-1, TimeSpan2DY(note.length) + 8);
-						QLinearGradient g(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
-						SetNoteColor(g, note.lane, i==currentChannel);
-						painter.fillRect(rect, QBrush(g));
-					}
+		QMultiMap<int, QPair<SoundChannelView *, SoundNoteView*> > allNotes;
+		for (auto channel : soundChannels){
+			const auto &notes = channel->GetNotes();
+			for (auto note : notes){
+				if (note->GetNote().location >= tEnd) break;
+				allNotes.insert(note->GetNote().location, QPair<SoundChannelView*, SoundNoteView*>(channel, note));
+			}
+		}
+		for (auto pair : allNotes){
+			SoundChannelView *cview = pair.first;
+			SoundNoteView* nview = pair.second;
+			SoundNote note = nview->GetNote();
+			if (note.location > tEnd){
+				break;
+			}
+			if (note.location + note.length < tBegin){
+				continue;
+			}
+			if (note.lane > 0 && lanes.contains(note.lane)){
+				if (cursor->GetState() == SequenceViewCursor::State::EXISTING_SOUND_NOTE && nview == cursor->GetExistingSoundNote()){
+					// hover
+					LaneDef &laneDef = lanes[note.lane];
+					QRect rect(laneDef.left+1, Time2Y(note.location + note.length) - 8, laneDef.width-1, TimeSpan2DY(note.length) + 8);
+					QLinearGradient g(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
+					SetNoteColor(g, note.lane, true);
+					painter.fillRect(rect, QBrush(g));
+				}else if (selectedNotes.contains(nview)){
+					LaneDef &laneDef = lanes[note.lane];
+					QRect rect(laneDef.left+1, Time2Y(note.location + note.length) - 8, laneDef.width-1, TimeSpan2DY(note.length) + 8);
+					QLinearGradient g(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
+					SetNoteColor(g, note.lane, cview->IsCurrent());
+					painter.fillRect(rect, QBrush(g));
+					painter.setBrush(Qt::NoBrush);
+				}else{
+					LaneDef &laneDef = lanes[note.lane];
+					QRect rect(laneDef.left+1, Time2Y(note.location + note.length) - 8, laneDef.width-1, TimeSpan2DY(note.length) + 8);
+					QLinearGradient g(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
+					SetNoteColor(g, note.lane, cview->IsCurrent());
+					painter.fillRect(rect, QBrush(g));
 				}
 			}
-			i++;
 		}
 	}
 

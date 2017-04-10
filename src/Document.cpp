@@ -254,6 +254,67 @@ QList<QPair<SoundChannel*, int> > Document::FindConflictingNotes(SoundNote note)
 	return noteRefs;
 }
 
+QMap<int, QMap<int, NoteConflict>> Document::FindConflictsByLanes(int timeBegin, int timeEnd) const
+{
+	QMultiMap<int, QPair<SoundChannel*, SoundNote>> allNotes = FindNotes(timeEnd);
+	QMap<int, QMap<int, NoteConflict>> conflictsByLanes;
+	QMap<int, QMultiMap<SoundChannel*, SoundNote>> currentNotesByLanes;
+	for (QPair<SoundChannel*, SoundNote> pair : allNotes){
+		int lane = pair.second.lane;
+		int location = pair.second.location;
+		if (lane == 0)
+			continue;
+		if (!currentNotesByLanes.contains(lane)){
+			currentNotesByLanes.insert(lane, QMultiMap<SoundChannel*, SoundNote>());
+		}
+		for (auto i=currentNotesByLanes[lane].begin(); i!=currentNotesByLanes[lane].end(); ){
+			if (i.value().location + i.value().length < location){
+				i = currentNotesByLanes[lane].erase(i);
+				continue;
+			}
+			i++;
+		}
+		if (location >= timeBegin && !currentNotesByLanes[lane].empty()){
+			NoteConflict conf;
+			if (conflictsByLanes[lane].contains(location)){
+				conf = conflictsByLanes[lane][location];
+			}else{
+				conf.lane = lane;
+				conf.location = location;
+				conf.involvedNotes = QList<QPair<SoundChannel*, SoundNote>>();
+				conf.type = 0;
+			}
+			for (auto n = currentNotesByLanes[lane].begin(); n != currentNotesByLanes[lane].end(); n++){
+				conf.involvedNotes << QPair<SoundChannel*, SoundNote>(n.key(), n.value());
+				if (n.value().location == location){
+					conf.type |= NoteConflict::LAYERING_FLAG;
+					if (n.value().length != pair.second.length){
+						conf.type |= NoteConflict::ILLEGAL_FLAG;
+					}
+				}else{
+					conf.type |= NoteConflict::OVERLAPPING_FLAG;
+				}
+			}
+			conflictsByLanes[lane][location] = conf;
+		}
+		currentNotesByLanes[lane].insert(pair.first, pair.second);
+	}
+	return conflictsByLanes;
+}
+
+QMultiMap<int, QPair<SoundChannel *, SoundNote> > Document::FindNotes(int timeEnd) const
+{
+	QMultiMap<int, QPair<SoundChannel*, SoundNote>> allNotes;
+	for (auto channel : soundChannels){
+		const auto &notes = channel->GetNotes();
+		for (auto note : notes){
+			if (note.location >= timeEnd) break;
+			allNotes.insert(note.location, QPair<SoundChannel*, SoundNote>(channel, note));
+		}
+	}
+	return allNotes;
+}
+
 
 void Document::InsertSoundChannelInternal(SoundChannel *channel, int index)
 {

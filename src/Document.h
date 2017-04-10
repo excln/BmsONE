@@ -13,6 +13,7 @@ class Document;
 class DocumentInfo;
 class SoundChannel;
 struct SoundNote;
+struct NoteConflict;
 class SoundLoader;
 class EditHistory;
 class EditAction;
@@ -214,6 +215,8 @@ public:
 	int GetTotalLength() const;
 	int GetTotalVisibleLength() const;
 	QList<QPair<SoundChannel*, int>> FindConflictingNotes(SoundNote note) const; // returns [Channel,Location]
+	QMap<int, QMap<int, NoteConflict> > FindConflictsByLanes(int timeBegin, int timeEnd) const;
+	QMultiMap<int, QPair<SoundChannel *, SoundNote> > FindNotes(int timeEnd) const;
 	void InsertNewSoundChannels(const QList<QString> &soundFilePaths, int index=-1);
 	void DestroySoundChannel(int index);
 	void MoveSoundChannel(int indexBefore, int indexAfter);

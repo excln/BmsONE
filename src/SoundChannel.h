@@ -10,6 +10,7 @@
 class Document;
 class MasterCache;
 class DocumentInfo;
+class SoundChannel;
 class SoundChannelResourceManager;
 class EditAction;
 class Smoother;
@@ -34,6 +35,21 @@ struct SoundNote : public BmsonObject
 
 
 
+struct NoteConflict
+{
+	int location;
+	int lane;
+
+	QList<QPair<SoundChannel*, SoundNote>> involvedNotes;
+
+	enum ConflictFlags{
+		ILLEGAL_FLAG         = 0x10000000,
+		LAYERING_FLAG        = 0x00001000,
+		OVERLAPPING_FLAG     = 0x10002000,
+	};
+	typedef int ConflictFlagsType;
+	ConflictFlagsType type;
+};
 
 
 class SoundChannel : public QObject, public BmsonObject
