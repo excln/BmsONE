@@ -123,7 +123,7 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 				}
 			}
 			sview->cursor->SetExistingSoundNote(noteHit);
-			sview->SetCurrentChannel(noteHit->GetChannelView());
+			sview->SetCurrentChannel(noteHit->GetChannelView(), (event->modifiers() & Qt::ControlModifier) != 0);
 			sview->PreviewSingleNote(noteHit);
 
 			//if (event->modifiers() & Qt::ShiftModifier){

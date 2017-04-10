@@ -56,7 +56,11 @@ SoundChannelView::Context *SoundChannelView::EditModeContext::MousePress(QMouseE
 	if (!cview->current){
 		sview->ClearAnySelection();
 		sview->selectedNotes.clear();
-		sview->SetCurrentChannel(cview, (event->modifiers() & Qt::ControlModifier) != 0);
+		if (event->modifiers() & Qt::ControlModifier){
+			sview->ToggleSelectChannel(cview);
+		}else{
+			sview->SetCurrentChannel(cview);
+		}
 		return this;
 	}
 	if (noteHit){
@@ -73,7 +77,7 @@ SoundChannelView::Context *SoundChannelView::EditModeContext::MousePress(QMouseE
 				}
 			}
 			sview->cursor->SetExistingSoundNote(noteHit);
-			sview->SetCurrentChannel(noteHit->GetChannelView());
+			sview->SetCurrentChannel(noteHit->GetChannelView(), true);
 			sview->PreviewSingleNote(noteHit);
 			break;
 		case Qt::RightButton: {
@@ -87,7 +91,7 @@ SoundChannelView::Context *SoundChannelView::EditModeContext::MousePress(QMouseE
 				}
 			}
 			sview->cursor->SetExistingSoundNote(noteHit);
-			sview->SetCurrentChannel(noteHit->GetChannelView());
+			sview->SetCurrentChannel(noteHit->GetChannelView(), true);
 			QMenu menu(cview);
 			menu.addAction(cview->actionDeleteNotes);
 			menu.addAction(cview->actionTransferNotes);
@@ -275,7 +279,11 @@ SoundChannelView::Context *SoundChannelView::WriteModeContext::MousePress(QMouse
 		if (!cview->current){
 			sview->ClearAnySelection();
 			sview->selectedNotes.clear();
-			sview->SetCurrentChannel(cview, (event->modifiers() & Qt::ControlModifier) != 0);
+			if (event->modifiers() & Qt::ControlModifier){
+				sview->ToggleSelectChannel(cview);
+			}else{
+				sview->SetCurrentChannel(cview);
+			}
 		}
 		sview->ClearNotesSelection();
 		return new PreviewContext(this, cview, event->pos(), event->button(), iTime);
@@ -284,7 +292,11 @@ SoundChannelView::Context *SoundChannelView::WriteModeContext::MousePress(QMouse
 	if (!cview->current){
 		sview->ClearAnySelection();
 		sview->selectedNotes.clear();
-		sview->SetCurrentChannel(cview, (event->modifiers() & Qt::ControlModifier) != 0);
+		if (event->modifiers() & Qt::ControlModifier){
+			sview->ToggleSelectChannel(cview);
+		}else{
+			sview->SetCurrentChannel(cview);
+		}
 		return this;
 	}
 	if (noteHit){

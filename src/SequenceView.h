@@ -214,6 +214,7 @@ private:
 
 	void SetCurrentChannelInternal(int index);
 	void ClearChannelSelection();
+	void ToggleSelectChannel(SoundChannelView *cview);
 	void SelectChannel(int ichannel);
 	void DeselectChannel(int ichannel);
 

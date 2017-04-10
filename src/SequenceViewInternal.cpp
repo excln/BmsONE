@@ -273,7 +273,7 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 				}
 			}
 		}else{
-			painter.setPen(QPen(QBrush(current ? QColor(187, 187, 187) : QColor(153, 153, 153)), 1));
+			painter.setPen(QPen(QBrush(current ? QColor(187, 187, 187) : QColor(153, 153, 153)), sview->selectedNotes.contains(nview) ? 3 : 1));
 			painter.setBrush(Qt::NoBrush);
 			painter.drawLine(1, noteStartY, width()-1, noteStartY);
 		}
@@ -721,7 +721,11 @@ void SoundChannelFooter::mouseMoveEvent(QMouseEvent *event)
 
 void SoundChannelFooter::mousePressEvent(QMouseEvent *event)
 {
-	sview->SetCurrentChannel(cview, (event->modifiers() & Qt::ControlModifier) != 0);
+	if (event->modifiers() & Qt::ControlModifier){
+		sview->ToggleSelectChannel(cview);
+	}else{
+		sview->SetCurrentChannel(cview);
+	}
 	switch (event->button()){
 	case Qt::LeftButton:
 		break;

@@ -397,6 +397,8 @@ void SequenceView::ClearAnySelection()
 void SequenceView::ClearNotesSelection()
 {
 	selectedNotes.clear();
+	ClearChannelSelection();
+	SelectChannel(currentChannel);
 	playingPane->update();
 	for (auto cview : soundChannels){
 		cview->update();
@@ -438,6 +440,10 @@ void SequenceView::SelectAdditionalNote(SoundNoteView *nview)
 	if (!selectedBpmEvents.isEmpty())
 		ClearBpmEventsSelection();
 	selectedNotes.insert(nview);
+	int ichannel = soundChannels.indexOf(nview->GetChannelView());
+	if (!selectedChannels.contains(ichannel)){
+		SelectChannel(ichannel);
+	}
 	playingPane->update();
 	for (auto cview : soundChannels){
 		cview->update();
@@ -688,6 +694,18 @@ void SequenceView::ClearChannelSelection()
 		soundChannels[ichannel]->SetSelected(false);
 	}
 	selectedChannels.clear();
+}
+
+void SequenceView::ToggleSelectChannel(SoundChannelView *cview)
+{
+	int ichannel = soundChannels.indexOf(cview);
+	if (ichannel < 0)
+		return;
+	if (selectedChannels.contains(ichannel)){
+		DeselectChannel(ichannel);
+	}else{
+		SelectChannel(ichannel);
+	}
 }
 
 void SequenceView::SelectChannel(int ichannel)
@@ -1707,18 +1725,16 @@ void SequenceView::SkinChanged()
 }
 
 void SequenceView::SetCurrentChannel(SoundChannelView *cview, bool preserveSelection){
-	if (!preserveSelection){
+	int ichannel = soundChannels.indexOf(cview);
+	if (ichannel < 0)
+		return;
+	if (!preserveSelection && !selectedChannels.contains(ichannel)){
 		ClearChannelSelection();
 	}
-	for (int i=0; i<soundChannels.size(); i++){
-		if (soundChannels[i] == cview){
-			SelectChannel(i);
-			if (currentChannel != i){
-				SetCurrentChannelInternal(i);
-				emit CurrentChannelChanged(i);
-				break;
-			}
-		}
+	SelectChannel(ichannel);
+	if (currentChannel != ichannel){
+		SetCurrentChannelInternal(ichannel);
+		emit CurrentChannelChanged(ichannel);
 	}
 }
 
