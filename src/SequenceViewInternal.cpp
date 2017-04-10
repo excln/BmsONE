@@ -53,6 +53,8 @@ SoundChannelView::~SoundChannelView()
 {
 	if (context)
 		delete context;
+	if (backBuffer)
+		delete backBuffer;
 }
 
 

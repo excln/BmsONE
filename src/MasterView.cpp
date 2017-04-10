@@ -435,6 +435,8 @@ MasterLaneView::MasterLaneView(SequenceView *sview, MiniMapView *miniMap)
 
 MasterLaneView::~MasterLaneView()
 {
+	if (backBuffer)
+		delete backBuffer;
 }
 
 void MasterLaneView::paintEvent(QPaintEvent *event)
