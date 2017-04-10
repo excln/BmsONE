@@ -19,6 +19,8 @@ const char* MainWindow::SettingsWidgetsStateKey = "WidgetsState";
 const char* MainWindow::SettingsHideInactiveSelectedViewKey = "HideInactiveSelectedView";
 
 const QSize UIUtil::ToolBarIconSize(18, 18);
+const int UIUtil::LightAnimationInterval = 8;
+const int UIUtil::HeavyAnimationInterval = 16;
 
 MainWindow::MainWindow(QSettings *settings)
 	: QMainWindow()

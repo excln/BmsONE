@@ -11,6 +11,7 @@ class MasterCache;
 class DocumentInfo;
 class SoundChannelResourceManager;
 class EditAction;
+class Smoother;
 
 
 struct SoundNote : public BmsonObject
@@ -206,9 +207,14 @@ private:
 	int currentSamplePos;
 	double currentBpm;
 	double currentTicks;
+	Smoother *smoother;
+
+private slots:
+	void SmoothedValue(qreal value);
 
 signals:
 	void Progress(int currentTicks);
+	void SmoothedProgress(int currentTicks);
 	void Stopped();
 
 public slots:

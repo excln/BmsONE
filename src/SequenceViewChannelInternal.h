@@ -68,6 +68,7 @@ class SoundChannelView::PreviewContext
 private:
 	SequenceView::CommandsLocker locker;
 	Qt::MouseButton mouseButton;
+	QPoint mousePosition;
 	SoundChannelPreviewer *previewer;
 
 signals:
@@ -77,14 +78,14 @@ private slots:
 	void Progress(int currentTicks);
 
 public:
-	PreviewContext(SoundChannelView::Context *parent, SoundChannelView *cview, Qt::MouseButton button, int time);
+	PreviewContext(SoundChannelView::Context *parent, SoundChannelView *cview, QPoint mousePosition, Qt::MouseButton button, int time);
 
 	virtual ~PreviewContext();
 
 	//virtual Context* KeyUp(QKeyEvent*);
 	//virtual Context* Enter(QEnterEvent*);
 	//virtual Context* Leave(QEnterEvent*);
-	virtual Context* MouseMove(QMouseEvent*);
+	virtual Context* MouseMove(QMouseEvent*event);
 	virtual Context* MousePress(QMouseEvent*);
 	virtual Context* MouseRelease(QMouseEvent*);
 };

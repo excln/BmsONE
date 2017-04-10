@@ -28,3 +28,65 @@ void Stabilizer::OnTimer()
 	}
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+Smoother::Smoother(int msecInterval, qreal rateExpected, QObject *parent)
+	: QObject(parent)
+	, timer(this)
+	, interval(msecInterval)
+	, currentValue(0)
+	, rateExpected(rateExpected)
+	, rateObserved(rateExpected)
+	, timeoutCount(0)
+{
+	connect(&timer, SIGNAL(timeout()), this, SLOT(OnTimer()));
+	timer.setSingleShot(false);
+	timer.setInterval(interval);
+}
+
+Smoother::~Smoother()
+{
+}
+
+void Smoother::SetInterval(int msecInterval)
+{
+	interval = msecInterval;
+	timer.setInterval(interval);
+}
+
+void Smoother::SetExpectedRate(qreal rate)
+{
+	rateExpected = rate;
+}
+
+void Smoother::SetCurrentValue(qreal value)
+{
+	qreal approxTime = interval * (timeoutCount + 0.5);
+	rateObserved = (value - (currentValue - rateExpected * approxTime)) / approxTime;
+	currentValue = value;
+	timeoutCount = 0;
+	timer.start();
+}
+
+void Smoother::Stop()
+{
+	timer.stop();
+}
+
+void Smoother::OnTimer()
+{
+	timeoutCount++;
+	currentValue += rateExpected * interval;
+	emit SmoothedValue(currentValue);
+}
+

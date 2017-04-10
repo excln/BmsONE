@@ -148,11 +148,12 @@ class MasterLaneView::PreviewContext : public QObject, public MasterLaneView::Co
 private:
 	Qt::MouseButton button;
 	MasterPlayer *previewer;
+	QPoint mousePosition;
 public:
-	PreviewContext(MasterLaneView *ml, Context *parent, Qt::MouseButton mouseButton, int time);
+	PreviewContext(MasterLaneView *ml, Context *parent, QPoint mousePosition, Qt::MouseButton mouseButton, int time);
 	virtual ~PreviewContext();
 	virtual Context* MousePress(QMouseEvent*);
-	virtual Context* MouseMove(QMouseEvent*);
+	virtual Context* MouseMove(QMouseEvent*event);
 	virtual Context* MouseRelease(QMouseEvent*);
 private slots:
 	void Progress(int currentSamples);

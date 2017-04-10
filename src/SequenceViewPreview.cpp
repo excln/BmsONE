@@ -6,15 +6,15 @@
 #include "MainWindow.h"
 
 
-SequenceView::PreviewContext::PreviewContext(SequenceView::Context *parent, SequenceView *sview, Qt::MouseButton button, int time)
+SequenceView::PreviewContext::PreviewContext(SequenceView::Context *parent, SequenceView *sview, QPoint pos, Qt::MouseButton button, int time)
 	: QObject(sview), Context(sview, parent), locker(sview)
-	, mouseButton(button), previewer(nullptr)
+	, mousePosition(pos), mouseButton(button), previewer(nullptr)
 {
 	if (sview->currentChannel < 0)
 		return;
 	auto *cview = sview->soundChannels[sview->currentChannel];
 	previewer = new SoundChannelPreviewer(cview->GetChannel(), time, cview);
-	connect(previewer, SIGNAL(Progress(int)), this, SLOT(Progress(int)));
+	connect(previewer, SIGNAL(SmoothedProgress(int)), this, SLOT(Progress(int)));
 	connect(previewer, SIGNAL(Stopped()), previewer, SLOT(deleteLater()));
 	connect(this, SIGNAL(stop()), previewer, SLOT(Stop()), Qt::QueuedConnection);
 	sview->mainWindow->GetAudioPlayer()->Play(previewer);
@@ -31,6 +31,26 @@ SequenceView::PreviewContext::~PreviewContext()
 void SequenceView::PreviewContext::Progress(int currentTicks)
 {
 	sview->cursor->SetTime(currentTicks);
+	switch (mouseButton)
+	{
+	case Qt::MouseButton::LeftButton:
+	case Qt::MouseButton::RightButton:
+		if (qApp->keyboardModifiers() & Qt::ControlModifier){
+			sview->ScrollToLocation(currentTicks, mousePosition.y());
+		}else if (qApp->keyboardModifiers() & Qt::ShiftModifier){
+		}else{
+			sview->ShowLocation(currentTicks);
+		}
+		break;
+	case Qt::MouseButton::MiddleButton:
+		if (qApp->keyboardModifiers() & Qt::ControlModifier){
+			sview->ScrollToLocation(currentTicks, mousePosition.y());
+		}else if (qApp->keyboardModifiers() & Qt::ShiftModifier){
+			sview->ShowLocation(currentTicks);
+		}else{
+		}
+		break;
+	}
 }
 
 /*
@@ -46,6 +66,7 @@ SequenceView::Context *SequenceView::PreviewContext::Leave(QEnterEvent *)
 */
 SequenceView::Context *SequenceView::PreviewContext::PlayingPane_MouseMove(QMouseEvent *event)
 {
+	mousePosition = event->pos();
 	return this;
 }
 

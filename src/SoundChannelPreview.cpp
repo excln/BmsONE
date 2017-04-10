@@ -1,7 +1,8 @@
 #include "Document.h"
 #include "SoundChannel.h"
 #include "SoundChannelInternal.h"
-
+#include "Stabilizer.h"
+#include "UIDef.h"
 
 SoundChannelSourceFilePreviewer::SoundChannelSourceFilePreviewer(SoundChannel *channel, QObject *parent)
 	: AudioPlaySource(parent)
@@ -180,7 +181,10 @@ SoundChannelPreviewer::SoundChannelPreviewer(SoundChannel *channel, int location
 	, TicksPerBeat(channel->document->GetInfo()->GetResolution())
 	, wave(nullptr)
 	, cache(channel->cache)
+	, smoother(new Smoother(UIUtil::HeavyAnimationInterval, 0, this))
 {
+	connect(smoother, SIGNAL(SmoothedValue(qreal)), this, SLOT(SmoothedValue(qreal)));
+
 	// scale any sample positions
 	const double ratio = SamplesPerSec / SamplesPerSecOrg;
 	for (SoundChannel::CacheEntry &c : cache){
@@ -230,6 +234,11 @@ void SoundChannelPreviewer::AudioPlayRelease()
 	emit Stopped();
 }
 
+void SoundChannelPreviewer::SmoothedValue(qreal value)
+{
+	emit SmoothedProgress((int)value);
+}
+
 void SoundChannelPreviewer::Stop()
 {
 	AudioPlayRelease();
@@ -237,6 +246,10 @@ void SoundChannelPreviewer::Stop()
 
 int SoundChannelPreviewer::AudioPlayRead(AudioPlaySource::SampleType *buffer, int bufferSampleCount)
 {
+	{
+		smoother->SetExpectedRate(currentBpm*TicksPerBeat/60.0/1000.0);
+		QMetaObject::invokeMethod(smoother, "SetCurrentValue", Qt::QueuedConnection, Q_ARG(qreal, currentTicks));
+	}
 	emit Progress(currentTicks);
 	QMutexLocker locker(&mutex);
 	if (!wave){

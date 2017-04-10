@@ -2,6 +2,8 @@
 #include "MasterCache.h"
 #include "Document.h"
 #include "SoundChannelInternal.h"
+#include "Stabilizer.h"
+#include "UIDef.h"
 
 
 MasterCache::MasterCache(Document *document)
@@ -380,6 +382,8 @@ MasterPlayer::MasterPlayer(MasterCache *master, int position, QObject *parent)
 	, master(master)
 	, position(position)
 {
+	smoother = new Smoother(UIUtil::HeavyAnimationInterval, 44100 / 1000.0, this);
+	connect(smoother, SIGNAL(SmoothedValue(qreal)), this, SLOT(SmoothedValue(qreal)));
 }
 
 MasterPlayer::~MasterPlayer()
@@ -394,6 +398,7 @@ void MasterPlayer::AudioPlayRelease()
 int MasterPlayer::AudioPlayRead(AudioPlaySource::SampleType *buffer, int bufferSampleCount)
 {
 	int i=0;
+	QMetaObject::invokeMethod(smoother, "SetCurrentValue", Qt::QueuedConnection, Q_ARG(qreal, position));
 	emit Progress(position);
 	QMutexLocker locker(&master->dataMutex);
 	for (; i<bufferSampleCount && position < master->data.size(); i++,position++){
@@ -403,6 +408,11 @@ int MasterPlayer::AudioPlayRead(AudioPlaySource::SampleType *buffer, int bufferS
 		buffer[i] = data;
 	}
 	return i;
+}
+
+void MasterPlayer::SmoothedValue(qreal value)
+{
+	emit SmoothedProgress((int)value);
 }
 
 

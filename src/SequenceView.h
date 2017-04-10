@@ -269,6 +269,7 @@ private slots:
 
 public slots:
 	void ShowLocation(int location);
+	void ScrollToLocation(int location, int y);
 	void OnCurrentChannelChanged(int index);
 	void SetMode(SequenceEditMode mode);
 	void SetSnapToGrid(bool snap);
@@ -280,7 +281,6 @@ public slots:
 	void ZoomIn();
 	void ZoomOut();
 	void ZoomReset();
-
 signals:
 	void CurrentChannelChanged(int index);
 	void ModeChanged(SequenceEditMode mode);

@@ -49,7 +49,7 @@ SoundChannelView::Context *SoundChannelView::EditModeContext::MousePress(QMouseE
 			sview->SelectSoundChannel(cview);
 		}
 		sview->ClearNotesSelection();
-		return new PreviewContext(this, cview, event->button(), iTime);
+		return new PreviewContext(this, cview, event->pos(), event->button(), iTime);
 	}
 	// if not selected, make selected (but don't continue operations)
 	if (!cview->current){
@@ -269,7 +269,7 @@ SoundChannelView::Context *SoundChannelView::WriteModeContext::MousePress(QMouse
 			sview->SelectSoundChannel(cview);
 		}
 		sview->ClearNotesSelection();
-		return new PreviewContext(this, cview, event->button(), iTime);
+		return new PreviewContext(this, cview, event->pos(), event->button(), iTime);
 	}
 	// if not selected, make selected (but don't continue operations)
 	if (!cview->current){
@@ -346,13 +346,13 @@ SoundChannelView::Context *SoundChannelView::WriteModeContext::MouseRelease(QMou
 
 SoundChannelView::PreviewContext::PreviewContext(
 		SoundChannelView::Context *parent, SoundChannelView *cview,
-		Qt::MouseButton button, int time
+		QPoint pos, Qt::MouseButton button, int time
 		)
 	: Context(cview, parent), locker(cview->sview)
-	, mouseButton(button), previewer(nullptr)
+	, mousePosition(pos), mouseButton(button), previewer(nullptr)
 {
 	previewer = new SoundChannelPreviewer(cview->GetChannel(), time, cview);
-	connect(previewer, SIGNAL(Progress(int)), this, SLOT(Progress(int)));
+	connect(previewer, SIGNAL(SmoothedProgress(int)), this, SLOT(Progress(int)));
 	connect(previewer, SIGNAL(Stopped()), previewer, SLOT(deleteLater()));
 	connect(this, SIGNAL(stop()), previewer, SLOT(Stop()), Qt::QueuedConnection);
 	sview->mainWindow->GetAudioPlayer()->Play(previewer);
@@ -369,10 +369,31 @@ SoundChannelView::PreviewContext::~PreviewContext()
 void SoundChannelView::PreviewContext::Progress(int currentTicks)
 {
 	sview->cursor->SetTime(currentTicks);
+	switch (mouseButton)
+	{
+	case Qt::MouseButton::LeftButton:
+	case Qt::MouseButton::RightButton:
+		if (qApp->keyboardModifiers() & Qt::ControlModifier){
+			sview->ScrollToLocation(currentTicks, mousePosition.y());
+		}else if (qApp->keyboardModifiers() & Qt::ShiftModifier){
+		}else{
+			sview->ShowLocation(currentTicks);
+		}
+		break;
+	case Qt::MouseButton::MiddleButton:
+		if (qApp->keyboardModifiers() & Qt::ControlModifier){
+			sview->ScrollToLocation(currentTicks, mousePosition.y());
+		}else if (qApp->keyboardModifiers() & Qt::ShiftModifier){
+			sview->ShowLocation(currentTicks);
+		}else{
+		}
+		break;
+	}
 }
 
-SoundChannelView::Context *SoundChannelView::PreviewContext::MouseMove(QMouseEvent *)
+SoundChannelView::Context *SoundChannelView::PreviewContext::MouseMove(QMouseEvent *event)
 {
+	mousePosition = event->pos();
 	return this;
 }
 

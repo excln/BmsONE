@@ -10,6 +10,8 @@ class UIUtil
 {
 public:
 	static const QSize ToolBarIconSize;
+	static const int LightAnimationInterval;
+	static const int HeavyAnimationInterval;
 	static void SetFont(QWidget *widget);
 };
 

@@ -123,6 +123,7 @@ class SequenceView::PreviewContext
 private:
 	SequenceView::CommandsLocker locker;
 	Qt::MouseButton mouseButton;
+	QPoint mousePosition;
 	SoundChannelPreviewer *previewer;
 
 	~PreviewContext();
@@ -134,7 +135,7 @@ private slots:
 	void Progress(int currentTicks);
 
 public:
-	PreviewContext(SequenceView::Context *parent, SequenceView *sview, Qt::MouseButton button, int time);
+	PreviewContext(SequenceView::Context *parent, SequenceView *sview, QPoint pos, Qt::MouseButton button, int time);
 
 	//virtual SequenceView::Context* Enter(QEnterEvent*);
 	//virtual SequenceView::Context* Leave(QEnterEvent*);

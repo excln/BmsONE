@@ -1537,6 +1537,12 @@ void SequenceView::ShowLocation(int location)
 	}
 }
 
+void SequenceView::ScrollToLocation(int location, int y)
+{
+	int scrollY = (viewLength - location)*zoomY - y;
+	verticalScrollBar()->setValue(scrollY);
+}
+
 /*
 bool SequenceView::paintEventPlayingHeader(QWidget *widget, QPaintEvent *event)
 {

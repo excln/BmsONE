@@ -85,7 +85,7 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 	sview->ClearBpmEventsSelection();
 	if (event->button() == Qt::RightButton && (event->modifiers() & Qt::AltModifier)){
 		sview->ClearNotesSelection();
-		return new PreviewContext(this, sview, Qt::RightButton, iTime);
+		return new PreviewContext(this, sview, event->pos(), event->button(), iTime);
 	}
 	if (noteHit){
 		switch (event->button()){
@@ -140,7 +140,7 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 		case Qt::MidButton:
 			sview->ClearNotesSelection();
 			sview->SelectSoundChannel(noteHit->GetChannelView());
-			return new PreviewContext(this, sview, event->button(), iTime);
+			return new PreviewContext(this, sview, event->pos(), event->button(), iTime);
 		}
 	}else if (lane >= 0){
 		// any button

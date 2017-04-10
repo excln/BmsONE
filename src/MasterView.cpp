@@ -729,20 +729,21 @@ MasterLaneView::Context *MasterLaneView::BaseContext::MousePress(QMouseEvent *ev
 		iTime = ml->sview->SnapToLowerFineGrid(time);
 	}
 	ml->sview->ClearAnySelection();
-	return new PreviewContext(ml, this, event->button(), iTime);
+	return new PreviewContext(ml, this, event->pos(), event->button(), iTime);
 }
 
 
-MasterLaneView::PreviewContext::PreviewContext(MasterLaneView *ml, MasterLaneView::Context *parent, Qt::MouseButton mouseButton, int time)
+MasterLaneView::PreviewContext::PreviewContext(MasterLaneView *ml, MasterLaneView::Context *parent, QPoint mousePosition, Qt::MouseButton mouseButton, int time)
 	: Context(ml, parent)
 	, button(mouseButton)
 	, previewer(nullptr)
+	, mousePosition(mousePosition)
 {
 	double realTime = ml->mview->document->GetAbsoluteTime(time);
 	previewer = new MasterPlayer(ml->mview->master, realTime * MasterCache::SampleRate, ml->mview->master);
 	connect(previewer, SIGNAL(Stopped()), previewer, SLOT(deleteLater()));
 	connect(previewer, SIGNAL(destroyed(QObject*)), this, SLOT(PreviewerDestroyed()));
-	connect(previewer, SIGNAL(Progress(int)), this, SLOT(Progress(int)));
+	connect(previewer, SIGNAL(SmoothedProgress(int)), this, SLOT(Progress(int)));
 	ml->sview->mainWindow->GetAudioPlayer()->Play(previewer);
 	ml->grabMouse();
 }
@@ -760,8 +761,9 @@ MasterLaneView::Context *MasterLaneView::PreviewContext::MousePress(QMouseEvent 
 	return this;
 }
 
-MasterLaneView::Context *MasterLaneView::PreviewContext::MouseMove(QMouseEvent *)
+MasterLaneView::Context *MasterLaneView::PreviewContext::MouseMove(QMouseEvent *event)
 {
+	mousePosition = event->pos();
 	return this;
 }
 
@@ -776,6 +778,26 @@ void MasterLaneView::PreviewContext::Progress(int currentSamples)
 {
 	int iTime = ml->mview->document->FromAbsoluteTime(double(currentSamples) / MasterCache::SampleRate);
 	ml->sview->cursor->SetTime(iTime);
+	switch (button)
+	{
+	case Qt::MouseButton::LeftButton:
+	case Qt::MouseButton::RightButton:
+		if (qApp->keyboardModifiers() & Qt::ControlModifier){
+			ml->sview->ScrollToLocation(iTime, mousePosition.y());
+		}else if (qApp->keyboardModifiers() & Qt::ShiftModifier){
+		}else{
+			ml->sview->ShowLocation(iTime);
+		}
+		break;
+	case Qt::MouseButton::MiddleButton:
+		if (qApp->keyboardModifiers() & Qt::ControlModifier){
+			ml->sview->ScrollToLocation(iTime, mousePosition.y());
+		}else if (qApp->keyboardModifiers() & Qt::ShiftModifier){
+			ml->sview->ShowLocation(iTime);
+		}else{
+		}
+		break;
+	}
 }
 
 void MasterLaneView::PreviewContext::PreviewerDestroyed()

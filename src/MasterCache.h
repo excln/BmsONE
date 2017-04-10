@@ -10,6 +10,7 @@
 class Document;
 class SoundChannel;
 class MasterCache;
+class Smoother;
 
 class MasterCacheWorkerBase : public QObject
 {
@@ -88,10 +89,15 @@ class MasterPlayer : public AudioPlaySource
 
 private:
 	MasterCache *master;
+	Smoother *smoother;
 	int position;
+
+private slots:
+	void SmoothedValue(qreal value);
 
 signals:
 	void Progress(int position);
+	void SmoothedProgress(int position);
 	void Stopped();
 
 public:
