@@ -169,6 +169,7 @@ private:
 private:
 	void UpdateViewportMargins();
 	void ReplaceSkin(Skin *newSkin);
+	int ChannelLaneWidth() const;
 	qreal Time2Y(qreal time) const;
 	qreal Y2Time(qreal y) const;
 	qreal TimeSpan2DY(qreal time) const;

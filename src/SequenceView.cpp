@@ -334,6 +334,18 @@ void SequenceView::ReplaceSkin(Skin *newSkin)
 	SkinChanged();
 }
 
+int SequenceView::ChannelLaneWidth() const
+{
+	switch (channelLaneMode){
+	case SequenceViewChannelLaneMode::COMPACT:
+	case SequenceViewChannelLaneMode::SIMPLE:
+		return SmallSoundChannelWidth;
+	case SequenceViewChannelLaneMode::NORMAL:
+	default:
+		return LargeSoundChannelWidth;
+	}
+}
+
 void SequenceView::ReplaceDocument(Document *newDocument)
 {
 	documentReady = false;
@@ -1084,6 +1096,11 @@ void SequenceView::VisibleRangeChanged() const
 {
 	if (!document)
 		return;
+
+	// don't need to notify channels UpdateVisibleRegions.
+	if (channelLaneMode == SequenceViewChannelLaneMode::SIMPLE)
+		return;
+
 	static const int my = 4;
 	int scrollY = verticalScrollBar()->value();
 	int top = 0 - my;
@@ -1228,18 +1245,7 @@ void SequenceView::UpdateVerticalScrollBar(qreal newTimeBegin)
 
 void SequenceView::OnViewportResize()
 {
-	int channelLaneWidth;
-	switch (channelLaneMode){
-	case SequenceViewChannelLaneMode::COMPACT:
-	case SequenceViewChannelLaneMode::SIMPLE:
-		channelLaneWidth = SmallSoundChannelWidth;
-		break;
-	case SequenceViewChannelLaneMode::NORMAL:
-	default:
-		channelLaneWidth = LargeSoundChannelWidth;
-		break;
-	}
-
+	int channelLaneWidth = ChannelLaneWidth();
 	QRect vr = viewport()->geometry();
 	timeLine->setGeometry(0, headerHeight, timeLineWidth, vr.height());
 	footerCornerEntry->setGeometry(0, vr.bottom()+1, timeLineWidth, footerHeight);
@@ -1435,16 +1441,17 @@ void SequenceView::MakeVisibleCurrentChannel()
 	if (currentChannel < 0){
 		return;
 	}
+	int channelLaneWidth = ChannelLaneWidth();
 	QRect rectChannel = soundChannels[currentChannel]->geometry();
 	int scrollX = horizontalScrollBar()->value();
 	if (rectChannel.left() < 0){
 		if (rectChannel.right() >= viewport()->width()){
-			scrollX = currentChannel*64 + (64-viewport()->width())/2;
+			scrollX = currentChannel*channelLaneWidth + (channelLaneWidth-viewport()->width())/2;
 		}else{
-			scrollX = currentChannel*64;
+			scrollX = currentChannel*channelLaneWidth;
 		}
 	}else if (rectChannel.right() >= viewport()->width()){
-		scrollX = (currentChannel+1)*64 - viewport()->width();
+		scrollX = (currentChannel+1)*channelLaneWidth - viewport()->width();
 	}
 	horizontalScrollBar()->setValue(scrollX);
 }

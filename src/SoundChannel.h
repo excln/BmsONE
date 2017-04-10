@@ -144,6 +144,7 @@ public:
 	const QImage &GetOverallWaveform() const{ return overallWaveform; } // .isNull()==true means uninitialized
 	void UpdateVisibleRegions(const QList<QPair<int, int>> &visibleRegionsTime);
 	void DrawRmsGraph(double location, double resolution, std::function<bool(Rms)> drawer) const;
+	void DrawActivityGraph(double tBegin, double tEnd, std::function<void(bool, int, int)> drawer) const;
 
 	QSet<int> GetAllLocations() const;
 	void ConvertResolution(int newResolution, int oldResolution);

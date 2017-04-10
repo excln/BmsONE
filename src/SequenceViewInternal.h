@@ -143,6 +143,7 @@ private:
 private:
 	SoundNoteView *HitTestBGPane(int y, int time);
 	void OnChannelMenu(QContextMenuEvent * event);
+	bool DrawsWaveform() const;
 
 private slots:
 	void NoteInserted(SoundNote note);

@@ -445,8 +445,8 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 			painter.drawLines(lines);
 		}
 	}
-	// waveform(rms)
-	{
+	if (DrawsWaveform()){
+		// waveform(rms)
 		QMap<int, SoundNoteView*>::const_iterator inote = notes.upperBound(tBegin);
 		quint32 color;
 		if (inote != notes.begin()){
@@ -486,6 +486,17 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 			}
 			return true;
 		});
+	}else{
+		// activity graph
+		const int graphWidth = backBuffer->width();
+		const int rx = graphWidth/2 - graphWidth/8;
+		const int rw = graphWidth/4;
+		channel->DrawActivityGraph(tBegin, tEnd, [=, &painter, this](bool laneType, int beg, int end){
+			int y1 = sview->Time2Y(beg);
+			int y2 = sview->Time2Y(end);
+			painter.fillRect(QRect(rx, y2, rw, y1 - y2),
+							 laneType ? QColor(0xCC, 0x99, 0x33) : QColor(0x00, 0x99, 0x00));
+		});
 	}
 }
 
@@ -519,6 +530,19 @@ void SoundChannelView::OnChannelMenu(QContextMenuEvent *event)
 	menu.addSeparator();
 	menu.addAction(actionDestroy);
 	menu.exec(event->globalPos());
+}
+
+bool SoundChannelView::DrawsWaveform() const
+{
+	switch (sview->channelLaneMode){
+	case SequenceViewChannelLaneMode::NORMAL:
+	case SequenceViewChannelLaneMode::COMPACT:
+		return true;
+	case SequenceViewChannelLaneMode::SIMPLE:
+		return false;
+	default:
+		return true;
+	}
 }
 
 void SoundChannelView::mouseMoveEvent(QMouseEvent *event)

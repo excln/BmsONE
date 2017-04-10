@@ -442,6 +442,50 @@ void SoundChannel::DrawRmsGraph(double location, double resolution, std::functio
 	while (drawer(Rms()));
 }
 
+void SoundChannel::DrawActivityGraph(double tBegin, double tEnd, std::function<void(bool, int, int)> drawer) const
+{
+	if (!waveSummary.IsValid()){
+		return;
+	}
+	if (tBegin >= tEnd)
+		return;
+	QMutexLocker lock(&cacheMutex);
+
+	auto icache = cache.upperBound(tBegin);
+	auto icacheEnd = cache.upperBound(tEnd);
+	if (icache != cache.begin())
+		icache--;
+	while (icache != icacheEnd){
+		// 音声が鳴り始めるまでスキップ
+		while (icache != icacheEnd && icache.value().currentSamplePosition < 0)
+			icache++;
+		if (icache == icacheEnd)
+			break;
+		int time = icache.key();
+		// 鳴り終わり（またはtEnd超え）の時刻を取得（サンプル位置が0に戻るのはスルー）
+		while (icache != icacheEnd && icache.value().currentSamplePosition >= 0)
+			icache++;
+		int timeEnd = icache == icacheEnd ? tEnd : icache.key();
+		// 鳴り始めのノーツレーン種別を取得
+		auto inote = notes.upperBound(time);
+		auto inoteEnd = notes.upperBound(timeEnd);
+		if (inote != notes.begin())
+			inote--;
+		bool laneType = inote->lane > 0;
+		// 鳴り終わりまでにわたり、レーン種別の変化を追いかけながら描画
+		while (++inote != inoteEnd){
+			bool newLaneType = inote->lane > 0;
+			if (newLaneType != laneType){
+				drawer(laneType, time, inote.key());
+				time = inote.key();
+				laneType = newLaneType;
+			}
+		}
+		// 残りの部分（timeからtimeEndまで）を埋める
+		drawer(laneType, time, timeEnd);
+	}
+}
+
 QSet<int> SoundChannel::GetAllLocations() const
 {
 	QSet<int> locs;
