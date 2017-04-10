@@ -316,15 +316,15 @@ void MiniMapView::UpdateBuffer()
 			}else{
 				painter.setPen(QColor(0x66, 0x66, 0x66));
 			}
-			painter.drawLine(width()/2, height()-1-y, width()/2+width()/2*peak.L, height()-1-y);
-			painter.drawLine(width()/2, height()-1-y, width()/2-width()/2*peak.R, height()-1-y);
+			painter.drawLine(width()/2, height()-1-y, width()/2-width()/2*peak.L, height()-1-y);
+			painter.drawLine(width()/2, height()-1-y, width()/2+width()/2*peak.R, height()-1-y);
 			if (rmsCacheOfTicks[t].available){
 				painter.setPen(QColor(0x66, 0xCC, 0x66));
 			}else{
 				painter.setPen(QColor(0xCC, 0xCC, 0xCC));
 			}
-			painter.drawLine(width()/2, height()-1-y, width()/2+width()/2*rms.L, height()-1-y);
-			painter.drawLine(width()/2, height()-1-y, width()/2-width()/2*rms.R, height()-1-y);
+			painter.drawLine(width()/2, height()-1-y, width()/2-width()/2*rms.L, height()-1-y);
+			painter.drawLine(width()/2, height()-1-y, width()/2+width()/2*rms.R, height()-1-y);
 		}else{
 			painter.setPen(QColor(0x66, 0xCC, 0x66));
 			painter.drawLine(width()/2, height()-1-y, width()/2, height()-1-y);
@@ -586,15 +586,15 @@ void MasterLaneView::UpdateBackBuffer(const QRect &rect)
 			}else{
 				painter.setPen(QColor(0x66, 0x66, 0x66));
 			}
-			painter.drawLine(width()/2, y, width()/2+width()/2*peak.L, y);
-			painter.drawLine(width()/2, y, width()/2-width()/2*peak.R, y);
+			painter.drawLine(width()/2, y, width()/2-width()/2*peak.L, y);
+			painter.drawLine(width()/2, y, width()/2+width()/2*peak.R, y);
 			if (mview->rmsCacheOfTicks[t].available){
 				painter.setPen(QColor(0x66, 0xCC, 0x66));
 			}else{
 				painter.setPen(QColor(0x99, 0x99, 0x99));
 			}
-			painter.drawLine(width()/2, y, width()/2+width()/2*rms.L, y);
-			painter.drawLine(width()/2, y, width()/2-width()/2*rms.R, y);
+			painter.drawLine(width()/2, y, width()/2-width()/2*rms.L, y);
+			painter.drawLine(width()/2, y, width()/2+width()/2*rms.R, y);
 		}else{
 			painter.setPen(QColor(0x66, 0xCC, 0x66));
 			painter.drawLine(width()/2, y, width()/2, y);
