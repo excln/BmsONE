@@ -12,9 +12,13 @@ public:
 	static const QSize ToolBarIconSize;
 	static const int LightAnimationInterval;
 	static const int HeavyAnimationInterval;
+	static QFont GetPlatformDefaultUIFont();
 	static void SetFont(QWidget *widget);
 	static void SetFontMainWindow(QWidget *widget);
 	static bool DragBegins(QPoint origin, QPoint pos);
+
+	static const char *SettingsUIFontKey;
+	static const char *SettingsUIFontIsDefaultKey;
 };
 
 

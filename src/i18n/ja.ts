@@ -936,12 +936,12 @@ All files (*.*)</source>
         <translation>プレビュー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1104"/>
+        <location filename="../MainWindow.cpp" line="1109"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1105"/>
+        <location filename="../MainWindow.cpp" line="1110"/>
         <source>The following files are not in the current bmson directory. Are you sure to add these files?</source>
         <translation>以下のファイルは現在のbmsonディレクトリの中にありません。追加してもよろしいですか?</translation>
     </message>
@@ -1310,34 +1310,44 @@ All files (*.*)</source>
 <context>
     <name>PrefGeneralPage</name>
     <message>
-        <location filename="../Preferences.cpp" line="105"/>
+        <location filename="../Preferences.cpp" line="108"/>
         <source>(Requires restart)</source>
         <translation>(再起動が必要)</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="106"/>
+        <location filename="../Preferences.cpp" line="109"/>
         <source>Language:</source>
         <translation>言語:</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="107"/>
+        <location filename="../Preferences.cpp" line="110"/>
         <source>Select a language used in this application. After selecting one, restart BmsONE.</source>
         <translation>このアプリケーションで使用される言語を選択します。選択後、アプリケーションを再起動してください。</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="116"/>
+        <location filename="../Preferences.cpp" line="119"/>
         <source>Save Format:</source>
         <translation>保存フォーマット:</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="117"/>
+        <location filename="../Preferences.cpp" line="120"/>
         <source>&lt;p&gt;Select a version of BMSON format to save files in.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Default&lt;/b&gt; (recommended): the most suitable version for current BmsONE.&lt;/p&gt;</source>
         <translation>&lt;p&gt;保存する際の BMSON フォーマットのバージョンを選択します。&lt;/p&gt;&lt;p&gt;&lt;b&gt;Default&lt;/b&gt; (推奨): 現在のBmsONEに最も適したバージョンが選択されます。&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="125"/>
+        <location filename="../Preferences.cpp" line="128"/>
         <source>Save JSON Format:</source>
         <translation>JSON保存フォーマット:</translation>
+    </message>
+    <message>
+        <location filename="../Preferences.cpp" line="134"/>
+        <source>Reset</source>
+        <translation>リセット</translation>
+    </message>
+    <message>
+        <location filename="../Preferences.cpp" line="137"/>
+        <source>UI Font:</source>
+        <translation>UIフォント</translation>
     </message>
 </context>
 <context>
@@ -1390,22 +1400,22 @@ All files (*.*)</source>
 <context>
     <name>Preferences</name>
     <message>
-        <location filename="../Preferences.cpp" line="11"/>
+        <location filename="../Preferences.cpp" line="12"/>
         <source>Preferences</source>
         <translation>環境設定</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="30"/>
+        <location filename="../Preferences.cpp" line="33"/>
         <source>General</source>
         <translation>全般</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="38"/>
+        <location filename="../Preferences.cpp" line="41"/>
         <source>Edit</source>
         <translation>編集</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="46"/>
+        <location filename="../Preferences.cpp" line="49"/>
         <source>Preview</source>
         <translation>プレビュー</translation>
     </message>
@@ -1430,7 +1440,7 @@ All files (*.*)</source>
         <translation>&lt;p&gt;保存する際の BMSON フォーマットのバージョンを選択します。&lt;/p&gt;&lt;p&gt;&lt;b&gt;Default&lt;/b&gt; (推奨): 現在のBmsONEに最も適したバージョンが選択されます。&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="13"/>
+        <location filename="../Preferences.cpp" line="14"/>
         <source>Close</source>
         <translation>閉じる</translation>
     </message>

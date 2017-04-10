@@ -21,9 +21,19 @@ private:
 	QStringList outputFormatList;
 	QComboBox *saveJsonFormat;
 	QStringList saveJsonFormatList;
+	QPushButton *fontButton;
 
 	QString LanguageKeyOf(int index);
 	int LanguageIndexOf(QString key);
+
+	bool uiFontDefault;
+	QFont uiFont;
+
+	void UpdateUIFont();
+
+private slots:
+	void OnFontButton();
+	void OnFontResetButton();
 
 public:
 	PrefGeneralPage(QWidget *parent);

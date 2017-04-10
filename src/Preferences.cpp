@@ -3,6 +3,7 @@
 #include "PrefEdit.h"
 #include "PrefPreview.h"
 
+
 Preferences::Preferences(MainWindow *mainWindow)
 	: QDialog(mainWindow)
 	, mainWindow(mainWindow)
@@ -18,7 +19,9 @@ Preferences::Preferences(MainWindow *mainWindow)
 	list = new QListWidget();
 	list->setIconSize(QSize(32, 32));
 	list->setMovement(QListView::Static);
-	list->setMaximumWidth(120);
+	list->setMinimumWidth(100);
+	list->setMaximumWidth(140);
+	list->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
 	pages = new QStackedWidget;
 
@@ -124,6 +127,18 @@ PrefGeneralPage::PrefGeneralPage(QWidget *parent)
 		saveJsonFormat->addItems(saveJsonFormatList);
 		layout->addRow(tr("Save JSON Format:"), saveJsonFormat);
 	}
+	{
+		auto fontLayout = new QHBoxLayout();
+		fontButton = new QPushButton();
+		auto fontResetButton = new QToolButton();
+		fontResetButton->setText(tr("Reset"));
+		fontLayout->addWidget(fontButton, 1);
+		fontLayout->addWidget(fontResetButton);
+		layout->addRow(tr("UI Font:"), fontLayout);
+
+		connect(fontButton, SIGNAL(clicked(bool)), this, SLOT(OnFontButton()));
+		connect(fontResetButton, SIGNAL(clicked(bool)), this, SLOT(OnFontResetButton()));
+	}
 	setLayout(layout);
 }
 
@@ -151,11 +166,49 @@ int PrefGeneralPage::LanguageIndexOf(QString key)
 	}
 }
 
+void PrefGeneralPage::UpdateUIFont()
+{
+	QString familyDisplay = uiFont.family().mid(0, 12);
+	if (familyDisplay.size() < uiFont.family().size())
+		familyDisplay += "...";
+	if (uiFontDefault){
+		fontButton->setText(QString("Default (%1, %2pt)").arg(familyDisplay).arg(uiFont.pointSize()));
+	}else{
+		fontButton->setText(QString("%1, %2pt").arg(familyDisplay).arg(uiFont.pointSizeF()));
+	}
+}
+
+void PrefGeneralPage::OnFontButton()
+{
+	bool ok;
+	QFont selectedFont = QFontDialog::getFont(&ok, uiFont, this);
+	if (ok){
+		uiFont = selectedFont;
+		uiFontDefault = false;
+		UpdateUIFont();
+	}
+}
+
+void PrefGeneralPage::OnFontResetButton()
+{
+	uiFont = UIUtil::GetPlatformDefaultUIFont();
+	uiFontDefault = true;
+	UpdateUIFont();
+}
+
 void PrefGeneralPage::load()
 {
 	outputFormat->setCurrentText(BmsonIO::GetSaveFormatString());
 	language->setCurrentIndex(LanguageIndexOf(App::Instance()->GetSettings()->value(App::SettingsLanguageKey).toString()));
 	saveJsonFormat->setCurrentText(BmsonIO::GetSaveJsonFormatString());
+
+	uiFontDefault = App::Instance()->GetSettings()->value(UIUtil::SettingsUIFontIsDefaultKey, true).toBool();
+	if (uiFontDefault){
+		uiFont = UIUtil::GetPlatformDefaultUIFont();
+	}else{
+		uiFont.fromString(App::Instance()->GetSettings()->value(UIUtil::SettingsUIFontKey).toString());
+	}
+	UpdateUIFont();
 }
 
 void PrefGeneralPage::store()
@@ -167,4 +220,8 @@ void PrefGeneralPage::store()
 	BmsonIO::SetSaveFormatString(outputFormatList[outputFormat->currentIndex()]);
 	// Json Format
 	BmsonIO::SetSaveJsonFormatString(saveJsonFormat->currentText());
+	// UI Font
+	App::Instance()->GetSettings()->setValue(UIUtil::SettingsUIFontKey, uiFont.toString());
+	App::Instance()->GetSettings()->setValue(UIUtil::SettingsUIFontIsDefaultKey, uiFontDefault);
+	App::Instance()->GetMainWindow()->setFont(uiFont);
 }

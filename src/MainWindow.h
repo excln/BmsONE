@@ -281,7 +281,8 @@ public:
 	virtual ~App();
 
 	static App* Instance();
-	QSettings *GetSettings(){ return settings; }
+	QSettings *GetSettings() const{ return settings; }
+	MainWindow *GetMainWindow() const{ return mainWindow; }
 };
 
 
