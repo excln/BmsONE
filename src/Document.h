@@ -192,6 +192,7 @@ private:
 	void RemoveSoundChannelInternal(SoundChannel *channel, int index);
 	bool DetectConflictsAroundNotes(const QMultiMap<int, SoundNote> &notes) const;
 	void ConvertResolutionInternal(int newResolution);
+	bool IsFilePathTraversalInternal(QString path) const;
 
 private slots:
 	void OnInitBpmChanged();

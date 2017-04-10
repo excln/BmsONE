@@ -136,12 +136,18 @@ QString Document::GetAbsolutePath(QString fileName) const
 	return directory.absoluteFilePath(fileName);
 }
 
+bool Document::IsFilePathTraversalInternal(QString path) const
+{
+	QString relativePath = directory.relativeFilePath(path);
+	return relativePath.startsWith("../") || !QDir(relativePath).isRelative();
+}
+
 bool Document::IsFilePathTraversal(QString path) const
 {
 	if (directory.isRoot()){
 		return false;
 	}else{
-		return directory.relativeFilePath(path).startsWith("../");
+		return IsFilePathTraversalInternal(path);
 	}
 }
 
@@ -153,7 +159,7 @@ QStringList Document::FindTraversalFilePaths(const QStringList &filePaths) const
 		if (dirTemp.isRoot()){
 			dirTemp = QFileInfo(path).absoluteDir();
 		}else{
-			if (directory.relativeFilePath(path).startsWith("../")){
+			if (IsFilePathTraversalInternal(path)){
 				traversalPaths << path;
 			}
 		}
