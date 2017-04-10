@@ -410,7 +410,8 @@ void SequenceView::ClearNotesSelection()
 {
 	selectedNotes.clear();
 	ClearChannelSelection();
-	SelectChannel(currentChannel);
+	if (currentChannel >= 0)
+		SelectChannel(currentChannel);
 	playingPane->update();
 	for (auto cview : soundChannels){
 		cview->update();
@@ -1762,6 +1763,26 @@ void SequenceView::PreviewSingleNote(SoundNoteView *nview)
 				nview->GetChannelView()); // parent=channelView (stop sound when channel is deleted)
 	connect(previewer, SIGNAL(Stopped()), previewer, SLOT(deleteLater()));
 	mainWindow->GetAudioPlayer()->Play(previewer);
+}
+
+void SequenceView::PreviewMultiNote(QList<SoundNoteView *> nviews)
+{
+	if (nviews.size() == 0)
+		return;
+	if (nviews.size() == 1){
+		PreviewSingleNote(nviews[0]);
+		return;
+	}
+	QList<AudioPlaySource*> prevs;
+	for (auto nview : nviews){
+		SoundChannelNotePreviewer *previewer = new SoundChannelNotePreviewer(
+					nview->GetChannelView()->GetChannel(),
+					nview->GetNote().location,
+					nview->GetChannelView()); // parent=channelView (stop sound when channel is deleted)
+		connect(previewer, SIGNAL(Stopped()), previewer, SLOT(deleteLater()));
+		prevs << previewer;
+	}
+	mainWindow->GetAudioPlayer()->Play(new AudioPlayConstantSourceMix(this, prevs));
 }
 /*
 bool SequenceView::paintEventHeaderEntity(QWidget *widget, QPaintEvent *event)

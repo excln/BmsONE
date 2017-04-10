@@ -283,16 +283,16 @@ QMap<int, QMap<int, NoteConflict>> Document::FindConflictsByLanes(int timeBegin,
 				conf.location = location;
 				conf.involvedNotes = QList<QPair<SoundChannel*, SoundNote>>();
 				conf.type = 0;
-			}
-			for (auto n = currentNotesByLanes[lane].begin(); n != currentNotesByLanes[lane].end(); n++){
-				conf.involvedNotes << QPair<SoundChannel*, SoundNote>(n.key(), n.value());
-				if (n.value().location == location){
-					conf.type |= NoteConflict::LAYERING_FLAG;
-					if (n.value().length != pair.second.length){
-						conf.type |= NoteConflict::NONUNIFORM_LAYERING_FLAG;
+				for (auto n = currentNotesByLanes[lane].begin(); n != currentNotesByLanes[lane].end(); n++){
+					conf.involvedNotes << QPair<SoundChannel*, SoundNote>(n.key(), n.value());
+					if (n.value().location == location){
+						conf.type |= NoteConflict::LAYERING_FLAG;
+						if (n.value().length != pair.second.length){
+							conf.type |= NoteConflict::NONUNIFORM_LAYERING_FLAG;
+						}
+					}else{
+						conf.type |= NoteConflict::OVERLAPPING_FLAG;
 					}
-				}else{
-					conf.type |= NoteConflict::OVERLAPPING_FLAG;
 				}
 			}
 			conf.involvedNotes << pair;

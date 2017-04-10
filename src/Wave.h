@@ -256,6 +256,32 @@ public:
 };
 
 
+class AudioPlayConstantSourceMix : public AudioPlaySource
+{
+	Q_OBJECT
+
+private:
+	QMutex mtx;
+	QList<AudioPlaySource*> sources;
+	SampleType *internalBuf;
+	static const int BufferSize;
+
+	//static float sigmoid(float x);
+	//static float saturate(float t, float x);
+
+public:
+	AudioPlayConstantSourceMix(QObject *parent, QList<AudioPlaySource *> sources);
+	~AudioPlayConstantSourceMix();
+
+	virtual void AudioPlayRelease();
+	virtual int AudioPlayRead(SampleType *internalBuf, int bufferSampleCount);
+
+private slots:
+	void OnSourceDestroyed(QObject*source);
+};
+
+
 
 
 #endif // WAV_H
+

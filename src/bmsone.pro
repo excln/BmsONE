@@ -92,7 +92,8 @@ SOURCES += main.cpp\
     PreviewConfig.cpp \
     PrefPreview.cpp \
     ExternalViewer.cpp \
-    ExternalViewerTools.cpp
+    ExternalViewerTools.cpp \
+    WaveMix.cpp
 
 HEADERS  += MainWindow.h \
     History.h \

@@ -196,6 +196,7 @@ private:
 	//void LeftClickOnExistingNote();
 	//void RightClickOnExistingNote();
 	void PreviewSingleNote(SoundNoteView *nview);
+	void PreviewMultiNote(QList<SoundNoteView*> nviews);
 	void MakeVisibleCurrentChannel();
 	void BpmEventsSelectionUpdated();
 

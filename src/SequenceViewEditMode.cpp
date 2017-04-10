@@ -146,9 +146,7 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 			for (auto note : notes){
 				sview->SetCurrentChannel(note->GetChannelView(), true);
 			}
-			for (auto note : notes){
-				sview->PreviewSingleNote(note);
-			}
+			sview->PreviewMultiNote(notes);
 
 			//if (event->modifiers() & Qt::ShiftModifier){
 			//	// edit long notes
@@ -183,8 +181,8 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 					sview->ClearNotesSelection();
 					for (auto note : notes){
 						sview->SelectAdditionalNote(note);
-						sview->PreviewSingleNote(note);
 					}
+					sview->PreviewMultiNote(notes);
 				}
 			}
 			if (conflicts){
