@@ -106,11 +106,12 @@ SequenceView::Context *SequenceView::WriteModeContext::PlayingPane_MousePress(QM
 		{
 			// if single note in the current channel, delete it
 			// otherwise, simply select them
+			auto note = notes[0]->GetNote();
 			if (notes.size() == 1 && notes[0]->GetChannelView()->IsCurrent()
-				&& notes[0]->GetChannelView()->GetChannel()->RemoveNote(notes[0]->GetNote()))
+				&& notes[0]->GetChannelView()->GetChannel()->RemoveNote(note))
 			{
 				sview->ClearNotesSelection();
-				sview->cursor->SetNewSoundNote(notes[0]->GetNote());
+				sview->cursor->SetNewSoundNote(note);
 			}else{
 				sview->ClearNotesSelection();
 				for (auto note : notes)

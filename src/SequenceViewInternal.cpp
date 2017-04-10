@@ -78,7 +78,9 @@ void SoundChannelView::NoteRemoved(SoundNote note)
 	if (sview->selectedNotes.contains(nv)){
 		sview->DeselectNote(nv);
 	}
-	delete nv;
+	if (nv){
+		delete nv;
+	}
 	UpdateWholeBackBuffer();
 	update();
 	sview->playingPane->update();
