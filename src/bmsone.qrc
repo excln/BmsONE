@@ -42,5 +42,9 @@
         <file>images/keys/c-R-red.png</file>
         <file>images/keys/c-R-yellow.png</file>
         <file>images/symbols/solo.png</file>
+        <file>images/symbols/search.png</file>
+        <file>images/symbols/clear.png</file>
+        <file>images/symbols/next.png</file>
+        <file>images/symbols/previous.png</file>
     </qresource>
 </RCC>

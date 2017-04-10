@@ -87,7 +87,8 @@ SOURCES += main.cpp\
     MasterView.cpp \
     EditConfig.cpp \
     PrefEdit.cpp \
-    ScalarRegion.cpp
+    ScalarRegion.cpp \
+    ChannelFindTools.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -157,7 +158,8 @@ HEADERS  += MainWindow.h \
     PrefEdit.h \
     ScalarRegion.h \
     AppInfo.h \
-    ResolutionUtil.h
+    ResolutionUtil.h \
+    ChannelFindTools.h
 
 FORMS    +=
 

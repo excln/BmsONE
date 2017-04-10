@@ -28,6 +28,10 @@ SymbolIconManager::SymbolIconManager()
 	icons.insert(Icon::SlicingSoundNote, Load("slicing_sound_note"));
 	icons.insert(Icon::Settings, Load("settings"));
 	icons.insert(Icon::Solo, Load("solo"));
+	icons.insert(Icon::Search, Load("search"));
+	icons.insert(Icon::Clear, Load("clear"));
+	icons.insert(Icon::Previous, Load("previous"));
+	icons.insert(Icon::Next, Load("next"));
 }
 
 QIcon SymbolIconManager::Load(QString name)

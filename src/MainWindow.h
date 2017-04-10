@@ -7,6 +7,7 @@
 #include "SoundChannel.h"
 #include "AudioPlayer.h"
 #include "SequenceTools.h"
+#include "ChannelFindTools.h"
 
 class SequenceView;
 class InfoView;
@@ -75,6 +76,7 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 	friend class SequenceTools;
+	friend class ChannelFindTools;
 
 public:
 	static const char *SettingsGroup;
@@ -89,6 +91,7 @@ private:
 	StatusBar *statusBar;
 	AudioPlayer *audioPlayer;
 	SequenceTools *sequenceTools;
+	ChannelFindTools *channelFindTools;
 	SequenceView *sequenceView;
 	InfoView *infoView;
 	ChannelInfoView *channelInfoView;
@@ -141,6 +144,9 @@ private:
 	QAction *actionChannelDestroy;
 	QAction *actionChannelSelectFile;
 	QAction *actionChannelPreviewSource;
+	QAction *actionChannelFind;
+	QAction *actionChannelFindNext;
+	QAction *actionChannelFindPrev;
 
 	QAction *actionHelpAbout;
 	QAction *actionHelpAboutQt;
@@ -187,6 +193,10 @@ private slots:
 	void OnBpmEdited();
 
 	void SaveFormatChanged(BmsonIO::BmsonVersion version);
+
+	void ChannelFindKeywordChanged(QString keyword);
+	void ChannelFindNext(QString keyword);
+	void ChannelFindPrev(QString keyword);
 
 signals:
 	void CurrentChannelChanged(int ichannel);

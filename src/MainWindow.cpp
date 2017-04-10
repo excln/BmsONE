@@ -66,22 +66,13 @@ MainWindow::MainWindow(QSettings *settings)
 
 	actionEditUndo = new QAction(tr("Undo"), this);
 	actionEditUndo->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Undo));
-	actionEditUndo->setShortcut(QKeySequence::Undo);
+	actionEditUndo->setShortcuts(QKeySequence::Undo);
 	SharedUIHelper::RegisterGlobalShortcut(actionEditUndo);
 	QObject::connect(actionEditUndo, SIGNAL(triggered()), this, SLOT(EditUndo()));
 
 	actionEditRedo = new QAction(tr("Redo"), this);
 	actionEditRedo->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Redo));
-#ifdef Q_OS_WIN
-	{
-		QList<QKeySequence> shortcutsRedo;
-		shortcutsRedo.append(QKeySequence::Redo);
-		shortcutsRedo.append(Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_Z);
-		actionEditRedo->setShortcuts(shortcutsRedo);
-	}
-#else
-	actionEditRedo->setShortcut(QKeySequence::Redo);
-#endif
+	actionEditRedo->setShortcuts(QKeySequence::Redo);
 	SharedUIHelper::RegisterGlobalShortcut(actionEditRedo);
 	QObject::connect(actionEditRedo, SIGNAL(triggered()), this, SLOT(EditRedo()));
 
@@ -212,6 +203,21 @@ MainWindow::MainWindow(QSettings *settings)
 	SharedUIHelper::RegisterGlobalShortcut(actionChannelPreviewSource);
 	connect(actionChannelPreviewSource, SIGNAL(triggered(bool)), this, SLOT(ChannelPreviewSource()));
 
+	actionChannelFind = new QAction(tr("Find..."), this);
+	actionChannelFind->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Search));
+	actionChannelFind->setShortcut(QKeySequence::Find);
+	SharedUIHelper::RegisterGlobalShortcut(actionChannelFind);
+
+	actionChannelFindNext = new QAction(tr("Find Next"), this);
+	actionChannelFindNext->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Next));
+	actionChannelFindNext->setShortcuts(QKeySequence::FindNext);
+	SharedUIHelper::RegisterGlobalShortcut(actionChannelFindNext);
+
+	actionChannelFindPrev = new QAction(tr("Find Previous"), this);
+	actionChannelFindPrev->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Previous));
+	actionChannelFindPrev->setShortcuts(QKeySequence::FindPrevious);
+	SharedUIHelper::RegisterGlobalShortcut(actionChannelFindPrev);
+
 	actionHelpAbout = new QAction(tr("About BmsONE..."), this);
 	SharedUIHelper::RegisterGlobalShortcut(actionHelpAbout);
 	connect(actionHelpAbout, SIGNAL(triggered()), this, SLOT(HelpAbout()));
@@ -284,6 +290,10 @@ MainWindow::MainWindow(QSettings *settings)
 	menuChannel->addSeparator();
 	menuChannel->addAction(actionChannelPrev);
 	menuChannel->addAction(actionChannelNext);
+	auto *menuChannelFind = menuChannel->addMenu(tr("Find"));
+	menuChannelFind->addAction(actionChannelFind);
+	menuChannelFind->addAction(actionChannelFindNext);
+	menuChannelFind->addAction(actionChannelFindPrev);
 	menuChannel->addSeparator();
 	menuChannel->addAction(actionChannelMoveLeft);
 	menuChannel->addAction(actionChannelMoveRight);
@@ -341,6 +351,12 @@ MainWindow::MainWindow(QSettings *settings)
 	addToolBar(audioPlayer);
 	menuViewToolBars->insertAction(actionViewTbSeparator, audioPlayer->toggleViewAction());
 
+	channelFindTools = new ChannelFindTools("Channel Find Tools", tr("Find Channels"), this);
+	UIUtil::SetFont(channelFindTools);
+	channelFindTools->setIconSize(UIUtil::ToolBarIconSize);
+	addToolBar(channelFindTools);
+	menuViewToolBars->insertAction(actionViewTbSeparator, channelFindTools->toggleViewAction());
+
 	selectedObjectView = new SelectedObjectView(this);
 	UIUtil::SetFont(selectedObjectView);
 	selectedObjectView->setObjectName("Selected Objects");
@@ -380,6 +396,7 @@ MainWindow::MainWindow(QSettings *settings)
 
 	// SequenceView-SequenceTools Initial Binding
 	sequenceTools->ReplaceSequenceView(sequenceView);
+	channelFindTools->ReplaceSequenceView(sequenceView);
 
 
 	// Initial Document
@@ -728,6 +745,79 @@ void MainWindow::SaveFormatChanged(BmsonIO::BmsonVersion version)
 		return;
 	document->SetOutputVersion(version);
 }
+
+
+static bool matchChannelNameKeyword(QString channelName, QString keyword)
+{
+	// TODO
+	return channelName.contains(keyword, Qt::CaseInsensitive);
+}
+
+void MainWindow::ChannelFindKeywordChanged(QString keyword)
+{
+	if (currentChannel < 0)
+		return;
+	if (matchChannelNameKeyword(document->GetSoundChannels()[currentChannel]->GetName(), keyword))
+		return;
+	// similar to ChannelFindNext but does not beep
+	for (int i=currentChannel+1; i<document->GetSoundChannels().size(); i++){
+		if (matchChannelNameKeyword(document->GetSoundChannels()[i]->GetName(), keyword)){
+			currentChannel = i;
+			emit CurrentChannelChanged(currentChannel);
+			return;
+		}
+	}
+	for (int i=0; i<currentChannel; i++){
+		if (matchChannelNameKeyword(document->GetSoundChannels()[i]->GetName(), keyword)){
+			currentChannel = i;
+			emit CurrentChannelChanged(currentChannel);
+			return;
+		}
+	}
+}
+
+void MainWindow::ChannelFindNext(QString keyword)
+{
+	if (currentChannel < 0)
+		return;
+	for (int i=currentChannel+1; i<document->GetSoundChannels().size(); i++){
+		if (matchChannelNameKeyword(document->GetSoundChannels()[i]->GetName(), keyword)){
+			currentChannel = i;
+			emit CurrentChannelChanged(currentChannel);
+			return;
+		}
+	}
+	for (int i=0; i<=currentChannel; i++){
+		if (matchChannelNameKeyword(document->GetSoundChannels()[i]->GetName(), keyword)){
+			currentChannel = i;
+			emit CurrentChannelChanged(currentChannel);
+			return;
+		}
+	}
+	qApp->beep();
+}
+
+void MainWindow::ChannelFindPrev(QString keyword)
+{
+	if (currentChannel < 0)
+		return;
+	for (int i=currentChannel-1; i>=0; i--){
+		if (matchChannelNameKeyword(document->GetSoundChannels()[i]->GetName(), keyword)){
+			currentChannel = i;
+			emit CurrentChannelChanged(currentChannel);
+			return;
+		}
+	}
+	for (int i=document->GetSoundChannels().size()-1; i>=currentChannel; i--){
+		if (matchChannelNameKeyword(document->GetSoundChannels()[i]->GetName(), keyword)){
+			currentChannel = i;
+			emit CurrentChannelChanged(currentChannel);
+			return;
+		}
+	}
+	qApp->beep();
+}
+
 
 void MainWindow::ReplaceDocument(Document *newDocument)
 {

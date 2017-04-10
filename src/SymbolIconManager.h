@@ -32,6 +32,10 @@ public:
 		SlicingSoundNote,
 		Settings,
 		Solo,
+		Search,
+		Clear,
+		Previous,
+		Next,
 	};
 
 private:
