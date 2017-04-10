@@ -125,6 +125,8 @@ SequenceView::SequenceView(MainWindow *parent)
 	connect(actionDeleteSelectedNotes, SIGNAL(triggered(bool)), this, SLOT(DeleteSelectedObjects()));
 	actionTransferSelectedNotes = new QAction(tr("Move to BGM Lanes"), this);
 	connect(actionTransferSelectedNotes, SIGNAL(triggered(bool)), this, SLOT(TransferSelectedNotesToBgm()));
+	actionSeparateLayeredNotes = new QAction(tr("Separate Layered Notes"), this);
+	connect(actionSeparateLayeredNotes, SIGNAL(triggered(bool)), this, SLOT(SeparateLayeredNotes()));
 
 	QSettings *settings = mainWindow->GetSettings();
 	settings->beginGroup(SettingsGroup);
@@ -581,17 +583,79 @@ void SequenceView::TransferSelectedNotesToKey()
 	if (lockCommands > 0)
 		return;
 	QMultiMap<SoundChannel*, SoundNote> notes;
+	QMap<int, QSet<int>> excludeMap;
 	for (auto nv : selectedNotes){
 		SoundNote n = nv->GetNote();
+		if (!excludeMap.contains(n.location))
+			excludeMap.insert(n.location, QSet<int>());
 		if (n.lane == 0){
-			n.lane = GetSomeVacantLane(n.location);
+			n.lane = GetSomeVacantLane(n.location, excludeMap[n.location]);
 			n.length = 0;
+			excludeMap[n.location].insert(n.lane);
 		}
 		notes.insert(nv->GetChannelView()->GetChannel(), n);
 	}
 	if (notes.empty()){
 		qApp->beep();
 		return;
+	}
+	ClearBpmEventsSelection();
+	ClearNotesSelection();
+	if (!document->MultiChannelUpdateSoundNotes(notes)){
+		qApp->beep();
+		// don't return
+	}
+
+	// Select transferred notes
+	for (auto i=notes.begin(); i!=notes.end(); i++){
+		for (auto cview : soundChannels){
+			if (cview->GetChannel() == i.key()){
+				selectedNotes.insert(cview->GetNotes()[i.value().location]);
+				break;
+			}
+		}
+	}
+	playingPane->update();
+	for (auto cview : soundChannels){
+		cview->update();
+	}
+	emit SelectionChanged();
+}
+
+void SequenceView::SeparateLayeredNotes()
+{
+	if (lockCommands > 0)
+		return;
+	int minTime = -1, maxTime = 0;
+	for (auto nv : selectedNotes){
+		SoundNote n = nv->GetNote();
+		if (n.lane > 0){
+			if (n.location > maxTime){
+				maxTime = n.location;
+			}
+			if (n.location < minTime || minTime==-1){
+				minTime = n.location;
+			}
+		}
+	}
+	auto conflicts = document->FindConflictsByLanes(minTime, maxTime+1);
+	QMultiMap<SoundChannel*, SoundNote> notes;
+	QMap<int, QSet<int>> excludeMap;
+	for (auto nv : selectedNotes){
+		SoundNote n = nv->GetNote();
+		if (conflicts.contains(n.lane) && conflicts[n.lane].contains(n.location)){
+			auto conf = conflicts[n.lane][n.location];
+			if (conf.IsLayering() && (conf.IsIllegal() || !conf.IsMainNote(nv->GetChannelView()->GetChannel(), n))){
+				if (!excludeMap.contains(n.location))
+					excludeMap.insert(n.location, QSet<int>());
+				int newLane = GetSomeVacantLane(n.location, excludeMap[n.location], n.length, n.lane);
+				if (newLane == 0)
+					newLane = GetSomeVacantLane(n.location, excludeMap[n.location], n.length = 0, n.lane);
+				n.lane = newLane;
+				excludeMap[n.location].insert(n.lane);
+			}
+		}
+		notes.insert(nv->GetChannelView()->GetChannel(), n);
 	}
 	ClearBpmEventsSelection();
 	ClearNotesSelection();
@@ -915,27 +979,28 @@ int SequenceView::SnapToUpperFineGrid(qreal time) const
 	return std::min<int>(snapped, nextBarLoc);
 }
 
-int SequenceView::GetSomeVacantLane(int location)
+int SequenceView::GetSomeVacantLane(int location, QSet<int> excludeLanes, int length, int pivotLaneIndex)
 {
-	for (auto il=lanes.begin(); il!=lanes.end(); il++){
-		bool vacant = true;
-		for (int i=0; i<soundChannels.size(); i++){
-			const QMap<int, SoundNoteView*> &notes = soundChannels[i]->GetNotes();
-			QMap<int, SoundNoteView*>::const_iterator inote = notes.lowerBound(location);
-			if (inote != notes.begin())
-				inote--;
-			for (; inote != notes.end() && inote.value()->GetNote().location <= location; inote++){
-				const SoundNote &n = inote.value()->GetNote();
-				if (n.lane == il.key() && n.location+n.length>=location){
-					vacant = false;
-					goto g;
-				}
+	auto allNotes = document->FindNotes(-1);
+	QList<int> indices;
+	for (int i=pivotLaneIndex; i<skin->GetLanes().size(); i++)
+		indices << i;
+	for (int i=0; i<pivotLaneIndex; i++)
+		indices << i;
+	for (auto ind : indices){
+		int lane = skin->GetLanes()[ind].lane;
+		if (excludeLanes.contains(lane))
+			continue;
+		for (auto pair : allNotes){
+			if (pair.second.location > location + length)
+				break;
+			if (pair.second.lane == lane && pair.second.location + pair.second.length >= location){
+				goto g;
 			}
 		}
+		return lane;
 g:
-		if (vacant){
-			return il.key();
-		}
+		continue;
 	}
 	return 0;
 }
@@ -1621,6 +1686,7 @@ void SequenceView::ShowPlayingPaneContextMenu(QPoint globalPos)
 	QMenu menu(this);
 	menu.addAction(actionDeleteSelectedNotes);
 	menu.addAction(actionTransferSelectedNotes);
+	menu.addAction(actionSeparateLayeredNotes);
 	menu.exec(globalPos);
 }
 

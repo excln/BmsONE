@@ -711,3 +711,14 @@ QJsonValue SoundNote::SaveBmson()
 	return bmsonFields;
 }
 
+
+bool NoteConflict::IsMainNote(SoundChannel *channel, SoundNote note) const
+{
+	for (auto pair : involvedNotes){
+		if (pair.first == channel && pair.second == note)
+			return true;
+		if (pair.second.location == location)
+			return false;
+	}
+	return false;
+}

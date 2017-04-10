@@ -89,6 +89,7 @@ void SequenceTools::ReplaceSequenceView(SequenceView *newSView)
 		disconnect(mainWindow->actionViewZoomReset, SIGNAL(triggered(bool)), sview, SLOT(ZoomReset()));
 		disconnect(mainWindow->actionEditTransferToKey, SIGNAL(triggered(bool)), sview, SLOT(TransferSelectedNotesToKey()));
 		disconnect(mainWindow->actionEditTransferToBgm, SIGNAL(triggered(bool)), sview, SLOT(TransferSelectedNotesToBgm()));
+		disconnect(mainWindow->actionEditSeparateLayeredNotes, SIGNAL(triggered(bool)), sview, SLOT(SeparateLayeredNotes()));
 	}
 	sview = newSView;
 	if (sview){
@@ -101,6 +102,7 @@ void SequenceTools::ReplaceSequenceView(SequenceView *newSView)
 		connect(mainWindow->actionViewZoomReset, SIGNAL(triggered(bool)), sview, SLOT(ZoomReset()));
 		connect(mainWindow->actionEditTransferToKey, SIGNAL(triggered(bool)), sview, SLOT(TransferSelectedNotesToKey()));
 		connect(mainWindow->actionEditTransferToBgm, SIGNAL(triggered(bool)), sview, SLOT(TransferSelectedNotesToBgm()));
+		connect(mainWindow->actionEditSeparateLayeredNotes, SIGNAL(triggered(bool)), sview, SLOT(SeparateLayeredNotes()));
 
 		ModeChanged(sview->GetMode());
 		snapToGrid->setEnabled(true);
@@ -230,6 +232,7 @@ void SequenceTools::SelectionChanged()
 		mainWindow->actionEditDelete->setEnabled(true);
 		mainWindow->actionEditTransferToKey->setEnabled(true);
 		mainWindow->actionEditTransferToBgm->setEnabled(true);
+		mainWindow->actionEditSeparateLayeredNotes->setEnabled(true);
 	}else{
 		if (sview->HasBpmEventsSelection()){
 			mainWindow->actionEditDelete->setEnabled(true);
@@ -238,5 +241,6 @@ void SequenceTools::SelectionChanged()
 		}
 		mainWindow->actionEditTransferToKey->setEnabled(false);
 		mainWindow->actionEditTransferToBgm->setEnabled(false);
+		mainWindow->actionEditSeparateLayeredNotes->setEnabled(false);
 	}
 }

@@ -28,6 +28,7 @@ SymbolIconManager::SymbolIconManager()
 	icons.insert(Icon::Event, Load("event"));
 	icons.insert(Icon::SoundNote, Load("sound_note"));
 	icons.insert(Icon::SlicingSoundNote, Load("slicing_sound_note"));
+	icons.insert(Icon::LayeredSoundNotes, Load("layered_sound_note"));
 	icons.insert(Icon::Settings, Load("settings"));
 	icons.insert(Icon::Solo, Load("solo"));
 	icons.insert(Icon::Search, Load("search"));

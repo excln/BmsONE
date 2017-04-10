@@ -61,5 +61,6 @@
         <file>images/missing64.png</file>
         <file>images/sview/layered.png</file>
         <file>images/sview/warning.png</file>
+        <file>images/symbols/layered_sound_note.png</file>
     </qresource>
 </RCC>

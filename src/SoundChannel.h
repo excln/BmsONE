@@ -55,6 +55,8 @@ struct NoteConflict
 	bool IsLayering() const{ return (type & LAYERING_FLAG) == LAYERING_FLAG; }
 	bool IsNonuniformLayering() const{ return (type & NONUNIFORM_LAYERING_FLAG) == NONUNIFORM_LAYERING_FLAG; }
 	bool IsOverlapping() const{ return (type & OVERLAPPING_FLAG) == OVERLAPPING_FLAG; }
+
+	bool IsMainNote(SoundChannel *channel, SoundNote note) const;
 };
 
 

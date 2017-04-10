@@ -120,6 +120,10 @@ MainWindow::MainWindow(QSettings *settings)
 	SharedUIHelper::RegisterGlobalShortcut(actionEditTransferToBgm);
 	actionEditTransferToBgm->setEnabled(false);
 
+	actionEditSeparateLayeredNotes = new QAction(tr("Separate Layered Notes"), this);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditSeparateLayeredNotes);
+	actionEditSeparateLayeredNotes->setEnabled(false);
+
 	actionEditModeEdit = new QAction(tr("Edit Mode"), this);
 	SharedUIHelper::RegisterGlobalShortcut(actionEditModeEdit);
 	actionEditModeEdit->setShortcut(Qt::ControlModifier + Qt::Key_1);
@@ -272,6 +276,7 @@ MainWindow::MainWindow(QSettings *settings)
 	menuEdit->addAction(actionEditDelete);
 	menuEdit->addAction(actionEditTransferToKey);
 	menuEdit->addAction(actionEditTransferToBgm);
+	menuEdit->addAction(actionEditSeparateLayeredNotes);
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditModeEdit);
 	menuEdit->addAction(actionEditModeWrite);

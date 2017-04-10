@@ -309,7 +309,7 @@ QMultiMap<int, QPair<SoundChannel *, SoundNote> > Document::FindNotes(int timeEn
 	for (auto channel : soundChannels){
 		const auto &notes = channel->GetNotes();
 		for (auto note : notes){
-			if (note.location >= timeEnd) break;
+			if (timeEnd >= 0 && note.location >= timeEnd) break;
 			allNotes.insert(note.location, QPair<SoundChannel*, SoundNote>(channel, note));
 		}
 	}
@@ -780,15 +780,16 @@ void Document::DocumentUpdateSoundNotesContext::Update(QMap<SoundChannel *, QMap
 		}
 	}
 
-	if (document->DetectConflictsAroundNotes(notesMerged)){
-		// rollback (newNotes: latest valid arrangement)
-		for (auto i=newNotes.begin(); i!=newNotes.end(); i++){
-			QMap<int,SoundNote> &n = i.key()->notes;
-			for (auto j=i.value().begin(); j!=i.value().end(); j++){
-				n.insert(j.key(), j.value());
-			}
-		}
-	}else{
+	// NOW DON'T CHECK ANY CONFLICTS
+	//if (document->DetectConflictsAroundNotes(notesMerged)){
+	//	// rollback (newNotes: latest valid arrangement)
+	//	for (auto i=newNotes.begin(); i!=newNotes.end(); i++){
+	//		QMap<int,SoundNote> &n = i.key()->notes;
+	//		for (auto j=i.value().begin(); j!=i.value().end(); j++){
+	//			n.insert(j.key(), j.value());
+	//		}
+	//	}
+	//}else{
 		// accept
 		newNotes = notes;
 		for (auto i=notes.begin(); i!=notes.end(); i++){
@@ -798,7 +799,7 @@ void Document::DocumentUpdateSoundNotesContext::Update(QMap<SoundChannel *, QMap
 				emit i.key()->NoteChanged(j.key(), j.value());
 			}
 		}
-	}
+	//}
 }
 
 void Document::DocumentUpdateSoundNotesContext::Cancel()

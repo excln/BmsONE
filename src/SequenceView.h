@@ -112,6 +112,7 @@ private:
 
 	QAction *actionDeleteSelectedNotes;
 	QAction *actionTransferSelectedNotes;
+	QAction *actionSeparateLayeredNotes;
 
 	// general resources
 	int timeLineWidth;
@@ -185,7 +186,7 @@ private:
 	QMap<int, QPair<int, BarLine> > BarsInRange(qreal tBegin, qreal tEnd);
 	int SnapToLowerFineGrid(qreal time) const;
 	int SnapToUpperFineGrid(qreal time) const;
-	int GetSomeVacantLane(int location);
+	int GetSomeVacantLane(int location, QSet<int> excludeLanes=QSet<int>(), int length=0, int pivotLaneIndex=0);
 	void SetNoteColor(QLinearGradient &g, QLinearGradient &g2, int lane, bool active) const;
 	void UpdateVerticalScrollBar(qreal newTimeBegin=-1.0);
 	void VisibleRangeChanged() const;
@@ -287,6 +288,7 @@ public slots:
 	void DeleteSelectedObjects();
 	void TransferSelectedNotesToBgm();
 	void TransferSelectedNotesToKey();
+	void SeparateLayeredNotes();
 	void ZoomIn();
 	void ZoomOut();
 	void ZoomReset();
