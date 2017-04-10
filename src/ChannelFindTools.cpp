@@ -2,12 +2,14 @@
 #include "MainWindow.h"
 #include "SequenceView.h"
 #include "SymbolIconManager.h"
+//#include "SignalFunction.h"
 
 
 ChannelFindTools::ChannelFindTools(const QString &objectName, const QString &windowTitle, MainWindow *mainWindow)
 	: QToolBar(windowTitle, mainWindow)
 	, mainWindow(mainWindow)
 	, sview(nullptr)
+	//, visibleRangeChangedStabilizer(new Stabilizer(0, this))
 {
 	setObjectName(objectName);
 	setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
@@ -28,13 +30,13 @@ ChannelFindTools::ChannelFindTools(const QString &objectName, const QString &win
 	SharedUIHelper::RegisterGlobalShortcut(actionChannelFindPrev);
 
 	actionChannelFindFilterActive = new QAction(tr("Active Channels Only"), this);
-	actionChannelFindFilterActive->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Search));
+	actionChannelFindFilterActive->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::SearchSound));
 	actionChannelFindFilterActive->setShortcut(Qt::ControlModifier + Qt::Key_B);
 	SharedUIHelper::RegisterGlobalShortcut(actionChannelFindFilterActive);
 	actionChannelFindFilterActive->setCheckable(true);
 
 	actionChannelFindHideOthers = new QAction(tr("Show Found Channels Only"), this);
-	actionChannelFindHideOthers->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Search));
+	actionChannelFindHideOthers->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::SearchHighlight));
 	actionChannelFindHideOthers->setShortcut(Qt::ControlModifier + Qt::Key_H);
 	SharedUIHelper::RegisterGlobalShortcut(actionChannelFindHideOthers);
 	actionChannelFindHideOthers->setCheckable(true);
@@ -74,9 +76,15 @@ ChannelFindTools::ChannelFindTools(const QString &objectName, const QString &win
 	connect(actionChannelFindNext, SIGNAL(triggered(bool)), this, SLOT(Next()));
 	connect(actionChannelFindPrev, SIGNAL(triggered(bool)), this, SLOT(Prev()));
 
+	connect(keyword, SIGNAL(textChanged(QString)), this, SLOT(UpdateConditions()));
+	connect(actionChannelFindFilterActive, SIGNAL(triggered(bool)), this, SLOT(UpdateConditions()));
+	connect(actionChannelFindHideOthers, SIGNAL(triggered(bool)), this, SLOT(UpdateConditions()));
+
 	connect(keyword, SIGNAL(textChanged(QString)), mainWindow, SLOT(ChannelFindKeywordChanged(QString)));
 	connect(this, SIGNAL(FindNext(QString)), mainWindow, SLOT(ChannelFindNext(QString)));
 	connect(this, SIGNAL(FindPrev(QString)), mainWindow, SLOT(ChannelFindPrev(QString)));
+
+	//connect(visibleRangeChangedStabilizer, SIGNAL(Updated(QVariant)), this, SLOT(UpdateConditions()), Qt::AutoConnection);
 }
 
 ChannelFindTools::~ChannelFindTools()
@@ -85,19 +93,30 @@ ChannelFindTools::~ChannelFindTools()
 
 void ChannelFindTools::ReplaceSequenceView(SequenceView *newSView)
 {
+	if (sview){
+		disconnect(this, &ChannelFindTools::ChannelDisplayFilteringConditionsChanged, sview, &SequenceView::ChannelDisplayFilteringConditionsChanged);
+		disconnect(sview, &SequenceView::ApproximateVisibleRangeChanged, this, &ChannelFindTools::SequenceViewVisibleRangeChanged);
+		disconnect(sview, &SequenceView::ForceDisableChannelDisplayFiltering, this, &ChannelFindTools::hide);
+	}
 	sview = newSView;
+	if (sview){
+		connect(this, &ChannelFindTools::ChannelDisplayFilteringConditionsChanged, sview, &SequenceView::ChannelDisplayFilteringConditionsChanged);
+		connect(sview, &SequenceView::ApproximateVisibleRangeChanged, this, &ChannelFindTools::SequenceViewVisibleRangeChanged);
+		connect(sview, &SequenceView::ForceDisableChannelDisplayFiltering, this, &ChannelFindTools::hide);
+		UpdateConditions();
+	}
 }
 
 
 
 void ChannelFindTools::hideEvent(QHideEvent *event)
 {
-	emit (isVisible() ? Activated() : Inactivated());
+	UpdateConditions();
 }
 
 void ChannelFindTools::showEvent(QShowEvent *event)
 {
-	emit (isVisible() ? Activated() : Inactivated());
+	UpdateConditions();
 }
 
 void ChannelFindTools::Activate()
@@ -118,6 +137,7 @@ void ChannelFindTools::Inactivate()
 void ChannelFindTools::Clear()
 {
 	keyword->clear();
+	UpdateConditions();
 }
 
 void ChannelFindTools::Prev()
@@ -132,5 +152,16 @@ void ChannelFindTools::Next()
 	if (keyword->text().isEmpty())
 		return;
 	emit FindNext(keyword->text());
+}
+
+void ChannelFindTools::UpdateConditions()
+{
+	emit ChannelDisplayFilteringConditionsChanged(isVisible() && HidesOthers(), keyword->text(), FiltersActive());
+}
+
+void ChannelFindTools::SequenceViewVisibleRangeChanged()
+{
+	//visibleRangeChangedStabilizer->Update(0);
+	UpdateConditions();
 }
 

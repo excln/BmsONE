@@ -9,7 +9,7 @@
 
 class MainWindow;
 class SequenceView;
-
+//class Stabilizer;
 
 class ChannelFindTools : public QToolBar
 {
@@ -27,6 +27,8 @@ private:
 	QAction *actionChannelFindFilterActive;
 	QAction *actionChannelFindHideOthers;
 
+	//Stabilizer *visibleRangeChangedStabilizer;
+
 	virtual void hideEvent(QHideEvent *event);
 	virtual void showEvent(QShowEvent *event);
 
@@ -38,13 +40,16 @@ private slots:
 	void Prev();
 	void Next();
 
+	void UpdateConditions();
+
+	void SequenceViewVisibleRangeChanged();
+
 signals:
 	//void KeywordChanged(QString keyword);
 	void FindNext(QString keyword);
 	void FindPrev(QString keyword);
 
-	void Activated();
-	void Inactivated();
+	void ChannelDisplayFilteringConditionsChanged(bool doesFiltering, QString keyword, bool filterActive);
 
 public:
 	ChannelFindTools(const QString &objectName, const QString &windowTitle, MainWindow *mainWindow=nullptr);

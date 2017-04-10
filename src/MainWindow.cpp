@@ -807,28 +807,29 @@ void MainWindow::SaveFormatChanged(BmsonIO::BmsonVersion version)
 }
 
 
-static bool matchChannelNameKeyword(QString channelName, QString keyword)
-{
-	// TODO
-	return channelName.contains(keyword, Qt::CaseInsensitive);
-}
-
 void MainWindow::ChannelFindKeywordChanged(QString keyword)
 {
 	if (currentChannel < 0)
 		return;
-	if (matchChannelNameKeyword(document->GetSoundChannels()[currentChannel]->GetName(), keyword))
+	if (SequenceViewUtil::MatchChannelNameKeyword(document->GetSoundChannels()[currentChannel]->GetName(), keyword))
 		return;
 	// similar to ChannelFindNext but does not beep
+	QPair<int, int> range = sequenceView->GetVisibleRangeExtended();
 	for (int i=currentChannel+1; i<document->GetSoundChannels().size(); i++){
-		if (matchChannelNameKeyword(document->GetSoundChannels()[i]->GetName(), keyword)){
+		auto channel = document->GetSoundChannels()[i];
+		if (SequenceViewUtil::MatchChannelNameKeyword(channel->GetName(), keyword)
+			&& (!channelFindTools->FiltersActive() || channel->IsActiveInRegion(range.first, range.second)))
+		{
 			currentChannel = i;
 			emit CurrentChannelChanged(currentChannel);
 			return;
 		}
 	}
 	for (int i=0; i<currentChannel; i++){
-		if (matchChannelNameKeyword(document->GetSoundChannels()[i]->GetName(), keyword)){
+		auto channel = document->GetSoundChannels()[i];
+		if (SequenceViewUtil::MatchChannelNameKeyword(channel->GetName(), keyword)
+			&& (!channelFindTools->FiltersActive() || channel->IsActiveInRegion(range.first, range.second)))
+		{
 			currentChannel = i;
 			emit CurrentChannelChanged(currentChannel);
 			return;
@@ -840,15 +841,22 @@ void MainWindow::ChannelFindNext(QString keyword)
 {
 	if (currentChannel < 0)
 		return;
+	QPair<int, int> range = sequenceView->GetVisibleRangeExtended();
 	for (int i=currentChannel+1; i<document->GetSoundChannels().size(); i++){
-		if (matchChannelNameKeyword(document->GetSoundChannels()[i]->GetName(), keyword)){
+		auto channel = document->GetSoundChannels()[i];
+		if (SequenceViewUtil::MatchChannelNameKeyword(channel->GetName(), keyword)
+			&& (!channelFindTools->FiltersActive() || channel->IsActiveInRegion(range.first, range.second)))
+		{
 			currentChannel = i;
 			emit CurrentChannelChanged(currentChannel);
 			return;
 		}
 	}
 	for (int i=0; i<=currentChannel; i++){
-		if (matchChannelNameKeyword(document->GetSoundChannels()[i]->GetName(), keyword)){
+		auto channel = document->GetSoundChannels()[i];
+		if (SequenceViewUtil::MatchChannelNameKeyword(channel->GetName(), keyword)
+			&& (!channelFindTools->FiltersActive() || channel->IsActiveInRegion(range.first, range.second)))
+		{
 			currentChannel = i;
 			emit CurrentChannelChanged(currentChannel);
 			return;
@@ -861,15 +869,22 @@ void MainWindow::ChannelFindPrev(QString keyword)
 {
 	if (currentChannel < 0)
 		return;
+	QPair<int, int> range = sequenceView->GetVisibleRangeExtended();
 	for (int i=currentChannel-1; i>=0; i--){
-		if (matchChannelNameKeyword(document->GetSoundChannels()[i]->GetName(), keyword)){
+		auto channel = document->GetSoundChannels()[i];
+		if (SequenceViewUtil::MatchChannelNameKeyword(channel->GetName(), keyword)
+			&& (!channelFindTools->FiltersActive() || channel->IsActiveInRegion(range.first, range.second)))
+		{
 			currentChannel = i;
 			emit CurrentChannelChanged(currentChannel);
 			return;
 		}
 	}
 	for (int i=document->GetSoundChannels().size()-1; i>=currentChannel; i--){
-		if (matchChannelNameKeyword(document->GetSoundChannels()[i]->GetName(), keyword)){
+		auto channel = document->GetSoundChannels()[i];
+		if (SequenceViewUtil::MatchChannelNameKeyword(channel->GetName(), keyword)
+			&& (!channelFindTools->FiltersActive() || channel->IsActiveInRegion(range.first, range.second)))
+		{
 			currentChannel = i;
 			emit CurrentChannelChanged(currentChannel);
 			return;

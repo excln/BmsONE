@@ -145,6 +145,7 @@ public:
 	void UpdateVisibleRegions(const QList<QPair<int, int>> &visibleRegionsTime);
 	void DrawRmsGraph(double location, double resolution, std::function<bool(Rms)> drawer) const;
 	void DrawActivityGraph(double tBegin, double tEnd, std::function<void(bool, int, int)> drawer) const;
+	bool IsActiveInRegion(int tBegin, int tEnd) const;
 
 	QSet<int> GetAllLocations() const;
 	void ConvertResolution(int newResolution, int oldResolution);

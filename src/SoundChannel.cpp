@@ -486,6 +486,30 @@ void SoundChannel::DrawActivityGraph(double tBegin, double tEnd, std::function<v
 	}
 }
 
+bool SoundChannel::IsActiveInRegion(int tBegin, int tEnd) const
+{
+	if (!waveSummary.IsValid()){
+		return false;
+	}
+	if (tBegin >= tEnd)
+		return false;
+	// 音声が鳴っているかどうかを検出
+	QMutexLocker lock(&cacheMutex);
+	auto icache = cache.upperBound(tBegin);
+	auto icacheEnd = cache.upperBound(tEnd);
+	if (icache != cache.begin())
+		icache--;
+	while (icache != icacheEnd){
+		if (icache.value().currentSamplePosition >= 0)
+			return true;
+		icache++;
+	}
+	// ノーツ（無音）があるかどうかも検出
+	if (notes.upperBound(tBegin) != notes.upperBound(tEnd))
+		return true;
+	return false;
+}
+
 QSet<int> SoundChannel::GetAllLocations() const
 {
 	QSet<int> locs;

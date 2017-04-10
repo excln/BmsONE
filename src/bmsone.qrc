@@ -63,5 +63,7 @@
         <file>images/sview/warning.png</file>
         <file>images/symbols/layered_sound_note.png</file>
         <file>images/symbols/sound_channel_lane.png</file>
+        <file>images/symbols/search_highlight.png</file>
+        <file>images/symbols/search_sound.png</file>
     </qresource>
 </RCC>

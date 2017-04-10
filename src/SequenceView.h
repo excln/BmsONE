@@ -163,6 +163,7 @@ private:
 	QSet<SoundNoteView*> selectedNotes;
 	QMap<int, BpmEvent> selectedBpmEvents;
 	SequenceViewCursor *cursor;
+	bool channelsCollapseAnimationWaiting;
 
 	int lockCommands;
 
@@ -182,7 +183,7 @@ private:
 	int GetSomeVacantLane(int location, QSet<int> excludeLanes=QSet<int>(), int length=0, int pivotLaneIndex=0);
 	void SetNoteColor(QLinearGradient &g, QLinearGradient &g2, int lane, bool active) const;
 	void UpdateVerticalScrollBar(qreal newTimeBegin=-1.0);
-	void VisibleRangeChanged() const;
+	void VisibleRangeChanged();
 	SoundNoteView *HitTestPlayingPane(int lane, int y, int time, bool excludeInactiveChannels=false);
 	QList<SoundNoteView *> HitTestPlayingPaneMulti(int lane, int y, int time, bool excludeInactiveChannels=false,
 												   bool *isConflict=nullptr, NoteConflict *conflict=nullptr);
@@ -236,6 +237,8 @@ private:
 	void dropEventVp(QDropEvent *event);
 	void wheelEventVp(QWheelEvent *event);
 	void OnViewportResize();
+	void SetChannelsGeometry();
+	void AnimateChannelsGeometry();
 
 	bool enterEventTimeLine(QWidget *timeLine, QEvent *event);
 	bool mouseEventTimeLine(QWidget *timeLine, QMouseEvent *event);
@@ -269,6 +272,7 @@ private slots:
 	void ShowMiniMapChanged(bool value);
 	void FixMiniMapChanged(bool value);
 	void ShowMasterLaneChanged(bool value);
+	void SoundChannelViewCollapseAnimation();
 
 public slots:
 	void ShowLocation(int location);
@@ -289,6 +293,7 @@ public slots:
 	void ZoomReset();
 	void NoteEditToolSelectedNotesUpdated(QMultiMap<SoundChannel *, SoundNote> notes);
 	void SetChannelLaneMode(SequenceViewChannelLaneMode mode);
+	void ChannelDisplayFilteringConditionsChanged(bool hideOthers, QString keyword, bool filterActive);
 
 signals:
 	void CurrentChannelChanged(int index);
@@ -299,6 +304,9 @@ signals:
 	void MediumGridChanged(GridSize grid);
 	void SelectionChanged();
 	void ChannelLaneModeChanged(SequenceViewChannelLaneMode show);
+
+	void ApproximateVisibleRangeChanged();
+	void ForceDisableChannelDisplayFiltering();
 
 public:
 	SequenceView(MainWindow *parent);
@@ -318,6 +326,7 @@ public:
 	int SetFooterHeight(int height);
 	void InstallFooterSizeGrip(QWidget *footer);
 	SequenceViewChannelLaneMode GetChannelLaneMode() const{ return channelLaneMode; }
+	QPair<int, int> GetVisibleRangeExtended() const;
 };
 
 

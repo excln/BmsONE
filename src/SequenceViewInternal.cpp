@@ -18,6 +18,9 @@ SoundChannelView::SoundChannelView(SequenceView *sview, SoundChannel *channel)
 	, selected(false)
 	, backBuffer(nullptr)
 	, context(nullptr)
+	, internalWidth(64)
+	, collapsed(false)
+	, animation(0)
 {
 	// this make scrolling fast, but the program must treat redrawing region carefully.
 	//setAttribute(Qt::WA_OpaquePaintEvent);
@@ -217,14 +220,14 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 				switch (note.noteType){
 				case 0: {
 					QPolygon polygon;
-					polygon.append(QPoint(width()/2, noteStartY - 8));
+					polygon.append(QPoint(internalWidth/2, noteStartY - 8));
 					polygon.append(QPoint(6, noteStartY));
-					polygon.append(QPoint(width()-7, noteStartY));
+					polygon.append(QPoint(internalWidth-7, noteStartY));
 					painter.drawPolygon(polygon);
 					break;
 				}
 				case 1: {
-					QRect rect(6, noteStartY - 8, width() - 12, 8); // don't show as long notes
+					QRect rect(6, noteStartY - 8, internalWidth - 12, 8); // don't show as long notes
 					painter.drawRect(rect);
 					break;
 				}
@@ -237,14 +240,14 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 				switch (note.noteType){
 				case 0: {
 					QPolygon polygon;
-					polygon.append(QPoint(width()/2, noteStartY - 8));
+					polygon.append(QPoint(internalWidth/2, noteStartY - 8));
 					polygon.append(QPoint(6, noteStartY));
-					polygon.append(QPoint(width()-7, noteStartY));
+					polygon.append(QPoint(internalWidth-7, noteStartY));
 					painter.drawPolygon(polygon);
 					break;
 				}
 				case 1: {
-					QRect rect(6, noteStartY - 8, width() - 12, 8); // don't show as long notes
+					QRect rect(6, noteStartY - 8, internalWidth - 12, 8); // don't show as long notes
 					painter.drawRect(rect);
 					break;
 				}
@@ -257,14 +260,14 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 				switch (note.noteType){
 				case 0: {
 					QPolygon polygon;
-					polygon.append(QPoint(width()/2, noteStartY - 8));
+					polygon.append(QPoint(internalWidth/2, noteStartY - 8));
 					polygon.append(QPoint(6, noteStartY));
-					polygon.append(QPoint(width()-7, noteStartY));
+					polygon.append(QPoint(internalWidth-7, noteStartY));
 					painter.drawPolygon(polygon);
 					break;
 				}
 				case 1: {
-					QRect rect(6, noteStartY - 8, width() - 12, 8); // don't show as long notes
+					QRect rect(6, noteStartY - 8, internalWidth - 12, 8); // don't show as long notes
 					painter.drawRect(rect);
 					break;
 				}
@@ -275,7 +278,7 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 		}else{
 			painter.setPen(QPen(QBrush(current ? QColor(187, 187, 187) : QColor(153, 153, 153)), sview->selectedNotes.contains(nview) ? 3 : 1));
 			painter.setBrush(Qt::NoBrush);
-			painter.drawLine(1, noteStartY, width()-1, noteStartY);
+			painter.drawLine(1, noteStartY, internalWidth-1, noteStartY);
 		}
 		if (note.noteType == 0){
 			painter.setBrush(QBrush(QColor(255, 0, 0)));
@@ -285,9 +288,9 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 			polygon.append(QPoint(0, noteStartY + 4));
 			polygon.append(QPoint(4, noteStartY));
 			painter.drawPolygon(polygon);
-			polygon[0] = QPoint(width(), noteStartY - 5);
-			polygon[1] = QPoint(width(), noteStartY + 5);
-			polygon[2] = QPoint(width()-5, noteStartY);
+			polygon[0] = QPoint(internalWidth, noteStartY - 5);
+			polygon[1] = QPoint(internalWidth, noteStartY + 5);
+			polygon[2] = QPoint(internalWidth-5, noteStartY);
 			painter.drawPolygon(polygon);
 		}
 	}
@@ -310,14 +313,14 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 					switch (note.noteType){
 					case 0:{
 						QPolygon polygon;
-						polygon.append(QPoint(width()/2, noteStartY - 8));
+						polygon.append(QPoint(internalWidth/2, noteStartY - 8));
 						polygon.append(QPoint(6, noteStartY));
-						polygon.append(QPoint(width()-7, noteStartY));
+						polygon.append(QPoint(internalWidth-7, noteStartY));
 						painter.drawPolygon(polygon);
 						break;
 					}
 					case 1:
-						QRect rect(6, noteStartY - 8, width() - 12, 8); // don't show as long notes
+						QRect rect(6, noteStartY - 8, internalWidth - 12, 8); // don't show as long notes
 						painter.drawRect(rect);
 						break;
 					}
@@ -330,14 +333,14 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 				switch (newSoundNote.noteType){
 				case 0:{
 					QPolygon polygon;
-					polygon.append(QPoint(width()/2, noteStartY - 8));
+					polygon.append(QPoint(internalWidth/2, noteStartY - 8));
 					polygon.append(QPoint(6, noteStartY));
-					polygon.append(QPoint(width()-7, noteStartY));
+					polygon.append(QPoint(internalWidth-7, noteStartY));
 					painter.drawPolygon(polygon);
 					break;
 				}
 				case 1:
-					QRect rect(6, noteStartY - 8, width() - 12, 8); // don't show as long notes
+					QRect rect(6, noteStartY - 8, internalWidth - 12, 8); // don't show as long notes
 					painter.drawRect(rect);
 					break;
 				}
@@ -362,16 +365,22 @@ void SoundChannelView::ScrollContents(int dy)
 			for (int y=height()-1; y>=dy; y--){
 				std::memcpy(backBuffer->scanLine(y), backBuffer->scanLine(y-dy), bpl);
 			}
-			UpdateBackBuffer(QRect(0, 0, width(), dy+my));
+			UpdateBackBuffer(QRect(0, 0, internalWidth, dy+my));
 		}else{
 			for (int y=0; y<height()+dy; y++){
 				std::memcpy(backBuffer->scanLine(y), backBuffer->scanLine(y-dy), bpl);
 			}
-			UpdateBackBuffer(QRect(0, height()+dy-my, width(), my-dy));
+			UpdateBackBuffer(QRect(0, height()+dy-my, internalWidth, my-dy));
 		}
 	}
 	update();
 	return;
+}
+
+void SoundChannelView::SetInternalWidth(int width)
+{
+	internalWidth = width;
+	update();
 }
 
 void SoundChannelView::RemakeBackBuffer()
@@ -421,7 +430,7 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 			QVector<QLine> lines;
 			for (int t : fineGrids){
 				int y = sview->Time2Y(t) - 1;
-				lines.append(QLine(0, y, width(), y));
+				lines.append(QLine(0, y, internalWidth, y));
 			}
 			painter.setPen(QPen(QBrush(QColor(34, 34, 34)), 1));
 			painter.drawLines(lines);
@@ -430,7 +439,7 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 			QVector<QLine> lines;
 			for (int t : coarseGrids){
 				int y = sview->Time2Y(t) - 1;
-				lines.append(QLine(0, y, width(), y));
+				lines.append(QLine(0, y, internalWidth, y));
 			}
 			painter.setPen(QPen(QBrush(QColor(17, 17, 17)), 1));
 			painter.drawLines(lines);
@@ -439,7 +448,7 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 			QVector<QLine> lines;
 			for (int t : bars.keys()){
 				int y = sview->Time2Y(t) - 1;
-				lines.append(QLine(0, y, width(), y));
+				lines.append(QLine(0, y, internalWidth, y));
 			}
 			painter.setPen(QPen(QBrush(QColor(0, 0, 0)), 1));
 			painter.drawLines(lines);
@@ -719,28 +728,30 @@ void SoundChannelFooter::paintEvent(QPaintEvent *event)
 	painter.setPen(palette().dark().color());
 	painter.drawRect(rect.adjusted(0, 0, -1, -1));
 
-	QRect rectText;
+	QRect rectText(0, 0, internalWidth, height());
 	int flags;
-	if (width() < 40){
+	if (internalWidth < 40){
 		// vertical, single line
 		painter.rotate(-90.0);
-		rectText = painter.transform().inverted().mapRect(rect).marginsRemoved(QMargins(6, 2, 8, 2));
+		rectText = painter.transform().inverted().mapRect(rectText).marginsRemoved(QMargins(6, 2, 8, 2));
 		flags = Qt::TextSingleLine | Qt::AlignVCenter;
 	}else if (height() > 100){
 		// vertical
 		painter.rotate(-90.0);
-		rectText = painter.transform().inverted().mapRect(rect).marginsRemoved(QMargins(6, 2, 8, 2));
+		rectText = painter.transform().inverted().mapRect(rectText).marginsRemoved(QMargins(6, 2, 8, 2));
 		flags = Qt::TextWrapAnywhere;
 	}else{
 		// horizontal
-		rectText = rect.marginsRemoved(QMargins(2, 8, 2, 2));
+		rectText = rectText.marginsRemoved(QMargins(2, 8, 2, 2));
 		flags = Qt::TextWrapAnywhere;
 	}
+	if (rectText.width() < 4 || rectText.height() < 4)
+		return;
 	QString name = cview->GetName();
 	QString prefix = "...";
 	bool prefixed = false;
 	QRect rectBB = painter.boundingRect(rectText, flags, name);
-	while (!rectText.contains(rectBB)){
+	while (name.size() > 1 && !rectText.contains(rectBB)){
 		if (!prefixed && name.length() > 3){
 			prefix = name.mid(0, 3) + prefix;
 			name = name.mid(3);
@@ -749,8 +760,10 @@ void SoundChannelFooter::paintEvent(QPaintEvent *event)
 		rectBB = painter.boundingRect(rectText, flags, prefix + name);
 		prefixed = true;
 	};
-	painter.setPen(QColor(0, 0, 0));
-	painter.drawText(rectText, flags, prefixed ? prefix + name : name);
+	if (!name.isEmpty()){
+		painter.setPen(QColor(0, 0, 0));
+		painter.drawText(rectText, flags, prefixed ? prefix + name : name);
+	}
 }
 
 void SoundChannelFooter::mouseMoveEvent(QMouseEvent *event)
@@ -791,6 +804,12 @@ void SoundChannelFooter::mouseDoubleClickEvent(QMouseEvent *event)
 void SoundChannelFooter::contextMenuEvent(QContextMenuEvent *event)
 {
 	cview->OnChannelMenu(event);
+}
+
+void SoundChannelFooter::SetInternalWidth(int width)
+{
+	internalWidth = width;
+	update();
 }
 
 

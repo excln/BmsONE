@@ -59,6 +59,7 @@ SequenceView::SequenceView(MainWindow *parent)
 	, viewMode(nullptr)
 	, skin(nullptr)
 	, playingWidth(1)
+	, channelsCollapseAnimationWaiting(false)
 {
 	qRegisterMetaType<SoundChannelView*>("SoundChannelView*");
 	qRegisterMetaType<GridSize>("GridSize");
@@ -367,12 +368,14 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 		soundChannels.clear();
 	}
 	document = newDocument;
+	emit ForceDisableChannelDisplayFiltering();
 	// load document
 	{
 		// follow current state of document
 		int ichannel = 0;
 		for (auto *channel : document->GetSoundChannels()){
 			auto cview = new SoundChannelView(this, channel);
+			cview->SetInternalWidth(ChannelLaneWidth());
 			cview->setParent(viewport());
 			cview->installEventFilter(this);
 			cview->setMouseTracking(true);
@@ -384,6 +387,7 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 			//header->setVisible(true);
 			//soundChannelHeaders.push_back(header);
 			auto *footer = new SoundChannelFooter(this, cview);
+			footer->SetInternalWidth(ChannelLaneWidth());
 			footer->setParent(footerChannelsArea);
 			footer->setVisible(true);
 			footer->installEventFilter(this);
@@ -1092,14 +1096,16 @@ void SequenceView::SetNoteColor(QLinearGradient &g, QLinearGradient &g2, int lan
 	g2.setColorAt(1, cd.darker());
 }
 
-void SequenceView::VisibleRangeChanged() const
+void SequenceView::VisibleRangeChanged()
 {
 	if (!document)
 		return;
 
-	// don't need to notify channels UpdateVisibleRegions.
-	if (channelLaneMode == SequenceViewChannelLaneMode::SIMPLE)
+	// don't need to notify channels of UpdateVisibleRegions.
+	if (channelLaneMode == SequenceViewChannelLaneMode::SIMPLE){
+		emit ApproximateVisibleRangeChanged();
 		return;
+	}
 
 	static const int my = 4;
 	int scrollY = verticalScrollBar()->value();
@@ -1118,6 +1124,8 @@ void SequenceView::VisibleRangeChanged() const
 			cview->GetChannel()->UpdateVisibleRegions(QList<QPair<int, int>>());
 		}
 	}
+
+	emit ApproximateVisibleRangeChanged();
 }
 
 void SequenceView::wheelEventVp(QWheelEvent *event)
@@ -1245,7 +1253,6 @@ void SequenceView::UpdateVerticalScrollBar(qreal newTimeBegin)
 
 void SequenceView::OnViewportResize()
 {
-	int channelLaneWidth = ChannelLaneWidth();
 	QRect vr = viewport()->geometry();
 	timeLine->setGeometry(0, headerHeight, timeLineWidth, vr.height());
 	footerCornerEntry->setGeometry(0, vr.bottom()+1, timeLineWidth, footerHeight);
@@ -1262,21 +1269,62 @@ void SequenceView::OnViewportResize()
 		footerChannelsArea->setGeometry(timeLineWidth + playingWidth, vr.bottom()+1, vr.width(), footerHeight);
 	}
 	miniMap->SetPosition(vr.right()+1, vr.top()-headerHeight, vr.height()+headerHeight+footerHeight);
-	for (int i=0; i<soundChannels.size(); i++){
-		int x = i * channelLaneWidth - horizontalScrollBar()->value();
-		soundChannels[i]->setGeometry(x, 0, channelLaneWidth, vr.height());
-		soundChannels[i]->RemakeBackBuffer();
-		//soundChannelHeaders[i]->setGeometry(x, 0, channelLaneWidth, headerHeight);
-		soundChannelFooters[i]->setGeometry(x, 0, channelLaneWidth, footerHeight);
-	}
-
 	UpdateVerticalScrollBar();
+	SetChannelsGeometry();
 
-	horizontalScrollBar()->setRange(0, std::max(0, channelLaneWidth*soundChannels.size() - viewport()->width()));
+	VisibleRangeChanged();
+}
+
+static qreal easing(qreal t){
+	return t*t*(3 - 2*t);
+}
+
+void SequenceView::SetChannelsGeometry()
+{
+	bool animContinues = false;
+	QRect vr = viewport()->geometry();
+	int channelLaneWidth = ChannelLaneWidth();
+	int x = -horizontalScrollBar()->value();
+	for (int i=0; i<soundChannels.size(); i++){
+		qreal anim = soundChannels[i]->GetAnimation();
+		if (anim > 0)
+			animContinues = true;
+		int visualWidth = soundChannels[i]->IsCollapsed()
+				? channelLaneWidth * easing(anim)
+				: channelLaneWidth * easing(1 - anim);
+		if (visualWidth > 0){
+			soundChannels[i]->show();
+			soundChannelFooters[i]->show();
+			soundChannels[i]->setGeometry(x, 0, visualWidth, vr.height());
+			soundChannels[i]->RemakeBackBuffer();
+			//soundChannelHeaders[i]->setGeometry(x, 0, visualWidth, headerHeight);
+			soundChannelFooters[i]->setGeometry(x, 0, visualWidth, footerHeight);
+			x += visualWidth;
+		}else{
+			soundChannels[i]->hide();
+			soundChannelFooters[i]->hide();
+		}
+	}
+	horizontalScrollBar()->setRange(0, std::max(0, x - viewport()->width()));
 	horizontalScrollBar()->setPageStep(viewport()->width());
 	horizontalScrollBar()->setSingleStep(channelLaneWidth);
 
-	VisibleRangeChanged();
+	if (!channelsCollapseAnimationWaiting && animContinues){
+		QTimer::singleShot(30, this, SLOT(SoundChannelViewCollapseAnimation()));
+		channelsCollapseAnimationWaiting = true;
+	}
+}
+
+void SequenceView::AnimateChannelsGeometry()
+{
+	for (int i=0; i<soundChannels.size(); i++){
+		qreal anim = soundChannels[i]->GetAnimation();
+		if (anim > 0){
+			anim = std::max(0.0, anim - 0.12501);
+			soundChannels[i]->SetAnimation(anim);
+		}
+	}
+	SetChannelsGeometry();
 }
 
 void SequenceView::InstallFooterSizeGrip(QWidget *footer)
@@ -1285,10 +1333,25 @@ void SequenceView::InstallFooterSizeGrip(QWidget *footer)
 	grip->setGeometry(0, 0, 1024, FooterGripWidth);
 }
 
+QPair<int, int> SequenceView::GetVisibleRangeExtended() const
+{
+	static const qreal ratio = 1.5;
+	static const int my = 4;
+	int scrollY = verticalScrollBar()->value();
+	int top = 0 - my;
+	int bottom = viewport()->height() + my;
+	qreal tBegin = viewLength - (scrollY + bottom)/zoomY;
+	qreal tEnd = viewLength - (scrollY + top)/zoomY;
+	qreal tLengthDelta = (tEnd - tBegin) * (ratio - 1);
+	return QPair<int, int>(tBegin - tLengthDelta, tEnd + tLengthDelta);
+}
+
 void SequenceView::SoundChannelInserted(int index, SoundChannel *channel)
 {
+	emit ForceDisableChannelDisplayFiltering();
 	OnCurrentChannelChanged(-1);
 	auto cview = new SoundChannelView(this, channel);
+	cview->SetInternalWidth(ChannelLaneWidth());
 	cview->setParent(viewport());
 	cview->setVisible(true);
 	cview->installEventFilter(this);
@@ -1300,6 +1363,7 @@ void SequenceView::SoundChannelInserted(int index, SoundChannel *channel)
 	//header->setVisible(true);
 	//soundChannelHeaders.insert(index, header);
 	auto *footer = new SoundChannelFooter(this, cview);
+	footer->SetInternalWidth(ChannelLaneWidth());
 	footer->setParent(footerChannelsArea);
 	footer->setVisible(true);
 	footer->installEventFilter(this);
@@ -1441,17 +1505,16 @@ void SequenceView::MakeVisibleCurrentChannel()
 	if (currentChannel < 0){
 		return;
 	}
-	int channelLaneWidth = ChannelLaneWidth();
-	QRect rectChannel = soundChannels[currentChannel]->geometry();
 	int scrollX = horizontalScrollBar()->value();
+	QRect rectChannel = soundChannels[currentChannel]->geometry();
 	if (rectChannel.left() < 0){
 		if (rectChannel.right() >= viewport()->width()){
-			scrollX = currentChannel*channelLaneWidth + (channelLaneWidth-viewport()->width())/2;
+			scrollX += (rectChannel.left() + rectChannel.right() - viewport()->width()) / 2;
 		}else{
-			scrollX = currentChannel*channelLaneWidth;
+			scrollX += rectChannel.left();
 		}
 	}else if (rectChannel.right() >= viewport()->width()){
-		scrollX = (currentChannel+1)*channelLaneWidth - viewport()->width();
+		scrollX += rectChannel.right() - viewport()->width();
 	}
 	horizontalScrollBar()->setValue(scrollX);
 }
@@ -1643,8 +1706,38 @@ void SequenceView::NoteEditToolSelectedNotesUpdated(QMultiMap<SoundChannel*, Sou
 void SequenceView::SetChannelLaneMode(SequenceViewChannelLaneMode mode)
 {
 	channelLaneMode = mode;
+	auto channelLaneWidth = ChannelLaneWidth();
+	for (int i=0; i<soundChannels.size(); i++){
+		soundChannelFooters[i]->SetInternalWidth(channelLaneWidth);
+		soundChannels[i]->SetInternalWidth(channelLaneWidth);
+		soundChannels[i]->SetAnimation(0);
+	}
 	OnViewportResize();
 	emit ChannelLaneModeChanged(channelLaneMode);
+}
+
+void SequenceView::ChannelDisplayFilteringConditionsChanged(bool hideOthers, QString keyword, bool filterActive)
+{
+	if (!documentReady)
+		return;
+	QPair<int, int> range = GetVisibleRangeExtended();
+	bool changed = false;
+	qreal init = 1.0; // do animate
+	//qreal init = 0.0; // don't animate
+	for (int i=0; i<soundChannels.size(); i++){
+		auto channel = soundChannels[i]->GetChannel();
+		bool show = !hideOthers
+				|| (SequenceViewUtil::MatchChannelNameKeyword(channel->GetName(), keyword)
+					&& (!filterActive || channel->IsActiveInRegion(range.first, range.second)));
+		if (soundChannels[i]->IsCollapsed() == show){
+			soundChannels[i]->SetCollapsed(!show);
+			soundChannels[i]->SetAnimation(init);
+			changed = true;
+		}
+	}
+	if (changed){
+		SetChannelsGeometry();
+	}
 }
 
 bool SequenceView::eventFilter(QObject *sender, QEvent *event)
@@ -1829,6 +1922,12 @@ void SequenceView::ShowMasterLaneChanged(bool value)
 	footerMasterLane->setVisible(value);
 	UpdateViewportMargins();
 	OnViewportResize();
+}
+
+void SequenceView::SoundChannelViewCollapseAnimation()
+{
+	channelsCollapseAnimationWaiting = false;
+	AnimateChannelsGeometry();
 }
 
 void SequenceView::ShowLocation(int location)
@@ -2099,6 +2198,10 @@ SequenceView::Context *SequenceView::Context::BpmArea_MouseRelease(QMouseEvent *
 	return this;
 }
 
+bool SequenceViewUtil::MatchChannelNameKeyword(QString channelName, QString keyword)
+{
+	return channelName.contains(keyword);
+}
 
 
 

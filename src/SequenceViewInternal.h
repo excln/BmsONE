@@ -71,6 +71,7 @@ class SoundChannelFooter : public QWidget
 private:
 	SequenceView *sview;
 	SoundChannelView *cview;
+	int internalWidth;
 
 	static const qreal FontSize;
 
@@ -84,6 +85,8 @@ public:
 	virtual void mouseReleaseEvent(QMouseEvent *event);
 	virtual void mouseDoubleClickEvent(QMouseEvent *event);
 	virtual void contextMenuEvent(QContextMenuEvent * event);
+
+	void SetInternalWidth(int width);
 };
 
 
@@ -127,6 +130,9 @@ private:
 	bool current;
 	bool selected;
 
+	bool collapsed;
+	qreal animation;
+	int internalWidth;
 	QImage *backBuffer;
 
 	Context *context;
@@ -172,6 +178,7 @@ public:
 	void UpdateWholeBackBuffer();
 	void RemakeBackBuffer();
 	void ScrollContents(int dy);
+	void SetInternalWidth(int width);
 
 	SoundChannel *GetChannel() const{ return channel; }
 	QString GetName() const{ return channel->GetName(); }
@@ -180,6 +187,10 @@ public:
 	void SetCurrent(bool c){ current = c; update(); }
 	bool IsSelected() const{ return selected; }
 	void SetSelected(bool s){ selected = s; update(); }
+	bool IsCollapsed() const{ return collapsed; }
+	void SetCollapsed(bool c){ collapsed = c; }
+	qreal GetAnimation() const{ return animation; }
+	void SetAnimation(qreal a){ animation = a; }
 
 	virtual void paintEvent(QPaintEvent *event);
 	virtual void mouseMoveEvent(QMouseEvent *event);

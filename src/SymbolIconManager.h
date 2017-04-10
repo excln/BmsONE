@@ -44,6 +44,8 @@ public:
 		Up,
 		Down,
 		SoundChannelLanesDisplay,
+		SearchSound,
+		SearchHighlight,
 	};
 
 private:
