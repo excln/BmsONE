@@ -12,7 +12,6 @@ const char* SequenceView::SettingsGroup = "SequenceView";
 const char* SequenceView::SettingsZoomYKey = "ZoomY";
 const char* SequenceView::SettingsModeKey = "Mode";
 const char* SequenceView::SettingsSnapToGridKey = "SnapToGrid";
-const char* SequenceView::SettingsSnappedHitTestInEditMode = "SnappedHitTestInEditMode";
 const char* SequenceView::SettingsDarkenNotesInInactiveChannels = "DarkenNotesInInactiveChannels";
 const char* SequenceView::SettingsCoarseGridKey = "CoarseGrid";
 const char* SequenceView::SettingsFineGridKey = "FineGrid";
@@ -147,7 +146,6 @@ SequenceView::SequenceView(MainWindow *parent)
 		auto ptFineGrid = settings->value(SettingsFineGridKey, QPoint(16, 4)).toPoint();
 		fineGrid = GridSize(ptFineGrid.y(), ptFineGrid.x());
 		snapToGrid = settings->value(SettingsSnapToGridKey, true).toBool();
-		snappedHitTestInEditMode = settings->value(SettingsSnappedHitTestInEditMode, true).toBool();
 		darkenNotesInInactiveChannels = settings->value(SettingsDarkenNotesInInactiveChannels, true).toBool();
 		zoomY = settings->value(SettingsZoomYKey, 48./240.).toDouble();
 	}

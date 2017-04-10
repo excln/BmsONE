@@ -3,6 +3,7 @@
 #include "SequenceViewContexts.h"
 #include "SequenceViewInternal.h"
 #include "UIDef.h"
+#include "EditConfig.h"
 
 SequenceView::EditModeContext::EditModeContext(SequenceView *sview)
 	: Context(sview)
@@ -45,7 +46,7 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MouseMove(QMou
 		laneX = sview->sortedLanes.indexOf(sview->lanes[lane]);
 	}
 	SoundNoteView *noteHit = lane >= 0
-			? sview->HitTestPlayingPane(lane, event->y(), sview->snappedHitTestInEditMode ? iTime : -1, event->modifiers() & Qt::AltModifier)
+			? sview->HitTestPlayingPane(lane, event->y(), EditConfig::SnappedHitTestInEditMode() ? iTime : -1, event->modifiers() & Qt::AltModifier)
 			: nullptr;
 	if (noteHit){
 		sview->playingPane->setCursor(Qt::SizeAllCursor);
@@ -81,7 +82,7 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 		laneX = sview->sortedLanes.indexOf(sview->lanes[lane]);
 	}
 	SoundNoteView *noteHit = lane >= 0
-			? sview->HitTestPlayingPane(lane, event->y(), sview->snappedHitTestInEditMode ? iTime : time, event->modifiers() & Qt::AltModifier)
+			? sview->HitTestPlayingPane(lane, event->y(), EditConfig::SnappedHitTestInEditMode() ? iTime : time, event->modifiers() & Qt::AltModifier)
 			: nullptr;
 	sview->ClearBpmEventsSelection();
 	if (event->button() == Qt::RightButton && (event->modifiers() & Qt::AltModifier)){

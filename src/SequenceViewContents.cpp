@@ -114,7 +114,7 @@ bool SequenceView::paintEventPlayingPane(QWidget *playingPane, QPaintEvent *even
 	}
 
 	// horz. cursor line
-	if (cursor->HasTime()){
+	if (cursor->ShouldShowHLine()){
 		painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
 		int y = Time2Y(cursor->GetTime()) - 1;
 		painter.drawLine(left, y, right, y);
@@ -395,7 +395,7 @@ bool SequenceView::paintEventTimeLine(QWidget *timeLine, QPaintEvent *event)
 	painter.drawLine(0, rect.top(), 0, rect.bottom()+1);
 	painter.drawLine(timeLineMeasureWidth, rect.top(), timeLineMeasureWidth, rect.bottom()+1);
 
-	if (cursor->HasTime()){
+	if (cursor->ShouldShowHLine()){
 		painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
 		int y = Time2Y(cursor->GetTime()) - 1;
 		painter.drawLine(timeLineMeasureWidth, y, timeLineWidth, y);

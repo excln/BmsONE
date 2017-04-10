@@ -15,8 +15,14 @@ private:
 	static const char* SettingsFixMiniMapKey;
 	static const char* SettingsMiniMapOpacityKey;
 
+	static const char* SettingsSnappedHitTestInEditModeKey;
+	static const char* SettingsAlwaysShowCursorLineInEditModeKey;
+
 	static EditConfig *instance;
 	EditConfig();
+
+	bool snappedHitTestInEditMode;
+	bool alwaysShowCursorLineInEditMode;
 
 public:
 	static EditConfig *Instance();
@@ -35,6 +41,13 @@ public:
 
 	static bool CanShowMasterLane();
 	static bool CanShowMiniMap();
+
+
+	static bool SnappedHitTestInEditMode();
+	static bool AlwaysShowCursorLineInEditMode();
+
+	static void SetSnappedHitTestInEditMode(bool value);
+	static void SetAlwaysShowCursorLineInEditMode(bool value);
 
 signals:
 

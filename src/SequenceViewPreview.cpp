@@ -20,10 +20,13 @@ SequenceView::PreviewContext::PreviewContext(SequenceView::Context *parent, Sequ
 	sview->mainWindow->GetAudioPlayer()->Play(previewer);
 	sview->cursor->SetTime(time);
 	sview->playingPane->grabMouse();
+	sview->cursor->SetForceShowHLine(true);
+	sview->repaint();
 }
 
 SequenceView::PreviewContext::~PreviewContext()
 {
+	sview->cursor->SetForceShowHLine(false);
 	sview->playingPane->releaseMouse();
 	emit stop();
 }

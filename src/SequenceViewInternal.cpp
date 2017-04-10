@@ -281,7 +281,7 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 	}
 
 	// horz. cursor line
-	if (sview->cursor->HasTime()){
+	if (sview->cursor->ShouldShowHLine()){
 		painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
 		int y = sview->Time2Y(sview->cursor->GetTime()) - 1;
 		painter.drawLine(left, y, right, y);

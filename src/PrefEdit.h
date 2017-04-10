@@ -18,6 +18,8 @@ private:
 	QWidget *miniMapGroup;
 	QCheckBox *fixMiniMap;
 	QSlider *miniMapOpacity;
+	QCheckBox *snappedHitTestInEditMode;
+	QCheckBox *alwaysShowCursorLineInEditMode;
 
 public:
 	PrefEditPage(QWidget *parent);

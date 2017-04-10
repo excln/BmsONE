@@ -40,6 +40,16 @@ PrefEditPage::PrefEditPage(QWidget *parent)
 		masterGroup->setLayout(masterLayout);
 		layout->addWidget(masterGroup);
 	}
+	{
+		auto editModeGroup = new QGroupBox(tr("Edit Mode"));
+		auto editModeLayout = new QFormLayout();
+		{
+			editModeLayout->addRow(snappedHitTestInEditMode = new QCheckBox(tr("Enable snapped-to-grid hit test of clicks")));
+			editModeLayout->addRow(alwaysShowCursorLineInEditMode = new QCheckBox(tr("Always show cursor line")));
+		}
+		editModeGroup->setLayout(editModeLayout);
+		layout->addWidget(editModeGroup);
+	}
 	setLayout(layout);
 
 	connect(master, SIGNAL(toggled(bool)), this, SLOT(MasterChanged(bool)));
@@ -66,6 +76,9 @@ void PrefEditPage::load()
 
 	double vMiniMapOpacity = EditConfig::GetMiniMapOpacity();
 	miniMapOpacity->setValue(vMiniMapOpacity*65536);
+
+	snappedHitTestInEditMode->setChecked(EditConfig::SnappedHitTestInEditMode());
+	alwaysShowCursorLineInEditMode->setChecked(EditConfig::AlwaysShowCursorLineInEditMode());
 }
 
 void PrefEditPage::store()
@@ -75,6 +88,9 @@ void PrefEditPage::store()
 	EditConfig::SetShowMiniMap(showMiniMap->isChecked());
 	EditConfig::SetFixMiniMap(fixMiniMap->isChecked());
 	EditConfig::SetMiniMapOpacity(double(miniMapOpacity->value())/65536);
+
+	EditConfig::SetSnappedHitTestInEditMode(snappedHitTestInEditMode->isChecked());
+	EditConfig::SetAlwaysShowCursorLineInEditMode(alwaysShowCursorLineInEditMode->isChecked());
 }
 
 void PrefEditPage::MasterChanged(bool value)

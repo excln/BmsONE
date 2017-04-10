@@ -179,13 +179,13 @@
         <translation>音声ノート削除</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="575"/>
-        <location filename="../Document.cpp" line="816"/>
+        <location filename="../Document.cpp" line="583"/>
+        <location filename="../Document.cpp" line="832"/>
         <source>update sound notes</source>
         <translation>音声ノート変更</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="656"/>
+        <location filename="../Document.cpp" line="672"/>
         <source>convert resolution</source>
         <translation>分解能変換</translation>
     </message>
@@ -1022,6 +1022,41 @@ All files (*.*)</source>
         <translation>ミニマップの不透明度:</translation>
     </message>
     <message>
+        <location filename="../PrefEdit.cpp" line="44"/>
+        <source>Edit Mode</source>
+        <translation>編集モード</translation>
+    </message>
+    <message>
+        <location filename="../PrefEdit.cpp" line="47"/>
+        <source>Hit Test of Clicks:</source>
+        <translation>クリックの当たり判定:</translation>
+    </message>
+    <message>
+        <location filename="../PrefEdit.cpp" line="50"/>
+        <source>Snapped to grid (if available)</source>
+        <translation>グリッドにスナップ（可能な場合）</translation>
+    </message>
+    <message>
+        <location filename="../PrefEdit.cpp" line="48"/>
+        <source>Cursor Line Display:</source>
+        <translation>カーソル線の表示:</translation>
+    </message>
+    <message>
+        <location filename="../PrefEdit.cpp" line="51"/>
+        <source>Not snapped</source>
+        <translation>スナップしない</translation>
+    </message>
+    <message>
+        <location filename="../PrefEdit.cpp" line="53"/>
+        <source>Always</source>
+        <translation>常に表示</translation>
+    </message>
+    <message>
+        <location filename="../PrefEdit.cpp" line="54"/>
+        <source>Only when Shift key is pressed</source>
+        <translation>Shiftキー押下時のみ</translation>
+    </message>
+    <message>
         <source>Mini Map Opacity</source>
         <translation>ミニマップの不透明度</translation>
     </message>
@@ -1282,17 +1317,17 @@ All files (*.*)</source>
 <context>
     <name>SequenceView</name>
     <message>
-        <location filename="../SequenceView.cpp" line="122"/>
+        <location filename="../SequenceView.cpp" line="121"/>
         <source>Delete</source>
         <translation>削除</translation>
     </message>
     <message>
-        <location filename="../SequenceView.cpp" line="124"/>
+        <location filename="../SequenceView.cpp" line="123"/>
         <source>Move to BGM Lanes</source>
         <translation>BGMレーンに移動</translation>
     </message>
     <message>
-        <location filename="../SequenceView.cpp" line="264"/>
+        <location filename="../SequenceView.cpp" line="262"/>
         <source>%1:</source>
         <translation>%1: </translation>
     </message>
@@ -1300,7 +1335,7 @@ All files (*.*)</source>
 <context>
     <name>SequenceViewCursor</name>
     <message>
-        <location filename="../SequenceViewCursor.cpp" line="75"/>
+        <location filename="../SequenceViewCursor.cpp" line="76"/>
         <source>BGM</source>
         <translation>BGM</translation>
     </message>
@@ -1337,42 +1372,42 @@ All files (*.*)</source>
         <translation>キー 1P S</translation>
     </message>
     <message>
-        <location filename="../SequenceViewCursor.cpp" line="81"/>
+        <location filename="../SequenceViewCursor.cpp" line="82"/>
         <source>?</source>
         <translation>?</translation>
     </message>
     <message>
-        <location filename="../SequenceViewCursor.cpp" line="162"/>
+        <location filename="../SequenceViewCursor.cpp" line="163"/>
         <source>Click to add a sound note</source>
         <translation>クリックで音声ノート追加</translation>
     </message>
     <message>
-        <location filename="../SequenceViewCursor.cpp" line="180"/>
+        <location filename="../SequenceViewCursor.cpp" line="181"/>
         <source>Sound note</source>
         <translation>音声ノート</translation>
     </message>
     <message>
-        <location filename="../SequenceViewCursor.cpp" line="197"/>
+        <location filename="../SequenceViewCursor.cpp" line="198"/>
         <source>Click to add a BPM event: %1</source>
         <translation>クリックでBPMイベント追加: %1</translation>
     </message>
     <message>
-        <location filename="../SequenceViewCursor.cpp" line="214"/>
+        <location filename="../SequenceViewCursor.cpp" line="215"/>
         <source>BPM event: %1</source>
         <translation>BPMイベント: %1</translation>
     </message>
     <message>
-        <location filename="../SequenceViewCursor.cpp" line="231"/>
+        <location filename="../SequenceViewCursor.cpp" line="232"/>
         <source>Click to add a bar line</source>
         <translation>クリックで小節線追加</translation>
     </message>
     <message>
-        <location filename="../SequenceViewCursor.cpp" line="248"/>
+        <location filename="../SequenceViewCursor.cpp" line="249"/>
         <source>Temporary bar line</source>
         <translation>小節線(仮設)</translation>
     </message>
     <message>
-        <location filename="../SequenceViewCursor.cpp" line="248"/>
+        <location filename="../SequenceViewCursor.cpp" line="249"/>
         <source>Bar line</source>
         <translation>小節線</translation>
     </message>
@@ -1473,17 +1508,17 @@ All files (*.*)</source>
         <translation>音声チャンネルのソースファイル選択</translation>
     </message>
     <message>
-        <location filename="../SoundChannel.cpp" line="205"/>
+        <location filename="../SoundChannel.cpp" line="206"/>
         <source>modify sound note</source>
         <translation>音声ノート変更</translation>
     </message>
     <message>
-        <location filename="../SoundChannel.cpp" line="214"/>
+        <location filename="../SoundChannel.cpp" line="215"/>
         <source>add sound note</source>
         <translation>音声ノート追加</translation>
     </message>
     <message>
-        <location filename="../SoundChannel.cpp" line="231"/>
+        <location filename="../SoundChannel.cpp" line="232"/>
         <source>remove sound note</source>
         <translation>音声ノート削除</translation>
     </message>

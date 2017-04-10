@@ -2,6 +2,7 @@
 #include "SequenceViewChannelInternal.h"
 #include "SequenceView.h"
 #include "MainWindow.h"
+#include "EditConfig.h"
 
 
 SoundChannelView::EditModeContext::EditModeContext(SoundChannelView *cview)
@@ -22,7 +23,7 @@ SoundChannelView::Context *SoundChannelView::EditModeContext::MouseMove(QMouseEv
 		iTime = sview->SnapToLowerFineGrid(time);
 		iTimeUpper = sview->SnapToUpperFineGrid(time);
 	}
-	SoundNoteView *noteHit = cview->HitTestBGPane(event->y(), sview->snappedHitTestInEditMode ? iTime : -1);
+	SoundNoteView *noteHit = cview->HitTestBGPane(event->y(), EditConfig::SnappedHitTestInEditMode() ? iTime : -1);
 	if (noteHit){
 		cview->setCursor(Qt::SizeAllCursor);
 		sview->cursor->SetExistingSoundNote(noteHit);
@@ -40,7 +41,7 @@ SoundChannelView::Context *SoundChannelView::EditModeContext::MousePress(QMouseE
 	if (sview->snapToGrid){
 		iTime = sview->SnapToLowerFineGrid(time);
 	}
-	SoundNoteView *noteHit = cview->HitTestBGPane(event->y(), sview->snappedHitTestInEditMode ? iTime : -1);
+	SoundNoteView *noteHit = cview->HitTestBGPane(event->y(), EditConfig::SnappedHitTestInEditMode() ? iTime : -1);
 	if ((event->button() == Qt::RightButton && (event->modifiers() & Qt::AltModifier)) || (event->button() == Qt::MidButton)){
 		// select this channel (if not selected) & preview
 		if (!cview->current){
@@ -365,11 +366,14 @@ SoundChannelView::PreviewContext::PreviewContext(
 	connect(this, SIGNAL(stop()), previewer, SLOT(Stop()), Qt::QueuedConnection);
 	sview->mainWindow->GetAudioPlayer()->Play(previewer);
 	sview->cursor->SetTime(time);
+	sview->cursor->SetForceShowHLine(true);
+	sview->repaint();
 	cview->grabMouse();
 }
 
 SoundChannelView::PreviewContext::~PreviewContext()
 {
+	sview->cursor->SetForceShowHLine(false);
 	cview->releaseMouse();
 	emit stop();
 }

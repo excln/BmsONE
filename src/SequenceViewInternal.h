@@ -224,6 +224,7 @@ private:
 	int timeBegin, timeEnd;
 	QList<int> laneRange;
 	int itemCountInRange;
+	bool forceShowHLine;
 
 private:
 	QString AbsoluteLocationString(int t) const;
@@ -277,6 +278,9 @@ public:
 	bool HasLane() const;
 	bool HasTimeRange() const;
 	bool HasItemCount() const;
+
+	void SetForceShowHLine(bool show);
+	bool ShouldShowHLine() const;
 
 signals:
 	void Changed();

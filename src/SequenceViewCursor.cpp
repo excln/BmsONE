@@ -3,13 +3,14 @@
 #include "MainWindow.h"
 #include "SymbolIconManager.h"
 #include "ViewMode.h"
-
+#include "EditConfig.h"
 
 SequenceViewCursor::SequenceViewCursor(SequenceView *sview)
 	: QObject(sview)
 	, sview(sview)
 	, statusBar(sview->mainWindow->GetStatusBar())
 	, state(State::NOTHING)
+	, forceShowHLine(false)
 {
 }
 
@@ -413,6 +414,32 @@ bool SequenceViewCursor::HasItemCount() const
 		return true;
 	default:
 		return false;
+	}
+}
+
+void SequenceViewCursor::SetForceShowHLine(bool show)
+{
+	forceShowHLine = show;
+}
+
+bool SequenceViewCursor::ShouldShowHLine() const
+{
+	if (!HasTime())
+		return false;
+	if (forceShowHLine)
+		return true;
+
+	switch (sview->editMode){
+	case SequenceEditMode::EDIT_MODE:
+		if (EditConfig::AlwaysShowCursorLineInEditMode()){
+			return true;
+		}else{
+			return (qApp->keyboardModifiers() & Qt::ShiftModifier) != 0;
+		}
+	case SequenceEditMode::WRITE_MODE:
+		return true;
+	default:
+		return true;
 	}
 }
 

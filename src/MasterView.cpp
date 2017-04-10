@@ -472,7 +472,7 @@ void MasterLaneView::paintEvent(QPaintEvent *event)
 	painter.setPen(palette().dark().color());
 	painter.drawLine(0, rect.top(), 0, rect.bottom()+1);
 
-	if (sview->cursor->HasTime()){
+	if (sview->cursor->ShouldShowHLine()){
 		painter.setPen(QPen(QBrush(QColor(255, 255, 255)), 1));
 		int y = sview->Time2Y(sview->cursor->GetTime()) - 1;
 		painter.drawLine(0, y, width(), y);
@@ -769,10 +769,13 @@ MasterLaneView::PreviewContext::PreviewContext(MasterLaneView *ml, MasterLaneVie
 	connect(previewer, SIGNAL(SmoothedDelayedProgress(int)), this, SLOT(Progress(int)));
 	ml->sview->mainWindow->GetAudioPlayer()->Play(previewer);
 	ml->grabMouse();
+	ml->sview->cursor->SetForceShowHLine(true);
+	ml->sview->repaint();
 }
 
 MasterLaneView::PreviewContext::~PreviewContext()
 {
+	ml->sview->cursor->SetForceShowHLine(false);
 	ml->releaseMouse();
 	if (previewer){
 		previewer->AudioPlayRelease();

@@ -39,7 +39,6 @@ private:
 	static const char* SettingsZoomYKey;
 	static const char* SettingsModeKey;
 	static const char* SettingsSnapToGridKey;
-	static const char* SettingsSnappedHitTestInEditMode;
 	static const char* SettingsDarkenNotesInInactiveChannels;
 	static const char* SettingsCoarseGridKey;
 	static const char* SettingsFineGridKey;
@@ -152,7 +151,6 @@ private:
 	GridSize coarseGrid;
 	GridSize fineGrid;
 	bool snapToGrid;
-	bool snappedHitTestInEditMode;
 	bool darkenNotesInInactiveChannels;
 	bool showMasterLane;
 	bool showMiniMap;
