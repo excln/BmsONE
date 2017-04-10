@@ -2,13 +2,13 @@
 #include "MainWindow.h"
 #include "SymbolIconManager.h"
 
-BpmEditView::BpmEditView(SelectedObjectView *view)
-	: QWidget(view)
-	, selectedObjectView(view)
+BpmEditView::BpmEditView(MainWindow *mainWindow)
+	: QWidget()
+	, mainWindow(mainWindow)
 {
 	auto *layout = new QHBoxLayout();
 	auto *icon = new QLabel();
-	icon->setPixmap(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Event).pixmap(view->iconSize(), QIcon::Normal));
+	icon->setPixmap(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Event).pixmap(UIUtil::ToolBarIconSize, QIcon::Normal));
 	layout->addWidget(icon);
 	layout->addWidget(message = new QLabel());
 	layout->addWidget(edit = new QuasiModalEdit());
@@ -53,7 +53,7 @@ void BpmEditView::Update()
 		edit->setText(QString());
 		edit->setEnabled(false);
 		edit->setPlaceholderText(QString());
-		selectedObjectView->SetView();
+		mainWindow->UnsetSelectedObjectsView(this);
 	}else{
 		if (bpmEvents.count() > 1){
 			message->setText(tr("%1 selected BPM events").arg(bpmEvents.count()));
@@ -76,7 +76,7 @@ void BpmEditView::Update()
 			edit->setText(QString());
 			edit->setPlaceholderText(tr("multiple values"));
 		}
-		selectedObjectView->SetView(this);
+		mainWindow->SetSelectedObjectsView(this);
 	}
 }
 

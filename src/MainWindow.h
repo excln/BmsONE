@@ -14,7 +14,6 @@ class SequenceView;
 class InfoView;
 class ChannelInfoView;
 class BpmEditView;
-class SelectedObjectView;
 class ExternalViewer;
 class Preferences;
 class SequenceTools;
@@ -103,7 +102,7 @@ private:
 	ChannelInfoView *channelInfoView;
 	ExternalViewer *externalViewer;
 
-	SelectedObjectView *selectedObjectView;
+	QDockWidget *selectedObjectsDockWidget;
 	BpmEditView *bpmEditView;
 
 	Document *document;
@@ -249,6 +248,9 @@ public:
 
 	int GetCurrentChannel() const{ return currentChannel; }
 	ViewMode *GetCurrentViewMode() const{ return viewMode; }
+
+	void SetSelectedObjectsView(QWidget *view);
+	void UnsetSelectedObjectsView(QWidget *view);
 
 	void OpenFiles(QStringList filePaths);
 

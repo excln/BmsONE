@@ -32,7 +32,6 @@ SOURCES += main.cpp\
     ScrollableForm.cpp \
     Util.cpp \
     BpmEditTool.cpp \
-    SelectedObjectView.cpp \
     JsonExtension.cpp \
     SoundChannelInternal.cpp \
 	SequenceViewInternal.cpp \
@@ -109,7 +108,6 @@ HEADERS  += MainWindow.h \
     ScrollableForm.h \
     UIDef.h \
     BpmEditTool.h \
-    SelectedObjectView.h \
     JsonExtension.h \
     SoundChannel.h \
     SoundChannelInternal.h \

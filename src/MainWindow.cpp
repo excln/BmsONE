@@ -3,7 +3,6 @@
 #include "InfoView.h"
 #include "ChannelInfoView.h"
 #include "BpmEditTool.h"
-#include "SelectedObjectView.h"
 #include "History.h"
 #include <QtMultimedia/QMediaPlayer>
 #include "UIDef.h"
@@ -403,13 +402,13 @@ MainWindow::MainWindow(QSettings *settings)
 	addToolBar(channelFindTools);
 	menuViewToolBars->insertAction(actionViewTbSeparator, channelFindTools->toggleViewAction());
 
-	selectedObjectView = new SelectedObjectView(this);
-	UIUtil::SetFont(selectedObjectView);
-	selectedObjectView->setObjectName("Selected Objects");
-	addToolBar(selectedObjectView);
-	menuViewToolBars->insertAction(actionViewTbSeparator, selectedObjectView->toggleViewAction());
+	selectedObjectsDockWidget = new QDockWidget(tr("Selected Objects"));
+	UIUtil::SetFont(selectedObjectsDockWidget);
+	selectedObjectsDockWidget->setObjectName("SelectedObjectsDock");
+	addDockWidget(Qt::LeftDockWidgetArea, selectedObjectsDockWidget);
+	menuViewDockBars->insertAction(actionViewDockSeparator, selectedObjectsDockWidget->toggleViewAction());
 
-	bpmEditView = new BpmEditView(selectedObjectView);
+	bpmEditView = new BpmEditView(this);
 	connect(bpmEditView, SIGNAL(Updated()), this, SLOT(OnBpmEdited()));
 
 	sequenceView = new SequenceView(this);
@@ -480,9 +479,9 @@ MainWindow::MainWindow(QSettings *settings)
 			restoreState(saveState());
 		}
 
-		if (settings->value(SettingsHideInactiveSelectedViewKey, true).toBool()){
-			selectedObjectView->hide();
-		}
+		//if (settings->value(SettingsHideInactiveSelectedViewKey, true).toBool()){
+		//	selectedObjectView->hide();
+		//}
 	}
 	settings->endGroup(); // MainWindow
 
@@ -598,6 +597,18 @@ void MainWindow::closeEvent(QCloseEvent *event)
 SequenceView *MainWindow::GetActiveSequenceView() const
 {
 	return sequenceView;
+}
+
+void MainWindow::SetSelectedObjectsView(QWidget *view)
+{
+	selectedObjectsDockWidget->setWidget(view);
+}
+
+void MainWindow::UnsetSelectedObjectsView(QWidget *view)
+{
+	if (selectedObjectsDockWidget->widget() == view){
+		selectedObjectsDockWidget->setWidget(nullptr);
+	}
 }
 
 void MainWindow::EditUndo()

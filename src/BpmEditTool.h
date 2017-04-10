@@ -5,7 +5,6 @@
 #include <QtWidgets>
 #include "Document.h"
 #include "QuasiModalEdit.h"
-#include "SelectedObjectView.h"
 #include "ScrollableForm.h"
 
 class MainWindow;
@@ -15,7 +14,7 @@ class BpmEditView : public QWidget
 	Q_OBJECT
 
 private:
-	SelectedObjectView *selectedObjectView;
+	MainWindow *mainWindow;
 	QLabel *message;
 	QuasiModalEdit *edit;
 	QList<BpmEvent> bpmEvents;
@@ -28,7 +27,7 @@ private slots:
 	void EscPressed();
 
 public:
-	BpmEditView(SelectedObjectView *view);
+	BpmEditView(MainWindow *mainWindow);
 	virtual ~BpmEditView();
 
 	QList<BpmEvent> GetBpmEvents() const{ return bpmEvents; }
