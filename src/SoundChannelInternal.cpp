@@ -365,13 +365,11 @@ void SoundChannelResourceManager::TaskDrawOverallWaveformAndRmsCache()
 	wave->SeekAbsolute(0);
 	const int width = overallWaveform.width();
 	const int height = overallWaveform.height();
-	quint32 *temp = new quint32[width*height];
-	std::memset(temp, 0, sizeof(quint32)*width*height);
-	char *buffer = new char[BufferSize];
-	quint64 ismp = 0;
+	int samplesPerPixel = summary.FrameCount / width;
 	float dx = float(width) / summary.FrameCount;
-	const int ditherRes = 32;
-	float dxd = dx*ditherRes;
+	Rms wfPeak, wfRms;
+	QList<RmsCacheEntry> waveformPeak, waveformRms;
+	int ismpPx = 0;
 	QList<RmsCacheEntry> rmsBuf;
 	QPair<float, float> rmsCur(0, 0);
 	int rmsCurSize = 0;
@@ -394,13 +392,15 @@ void SoundChannelResourceManager::TaskDrawOverallWaveformAndRmsCache()
 				rmsCurPos += RmsCachePacketSampleCount;
 			}
 		}
-		float x = (float)ismp * dxd;
-		float y = (0.5f - 0.48*v) * height;
-		int ix = (int(x) + (std::rand() - RAND_MAX/2)/(RAND_MAX/2/ditherRes) ) / ditherRes;
-		if (ix < width && ix >= 0){
-			temp[ix * height + int(y)]++;
+		wfRms.L += sqv;
+		if (std::fabsf(v) > wfPeak.L) wfPeak.L = std::fabsf(v);
+		if (++ismpPx >= samplesPerPixel){
+			waveformPeak.append(RmsCacheEntry(wfPeak.L * 255, wfPeak.L * 255));
+			waveformRms.append(RmsCacheEntry(std::sqrtf(wfRms.L*dx) * 255, std::sqrtf(wfRms.L*dx) * 255));
+			wfPeak = Rms();
+			wfRms = Rms();
+			ismpPx = 0;
 		}
-		ismp++;
 	}, [&](float l, float r){
 		// when Stereo
 		rmsCur.first += l*l;
@@ -418,38 +418,48 @@ void SoundChannelResourceManager::TaskDrawOverallWaveformAndRmsCache()
 				rmsCurPos += RmsCachePacketSampleCount;
 			}
 		}
-		float x = (float)ismp * dxd;
-		int ix = (int(x) + (std::rand() - RAND_MAX/2)/(RAND_MAX/2/ditherRes) ) / ditherRes;
-		if (ix < width && ix >= 0){
-			temp[ix * height + int((0.25f - 0.24*l) * height)]++;
-			temp[ix * height + int((0.75f - 0.24*r) * height)]++;
+		wfRms.L += l*l;
+		wfRms.R += r*r;
+		if (std::fabsf(l) > wfPeak.L) wfPeak.L = std::fabsf(l);
+		if (std::fabsf(r) > wfPeak.R) wfPeak.R = std::fabsf(r);
+		if (++ismpPx >= samplesPerPixel){
+			waveformPeak.append(RmsCacheEntry(wfPeak.L * 255, wfPeak.R * 255));
+			waveformRms.append(RmsCacheEntry(std::sqrtf(wfRms.L*dx) * 255, std::sqrtf(wfRms.R*dx) * 255));
+			wfPeak = Rms();
+			wfRms = Rms();
+			ismpPx = 0;
 		}
-		ismp++;
 	});
 	if (rmsBuf.size() > 0){
 		QMutexLocker lockerRms(&rmsCacheMutex);
 		rmsCachePackets.insert(rmsCurPos, RmsCachePacket(rmsBuf, rmsBuf.size()));
 	}
-	delete[] buffer;
-	const int density = wave->GetFrameCount() / width;
-	const int hd = wave->GetFormat().channelCount() == 1 ? height/2 : height/4;
-	const int shd = hd*hd;
-	for (int y=0; y<height; y++){
-		quint32 *sl = (quint32 *)overallWaveform.scanLine(y);
-		int amp = wave->GetFormat().channelCount() == 1
-				? (y-height/2)*(y-height/2)
-				: (y < height/2 ? (y-height/4)*(y-height/4) : (y-height*3/4)*(y-height*3/4) );
-		int u = 32 * amp / shd;
-		for (int x=0; x<width; x++){
-			int v = temp[x*height + y] * 256 / density;
-			int r = std::min(255, v * std::max(0, 48 - u));
-			int g = std::min(255, v * (32 + u + u*u/4));
-			int b = std::min(255, v * (16 + u/4 + 4*u*u));
-			quint32 u = (0xFF << 24) | (r << 16) | (g << 8) | b;
-			*sl++ = u;
+	overallWaveform.fill(QColor(0, 0, 0));
+	if (summary.Format.channelCount() == 1){
+		QPainter painter(&overallWaveform);
+		int w = std::min(width, waveformPeak.size());
+		painter.setPen(QColor(0, 0x99, 0));
+		for (int i=0; i<w; i++){
+			painter.drawLine(i, height/2 - waveformPeak[i].L*height/2/255, i, height/2 + waveformPeak[i].L*height/2/255);
+		}
+		painter.setPen(QColor(0x66, 0xCC, 0x66));
+		for (int i=0; i<w; i++){
+			painter.drawLine(i, height/2 - waveformRms[i].L*height/2/255, i, height/2 + waveformRms[i].L*height/2/255);
+		}
+	}else{
+		QPainter painter(&overallWaveform);
+		int w = std::min(width, waveformPeak.size());
+		painter.setPen(QColor(0, 0x99, 0));
+		for (int i=0; i<w; i++){
+			painter.drawLine(i, height/4 - waveformPeak[i].L*height/4/255, i, height/4 + waveformPeak[i].L*height/4/255);
+			painter.drawLine(i, height*3/4 - waveformPeak[i].R*height/4/255, i, height*3/4 + waveformPeak[i].R*height/4/255);
+		}
+		painter.setPen(QColor(0x66, 0xCC, 0x66));
+		for (int i=0; i<w; i++){
+			painter.drawLine(i, height/4 - waveformRms[i].L*height/4/255, i, height/4 + waveformRms[i].L*height/4/255);
+			painter.drawLine(i, height*3/4 - waveformRms[i].R*height/4/255, i, height*3/4 + waveformRms[i].R*height/4/255);
 		}
 	}
-	delete[] temp;
 //	int totalSize = 0;
 //	for (auto p : rmsCachePackets){
 //		totalSize += p.GetSize();
