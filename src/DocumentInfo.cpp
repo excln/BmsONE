@@ -25,7 +25,9 @@ DocumentInfo::DocumentInfo(Document *document)
 		SupportedKeys.insert(Bmson::BmsInfo::LevelKey);
 		SupportedKeys.insert(Bmson::BmsInfo::BackImageKey);
 		SupportedKeys.insert(Bmson::BmsInfo::EyecatchImageKey);
+		SupportedKeys.insert(Bmson::BmsInfo::TitleImageKey);
 		SupportedKeys.insert(Bmson::BmsInfo::BannerKey);
+		SupportedKeys.insert(Bmson::BmsInfo::PreviewMusicKey);
 	}
 }
 
@@ -49,7 +51,9 @@ void DocumentInfo::Initialize()
 	level = 1;
 	backImage = QString();
 	eyecatchImage = QString();
+	titleImage = QString();
 	banner = QString();
+	previewMusic = QString();
 }
 
 void DocumentInfo::LoadBmson(QJsonValue json)
@@ -76,7 +80,9 @@ void DocumentInfo::LoadBmson(QJsonValue json)
 	level = bmsonFields[Bmson::BmsInfo::LevelKey].toInt();
 	backImage = bmsonFields[Bmson::BmsInfo::BackImageKey].toString();
 	eyecatchImage = bmsonFields[Bmson::BmsInfo::EyecatchImageKey].toString();
+	titleImage = bmsonFields[Bmson::BmsInfo::TitleImageKey].toString();
 	banner = bmsonFields[Bmson::BmsInfo::BannerKey].toString();
+	previewMusic = bmsonFields[Bmson::BmsInfo::PreviewMusicKey].toString();
 }
 
 QJsonValue DocumentInfo::SaveBmson()
@@ -99,7 +105,9 @@ QJsonValue DocumentInfo::SaveBmson()
 	bmsonFields[Bmson::BmsInfo::LevelKey] = level;
 	bmsonFields[Bmson::BmsInfo::BackImageKey] = backImage;
 	bmsonFields[Bmson::BmsInfo::EyecatchImageKey] = eyecatchImage;
+	bmsonFields[Bmson::BmsInfo::TitleImageKey] = titleImage;
 	bmsonFields[Bmson::BmsInfo::BannerKey] = banner;
+	bmsonFields[Bmson::BmsInfo::PreviewMusicKey] = previewMusic;
 	return bmsonFields;
 }
 
@@ -283,7 +291,23 @@ void DocumentInfo::SetEyecatchImage(QString value)
 		new EditValueAction<QString>(
 			[this](QString v){ SetEyecatchInternal(v); },
 			eyecatchImage, value,
-			tr("edit eyecatch image"), true));
+				tr("edit eyecatch image"), true));
+}
+
+void DocumentInfo::SetTitleImageInternal(QString value)
+{
+	emit TitleImageChanged(titleImage = value);
+}
+
+void DocumentInfo::SetTitleImage(QString value)
+{
+	if (value == titleImage)
+		return;
+	document->GetHistory()->Add(
+		new EditValueAction<QString>(
+			[this](QString v){ SetTitleImageInternal(v); },
+			titleImage, value,
+			tr("edit title image"), true));
 }
 
 void DocumentInfo::SetBannerInternal(QString value)
@@ -299,7 +323,23 @@ void DocumentInfo::SetBanner(QString value)
 		new EditValueAction<QString>(
 			[this](QString v){ SetBannerInternal(v); },
 			banner, value,
-			tr("edit banner"), true));
+				tr("edit banner"), true));
+}
+
+void DocumentInfo::SetPreviewMusicInternal(QString value)
+{
+	emit PreviewMusicChanged(previewMusic = value);
+}
+
+void DocumentInfo::SetPreviewMusic(QString value)
+{
+	if (value == previewMusic)
+		return;
+	document->GetHistory()->Add(
+		new EditValueAction<QString>(
+			[this](QString v){ SetPreviewMusicInternal(v); },
+			previewMusic, value,
+			tr("edit preview music"), true));
 }
 
 QMap<QString, QJsonValue> DocumentInfo::GetExtraFields() const

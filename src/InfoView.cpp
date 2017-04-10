@@ -31,7 +31,9 @@ InfoView::InfoView(MainWindow *mainWindow)
 	layout->addRow(tr("Level:"), editLevel = new QuasiModalEdit());
 	layout->addRow(tr("Back Image:"), editBackImage = new QuasiModalEdit());
 	layout->addRow(tr("Eyecatch Image:"), editEyecatchImage = new QuasiModalEdit());
+	layout->addRow(tr("Title Image:"), editTitleImage = new QuasiModalEdit());
 	layout->addRow(tr("Banner:"), editBanner = new QuasiModalEdit());
+	layout->addRow(tr("Preview Music:"), editPreviewMusic = new QuasiModalEdit());
 	editExtraFields = new QuasiModalMultiLineEdit();
 	layout->addRow(tr("Extra fields:"), buttonShowExtraFields = new CollapseButton(editExtraFields, this));
 	layout->addRow(editExtraFields);
@@ -80,7 +82,9 @@ InfoView::InfoView(MainWindow *mainWindow)
 	connect(editLevel, &QLineEdit::editingFinished, this, &InfoView::LevelEdited);
 	connect(editBackImage, &QLineEdit::editingFinished, this, &InfoView::BackImageEdited);
 	connect(editEyecatchImage, &QLineEdit::editingFinished, this, &InfoView::EyecatchImageEdited);
+	connect(editTitleImage, &QLineEdit::editingFinished, this, &InfoView::TitleImageEdited);
 	connect(editBanner, &QLineEdit::editingFinished, this, &InfoView::BannerEdited);
+	connect(editPreviewMusic, &QLineEdit::editingFinished, this, &InfoView::PreviewMusicEdited);
 	connect(editExtraFields, &QuasiModalMultiLineEdit::EditingFinished, this, &InfoView::ExtraFieldsEdited);
 
 	connect(editTitle, &QuasiModalEdit::EscPressed, this, &InfoView::TitleEditCanceled);
@@ -96,7 +100,9 @@ InfoView::InfoView(MainWindow *mainWindow)
 	connect(editLevel, &QuasiModalEdit::EscPressed, this, &InfoView::LevelEditCanceled);
 	connect(editBackImage, &QuasiModalEdit::EscPressed, this, &InfoView::BackImageEditCanceled);
 	connect(editEyecatchImage, &QuasiModalEdit::EscPressed, this, &InfoView::EyecatchImageEditCanceled);
+	connect(editTitleImage, &QuasiModalEdit::EscPressed, this, &InfoView::TitleImageCanceled);
 	connect(editBanner, &QuasiModalEdit::EscPressed, this, &InfoView::BannerEditCanceled);
+	connect(editPreviewMusic, &QuasiModalEdit::EscPressed, this, &InfoView::PreviewMusicCanceled);
 	connect(editExtraFields, &QuasiModalMultiLineEdit::EscPressed, this, &InfoView::ExtraFieldsEditCanceled);
 
 	connect(buttonResolution, &QToolButton::clicked, this, &InfoView::ResolutionClicked);
@@ -158,7 +164,9 @@ void InfoView::ReplaceDocument(Document *newDocument)
 		SetLevel(info->GetLevel());
 		SetBackImage(info->GetBackImage());
 		SetEyecatchImage(info->GetEyecatchImage());
+		SetTitleImage(info->GetTitleImage());
 		SetBanner(info->GetBanner());
+		SetPreviewMusic(info->GetPreviewMusic());
 		SetExtraFields(info->GetExtraFields());
 		connect(info, &DocumentInfo::TitleChanged, this, &InfoView::TitleChanged);
 		connect(info, &DocumentInfo::SubtitleChanged, this, &InfoView::SubtitleChanged);
@@ -174,7 +182,9 @@ void InfoView::ReplaceDocument(Document *newDocument)
 		connect(info, &DocumentInfo::LevelChanged, this, &InfoView::LevelChanged);
 		connect(info, &DocumentInfo::BackImageChanged, this, &InfoView::BackImageChanged);
 		connect(info, &DocumentInfo::EyecatchImageChanged, this, &InfoView::EyecatchImageChanged);
+		connect(info, &DocumentInfo::TitleImageChanged, this, &InfoView::TitleImageChanged);
 		connect(info, &DocumentInfo::BannerChanged, this, &InfoView::BannerChanged);
+		connect(info, &DocumentInfo::PreviewMusicChanged, this, &InfoView::PreviewMusicChanged);
 		connect(info, &DocumentInfo::ExtraFieldsChanged, this, &InfoView::ExtraFieldsChanged);
 	}
 }
@@ -191,7 +201,7 @@ void InfoView::SetSubartists(QStringList value)
 	for (auto entry : value){
 		s += entry + "\n";
 	}
-	editSubartists->setText(s);
+	editSubartists->SetTextAutomated(s);
 	if (value.isEmpty()){
 		buttonShowSubartists->SetText(QString());
 	}else{
@@ -210,7 +220,7 @@ void InfoView::SetExtraFields(const QMap<QString, QJsonValue> &fields)
 			break;
 		s += ",\n";
 	}
-	editExtraFields->setText(s);
+	editExtraFields->SetTextAutomated(s);
 	buttonShowExtraFields->SetText(s);
 }
 
@@ -337,9 +347,19 @@ void InfoView::EyecatchImageEdited()
 	document->GetInfo()->SetEyecatchImage(editEyecatchImage->text());
 }
 
+void InfoView::TitleImageEdited()
+{
+	document->GetInfo()->SetTitleImage(editTitleImage->text());
+}
+
 void InfoView::BannerEdited()
 {
 	document->GetInfo()->SetBanner(editBanner->text());
+}
+
+void InfoView::PreviewMusicEdited()
+{
+	document->GetInfo()->SetPreviewMusic(editPreviewMusic->text());
 }
 
 
@@ -413,9 +433,19 @@ void InfoView::EyecatchImageEditCanceled()
 	SetEyecatchImage(document->GetInfo()->GetEyecatchImage());
 }
 
+void InfoView::TitleImageCanceled()
+{
+	SetTitleImage(document->GetInfo()->GetTitleImage());
+}
+
 void InfoView::BannerEditCanceled()
 {
 	SetBanner(document->GetInfo()->GetBanner());
+}
+
+void InfoView::PreviewMusicCanceled()
+{
+	SetPreviewMusic(document->GetInfo()->GetPreviewMusic());
 }
 
 
@@ -548,9 +578,19 @@ void InfoView::EyecatchImageChanged(QString value)
 	SetEyecatchImage(value);
 }
 
+void InfoView::TitleImageChanged(QString value)
+{
+	SetTitleImage(value);
+}
+
 void InfoView::BannerChanged(QString value)
 {
 	SetBanner(value);
+}
+
+void InfoView::PreviewMusicChanged(QString value)
+{
+	SetPreviewMusic(value);
 }
 
 void InfoView::ExtraFieldsChanged()

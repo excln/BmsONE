@@ -30,32 +30,32 @@
 <context>
     <name>BpmEditView</name>
     <message>
-        <location filename="../BpmEditTool.cpp" line="21"/>
+        <location filename="../BpmEditTool.cpp" line="22"/>
         <source>BPM:</source>
         <translation>BPM:</translation>
     </message>
     <message>
-        <location filename="../BpmEditTool.cpp" line="22"/>
+        <location filename="../BpmEditTool.cpp" line="23"/>
         <source>Extra fields:</source>
         <translation>拡張情報:</translation>
     </message>
     <message>
-        <location filename="../BpmEditTool.cpp" line="85"/>
+        <location filename="../BpmEditTool.cpp" line="87"/>
         <source>%1 selected BPM events</source>
         <translation>%1 個のBPMイベント</translation>
     </message>
     <message>
-        <location filename="../BpmEditTool.cpp" line="87"/>
+        <location filename="../BpmEditTool.cpp" line="89"/>
         <source>1 selected BPM event</source>
         <translation>1 個のBPMイベント</translation>
     </message>
     <message>
-        <location filename="../BpmEditTool.cpp" line="119"/>
+        <location filename="../BpmEditTool.cpp" line="122"/>
         <source>multiple values</source>
         <translation>複数の値</translation>
     </message>
     <message>
-        <location filename="../BpmEditTool.cpp" line="136"/>
+        <location filename="../BpmEditTool.cpp" line="139"/>
         <source>(multiple values)</source>
         <translation>(複数の値)</translation>
     </message>
@@ -194,13 +194,13 @@
         <translation>音声ノート削除</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="652"/>
-        <location filename="../Document.cpp" line="902"/>
+        <location filename="../Document.cpp" line="656"/>
+        <location filename="../Document.cpp" line="913"/>
         <source>update sound notes</source>
         <translation>音声ノート変更</translation>
     </message>
     <message>
-        <location filename="../Document.cpp" line="741"/>
+        <location filename="../Document.cpp" line="749"/>
         <source>convert resolution</source>
         <translation>分解能変換</translation>
     </message>
@@ -208,77 +208,87 @@
 <context>
     <name>DocumentInfo</name>
     <message>
-        <location filename="../DocumentInfo.cpp" line="114"/>
+        <location filename="../DocumentInfo.cpp" line="122"/>
         <source>edit title</source>
         <translation>タイトル</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="127"/>
+        <location filename="../DocumentInfo.cpp" line="135"/>
         <source>edit subtitle</source>
         <translation>サブタイトル</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="139"/>
+        <location filename="../DocumentInfo.cpp" line="147"/>
         <source>edit genre</source>
         <translation>ジャンル</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="151"/>
+        <location filename="../DocumentInfo.cpp" line="159"/>
         <source>edit artist</source>
         <translation>アーティスト</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="168"/>
+        <location filename="../DocumentInfo.cpp" line="176"/>
         <source>edit subartists</source>
         <translation>サブアーティスト</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="184"/>
+        <location filename="../DocumentInfo.cpp" line="192"/>
         <source>edit chart name</source>
         <translation>譜面名</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="200"/>
+        <location filename="../DocumentInfo.cpp" line="208"/>
         <source>edit mode hint</source>
         <translation>モード</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="212"/>
+        <location filename="../DocumentInfo.cpp" line="220"/>
         <source>edit judge rank</source>
         <translation>判定ランク</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="224"/>
+        <location filename="../DocumentInfo.cpp" line="232"/>
         <source>edit total</source>
         <translation>トータル値</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="242"/>
+        <location filename="../DocumentInfo.cpp" line="250"/>
         <source>edit initial BPM</source>
         <translation>初期BPM</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="254"/>
+        <location filename="../DocumentInfo.cpp" line="262"/>
         <source>edit level</source>
         <translation>レベル</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="270"/>
+        <location filename="../DocumentInfo.cpp" line="278"/>
         <source>edit back image</source>
         <translation>背景画像</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="286"/>
+        <location filename="../DocumentInfo.cpp" line="294"/>
         <source>edit eyecatch image</source>
         <translation>アイキャッチ画像</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="302"/>
+        <location filename="../DocumentInfo.cpp" line="310"/>
+        <source>edit title image</source>
+        <translation>タイトル画像</translation>
+    </message>
+    <message>
+        <location filename="../DocumentInfo.cpp" line="326"/>
         <source>edit banner</source>
         <translation>バナー</translation>
     </message>
     <message>
-        <location filename="../DocumentInfo.cpp" line="356"/>
+        <location filename="../DocumentInfo.cpp" line="342"/>
+        <source>edit preview music</source>
+        <translation>プレビュー音</translation>
+    </message>
+    <message>
+        <location filename="../DocumentInfo.cpp" line="396"/>
         <source>edit extra fields</source>
         <translation>拡張情報</translation>
     </message>
@@ -536,16 +546,26 @@ All files (*.*)</source>
     </message>
     <message>
         <location filename="../InfoView.cpp" line="34"/>
+        <source>Title Image:</source>
+        <translation>タイトル画像:</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="35"/>
         <source>Banner:</source>
         <translation>バナー:</translation>
     </message>
     <message>
         <location filename="../InfoView.cpp" line="36"/>
+        <source>Preview Music:</source>
+        <translation>プレビュー音:</translation>
+    </message>
+    <message>
+        <location filename="../InfoView.cpp" line="38"/>
         <source>Extra fields:</source>
         <translation>拡張情報:</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="431"/>
+        <location filename="../InfoView.cpp" line="461"/>
         <source>Current resolution:</source>
         <translation>現在の分解能:</translation>
     </message>
@@ -554,32 +574,32 @@ All files (*.*)</source>
         <translation>古い分解能:</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="432"/>
+        <location filename="../InfoView.cpp" line="462"/>
         <source>New resolution:</source>
         <translation>新しい分解能:</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="435"/>
+        <location filename="../InfoView.cpp" line="465"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="436"/>
+        <location filename="../InfoView.cpp" line="466"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="444"/>
+        <location filename="../InfoView.cpp" line="474"/>
         <source>Convert Resolution</source>
         <translation>分解能変換</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="455"/>
+        <location filename="../InfoView.cpp" line="485"/>
         <source>Some information will be lost through this conversion and it is IRREVERSIBLE. Are you sure?</source>
         <translation>この変換によって一部の情報が失われ、元に戻すことができなくなります。よろしいですか?</translation>
     </message>
     <message>
-        <location filename="../InfoView.cpp" line="456"/>
+        <location filename="../InfoView.cpp" line="486"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -606,7 +626,7 @@ All files (*.*)</source>
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="58"/>
-        <location filename="../MainWindow.cpp" line="951"/>
+        <location filename="../MainWindow.cpp" line="957"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
@@ -938,14 +958,14 @@ All files (*.*)</source>
         <location filename="../MainWindow.cpp" line="533"/>
         <location filename="../MainWindow.cpp" line="554"/>
         <location filename="../MainWindow.cpp" line="581"/>
-        <location filename="../MainWindow.cpp" line="962"/>
-        <location filename="../MainWindow.cpp" line="1075"/>
+        <location filename="../MainWindow.cpp" line="968"/>
+        <location filename="../MainWindow.cpp" line="1081"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="571"/>
-        <location filename="../MainWindow.cpp" line="948"/>
+        <location filename="../MainWindow.cpp" line="954"/>
         <source>bmson files (*.bmson);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;すべてのファイル (*.*)</translation>
     </message>
@@ -956,7 +976,7 @@ All files (*.*)</source>
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="582"/>
-        <location filename="../MainWindow.cpp" line="963"/>
+        <location filename="../MainWindow.cpp" line="969"/>
         <source>Failed to save file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
     </message>
@@ -986,17 +1006,17 @@ All files (*.*)</source>
         <translation>やり直し - </translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="977"/>
+        <location filename="../MainWindow.cpp" line="983"/>
         <source>Confirmation</source>
         <translation>確認</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="978"/>
+        <location filename="../MainWindow.cpp" line="984"/>
         <source>Save changes before closing?</source>
         <translation>変更を保存しますか?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1076"/>
+        <location filename="../MainWindow.cpp" line="1082"/>
         <source>Unknown File Type</source>
         <translation>ファイルの種類が不明です</translation>
     </message>
@@ -1004,32 +1024,32 @@ All files (*.*)</source>
 <context>
     <name>NoteEditView</name>
     <message>
-        <location filename="../NoteEditTool.cpp" line="24"/>
+        <location filename="../NoteEditTool.cpp" line="25"/>
         <source>Length:</source>
         <translation>長さ:</translation>
     </message>
     <message>
-        <location filename="../NoteEditTool.cpp" line="25"/>
+        <location filename="../NoteEditTool.cpp" line="26"/>
         <source>Extra fields:</source>
         <translation>拡張情報:</translation>
     </message>
     <message>
-        <location filename="../NoteEditTool.cpp" line="99"/>
+        <location filename="../NoteEditTool.cpp" line="101"/>
         <source>%1 selected notes</source>
         <translation>%1 個の音声ノート</translation>
     </message>
     <message>
-        <location filename="../NoteEditTool.cpp" line="101"/>
+        <location filename="../NoteEditTool.cpp" line="103"/>
         <source>1 selected note</source>
         <translation>1 個の音声ノート</translation>
     </message>
     <message>
-        <location filename="../NoteEditTool.cpp" line="133"/>
+        <location filename="../NoteEditTool.cpp" line="136"/>
         <source>multiple values</source>
         <translation>複数の値</translation>
     </message>
     <message>
-        <location filename="../NoteEditTool.cpp" line="150"/>
+        <location filename="../NoteEditTool.cpp" line="153"/>
         <source>(multiple values)</source>
         <translation>(複数の値)</translation>
     </message>
@@ -1600,17 +1620,17 @@ All files (*.*)</source>
         <translation>音声チャンネルのソースファイル選択</translation>
     </message>
     <message>
-        <location filename="../SoundChannel.cpp" line="224"/>
+        <location filename="../SoundChannel.cpp" line="229"/>
         <source>modify sound note</source>
         <translation>音声ノート変更</translation>
     </message>
     <message>
-        <location filename="../SoundChannel.cpp" line="233"/>
+        <location filename="../SoundChannel.cpp" line="244"/>
         <source>add sound note</source>
         <translation>音声ノート追加</translation>
     </message>
     <message>
-        <location filename="../SoundChannel.cpp" line="250"/>
+        <location filename="../SoundChannel.cpp" line="267"/>
         <source>remove sound note</source>
         <translation>音声ノート削除</translation>
     </message>

@@ -37,7 +37,9 @@ private:
 	QuasiModalEdit *editLevel;
 	QuasiModalEdit *editBackImage;
 	QuasiModalEdit *editEyecatchImage;
+	QuasiModalEdit *editTitleImage;
 	QuasiModalEdit *editBanner;
+	QuasiModalEdit *editPreviewMusic;
 	CollapseButton *buttonShowExtraFields;
 	QuasiModalMultiLineEdit *editExtraFields;
 	QWidget *dummy;
@@ -46,21 +48,23 @@ private:
 	Document *document;
 
 private:
-	void SetTitle(QString value){ editTitle->setText(value); }
-	void SetSubtitle(QString value){ editSubtitle->setText(value); }
-	void SetGenre(QString value){ editGenre->setText(value); }
-	void SetArtist(QString value){ editArtist->setText(value); }
+	void SetTitle(QString value){ editTitle->SetTextAutomated(value); }
+	void SetSubtitle(QString value){ editSubtitle->SetTextAutomated(value); }
+	void SetGenre(QString value){ editGenre->SetTextAutomated(value); }
+	void SetArtist(QString value){ editArtist->SetTextAutomated(value); }
 	void SetSubartists(QStringList value);
-	void SetChartName(QString value){ editChartName->setText(value); }
+	void SetChartName(QString value){ editChartName->SetTextAutomated(value); }
 	void SetModeHint(QString value){ editModeHint->setEditText(value); }
 	void SetResolution(int value){ buttonResolution->setText(QString::number(value)); }
-	void SetJudgeRank(double value){ editJudgeRank->setText(QString::number(value)); }
-	void SetTotal(double value){ editTotal->setText(QString::number(value)); }
-	void SetInitBpm(double value){ editInitBpm->setText(QString::number(value)); }
-	void SetLevel(int value){ editLevel->setText(QString::number(value)); }
-	void SetBackImage(QString value){ editBackImage->setText(value); }
-	void SetEyecatchImage(QString value){ editEyecatchImage->setText(value); }
-	void SetBanner(QString value){ editBanner->setText(value); }
+	void SetJudgeRank(double value){ editJudgeRank->SetTextAutomated(QString::number(value)); }
+	void SetTotal(double value){ editTotal->SetTextAutomated(QString::number(value)); }
+	void SetInitBpm(double value){ editInitBpm->SetTextAutomated(QString::number(value)); }
+	void SetLevel(int value){ editLevel->SetTextAutomated(QString::number(value)); }
+	void SetBackImage(QString value){ editBackImage->SetTextAutomated(value); }
+	void SetEyecatchImage(QString value){ editEyecatchImage->SetTextAutomated(value); }
+	void SetTitleImage(QString value){ editTitleImage->SetTextAutomated(value); }
+	void SetBanner(QString value){ editBanner->SetTextAutomated(value); }
+	void SetPreviewMusic(QString value){ editPreviewMusic->SetTextAutomated(value); }
 	void SetExtraFields(const QMap<QString, QJsonValue> &fields);
 
 	virtual void showEvent(QShowEvent *event);
@@ -84,10 +88,12 @@ private slots:
 	void TotalEdited();
 	void InitBpmEdited();
 	void LevelEdited();
-	void ExtraFieldsEdited();
 	void BackImageEdited();
 	void EyecatchImageEdited();
+	void TitleImageEdited();
 	void BannerEdited();
+	void PreviewMusicEdited();
+	void ExtraFieldsEdited();
 
 	void TitleEditCanceled();
 	void SubtitleEditCanceled();
@@ -100,10 +106,12 @@ private slots:
 	void TotalEditCanceled();
 	void InitBpmEditCanceled();
 	void LevelEditCanceled();
-	void ExtraFieldsEditCanceled();
 	void BackImageEditCanceled();
 	void EyecatchImageEditCanceled();
+	void TitleImageCanceled();
 	void BannerEditCanceled();
+	void PreviewMusicCanceled();
+	void ExtraFieldsEditCanceled();
 
 	void ResolutionClicked();
 
@@ -121,7 +129,9 @@ private slots:
 	void LevelChanged(double value);
 	void BackImageChanged(QString value);
 	void EyecatchImageChanged(QString value);
+	void TitleImageChanged(QString value);
 	void BannerChanged(QString value);
+	void PreviewMusicChanged(QString value);
 	void ExtraFieldsChanged();
 
 	void UpdateFormGeom();

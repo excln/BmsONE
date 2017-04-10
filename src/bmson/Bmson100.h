@@ -32,7 +32,9 @@ namespace Bmson
 		static const char* TotalKey;
 		static const char* BackImageKey;
 		static const char* EyecatchImageKey;
+		static const char* TitleImageKey;
 		static const char* BannerKey;
+		static const char* PreviewMusicKey;
 		static const char* ResolutionKey;
 	};
 

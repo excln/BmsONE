@@ -26,7 +26,9 @@ const char* BmsInfo::JudgeRankKey = "judge_rank";
 const char* BmsInfo::TotalKey = "total";
 const char* BmsInfo::BackImageKey = "back_image";
 const char* BmsInfo::EyecatchImageKey = "eyecatch_image";
+const char* BmsInfo::TitleImageKey = "title_image";
 const char* BmsInfo::BannerKey = "banner_image";
+const char* BmsInfo::PreviewMusicKey = "preview_music";
 const char* BmsInfo::ResolutionKey = "resolution";
 
 const char* BarLine::LocationKey = "y";

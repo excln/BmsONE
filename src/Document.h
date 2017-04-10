@@ -44,7 +44,9 @@ private:
 	int level;
 	QString backImage;
 	QString eyecatchImage;
+	QString titleImage;
 	QString banner;
+	QString previewMusic;
 
 	static QSet<QString> SupportedKeys;
 
@@ -62,7 +64,9 @@ private:
 	void SetLevelInternal(int value);
 	void SetBackImageInternal(QString value);
 	void SetEyecatchInternal(QString value);
+	void SetTitleImageInternal(QString value);
 	void SetBannerInternal(QString value);
+	void SetPreviewMusicInternal(QString value);
 	void SetExtraFieldsInternal(QMap<QString, QJsonValue> value);
 
 public:
@@ -87,7 +91,9 @@ public:
 	int GetLevel() const{ return level; }
 	QString GetBackImage() const{ return backImage; }
 	QString GetEyecatchImage() const{ return eyecatchImage; }
+	QString GetTitleImage() const{ return titleImage; }
 	QString GetBanner() const{ return banner; }
+	QString GetPreviewMusic() const{ return previewMusic; }
 
 	void SetTitle(QString value);
 	void SetSubtitle(QString value);
@@ -102,7 +108,9 @@ public:
 	void SetLevel(int value);
 	void SetBackImage(QString value);
 	void SetEyecatchImage(QString value);
+	void SetTitleImage(QString value);
 	void SetBanner(QString value);
+	void SetPreviewMusic(QString value);
 
 	QMap<QString, QJsonValue> GetExtraFields() const;
 	void SetExtraFields(QMap<QString, QJsonValue> fields);
@@ -124,7 +132,9 @@ signals:
 	void LevelChanged(double value);
 	void BackImageChanged(QString value);
 	void EyecatchImageChanged(QString value);
+	void TitleImageChanged(QString value);
 	void BannerChanged(QString value);
+	void PreviewMusicChanged(QString value);
 	void ExtraFieldsChanged();
 };
 
