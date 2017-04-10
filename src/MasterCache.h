@@ -150,11 +150,14 @@ public:
 
 	void GetData(int position, std::function<bool(int, QAudioBuffer::S32F)> f);
 	QPair<int, QAudioBuffer::S32F> GetData(int position);
+	QVector<QAudioBuffer::S32F> GetAllData() const;
+
+	bool IsComplete() const;
 
 signals:
 	void Cleared();
 	void RegionUpdated(int position, int length);
-
+	void Complete();
 };
 
 

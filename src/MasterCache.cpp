@@ -143,6 +143,9 @@ void MasterCache::WorkerComplete(MasterCacheWorkerBase *worker)
 		workers.remove(worker);
 		workersMutex.unlock();
 		worker->deleteLater();
+		if (workers.isEmpty()){
+			emit Complete();
+		}
 	}
 }
 
@@ -168,6 +171,16 @@ QPair<int, QAudioBuffer::S32F> MasterCache::GetData(int position)
 	auto f = data[position];
 	auto i = counter.lowerBound(position);
 	return QPair<int, QAudioBuffer::S32F>(i->first, f);
+}
+
+QVector<QAudioBuffer::S32F> MasterCache::GetAllData() const
+{
+	return data;
+}
+
+bool MasterCache::IsComplete() const
+{
+	return workers.isEmpty();
 }
 
 

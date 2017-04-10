@@ -117,6 +117,7 @@ private:
 	QAction *actionFileOpen;
 	QAction *actionFileSave;
 	QAction *actionFileSaveAs;
+	QAction *actionFileMasterOut;
 	QAction *actionFileQuit;
 
 	QAction *actionEditUndo;
@@ -184,6 +185,7 @@ private slots:
 	void FileOpen(QString path);
 	void FileSave();
 	void FileSaveAs();
+	void MasterOut();
 	void EditUndo();
 	void EditRedo();
 	void EditPreferences();

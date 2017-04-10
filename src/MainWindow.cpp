@@ -14,6 +14,7 @@
 #include "ExternalViewer.h"
 #include "ExternalViewerTools.h"
 #include "EditConfig.h"
+#include "MasterOutDialog.h"
 
 
 const char* MainWindow::SettingsGroup = "MainWindow";
@@ -65,6 +66,11 @@ MainWindow::MainWindow(QSettings *settings)
 	actionFileSaveAs->setShortcut(QKeySequence::SaveAs);
 	SharedUIHelper::RegisterGlobalShortcut(actionFileSaveAs);
 	QObject::connect(actionFileSaveAs, SIGNAL(triggered()), this, SLOT(FileSaveAs()));
+
+	actionFileMasterOut = new QAction(tr("Export WAV..."), this);
+	actionFileMasterOut->setShortcut(Qt::ShiftModifier + Qt::Key_F5);
+	SharedUIHelper::RegisterGlobalShortcut(actionFileMasterOut);
+	QObject::connect(actionFileMasterOut, SIGNAL(triggered(bool)), this, SLOT(MasterOut()));
 
 	actionFileQuit = new QAction(tr("Quit"), this);
 #ifdef Q_OS_WIN
@@ -242,6 +248,8 @@ MainWindow::MainWindow(QSettings *settings)
 	menuFile->addSeparator();
 	menuFile->addAction(actionFileSave);
 	menuFile->addAction(actionFileSaveAs);
+	menuFile->addSeparator();
+	menuFile->addAction(actionFileMasterOut);
 #ifdef Q_OS_WIN
 	menuFile->addSeparator();
 	menuFile->addAction(actionFileQuit);
@@ -567,6 +575,15 @@ void MainWindow::FileSaveAs()
 					this);
 		msgbox->show();
 	}
+}
+
+void MainWindow::MasterOut()
+{
+	if (!document)
+		return;
+	auto dialog = new MasterOutDialog(document, this);
+	dialog->exec();
+	delete dialog;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

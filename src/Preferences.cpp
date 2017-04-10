@@ -19,8 +19,8 @@ Preferences::Preferences(MainWindow *mainWindow)
 	list = new QListWidget();
 	list->setIconSize(QSize(32, 32));
 	list->setMovement(QListView::Static);
-	list->setMinimumWidth(100);
-	list->setMaximumWidth(140);
+	list->setMinimumSize(80, 80);
+	list->setMaximumWidth(180);
 	list->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
 	pages = new QStackedWidget;
@@ -96,6 +96,8 @@ PrefGeneralPage::PrefGeneralPage(QWidget *parent)
 	: QWidget(parent)
 {
 	auto layout = new QFormLayout();
+	layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+	layout->setSizeConstraint(QLayout::SetNoConstraint);
 	{
 		auto subLayout = new QHBoxLayout();
 		subLayout->setSpacing(10);

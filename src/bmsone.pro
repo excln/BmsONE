@@ -94,7 +94,8 @@ SOURCES += main.cpp\
     ExternalViewer.cpp \
     ExternalViewerTools.cpp \
     WaveMix.cpp \
-    NoteEditTool.cpp
+    NoteEditTool.cpp \
+    MasterOutDialog.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -169,7 +170,8 @@ HEADERS  += MainWindow.h \
     PrefPreview.h \
     ExternalViewer.h \
     ExternalViewerTools.h \
-    NoteEditTool.h
+    NoteEditTool.h \
+    MasterOutDialog.h
 
 FORMS    +=
 
