@@ -165,11 +165,20 @@ void ExternalViewer::Stop()
 void ExternalViewer::RunCommand(QString path, QString argument, QString executeDir)
 {
 	qDebug().noquote() << "Working Directory: " << executeDir;
-	qDebug().noquote() << "Run Command: " << path << argument;
 
 	QProcess *process = new QProcess();
 	process->setWorkingDirectory(executeDir);
-	process->start(path + " " + argument);
+#ifdef Q_OS_WIN
+	qDebug().noquote() << "Run program: " << path;
+	qDebug().noquote() << "with arguments: " << argument;
+	process->setProgram(path);
+	process->setNativeArguments(argument);
+	process->start();
+#else
+	QString command = QString("\"%1\" %2").arg(path).arg(argument);
+	qDebug().noquote() << "Run command: " << command;
+	process->start(command);
+#endif
 	if (process->state() == QProcess::NotRunning){
 		QMessageBox::warning(mainWindow, tr("Error"), tr("Failed to run the viewer."));
 	}
