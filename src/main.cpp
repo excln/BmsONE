@@ -12,6 +12,8 @@ int main(int argc, char *argv[])
 	qRegisterMetaType<QList<QString>>("QList<QString>");
 	qRegisterMetaType<BmsonIO::BmsonVersion>("BmsonIO::BmsonVersion");
 
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
 	Q_INIT_RESOURCE(bmsone);
 
 	App app(argc, argv);
