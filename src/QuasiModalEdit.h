@@ -20,7 +20,7 @@ private:
 
 public:
 	QuasiModalEdit(QWidget *parent=nullptr);
-	~QuasiModalEdit();
+	virtual ~QuasiModalEdit();
 
 signals:
 	void EscPressed();
@@ -46,7 +46,7 @@ private:
 
 public:
 	QuasiModalMultiLineEdit(QWidget *parent=nullptr);
-	~QuasiModalMultiLineEdit();
+	virtual ~QuasiModalMultiLineEdit();
 
 	void SetSizeHint(QSize sizeHint);
 
@@ -72,7 +72,7 @@ private:
 
 public:
 	QuasiModalEditableComboBox(QWidget *parent=nullptr);
-	~QuasiModalEditableComboBox();
+	virtual ~QuasiModalEditableComboBox();
 
 signals:
 	void EditingFinished();

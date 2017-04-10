@@ -40,7 +40,7 @@ private:
 
 public:
 	EditHistory(QObject *parent=nullptr);
-	~EditHistory();
+	virtual ~EditHistory();
 
 	void Clear();
 	void MarkAbsolutelyDirty();

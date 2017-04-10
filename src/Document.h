@@ -66,7 +66,7 @@ private:
 
 public:
 	DocumentInfo(Document *document);
-	~DocumentInfo();
+	virtual ~DocumentInfo();
 	void Initialize(); // for initialization
 	void LoadBmson(QJsonValue json); // for initialization
 
@@ -188,7 +188,7 @@ private slots:
 
 public:
 	Document(QObject *parent=nullptr);
-	~Document();
+	virtual ~Document();
 	void Initialize(); // for initialization
 	void LoadFile(QString filePath); // for initialization
 

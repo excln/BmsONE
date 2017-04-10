@@ -13,7 +13,7 @@ private:
 
 	QOggVorbisAdapter(const QOggVorbisAdapter &);
 	QOggVorbisAdapter(const QString &path);
-	~QOggVorbisAdapter();
+	virtual ~QOggVorbisAdapter();
 
 	static const ov_callbacks Callbacks;
 	static size_t Read(void *buf, size_t size, size_t count, QOggVorbisAdapter *This);

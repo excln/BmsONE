@@ -48,7 +48,7 @@ private slots:
 
 public:
 	SequenceTools(const QString &objectName, const QString &windowTitle, MainWindow *mainWindow=nullptr);
-	~SequenceTools();
+	virtual ~SequenceTools();
 
 	void ReplaceSequenceView(SequenceView *sview);
 

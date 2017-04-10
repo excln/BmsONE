@@ -9,7 +9,7 @@ class SequenceView::EditModeContext
 {
 public:
 	EditModeContext(SequenceView *sview);
-	~EditModeContext();
+	virtual ~EditModeContext();
 
 	//virtual SequenceView::Context* Enter(QEnterEvent*);
 	//virtual SequenceView::Context* Leave(QEnterEvent*);
@@ -32,7 +32,7 @@ class SequenceView::EditModeSelectNotesContext
 	int rubberBandOriginLaneX;
 	int rubberBandOriginTime;
 
-	~EditModeSelectNotesContext();
+	virtual ~EditModeSelectNotesContext();
 public:
 	EditModeSelectNotesContext(SequenceView::EditModeContext *parent, SequenceView *sview, Qt::MouseButton button, int laneX, int iTime, QPoint pos);
 
@@ -55,7 +55,7 @@ class SequenceView::EditModeDragNotesContext
 	int dragNotesPreviousLaneX;
 	int dragNotesPreviousTime;
 
-	~EditModeDragNotesContext();
+	virtual ~EditModeDragNotesContext();
 public:
 	EditModeDragNotesContext(SequenceView::EditModeContext *parent, SequenceView *sview,
 							 Document::DocumentUpdateSoundNotesContext *cxt, int laneX, int iTime, bool editLN=false);
@@ -76,7 +76,7 @@ class SequenceView::EditModeSelectBpmEventsContext
 	QRubberBand *rubberBand;
 	int rubberBandOriginTime;
 
-	~EditModeSelectBpmEventsContext();
+	virtual ~EditModeSelectBpmEventsContext();
 public:
 	EditModeSelectBpmEventsContext(SequenceView::EditModeContext *parent, SequenceView *sview, Qt::MouseButton button, int iTime, QPoint pos);
 
@@ -95,7 +95,7 @@ class SequenceView::WriteModeContext
 {
 public:
 	WriteModeContext(SequenceView *sview);
-	~WriteModeContext();
+	virtual ~WriteModeContext();
 
 	//virtual SequenceView::Context* Enter(QEnterEvent*);
 	//virtual SequenceView::Context* Leave(QEnterEvent*);
@@ -126,7 +126,7 @@ private:
 	QPoint mousePosition;
 	SoundChannelPreviewer *previewer;
 
-	~PreviewContext();
+	virtual ~PreviewContext();
 
 signals:
 	void stop();

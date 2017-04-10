@@ -67,7 +67,7 @@ signals:
 
 public:
 	MiniMapView(SequenceView *sview);
-	~MiniMapView();
+	virtual ~MiniMapView();
 
 	virtual void paintEvent(QPaintEvent *event);
 	virtual void mousePressEvent(QMouseEvent *event);
@@ -120,7 +120,7 @@ private slots:
 
 public:
 	MasterLaneView(SequenceView *sview, MiniMapView *miniMap);
-	~MasterLaneView();
+	virtual ~MasterLaneView();
 
 	virtual void paintEvent(QPaintEvent *event);
 	virtual void keyPressEvent(QKeyEvent *);

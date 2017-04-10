@@ -44,7 +44,7 @@ private:
 
 public:
 	MasterCacheSingleWorker(MasterCache *master, int time, int v, SoundChannel *channel, int frames);
-	~MasterCacheSingleWorker();
+	virtual ~MasterCacheSingleWorker();
 
 	virtual void Start();
 	virtual void Cancel();
@@ -77,7 +77,7 @@ private:
 
 public:
 	MasterCacheMultiWorker(MasterCache *master, QList<Patch> patches, SoundChannel *channel);
-	~MasterCacheMultiWorker();
+	virtual ~MasterCacheMultiWorker();
 
 	virtual void Start();
 	virtual void Cancel();
@@ -140,7 +140,7 @@ private slots:
 
 public:
 	MasterCache(Document *document);
-	~MasterCache();
+	virtual ~MasterCache();
 
 	void ClearAll();
 	void AddSound(int time, SoundChannel *channel, int frames);

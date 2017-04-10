@@ -67,7 +67,7 @@ private:
 
 public:
 	InfoView(MainWindow *mainWindow = 0);
-	~InfoView();
+	virtual ~InfoView();
 
 
 	void ReplaceDocument(Document *newDocument);

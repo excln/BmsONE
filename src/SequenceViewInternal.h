@@ -32,7 +32,7 @@ private:
 
 public:
 	SoundNoteView(SoundChannelView *cview, SoundNote note);
-	~SoundNoteView();
+	virtual ~SoundNoteView();
 
 	SoundChannelView *GetChannelView() const{ return cview; }
 	SoundNote GetNote() const{ return note; }
@@ -53,7 +53,7 @@ private:
 
 public:
 	SoundChannelHeader(SequenceView *sview, SoundChannelView *cview);
-	~SoundChannelHeader();
+	virtual ~SoundChannelHeader();
 
 	virtual void paintEvent(QPaintEvent *event);
 	virtual void mouseMoveEvent(QMouseEvent *event);
@@ -76,7 +76,7 @@ private:
 
 public:
 	SoundChannelFooter(SequenceView *sview, SoundChannelView *cview);
-	~SoundChannelFooter();
+	virtual ~SoundChannelFooter();
 
 	virtual void paintEvent(QPaintEvent *event);
 	virtual void mouseMoveEvent(QMouseEvent *event);
@@ -163,7 +163,7 @@ private slots:
 
 public:
 	SoundChannelView(SequenceView *sview, SoundChannel *channel);
-	~SoundChannelView();
+	virtual ~SoundChannelView();
 
 	void UpdateBackBuffer(const QRect &rect);
 	void UpdateWholeBackBuffer();
@@ -239,7 +239,7 @@ private:
 
 public:
 	SequenceViewCursor(SequenceView *sview);
-	~SequenceViewCursor();
+	virtual ~SequenceViewCursor();
 
 	State GetState() const{ return state; }
 	int GetTime() const{ return time; }

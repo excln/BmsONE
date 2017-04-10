@@ -39,7 +39,7 @@ private:
 
 public:
 	StatusBarSection(QString name, QIcon icon, int baseWidth);
-	~StatusBarSection();
+	virtual ~StatusBarSection();
 
 	void SetIcon(QIcon icon=QIcon());
 	void SetText(QString text=QString());
@@ -60,7 +60,7 @@ private:
 
 public:
 	StatusBar(MainWindow *mainWindow);
-	~StatusBar();
+	virtual ~StatusBar();
 
 	StatusBarSection *GetObjectSection() const{ return objectSection; }
 	StatusBarSection *GetAbsoluteLocationSection() const{ return absoluteLocationSection; }
@@ -211,7 +211,7 @@ signals:
 
 public:
 	explicit MainWindow(QSettings *settings);
-	~MainWindow();
+	virtual ~MainWindow();
 
 	//virtual bool eventFilter(QObject *object, QEvent *event);
 	virtual void dragEnterEvent(QDragEnterEvent *event);

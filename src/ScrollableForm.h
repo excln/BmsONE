@@ -17,7 +17,7 @@ private:
 
 public:
 	ScrollableForm(QWidget *parent=nullptr);
-	~ScrollableForm();
+	virtual ~ScrollableForm();
 
 	QWidget *Form(){ return form; }
 	void Initialize(QFormLayout *layout);

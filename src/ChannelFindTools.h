@@ -39,7 +39,7 @@ signals:
 
 public:
 	ChannelFindTools(const QString &objectName, const QString &windowTitle, MainWindow *mainWindow=nullptr);
-	~ChannelFindTools();
+	virtual ~ChannelFindTools();
 
 	void ReplaceSequenceView(SequenceView *sview);
 

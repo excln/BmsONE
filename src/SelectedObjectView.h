@@ -16,7 +16,7 @@ private:
 
 public:
 	SelectedObjectView(MainWindow *mainWindow);
-	~SelectedObjectView();
+	virtual ~SelectedObjectView();
 
 	void SetView(QWidget *view=nullptr);
 

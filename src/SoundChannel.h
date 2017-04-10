@@ -96,7 +96,7 @@ private slots:
 
 public:
 	SoundChannel(Document *document);
-	~SoundChannel();
+	virtual ~SoundChannel();
 	void LoadSound(const QString &filePath); // for initialization
 	void LoadBmson(const QJsonValue &json); // for initialization
 
@@ -153,7 +153,7 @@ signals:
 
 public:
 	SoundChannelSourceFilePreviewer(SoundChannel *channel, QObject *parent=nullptr);
-	~SoundChannelSourceFilePreviewer();
+	virtual ~SoundChannelSourceFilePreviewer();
 
 	virtual void AudioPlayRelease();
 	virtual int AudioPlayRead(SampleType *buffer, int bufferSampleCount);
@@ -190,7 +190,7 @@ signals:
 
 public:
 	SoundChannelNotePreviewer(SoundChannel *channel, int location, QObject *parent=nullptr);
-	~SoundChannelNotePreviewer();
+	virtual ~SoundChannelNotePreviewer();
 
 	virtual void AudioPlayRelease();
 	virtual int AudioPlayRead(SampleType *buffer, int bufferSampleCount);
@@ -230,7 +230,7 @@ public slots:
 
 public:
 	SoundChannelPreviewer(SoundChannel *channel, int location, QObject *parent=nullptr);
-	~SoundChannelPreviewer();
+	virtual ~SoundChannelPreviewer();
 
 	virtual void AudioPlayRelease();
 	virtual int AudioPlayRead(SampleType *buffer, int bufferSampleCount);

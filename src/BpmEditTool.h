@@ -29,7 +29,7 @@ private slots:
 
 public:
 	BpmEditView(SelectedObjectView *view);
-	~BpmEditView();
+	virtual ~BpmEditView();
 
 	QList<BpmEvent> GetBpmEvents() const{ return bpmEvents; }
 

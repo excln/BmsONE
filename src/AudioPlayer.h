@@ -46,7 +46,7 @@ signals:
 
 public:
 	AudioPlayerInternal(QObject *parent=nullptr);
-	~AudioPlayerInternal();
+	virtual ~AudioPlayerInternal();
 
 	virtual bool isSequential() const{ return true; }
 	virtual void close();
@@ -73,7 +73,7 @@ private:
 
 public:
 	AudioPlayerIndicator(QWidget *parent=nullptr);
-	~AudioPlayerIndicator();
+	virtual ~AudioPlayerIndicator();
 
 	virtual void paintEvent(QPaintEvent *event);
 
@@ -94,7 +94,7 @@ private slots:
 
 public:
 	AudioPlayerOutput(QObject *parent=nullptr);
-	~AudioPlayerOutput();
+	virtual ~AudioPlayerOutput();
 
 	bool isWorking() const{ return aout != nullptr; }
 
@@ -139,7 +139,7 @@ public slots:
 
 public:
 	AudioPlayer(MainWindow *mainWindow, const QString &objectName, const QString &windowTitle);
-	~AudioPlayer();
+	virtual ~AudioPlayer();
 
 	void Play(AudioPlaySource *src);
 

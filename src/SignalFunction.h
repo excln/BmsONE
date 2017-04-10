@@ -17,7 +17,7 @@ private slots:
 
 public:
 	Stabilizer(int msecInterval, QObject *parent=nullptr);
-	~Stabilizer();
+	virtual ~Stabilizer();
 
 	int GetInterval() const{ return interval; }
 	void SetInterval(int msecInterval){ interval = msecInterval; }
@@ -45,7 +45,7 @@ private slots:
 
 public:
 	Delay(int msecDelay, QObject *parent=nullptr);
-	~Delay();
+	virtual ~Delay();
 
 	int GetDelay() const{ return delay; }
 	void SetDelay(int msecDelay);
@@ -75,7 +75,7 @@ private slots:
 
 public:
 	Smoother(int msecInterval, qreal rateExpected, QObject *parent=nullptr);
-	~Smoother();
+	virtual ~Smoother();
 
 	int GetInterval() const{ return interval; }
 	void SetInterval(int msecInterval);

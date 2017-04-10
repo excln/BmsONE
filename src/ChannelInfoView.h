@@ -60,7 +60,7 @@ signals:
 
 public:
 	ChannelInfoView(MainWindow *mainWindow);
-	~ChannelInfoView();
+	virtual ~ChannelInfoView();
 
 	void ReplaceDocument(Document *newDocument);
 

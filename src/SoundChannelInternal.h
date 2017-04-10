@@ -46,7 +46,7 @@ private:
 
 public:
 	SoundChannelResourceManager(QObject *parent=nullptr);
-	~SoundChannelResourceManager();
+	virtual ~SoundChannelResourceManager();
 
 	// task request
 	void UpdateWaveData(const QString &srcPath);
