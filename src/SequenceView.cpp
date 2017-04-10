@@ -1305,7 +1305,7 @@ void SequenceView::SetChannelsGeometry()
 			soundChannelFooters[i]->hide();
 		}
 	}
-	horizontalScrollBar()->setRange(0, std::max(0, x - viewport()->width()));
+	horizontalScrollBar()->setRange(0, std::max(0, x + horizontalScrollBar()->value() - viewport()->width()));
 	horizontalScrollBar()->setPageStep(viewport()->width());
 	horizontalScrollBar()->setSingleStep(channelLaneWidth);
 
