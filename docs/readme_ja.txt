@@ -59,6 +59,8 @@ Shiftキーを押しながらノーツをドラッグすると、ノートの長
 譜面またはBGMレーン上で [Alt+右クリック]、あるいはノーツまたはBGMレーン上で [中央ボタンクリック]
 すると、クリックしている間だけ現在の音声チャンネルのその時点での音声をプレビューできます。
 （Macでは Controlキー（Commandキーではない）+クリックで右クリックの代わりになります。）
+マスターレーン上でクリックすると、クリックしている間だけ曲全体をプレビューできます。
+これらのプレビュー中にCtrlキーを押すと、再生位置に従って譜面が自動でスクロールします。
 
 
 2.4 その他
@@ -105,11 +107,11 @@ BmsONE の作者である exclusion はこのソフトを使用して生じた�
 
 [Windows]
 Windows 10 Pro
-Desktop Qt 5.5.0 MSVC2012 OpenGL 32bit
+Desktop Qt 5.7.0 MSVC2015 OpenGL 32bit
 
 [Mac OS X]
 Mac OS X 10.10.5
-Desktop Qt 5.5.0 clang 64bit
+Desktop Qt 5.7.0 clang 64bit
 
 [共通]
 Xiph.org 様の libogg 1.3.2、libvorbis 1.3.5 を使用しています。
@@ -128,8 +130,8 @@ bmson フォーマットに関する話題は #bmson ハッシュタグにお願
 
 6. 参考リンク
 
-Bmson Project (wosderge様)
-  http://cerebralmuddystream.nekokan.dyndns.info/bmson/
+bmson / Bemuse Project (wosderge様)
+  https://bmson.nekokan.dyndns.info/
   bmsonフォーマットの公式サイトです。
 
 BMSまとめ @wiki - how to bmson
@@ -149,9 +151,13 @@ bmson specs (flicknote様)
 
 7. 履歴
 
-    年  月  日 beta 0.1.2
+2016年09月06日 beta 0.1.2
   - Circular Rhythm 用の表示モードを追加した。
   - 非アクティブなチャンネルを暗くするかどうかの設定を追加した。
+  - チャンネルプレビュー時の自動スクロール機能の実装、表示性能を改善した。
+  - ノートプレビューの最大の長さを設定できるようにした。
+  - 音声チャンネルの検索機能を実装した。
+  - 情報の「モード」の欄を主な候補から選べるようにし、表示モードも自動で切り替えるようにした。
 
 2015年11月20日 beta 0.1.1
   - 新規作成によって作ったドキュメントにバージョン情報が含まれないバグを修正した。

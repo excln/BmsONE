@@ -675,7 +675,7 @@ void MainWindow::HelpAbout()
 {
 	QString text = "<h2>" APP_NAME "</h2>"
 			"<p>version " APP_VERSION_STRING " (" __DATE__ " " __TIME__ ")</p>"
-			"<p>Copyright 2015 <a href=\"" APP_URL "\">exclusion</a></p>"
+			"<p>Copyright 2015-2016 <a href=\"" APP_URL "\">exclusion</a></p>"
 			"<hr>"
 			"Libraries Information:"
 			"<ul>"

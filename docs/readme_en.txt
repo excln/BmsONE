@@ -49,6 +49,8 @@ You can also move notes horizontally by dragging on them, or change their length
 
 You can play sounds in the current channel at that time while Alt+Right-clicking or Middle-clicking.
 (If you use Mac, Control(not ⌘)+Clicking works as Right-clicking.)
+Clicking on Master Lane previews the whole song.
+If you press Ctrl during a preview, then the screen will be scrolled following the playing position.
 
 
 2.4 Other Features
@@ -93,11 +95,11 @@ Contact me for questions. I will consider supplying source codes if you want.
 
 [Windows]
 Windows 10 Pro
-Desktop Qt 5.5.0 MSVC2012 OpenGL 32bit
+Desktop Qt 5.7.0 MSVC2015 OpenGL 32bit
 
 [Mac OS X]
 Mac OS X 10.10.5
-Desktop Qt 5.5.0 clang 64bit
+Desktop Qt 5.7.0 clang 64bit
 
 [Common]
 Using Xiph.org's libogg 1.3.2 and libvorbis 1.3.5.
@@ -116,8 +118,8 @@ Please tweet with #bmson tag for general topics on bmson format.
 
 6. Links
 
-Bmson Project by wosderge
-  http://cerebralmuddystream.nekokan.dyndns.info/bmson/
+bmson / Bemuse Project by wosderge
+  https://bmson.nekokan.dyndns.info/
   The official web site of bmson format.
 
 BMSまとめ @wiki - how to bmson
@@ -135,6 +137,14 @@ bmson specs by flicknote
 
 
 7. History
+
+Sep 6 2015 beta 0.1.2
+  - Added a View Mode for Circular Rhythm.
+  - Added a setting whether notes in inactive channels are shown dark.
+  - Implemented auto-scrolling in channel preview, and improved display functionality.
+  - Added a setting of the max duration of note preview.
+  - Implemented channel search.
+  - The mode hint can be chosen out of typical values, and it automatically changes View Mode.
 
 Nov 20 2015 beta 0.1.1
   - Fixed a bug that a new document lacks version info.
