@@ -667,6 +667,41 @@ void SequenceView::TransferSelectedNotesToLane(int lane)
 	emit SelectionChanged();
 }
 
+void SequenceView::SetCurrentChannelInternal(int index)
+{
+	if (currentChannel != index){
+		if (currentChannel >= 0){
+			soundChannels[currentChannel]->SetCurrent(false);
+		}
+		currentChannel = index;
+		if (currentChannel >= 0){
+			soundChannels[currentChannel]->SetCurrent(true);
+		}
+		update();
+	}
+	MakeVisibleCurrentChannel();
+}
+
+void SequenceView::ClearChannelSelection()
+{
+	for (int ichannel : selectedChannels){
+		soundChannels[ichannel]->SetSelected(false);
+	}
+	selectedChannels.clear();
+}
+
+void SequenceView::SelectChannel(int ichannel)
+{
+	selectedChannels.insert(ichannel);
+	soundChannels[ichannel]->SetSelected(true);
+}
+
+void SequenceView::DeselectChannel(int ichannel)
+{
+	selectedChannels.remove(ichannel);
+	soundChannels[ichannel]->SetSelected(false);
+}
+
 void SequenceView::LockCommands()
 {
 	lockCommands++;
@@ -1249,14 +1284,14 @@ void SequenceView::BpmEventsSelectionUpdated()
 void SequenceView::OnCurrentChannelChanged(int index)
 {
 	if (currentChannel != index){
+		ClearChannelSelection();
 		if (currentChannel >= 0){
 			soundChannels[currentChannel]->SetCurrent(false);
-			soundChannels[currentChannel]->UpdateWholeBackBuffer();
 		}
 		currentChannel = index;
 		if (currentChannel >= 0){
+			SelectChannel(currentChannel);
 			soundChannels[currentChannel]->SetCurrent(true);
-			soundChannels[currentChannel]->UpdateWholeBackBuffer();
 		}
 		update();
 	}
@@ -1671,11 +1706,15 @@ void SequenceView::SkinChanged()
 	playingPane->update();
 }
 
-void SequenceView::SelectSoundChannel(SoundChannelView *cview){
+void SequenceView::SetCurrentChannel(SoundChannelView *cview, bool preserveSelection){
+	if (!preserveSelection){
+		ClearChannelSelection();
+	}
 	for (int i=0; i<soundChannels.size(); i++){
 		if (soundChannels[i] == cview){
+			SelectChannel(i);
 			if (currentChannel != i){
-				OnCurrentChannelChanged(i);
+				SetCurrentChannelInternal(i);
 				emit CurrentChannelChanged(i);
 				break;
 			}

@@ -125,6 +125,7 @@ private:
 	SoundChannel *channel;
 	QMap<int, SoundNoteView*> notes;
 	bool current;
+	bool selected;
 
 	QImage *backBuffer;
 
@@ -176,6 +177,8 @@ public:
 	const QMap<int, SoundNoteView*> GetNotes() const{ return notes; }
 	bool IsCurrent() const{ return current; }
 	void SetCurrent(bool c){ current = c; update(); }
+	bool IsSelected() const{ return selected; }
+	void SetSelected(bool s){ selected = s; update(); }
 
 	virtual void paintEvent(QPaintEvent *event);
 	virtual void mouseMoveEvent(QMouseEvent *event);

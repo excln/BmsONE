@@ -123,7 +123,7 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 				}
 			}
 			sview->cursor->SetExistingSoundNote(noteHit);
-			sview->SelectSoundChannel(noteHit->GetChannelView());
+			sview->SetCurrentChannel(noteHit->GetChannelView());
 			sview->PreviewSingleNote(noteHit);
 
 			//if (event->modifiers() & Qt::ShiftModifier){
@@ -156,13 +156,13 @@ SequenceView::Context *SequenceView::EditModeContext::PlayingPane_MousePress(QMo
 				}
 			}
 			sview->cursor->SetExistingSoundNote(noteHit);
-			sview->SelectSoundChannel(noteHit->GetChannelView());
+			sview->SetCurrentChannel(noteHit->GetChannelView());
 			QMetaObject::invokeMethod(sview, "ShowPlayingPaneContextMenu", Qt::QueuedConnection, Q_ARG(QPoint, event->globalPos()));
 			break;
 		}
 		case Qt::MidButton:
 			sview->ClearNotesSelection();
-			sview->SelectSoundChannel(noteHit->GetChannelView());
+			sview->SetCurrentChannel(noteHit->GetChannelView());
 			return new PreviewContext(this, sview, event->pos(), event->button(), iTime);
 		}
 	}else if (lane >= 0){

@@ -15,6 +15,7 @@ SoundChannelView::SoundChannelView(SequenceView *sview, SoundChannel *channel)
 	, sview(sview)
 	, channel(channel)
 	, current(false)
+	, selected(false)
 	, backBuffer(nullptr)
 	, context(nullptr)
 {
@@ -112,14 +113,14 @@ void SoundChannelView::NameChanged()
 void SoundChannelView::Show()
 {
 	if (!current){
-		sview->SelectSoundChannel(this);
+		sview->SetCurrentChannel(this);
 	}
 }
 
 void SoundChannelView::ShowNoteLocation(int location)
 {
 	if (!current){
-		sview->SelectSoundChannel(this);
+		sview->SetCurrentChannel(this);
 	}
 	sview->ShowLocation(location);
 }
@@ -183,6 +184,15 @@ void SoundChannelView::paintEvent(QPaintEvent *event)
 		RemakeBackBuffer();
 		painter.drawImage(0, 0, *backBuffer);
 	}
+	painter.setCompositionMode(QPainter::CompositionMode_Plus);
+	if (current){
+		//painter.fillRect(rect, QColor(128, 128, 255, 51));
+		painter.fillRect(rect, QColor(211, 211, 255, 42));
+	}else if (selected){
+		//painter.fillRect(rect, QColor(0, 0, 255, 34));
+		painter.fillRect(rect, QColor(211, 211, 255, 21));
+	}
+	painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
 	// notes
 	for (SoundNoteView *nview : notes){
@@ -371,6 +381,7 @@ void SoundChannelView::RemakeBackBuffer()
 		delete backBuffer;
 	}
 	backBuffer = new QImage(size(), QImage::Format_RGB32);
+	//backBuffer = new QImage(size(), QImage::Format_ARGB32_Premultiplied);
 	UpdateWholeBackBuffer();
 }
 
@@ -379,6 +390,7 @@ void SoundChannelView::UpdateWholeBackBuffer()
 	// if backBuffer already exists, don't resize
 	if (!backBuffer){
 		backBuffer = new QImage(size(), QImage::Format_RGB32);
+		//backBuffer = new QImage(size(), QImage::Format_ARGB32_Premultiplied);
 	}
 	UpdateBackBuffer(rect());
 }
@@ -396,7 +408,10 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 	int height = bottom - top;
 	qreal tBegin = sview->viewLength - (scrollY + bottom)/sview->zoomY;
 	qreal tEnd = sview->viewLength - (scrollY + top)/sview->zoomY;
-	painter.fillRect(rect, current ? QColor(85, 85, 85) : QColor(51, 51, 51));
+	//painter.setCompositionMode(QPainter::CompositionMode_Clear);
+	//painter.eraseRect(rect);
+	//painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+	painter.fillRect(rect, QColor(42, 42, 42));
 	// grids
 	{
 		QMap<int, QPair<int, BarLine>> bars = sview->BarsInRange(tBegin, tEnd);
@@ -408,7 +423,7 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 				int y = sview->Time2Y(t) - 1;
 				lines.append(QLine(0, y, width(), y));
 			}
-			painter.setPen(QPen(QBrush(QColor(42, 42, 42)), 1));
+			painter.setPen(QPen(QBrush(QColor(34, 34, 34)), 1));
 			painter.drawLines(lines);
 		}
 		{
@@ -417,7 +432,7 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 				int y = sview->Time2Y(t) - 1;
 				lines.append(QLine(0, y, width(), y));
 			}
-			painter.setPen(QPen(QBrush(QColor(34, 34, 34)), 1));
+			painter.setPen(QPen(QBrush(QColor(17, 17, 17)), 1));
 			painter.drawLines(lines);
 		}
 		{
@@ -437,32 +452,23 @@ void SoundChannelView::UpdateBackBuffer(const QRect &rect)
 		if (inote != notes.begin()){
 			auto iprev = inote-1;
 			if ((*iprev)->GetNote().lane == 0){
-				//painter.setPen(current ? QColor(153, 153, 153) : QColor(85, 85, 85));
-				//painter.setPen(current ? QColor(0, 170, 0) : QColor(0, 102, 0));
-				color = current ? 0xFF00CC00 : 0xFF009900;
+				color = 0xFF009900;
 			}else{
-				//painter.setPen(current ? QColor(0, 170, 0) : QColor(0, 102, 0));
-				//painter.setPen(current ? QColor(238, 170, 51) : QColor(153, 102, 34));
-				color = current ? 0xFFFFCC66 : 0xFFCC9933;
+				color = 0xFFCC9933;
 			}
 		}else{
-			painter.setPen(current ? QColor(0, 170, 0) : QColor(0, 85, 0));
+			painter.setPen(QColor(0, 170, 0));
 		}
 		int noteY = inote==notes.end() ? INT_MIN : sview->Time2Y((*inote)->GetNote().location) - 1;
 		int y = std::min(backBuffer->height(), bottom);
 		const int graphWidth = backBuffer->width();
-		const bool curr = current;
-		channel->DrawRmsGraph(tBegin, sview->zoomY, [&, graphWidth, curr](Rms rms){
+		channel->DrawRmsGraph(tBegin, sview->zoomY, [&, graphWidth](Rms rms){
 			if (rms.IsValid()){
 				if (y <= noteY){
 					if ((*inote)->GetNote().lane == 0){
-						//painter.setPen(current ? QColor(153, 153, 153) : QColor(85, 85, 85));
-						//painter.setPen(current ? QColor(0, 170, 0) : QColor(0, 102, 0));
-						color = current ? 0xFF00CC00 : 0xFF009900;
+						color = 0xFF009900;
 					}else{
-						//painter.setPen(current ? QColor(0, 170, 0) : QColor(0, 102, 0));
-						//painter.setPen(current ? QColor(238, 170, 51) : QColor(153, 102, 34));
-						color = current ? 0xFFFFCC66 : 0xFFCC9933;
+						color = 0xFFCC9933;
 					}
 					inote++;
 					noteY = inote==notes.end() ? INT_MIN : sview->Time2Y((*inote)->GetNote().location) - 1;
@@ -715,7 +721,7 @@ void SoundChannelFooter::mouseMoveEvent(QMouseEvent *event)
 
 void SoundChannelFooter::mousePressEvent(QMouseEvent *event)
 {
-	sview->SelectSoundChannel(cview);
+	sview->SetCurrentChannel(cview, (event->modifiers() & Qt::ControlModifier) != 0);
 	switch (event->button()){
 	case Qt::LeftButton:
 		break;

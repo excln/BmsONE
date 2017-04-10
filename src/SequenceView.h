@@ -164,6 +164,7 @@ private:
 
 	bool playing;
 	int currentChannel;
+	QSet<int> selectedChannels;
 	QSet<SoundNoteView*> selectedNotes;
 	QMap<int, BpmEvent> selectedBpmEvents;
 	SequenceViewCursor *cursor;
@@ -187,7 +188,7 @@ private:
 	void UpdateVerticalScrollBar(qreal newTimeBegin=-1.0);
 	void VisibleRangeChanged() const;
 	SoundNoteView *HitTestPlayingPane(int lane, int y, int time, bool excludeInactiveChannels=false);
-	void SelectSoundChannel(SoundChannelView *cview);
+	void SetCurrentChannel(SoundChannelView *cview, bool preserveSelection=false);
 	//void LeftClickOnExistingNote();
 	//void RightClickOnExistingNote();
 	void PreviewSingleNote(SoundNoteView *nview);
@@ -210,6 +211,11 @@ private:
 	void DeleteSelectedNotes();
 	void DeleteSelectedBpmEvents();
 	void TransferSelectedNotesToLane(int lane);
+
+	void SetCurrentChannelInternal(int index);
+	void ClearChannelSelection();
+	void SelectChannel(int ichannel);
+	void DeselectChannel(int ichannel);
 
 	void LockCommands();
 	void UnlockCommands();

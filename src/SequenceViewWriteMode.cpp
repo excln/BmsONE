@@ -77,7 +77,7 @@ SequenceView::Context *SequenceView::WriteModeContext::PlayingPane_MousePress(QM
 				sview->SelectSingleNote(noteHit);
 			}
 			sview->cursor->SetExistingSoundNote(noteHit);
-			sview->SelectSoundChannel(noteHit->GetChannelView());
+			sview->SetCurrentChannel(noteHit->GetChannelView());
 			sview->PreviewSingleNote(noteHit);
 			break;
 		case Qt::RightButton:
@@ -94,12 +94,12 @@ SequenceView::Context *SequenceView::WriteModeContext::PlayingPane_MousePress(QM
 				sview->SelectSingleNote(noteHit);
 				sview->cursor->SetExistingSoundNote(noteHit);
 			}
-			sview->SelectSoundChannel(noteHit->GetChannelView());
+			sview->SetCurrentChannel(noteHit->GetChannelView());
 			break;
 		}
 		case Qt::MidButton:
 			sview->ClearNotesSelection();
-			sview->SelectSoundChannel(noteHit->GetChannelView());
+			sview->SetCurrentChannel(noteHit->GetChannelView());
 			return new PreviewContext(this, sview, event->pos(), event->button(), iTime);
 		}
 	}else{
