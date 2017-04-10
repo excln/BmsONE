@@ -199,6 +199,7 @@ private:
 	void PreviewSingleNote(SoundNoteView *nview);
 	void PreviewMultiNote(QList<SoundNoteView*> nviews);
 	void MakeVisibleCurrentChannel();
+	void NotesSelectionUpdated();
 	void BpmEventsSelectionUpdated();
 
 	void ClearAnySelection();
@@ -266,6 +267,7 @@ private slots:
 	void BarLinesChanged();
 	void ResolutionConverted();
 	void TimeMappingChanged();
+	void AnyNotesChanged();
 	void DestroySoundChannel(SoundChannelView *cview);
 	void MoveSoundChannelLeft(SoundChannelView *cview);
 	void MoveSoundChannelRight(SoundChannelView *cview);
@@ -292,6 +294,7 @@ public slots:
 	void ZoomIn();
 	void ZoomOut();
 	void ZoomReset();
+	void NoteEditToolSelectedNotesUpdated(QMultiMap<SoundChannel *, SoundNote> notes);
 
 signals:
 	void CurrentChannelChanged(int index);

@@ -53,11 +53,15 @@ public:
 	MultiAction(QString name, std::function<void()> customShower)
 		: done(false), name(name), shower(customShower)
 	{
+		afterUndo = [](){};
+		afterRedo = [](){};
 	}
 
 	MultiAction(QString name)
 		: done(false), name(name)
 	{
+		afterUndo = [](){};
+		afterRedo = [](){};
 		shower = [this](){
 			if (actions.empty())
 				return;

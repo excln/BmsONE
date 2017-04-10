@@ -183,7 +183,7 @@ void SoundChannel::UpdateNoteImpl(SoundNote note)
 	document->ChannelLengthChanged(this, totalLength);
 }
 
-EditAction *SoundChannel::InsertNoteInternal(SoundNote note, UpdateNotePolicy policy, QList<int> acceptableLanes)
+EditAction *SoundChannel::InsertNoteInternal(SoundNote note, bool notifyByDocument, UpdateNotePolicy policy, QList<int> acceptableLanes)
 {
 retry:
 	// check lane conflict
@@ -209,8 +209,10 @@ retry:
 				break;
 			}
 		}else if (!conflictingNotes.empty()){
-			// update not needed
-			return nullptr;
+			if (this->notes[note.location] == note){
+				// update not needed
+				return nullptr;
+			}
 		}
 	}
 	auto shower = [=](){
@@ -218,34 +220,49 @@ retry:
 	};
 	if (notes.contains(note.location)){
 		// move
-		auto setter = [this](SoundNote note){
+		auto setter = [notifyByDocument,this](SoundNote note){
 			UpdateNoteImpl(note);
+			if (notifyByDocument){
+				emit document->AnyNotesChanged();
+			}
 		};
 		return new EditValueAction<SoundNote>(setter, notes[note.location], note, tr("modify sound note"), true, shower);
 	}else{
 		// new
-		auto adder = [this](SoundNote note){
+		auto adder = [notifyByDocument,this](SoundNote note){
 			InsertNoteImpl(note);
+			if (notifyByDocument){
+				emit document->AnyNotesChanged();
+			}
 		};
-		auto remover = [this](SoundNote note){
+		auto remover = [notifyByDocument,this](SoundNote note){
 			RemoveNoteImpl(note);
+			if (notifyByDocument){
+				emit document->AnyNotesChanged();
+			}
 		};
 		return new AddValueAction<SoundNote>(adder, remover, note, tr("add sound note"), true, shower);
 	}
 }
 
-EditAction *SoundChannel::RemoveNoteInternal(SoundNote note)
+EditAction *SoundChannel::RemoveNoteInternal(SoundNote note, bool notifyByDocument)
 {
 	if (!notes.contains(note.location))
 		return nullptr;
 	auto shower = [=](){
 		emit ShowNoteLocation(note.location);
 	};
-	auto adder = [this](SoundNote note){
+	auto adder = [notifyByDocument,this](SoundNote note){
 		InsertNoteImpl(note);
+		if (notifyByDocument){
+			emit document->AnyNotesChanged();
+		}
 	};
-	auto remover = [this](SoundNote note){
+	auto remover = [notifyByDocument,this](SoundNote note){
 		RemoveNoteImpl(note);
+		if (notifyByDocument){
+			emit document->AnyNotesChanged();
+		}
 	};
 	return new RemoveValueAction<SoundNote>(adder, remover, note, tr("remove sound note"), true, shower);
 }
@@ -709,6 +726,45 @@ QJsonValue SoundNote::SaveBmson()
 	bmsonFields[Bmson::Note::LengthKey] = length;
 	bmsonFields[Bmson::Note::ContinueKey] = noteType > 0;
 	return bmsonFields;
+}
+
+QMap<QString, QJsonValue> SoundNote::GetExtraFields() const
+{
+	QMap<QString, QJsonValue> fields;
+	for (QJsonObject::const_iterator i=bmsonFields.begin(); i!=bmsonFields.end(); i++){
+		if (i.key() != Bmson::Note::LocationKey
+			&& i.key() != Bmson::Note::LaneKey
+			&& i.key() != Bmson::Note::LengthKey
+			&& i.key() != Bmson::Note::ContinueKey)
+		{
+			fields.insert(i.key(), i.value());
+		}
+	}
+	return fields;
+}
+
+void SoundNote::SetExtraFields(const QMap<QString, QJsonValue> &fields)
+{
+	bmsonFields = QJsonObject();
+	for (auto i=fields.begin(); i!=fields.end(); i++){
+		if (i.key() != Bmson::Note::LocationKey
+			&& i.key() != Bmson::Note::LaneKey
+			&& i.key() != Bmson::Note::LengthKey
+			&& i.key() != Bmson::Note::ContinueKey)
+		{
+			bmsonFields[i.key()] = i.value();
+		}
+	}
+}
+
+QJsonObject SoundNote::AsJson() const
+{
+	QJsonObject obj = bmsonFields;
+	obj[Bmson::Note::LaneKey] = lane;
+	obj[Bmson::Note::LocationKey] = location;
+	obj[Bmson::Note::LengthKey] = length;
+	obj[Bmson::Note::ContinueKey] = noteType > 0;
+	return obj;
 }
 
 

@@ -28,8 +28,12 @@ struct SoundNote : public BmsonObject
 	SoundNote(const QJsonValue &json);
 	QJsonValue SaveBmson();
 
+	QMap<QString, QJsonValue> GetExtraFields() const;
+	void SetExtraFields(const QMap<QString, QJsonValue> &fields);
+
+	virtual QJsonObject AsJson() const;
 	bool operator ==(const SoundNote &r) const{
-		return location == r.location && lane == r.lane && length == r.length && noteType == r.noteType;
+		return AsJson() == r.AsJson();
 	}
 };
 
@@ -102,8 +106,8 @@ private:
 private:
 	void UpdateCache();
 	void UpdateVisibleRegionsInternal();
-	EditAction *InsertNoteInternal(SoundNote note, UpdateNotePolicy policy=UpdateNotePolicy::Conservative, QList<int> acceptableLanes=QList<int>());
-	EditAction *RemoveNoteInternal(SoundNote note);
+	EditAction *InsertNoteInternal(SoundNote note, bool notifyByDocument=true, UpdateNotePolicy policy=UpdateNotePolicy::Conservative, QList<int> acceptableLanes=QList<int>());
+	EditAction *RemoveNoteInternal(SoundNote note, bool notifyByDocument=true);
 	void InsertNoteImpl(SoundNote note);
 	void RemoveNoteImpl(SoundNote note);
 	void UpdateNoteImpl(SoundNote note);

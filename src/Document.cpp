@@ -618,7 +618,7 @@ bool Document::MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel *, Soun
 	};
 	auto *actions = new MultiAction(tr("delete sound notes"), shower);
 	for (auto i=notes.begin(); i!=notes.end(); i++){
-		auto action = i.key()->RemoveNoteInternal(i.value());
+		auto action = i.key()->RemoveNoteInternal(i.value(), false);
 		if (!action)
 			continue;
 		actions->AddAction(action);
@@ -627,7 +627,11 @@ bool Document::MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel *, Soun
 		delete actions;
 		return false;
 	}
-	actions->Finish();
+	auto afterDo = [=](){
+		emit AnyNotesChanged();
+	};
+	actions->Finish(afterDo, afterDo);
+	afterDo();
 	history->Add(actions);
 	return true;
 }
@@ -651,7 +655,7 @@ bool Document::MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel *, Soun
 	};
 	auto *actions = new MultiAction(tr("update sound notes"), shower);
 	for (auto i=notes.begin(); i!=notes.end(); i++){
-		auto action = i.key()->InsertNoteInternal(i.value(), policy, acceptableLanes);
+		auto action = i.key()->InsertNoteInternal(i.value(), false, policy, acceptableLanes);
 		if (!action)
 			continue;
 		actions->AddAction(action);
@@ -660,7 +664,11 @@ bool Document::MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel *, Soun
 		delete actions;
 		return false;
 	}
-	actions->Finish();
+	auto afterDo = [=](){
+		emit AnyNotesChanged();
+	};
+	actions->Finish(afterDo, afterDo);
+	afterDo();
 	history->Add(actions);
 	return true;
 }
@@ -803,6 +811,7 @@ void Document::DocumentUpdateSoundNotesContext::Update(QMap<SoundChannel *, QMap
 				emit i.key()->NoteChanged(j.key(), j.value());
 			}
 		}
+		emit document->AnyNotesChanged();
 	//}
 }
 
@@ -878,6 +887,7 @@ void Document::DocumentUpdateSoundNotesAction::Undo()
 			emit i.key()->NoteChanged(j.key(), j.value());
 		}
 	}
+	emit document->AnyNotesChanged();
 }
 
 void Document::DocumentUpdateSoundNotesAction::Redo()
@@ -895,6 +905,7 @@ void Document::DocumentUpdateSoundNotesAction::Redo()
 			emit i.key()->NoteChanged(j.key(), j.value());
 		}
 	}
+	emit document->AnyNotesChanged();
 }
 
 QString Document::DocumentUpdateSoundNotesAction::GetName()

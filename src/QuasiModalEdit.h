@@ -10,6 +10,9 @@ class QuasiModalEdit : public QLineEdit, public IEdit
 {
 	Q_OBJECT
 
+private:
+	bool automated;
+
 private slots:
 	void OnTextChanged();
 	void OnTextEdited();
@@ -21,6 +24,8 @@ private:
 public:
 	QuasiModalEdit(QWidget *parent=nullptr);
 	virtual ~QuasiModalEdit();
+
+	void SetTextAutomated(const QString &string);
 
 signals:
 	void EscPressed();
@@ -34,6 +39,7 @@ class QuasiModalMultiLineEdit : public QTextEdit, public IEdit
 
 private:
 	QSize sh;
+	bool automated;
 
 private slots:
 	void OnTextChanged();
@@ -49,6 +55,7 @@ public:
 	virtual ~QuasiModalMultiLineEdit();
 
 	void SetSizeHint(QSize sizeHint);
+	void SetTextAutomated(const QString &string);
 
 signals:
 	void EditingFinished();

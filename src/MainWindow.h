@@ -14,6 +14,7 @@ class SequenceView;
 class InfoView;
 class ChannelInfoView;
 class BpmEditView;
+class NoteEditView;
 class ExternalViewer;
 class Preferences;
 class SequenceTools;
@@ -104,6 +105,7 @@ private:
 
 	QDockWidget *selectedObjectsDockWidget;
 	BpmEditView *bpmEditView;
+	NoteEditView *noteEditView;
 
 	Document *document;
 
@@ -203,6 +205,7 @@ private slots:
 
 	void OnCurrentChannelChanged(int ichannel);
 	void OnTimeMappingChanged();
+	void OnNotesEdited();
 	void OnBpmEdited();
 
 	void SaveFormatChanged(BmsonIO::BmsonVersion version);
@@ -236,6 +239,7 @@ public:
 	StatusBar *GetStatusBar() const{ return statusBar; }
 	AudioPlayer *GetAudioPlayer() const{ return audioPlayer; }
 	BpmEditView *GetBpmEditTool() const{ return bpmEditView; }
+	NoteEditView *GetNoteEditView() const{ return noteEditView; }
 	ExternalViewer *GetExternalViewer() const{ return externalViewer; }
 
 	SequenceView *GetActiveSequenceView() const;

@@ -22,6 +22,7 @@ private:
 	CollapseButton *buttonShowExtraFields;
 	QuasiModalMultiLineEdit *editExtraFields;
 	QWidget *dummy;
+	bool automated;
 
 	QList<BpmEvent> bpmEvents;
 

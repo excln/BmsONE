@@ -1,17 +1,20 @@
-#include "BpmEditTool.h"
+#include "NoteEditTool.h"
 #include "MainWindow.h"
 #include "SymbolIconManager.h"
 #include "JsonExtension.h"
+#include "SequenceView.h"
+#include "SequenceViewInternal.h"
 
-BpmEditView::BpmEditView(MainWindow *mainWindow)
+NoteEditView::NoteEditView(MainWindow *mainWindow)
 	: ScrollableForm(mainWindow)
 	, mainWindow(mainWindow)
+	, sview(nullptr)
 	, automated(false)
 {
 	auto *layout = new QFormLayout();
 	formLayout = layout;
 	auto *icon = new QLabel();
-	icon->setPixmap(SymbolIconManager::GetIcon(SymbolIconManager::Icon::Event).pixmap(UIUtil::ToolBarIconSize, QIcon::Normal));
+	icon->setPixmap(SymbolIconManager::GetIcon(SymbolIconManager::Icon::SoundNote).pixmap(UIUtil::ToolBarIconSize, QIcon::Normal));
 	{
 		auto *captionLayout = new QHBoxLayout();
 		captionLayout->setMargin(0);
@@ -19,7 +22,7 @@ BpmEditView::BpmEditView(MainWindow *mainWindow)
 		captionLayout->addWidget(message = new QLabel(), 1);
 		layout->addRow(captionLayout);
 	}
-	layout->addRow(tr("BPM:"), edit = new QuasiModalEdit());
+	layout->addRow(tr("Length:"), editLength = new QuasiModalEdit());
 	layout->addRow(tr("Extra fields:"), buttonShowExtraFields = new CollapseButton(editExtraFields = new QuasiModalMultiLineEdit(), this));
 	layout->addRow(editExtraFields);
 	layout->addRow(dummy = new QWidget());
@@ -41,8 +44,8 @@ BpmEditView::BpmEditView(MainWindow *mainWindow)
 
 	connect(buttonShowExtraFields, SIGNAL(Changed()), this, SLOT(UpdateFormGeom()));
 
-	connect(edit, SIGNAL(editingFinished()), this, SLOT(Edited()));
-	connect(edit, SIGNAL(EscPressed()), this, SLOT(EscPressed()));
+	connect(editLength, SIGNAL(editingFinished()), this, SLOT(LengthEdited()));
+	connect(editLength, SIGNAL(EscPressed()), this, SLOT(LengthEscPressed()));
 
 	connect(editExtraFields, SIGNAL(EditingFinished()), this, SLOT(ExtraFieldsEdited()));
 	connect(editExtraFields, SIGNAL(EscPressed()), this, SLOT(ExtraFieldsEscPressed()));
@@ -50,80 +53,91 @@ BpmEditView::BpmEditView(MainWindow *mainWindow)
 	Update();
 }
 
-BpmEditView::~BpmEditView()
+NoteEditView::~NoteEditView()
 {
 }
 
-void BpmEditView::UnsetBpmEvents()
+void NoteEditView::ReplaceSequenceView(SequenceView *sview)
 {
-	bpmEvents.clear();
+	if (this->sview){
+		if (this->sview == sview)
+			return;
+	}
+	notes.clear();
+	this->sview = sview;
+	if (this->sview){
+	}
 	Update();
 }
 
-void BpmEditView::SetBpmEvent(BpmEvent event)
+void NoteEditView::UnsetNotes()
 {
-	bpmEvents.clear();
-	bpmEvents.append(event);
+	notes.clear();
 	Update();
 }
 
-void BpmEditView::SetBpmEvents(QList<BpmEvent> events)
+void NoteEditView::SetNotes(QMultiMap<SoundChannel *, SoundNote> notes)
 {
-	bpmEvents = events;
+	if (sview == nullptr)
+		return;
+	this->notes = notes;
 	Update();
 }
 
-void BpmEditView::Update()
+void NoteEditView::Update()
 {
 	automated = true;
-	if (bpmEvents.isEmpty()){
+	if (sview == nullptr){
+		notes.clear();
+	}
+	if (notes.isEmpty()){
 		message->setText(QString());
-		edit->SetTextAutomated(QString());
-		edit->setEnabled(false);
-		edit->setPlaceholderText(QString());
+		editLength->SetTextAutomated(QString());
+		editLength->setEnabled(false);
+		editLength->setPlaceholderText(QString());
 		mainWindow->UnsetSelectedObjectsView(this);
 	}else{
-		if (bpmEvents.count() > 1){
-			message->setText(tr("%1 selected BPM events").arg(bpmEvents.count()));
+		if (notes.count() > 1){
+			message->setText(tr("%1 selected notes").arg(notes.count()));
 		}else{
-			message->setText(tr("1 selected BPM event"));
+			message->setText(tr("1 selected note"));
 		}
-		edit->setEnabled(true);
-		double bpm = bpmEvents.first().value;
-		bool bpmUniform = true;
-		QMap<QString, QJsonValue> extraFields = bpmEvents.first().GetExtraFields();
+		editLength->setEnabled(true);
+		int length = notes.first().length;
+		bool lengthUniform = true;
+		QMap<QString, QJsonValue> extraFields = notes.first().GetExtraFields();
 		bool extraFieldsUniform = true;
-		for (auto event : bpmEvents){
-			if (event.value != bpm){
-				bpmUniform = false;
+		for (auto note : notes){
+			if (note.length != length){
+				lengthUniform = false;
 				break;
 			}
 		}
-		for (auto event : bpmEvents){
-			if (event.GetExtraFields() != extraFields){
+		for (auto note : notes){
+			if (note.GetExtraFields() != extraFields){
 				extraFieldsUniform = false;
 				break;
 			}
 		}
-		SetBpm(bpm, bpmUniform);
+		SetLength(length, lengthUniform);
 		SetExtraFields(extraFields, extraFieldsUniform);
 		mainWindow->SetSelectedObjectsView(this);
 	}
 	automated = false;
 }
 
-void BpmEditView::SetBpm(float bpm, bool uniform)
+void NoteEditView::SetLength(int length, bool uniform)
 {
 	if (uniform){
-		edit->SetTextAutomated(QString::number(bpm));
-		edit->setPlaceholderText(QString());
+		editLength->SetTextAutomated(QString::number(length));
+		editLength->setPlaceholderText(QString());
 	}else{
-		edit->SetTextAutomated(QString());
-		edit->setPlaceholderText(tr("multiple values"));
+		editLength->SetTextAutomated(QString());
+		editLength->setPlaceholderText(tr("multiple values"));
 	}
 }
 
-void BpmEditView::SetExtraFields(const QMap<QString, QJsonValue> &fields, bool uniform)
+void NoteEditView::SetExtraFields(const QMap<QString, QJsonValue> &fields, bool uniform)
 {
 	QString s;
 	if (uniform){
@@ -142,33 +156,40 @@ void BpmEditView::SetExtraFields(const QMap<QString, QJsonValue> &fields, bool u
 	buttonShowExtraFields->SetText(s);
 }
 
-void BpmEditView::Edited()
+void NoteEditView::Updated()
 {
-	if (automated || bpmEvents.empty()){
+	if (!sview)
+		return;
+	sview->NoteEditToolSelectedNotesUpdated(notes);
+}
+
+void NoteEditView::LengthEdited()
+{
+	if (automated || notes.empty()){
 		return;
 	}
 	bool isOk;
-	double bpm = edit->text().toDouble(&isOk);
-	if (!isOk || !BmsConsts::IsBpmValid(bpm)){
+	int length = editLength->text().toInt(&isOk);
+	if (!isOk || length < 0){
 		qApp->beep();
 		Update();
 		return;
 	}
-	for (auto i=bpmEvents.begin(); i!=bpmEvents.end(); i++){
-		i->value = bpm;
+	for (auto i=notes.begin(); i!=notes.end(); i++){
+		i->length = length;
 	}
-	emit Updated();
+	Updated();
 }
 
-void BpmEditView::EscPressed()
+void NoteEditView::LengthEscPressed()
 {
 	// revert
 	Update();
 }
 
-void BpmEditView::ExtraFieldsEdited()
+void NoteEditView::ExtraFieldsEdited()
 {
-	if (automated || bpmEvents.empty()){
+	if (automated || notes.empty()){
 		return;
 	}
 	QString text = editExtraFields->toPlainText().trimmed();
@@ -187,19 +208,19 @@ void BpmEditView::ExtraFieldsEdited()
 	for (QJsonObject::iterator i=json.begin(); i!=json.end(); i++){
 		fields.insert(i.key(), i.value());
 	}
-	for (auto i=bpmEvents.begin(); i!=bpmEvents.end(); i++){
+	for (auto i=notes.begin(); i!=notes.end(); i++){
 		i->SetExtraFields(fields);
 	}
-	emit Updated();
+	Updated();
 }
 
-void BpmEditView::ExtraFieldsEscPressed()
+void NoteEditView::ExtraFieldsEscPressed()
 {
 	// revert
 	Update();
 }
 
-void BpmEditView::UpdateFormGeom()
+void NoteEditView::UpdateFormGeom()
 {
 	Form()->setGeometry(0, 0, Form()->width(), 33333);
 	Form()->setGeometry(0, 0, Form()->width(), dummy->y()+formLayout->spacing()+formLayout->margin());

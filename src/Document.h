@@ -264,6 +264,8 @@ signals:
 
 	void BarLinesChanged();
 
+	void AnyNotesChanged();
+
 	void ShowBpmEventLocation(int location);
 };
 

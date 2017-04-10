@@ -92,7 +92,8 @@ SOURCES += main.cpp\
     PrefPreview.cpp \
     ExternalViewer.cpp \
     ExternalViewerTools.cpp \
-    WaveMix.cpp
+    WaveMix.cpp \
+    NoteEditTool.cpp
 
 HEADERS  += MainWindow.h \
     History.h \
@@ -166,7 +167,8 @@ HEADERS  += MainWindow.h \
     PreviewConfig.h \
     PrefPreview.h \
     ExternalViewer.h \
-    ExternalViewerTools.h
+    ExternalViewerTools.h \
+    NoteEditTool.h
 
 FORMS    +=
 

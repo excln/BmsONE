@@ -3,6 +3,7 @@
 #include "InfoView.h"
 #include "ChannelInfoView.h"
 #include "BpmEditTool.h"
+#include "NoteEditTool.h"
 #include "History.h"
 #include <QtMultimedia/QMediaPlayer>
 #include "UIDef.h"
@@ -36,7 +37,7 @@ MainWindow::MainWindow(QSettings *settings)
 	UIUtil::SetFont(this);
 	setWindowIcon(QIcon(":/images/bmsone64.png"));
 	resize(960,640);
-	setDockOptions(QMainWindow::AnimatedDocks);
+	setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowTabbedDocks | QMainWindow::AllowNestedDocks | QMainWindow::GroupedDragging);
 	setUnifiedTitleAndToolBarOnMac(true);
 	setAcceptDrops(true);
 
@@ -434,6 +435,9 @@ MainWindow::MainWindow(QSettings *settings)
 	bpmEditView = new BpmEditView(this);
 	connect(bpmEditView, SIGNAL(Updated()), this, SLOT(OnBpmEdited()));
 
+	noteEditView = new NoteEditView(this);
+	//connect(noteEditView, SIGNAL(Updated()), this, SLOT());
+
 	// View Mdoe Binding
 	connect(this, SIGNAL(ViewModeChanged(ViewMode*)), sequenceView, SLOT(ViewModeChanged(ViewMode*)));
 
@@ -448,6 +452,7 @@ MainWindow::MainWindow(QSettings *settings)
 	// SequenceView-SequenceTools Initial Binding
 	sequenceTools->ReplaceSequenceView(sequenceView);
 	channelFindTools->ReplaceSequenceView(sequenceView);
+	noteEditView->ReplaceSequenceView(sequenceView);
 
 	// Other Binding
 	connect(EditConfig::Instance(), SIGNAL(EnableMasterChannelChanged(bool)), this, SLOT(EnableMasterChannelChanged(bool)));
@@ -487,6 +492,7 @@ MainWindow::MainWindow(QSettings *settings)
 
 	// preparation for startup
 	bpmEditView->hide();
+	noteEditView->hide();
 }
 
 MainWindow::~MainWindow()
@@ -796,6 +802,12 @@ void MainWindow::OnTimeMappingChanged()
 	// (active SequenceView should do)
 }
 
+void MainWindow::OnNotesEdited()
+{
+	if (!document)
+		return;
+}
+
 void MainWindow::OnBpmEdited()
 {
 	if (!document)
@@ -908,6 +920,7 @@ void MainWindow::ReplaceDocument(Document *newDocument)
 {
 	if (document){
 		bpmEditView->UnsetBpmEvents();
+		noteEditView->UnsetNotes();
 		delete document;
 	}
 	document = newDocument;

@@ -2,6 +2,7 @@
 
 QuasiModalEdit::QuasiModalEdit(QWidget *parent)
 	: QLineEdit(parent)
+	, automated(false)
 {
 	// want to disable undo/redo functionality
 
@@ -11,6 +12,13 @@ QuasiModalEdit::QuasiModalEdit(QWidget *parent)
 
 QuasiModalEdit::~QuasiModalEdit()
 {
+}
+
+void QuasiModalEdit::SetTextAutomated(const QString &string)
+{
+	automated = true;
+	setText(string);
+	automated = false;
 }
 
 void QuasiModalEdit::keyPressEvent(QKeyEvent *event)
@@ -23,6 +31,8 @@ void QuasiModalEdit::keyPressEvent(QKeyEvent *event)
 
 void QuasiModalEdit::OnTextChanged()
 {
+	if (automated)
+		return;
 	SharedUIHelper::SetGloballyDirtyEdit(this);
 }
 
@@ -41,6 +51,7 @@ void QuasiModalEdit::Commit()
 
 QuasiModalMultiLineEdit::QuasiModalMultiLineEdit(QWidget *parent)
 	: QTextEdit(parent)
+	, automated(false)
 {
 	setUndoRedoEnabled(false);
 
@@ -56,8 +67,17 @@ void QuasiModalMultiLineEdit::SetSizeHint(QSize sizeHint)
 	this->sh = sizeHint;
 }
 
+void QuasiModalMultiLineEdit::SetTextAutomated(const QString &string)
+{
+	automated = true;
+	setText(string);
+	automated = false;
+}
+
 void QuasiModalMultiLineEdit::OnTextChanged()
 {
+	if (automated)
+		return;
 	SharedUIHelper::SetGloballyDirtyEdit(this);
 }
 

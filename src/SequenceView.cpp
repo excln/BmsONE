@@ -2,6 +2,7 @@
 #include "SequenceViewInternal.h"
 #include "SequenceViewContexts.h"
 #include "MainWindow.h"
+#include "NoteEditTool.h"
 #include "BpmEditTool.h"
 #include "MasterView.h"
 #include "EditConfig.h"
@@ -343,6 +344,7 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 		connect(document, &Document::BarLinesChanged, this, &SequenceView::BarLinesChanged);
 		connect(document, &Document::ResolutionConverted, this, &SequenceView::ResolutionConverted);
 		connect(document, &Document::TimeMappingChanged, this, &SequenceView::TimeMappingChanged);
+		connect(document, &Document::AnyNotesChanged, this, &SequenceView::AnyNotesChanged, Qt::QueuedConnection);
 		connect(document, &Document::ShowBpmEventLocation, this, &SequenceView::ShowLocation);
 
 		lockCommands = 0;
@@ -404,6 +406,7 @@ void SequenceView::ClearAnySelection()
 		cview->update();
 	}
 	timeLine->update();
+	NotesSelectionUpdated();
 	BpmEventsSelectionUpdated();
 	emit SelectionChanged();
 }
@@ -418,6 +421,7 @@ void SequenceView::ClearNotesSelection()
 	for (auto cview : soundChannels){
 		cview->update();
 	}
+	NotesSelectionUpdated();
 	emit SelectionChanged();
 }
 
@@ -431,6 +435,7 @@ void SequenceView::SelectSingleNote(SoundNoteView *nview)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
+	NotesSelectionUpdated();
 	emit SelectionChanged();
 }
 
@@ -447,6 +452,7 @@ void SequenceView::ToggleNoteSelection(SoundNoteView *nview)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
+	NotesSelectionUpdated();
 	emit SelectionChanged();
 }
 
@@ -463,6 +469,7 @@ void SequenceView::SelectAdditionalNote(SoundNoteView *nview)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
+	NotesSelectionUpdated();
 	emit SelectionChanged();
 }
 
@@ -475,6 +482,7 @@ void SequenceView::DeselectNote(SoundNoteView *nview)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
+	NotesSelectionUpdated();
 	emit SelectionChanged();
 }
 
@@ -1308,6 +1316,11 @@ void SequenceView::TimeMappingChanged()
 	}
 }
 
+void SequenceView::AnyNotesChanged()
+{
+	NotesSelectionUpdated();
+}
+
 void SequenceView::DestroySoundChannel(SoundChannelView *cview)
 {
 	int ichannel = 0;
@@ -1365,6 +1378,16 @@ void SequenceView::MakeVisibleCurrentChannel()
 		scrollX = (currentChannel+1)*64 - viewport()->width();
 	}
 	horizontalScrollBar()->setValue(scrollX);
+}
+
+void SequenceView::NotesSelectionUpdated()
+{
+	QMultiMap<SoundChannel*, SoundNote> notes;
+	for (auto nview : selectedNotes){
+		auto ch = nview->GetChannelView()->GetChannel();
+		notes.insert(ch, nview->GetNote());
+	}
+	mainWindow->GetNoteEditView()->SetNotes(notes);
 }
 
 void SequenceView::BpmEventsSelectionUpdated()
@@ -1532,6 +1555,13 @@ void SequenceView::ZoomReset()
 		cview->update();
 	}
 	VisibleRangeChanged();
+}
+
+void SequenceView::NoteEditToolSelectedNotesUpdated(QMultiMap<SoundChannel*, SoundNote> notes)
+{
+	if (!document)
+		return;
+	document->MultiChannelUpdateSoundNotes(notes, UpdateNotePolicy::ForceMove);
 }
 
 bool SequenceView::eventFilter(QObject *sender, QEvent *event)
