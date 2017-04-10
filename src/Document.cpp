@@ -235,17 +235,17 @@ int Document::GetTotalVisibleLength() const
 	return totalLength;
 }
 
-QList<QPair<int, int> > Document::FindConflictingNotes(SoundNote note) const
+QList<QPair<SoundChannel*, int> > Document::FindConflictingNotes(SoundNote note) const
 {
-	QList<QPair<int, int>> noteRefs;
-	for (int i=0; i<soundChannels.size(); i++){
-		const QMap<int, SoundNote> &notes = soundChannels[i]->GetNotes();
+	QList<QPair<SoundChannel*, int>> noteRefs;
+	for (auto channel : soundChannels){
+		const QMap<int, SoundNote> &notes = channel->GetNotes();
 		QMap<int, SoundNote>::const_iterator inote = notes.lowerBound(note.location);
 		if (inote != notes.begin())
 			inote--;
 		while (inote != notes.end() && inote->location <= note.location + note.length){
 			if (inote->lane > 0 && inote->lane == note.lane && inote->location+inote->length>=note.location){
-				noteRefs.append(QPair<int,int>(i, inote->location));
+				noteRefs.append(QPair<SoundChannel*,int>(channel, inote->location));
 			}
 			inote++;
 		}
@@ -534,10 +534,10 @@ void Document::RemoveBpmEvents(QList<int> locations)
 	history->Add(actions);
 }
 
-void Document::MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel *, SoundNote> &notes)
+bool Document::MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel *, SoundNote> &notes)
 {
 	if (notes.empty())
-		return;
+		return false;
 	int minLocation = INT_MAX;
 	SoundChannel *channel = nullptr;
 	for (auto i=notes.begin(); i!=notes.end(); i++){
@@ -551,16 +551,24 @@ void Document::MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel *, Soun
 	};
 	auto *actions = new MultiAction(tr("delete sound notes"), shower);
 	for (auto i=notes.begin(); i!=notes.end(); i++){
-		actions->AddAction(i.key()->RemoveNoteInternal(i.value()));
+		auto action = i.key()->RemoveNoteInternal(i.value());
+		if (!action)
+			continue;
+		actions->AddAction(action);
+	}
+	if (actions->Count() == 0){
+		delete actions;
+		return false;
 	}
 	actions->Finish();
 	history->Add(actions);
+	return true;
 }
 
-void Document::MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel *, SoundNote> &notes)
+bool Document::MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel *, SoundNote> &notes)
 {
 	if (notes.empty())
-		return;
+		return false;
 	int minLocation = INT_MAX;
 	SoundChannel *channel = nullptr;
 	for (auto i=notes.begin(); i!=notes.end(); i++){
@@ -574,10 +582,18 @@ void Document::MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel *, Soun
 	};
 	auto *actions = new MultiAction(tr("update sound notes"), shower);
 	for (auto i=notes.begin(); i!=notes.end(); i++){
-		actions->AddAction(i.key()->InsertNoteInternal(i.value()));
+		auto action = i.key()->InsertNoteInternal(i.value());
+		if (!action)
+			continue;
+		actions->AddAction(action);
+	}
+	if (actions->Count() == 0){
+		delete actions;
+		return false;
 	}
 	actions->Finish();
 	history->Add(actions);
+	return true;
 }
 
 Document::DocumentUpdateSoundNotesContext *Document::BeginModalEditSoundNotes(const QMap<SoundChannel*, QSet<int>> &noteLocations)

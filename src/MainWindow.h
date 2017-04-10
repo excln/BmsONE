@@ -125,7 +125,8 @@ private:
 	QAction *actionEditPaste;
 	QAction *actionEditSelectAll;
 	QAction *actionEditDelete;
-	QAction *actionEditTransfer;
+	QAction *actionEditTransferToKey;
+	QAction *actionEditTransferToBgm;
 	QAction *actionEditModeEdit;
 	QAction *actionEditModeWrite;
 	QAction *actionEditModeInteractive;

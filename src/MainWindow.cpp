@@ -110,10 +110,15 @@ MainWindow::MainWindow(QSettings *settings)
 	SharedUIHelper::RegisterGlobalShortcut(actionEditDelete);
 	actionEditDelete->setEnabled(false);
 
-	actionEditTransfer = new QAction(tr("Switch Key/BGM"), this);
+	actionEditTransferToKey = new QAction(tr("Move to Key Lanes"), this);
+	//actionEditTransferToKey->setShortcut(Qt::ControlModifier + Qt::Key_G);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditTransferToKey);
+	actionEditTransferToKey->setEnabled(false);
+
+	actionEditTransferToBgm = new QAction(tr("Move to BGM Lanes"), this);
 	//actionEditTransfer->setShortcut(Qt::ControlModifier + Qt::Key_G);
-	SharedUIHelper::RegisterGlobalShortcut(actionEditTransfer);
-	actionEditTransfer->setEnabled(false);
+	SharedUIHelper::RegisterGlobalShortcut(actionEditTransferToBgm);
+	actionEditTransferToBgm->setEnabled(false);
 
 	actionEditModeEdit = new QAction(tr("Edit Mode"), this);
 	SharedUIHelper::RegisterGlobalShortcut(actionEditModeEdit);
@@ -265,7 +270,8 @@ MainWindow::MainWindow(QSettings *settings)
 #endif
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditDelete);
-	menuEdit->addAction(actionEditTransfer);
+	menuEdit->addAction(actionEditTransferToKey);
+	menuEdit->addAction(actionEditTransferToBgm);
 	menuEdit->addSeparator();
 	menuEdit->addAction(actionEditModeEdit);
 	menuEdit->addAction(actionEditModeWrite);

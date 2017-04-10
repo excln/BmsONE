@@ -16,7 +16,7 @@ SoundChannelView::SoundChannelView(SequenceView *sview, SoundChannel *channel)
 	, backBuffer(nullptr)
 	, context(nullptr)
 {
-	// this make scrolling fast, but I must treat redrawing region carefully.
+	// this make scrolling fast, but the program must treat redrawing region carefully.
 	//setAttribute(Qt::WA_OpaquePaintEvent);
 	setMouseTracking(true);
 
@@ -152,7 +152,7 @@ void SoundChannelView::DeleteNotes()
 
 void SoundChannelView::TransferNotes()
 {
-	sview->TransferSelectedNotes();
+	sview->TransferSelectedNotesToKey();
 }
 
 

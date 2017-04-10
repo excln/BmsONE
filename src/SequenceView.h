@@ -166,7 +166,6 @@ private:
 
 	bool playing;
 	int currentChannel;
-	SequenceEditSelection selection;
 	QSet<SoundNoteView*> selectedNotes;
 	QMap<int, BpmEvent> selectedBpmEvents;
 	SequenceViewCursor *cursor;
@@ -197,7 +196,6 @@ private:
 	void MakeVisibleCurrentChannel();
 	void BpmEventsSelectionUpdated();
 
-	void UpdateSelectionType();
 	void ClearAnySelection();
 	void ClearNotesSelection();
 	void SelectSingleNote(SoundNoteView *nview);
@@ -212,9 +210,6 @@ private:
 	void DeselectBpmEvent(BpmEvent event);
 
 	void DeleteSelectedNotes();
-	void TransferSelectedNotesToBgm();
-	void TransferSelectedNotesToKey();
-
 	void DeleteSelectedBpmEvents();
 
 	void LockCommands();
@@ -279,10 +274,12 @@ public slots:
 	void SetSmallGrid(GridSize grid);
 	void SetMediumGrid(GridSize grid);
 	void DeleteSelectedObjects();
-	void TransferSelectedNotes();
+	void TransferSelectedNotesToBgm();
+	void TransferSelectedNotesToKey();
 	void ZoomIn();
 	void ZoomOut();
 	void ZoomReset();
+
 signals:
 	void CurrentChannelChanged(int index);
 	void ModeChanged(SequenceEditMode mode);
@@ -290,7 +287,7 @@ signals:
 	void DarkenNotesInInactiveChannelsChanged(bool darken);
 	void SmallGridChanged(GridSize grid);
 	void MediumGridChanged(GridSize grid);
-	void SelectionChanged(SequenceEditSelection selection);
+	void SelectionChanged();
 
 public:
 	SequenceView(MainWindow *parent);
@@ -302,7 +299,8 @@ public:
 	bool GetDarkenNotesInInactiveChannels() const{ return darkenNotesInInactiveChannels; }
 	GridSize GetSmallGrid() const{ return fineGrid; }
 	GridSize GetMediumGrid() const{ return coarseGrid; }
-	SequenceEditSelection GetSelection() const{ return selection; }
+	bool HasNotesSelection() const;
+	bool HasBpmEventsSelection() const;
 	int GetCurrentLocation() const;
 };
 

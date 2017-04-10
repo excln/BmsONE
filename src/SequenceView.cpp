@@ -122,7 +122,7 @@ SequenceView::SequenceView(MainWindow *parent)
 	actionDeleteSelectedNotes = new QAction(tr("Delete"), this);
 	connect(actionDeleteSelectedNotes, SIGNAL(triggered(bool)), this, SLOT(DeleteSelectedObjects()));
 	actionTransferSelectedNotes = new QAction(tr("Move to BGM Lanes"), this);
-	connect(actionTransferSelectedNotes, SIGNAL(triggered(bool)), this, SLOT(TransferSelectedNotes()));
+	connect(actionTransferSelectedNotes, SIGNAL(triggered(bool)), this, SLOT(TransferSelectedNotesToBgm()));
 
 	QSettings *settings = mainWindow->GetSettings();
 	settings->beginGroup(SettingsGroup);
@@ -163,7 +163,6 @@ SequenceView::SequenceView(MainWindow *parent)
 	footerMasterLane->setVisible(showMasterLane);
 
 	currentChannel = 0;
-	selection = SequenceEditSelection::NO_SELECTION;
 	playing = false;
 	switch (editMode){
 	case SequenceEditMode::EDIT_MODE:
@@ -365,6 +364,16 @@ void SequenceView::ReplaceDocument(Document *newDocument)
 	OnViewportResize();
 }
 
+bool SequenceView::HasNotesSelection() const
+{
+	return !selectedNotes.empty();
+}
+
+bool SequenceView::HasBpmEventsSelection() const
+{
+	return !selectedBpmEvents.empty();
+}
+
 int SequenceView::GetCurrentLocation() const
 {
 	int bottom = timeLine->height();
@@ -384,7 +393,7 @@ void SequenceView::ClearAnySelection()
 	}
 	timeLine->update();
 	BpmEventsSelectionUpdated();
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::ClearNotesSelection()
@@ -394,7 +403,7 @@ void SequenceView::ClearNotesSelection()
 	for (auto cview : soundChannels){
 		cview->update();
 	}
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::SelectSingleNote(SoundNoteView *nview)
@@ -407,7 +416,7 @@ void SequenceView::SelectSingleNote(SoundNoteView *nview)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::ToggleNoteSelection(SoundNoteView *nview)
@@ -423,7 +432,7 @@ void SequenceView::ToggleNoteSelection(SoundNoteView *nview)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::SelectAdditionalNote(SoundNoteView *nview)
@@ -435,7 +444,7 @@ void SequenceView::SelectAdditionalNote(SoundNoteView *nview)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::DeselectNote(SoundNoteView *nview)
@@ -447,7 +456,7 @@ void SequenceView::DeselectNote(SoundNoteView *nview)
 	for (auto cview : soundChannels){
 		cview->update();
 	}
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::ClearBpmEventsSelection()
@@ -455,7 +464,7 @@ void SequenceView::ClearBpmEventsSelection()
 	selectedBpmEvents.clear();
 	timeLine->update();
 	BpmEventsSelectionUpdated();
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::SelectSingleBpmEvent(BpmEvent event)
@@ -466,7 +475,7 @@ void SequenceView::SelectSingleBpmEvent(BpmEvent event)
 	selectedBpmEvents.insert(event.location, event);
 	timeLine->update();
 	BpmEventsSelectionUpdated();
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::ToggleBpmEventSelection(BpmEvent event)
@@ -480,7 +489,7 @@ void SequenceView::ToggleBpmEventSelection(BpmEvent event)
 	}
 	timeLine->update();
 	BpmEventsSelectionUpdated();
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::SelectAdditionalBpmEvent(BpmEvent event)
@@ -490,7 +499,7 @@ void SequenceView::SelectAdditionalBpmEvent(BpmEvent event)
 	selectedBpmEvents.insert(event.location, event);
 	timeLine->update();
 	BpmEventsSelectionUpdated();
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::DeselectBpmEvent(BpmEvent event)
@@ -498,7 +507,7 @@ void SequenceView::DeselectBpmEvent(BpmEvent event)
 	selectedBpmEvents.remove(event.location);
 	timeLine->update();
 	BpmEventsSelectionUpdated();
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::DeleteSelectedNotes()
@@ -516,17 +525,23 @@ void SequenceView::DeleteSelectedNotes()
 
 void SequenceView::TransferSelectedNotesToBgm()
 {
+	if (lockCommands > 0)
+		return;
 	QMultiMap<SoundChannel*, SoundNote> notes;
 	for (auto nv : selectedNotes){
 		SoundNote n = nv->GetNote();
 		n.lane = 0;
+		n.length = 0;
 		notes.insert(nv->GetChannelView()->GetChannel(), n);
 	}
 	ClearBpmEventsSelection();
 	ClearNotesSelection();
 	if (notes.empty())
 		return;
-	document->MultiChannelUpdateSoundNotes(notes);
+	if (!document->MultiChannelUpdateSoundNotes(notes)){
+		qApp->beep();
+		// don't return
+	}
 
 	// Select transferred notes
 	for (auto i=notes.begin(); i!=notes.end(); i++){
@@ -541,20 +556,21 @@ void SequenceView::TransferSelectedNotesToBgm()
 	for (auto cview : soundChannels){
 		cview->update();
 	}
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::TransferSelectedNotesToKey()
 {
+	if (lockCommands > 0)
+		return;
 	QMultiMap<SoundChannel*, SoundNote> notes;
 	for (auto nv : selectedNotes){
 		SoundNote n = nv->GetNote();
-		int lane = GetSomeVacantLane(n.location);
-		if (lane > 0){
+		if (n.lane == 0){
+			n.lane = GetSomeVacantLane(n.location);
 			n.length = 0;
-			n.lane = lane;
-			notes.insert(nv->GetChannelView()->GetChannel(), n);
 		}
+		notes.insert(nv->GetChannelView()->GetChannel(), n);
 	}
 	if (notes.empty()){
 		qApp->beep();
@@ -564,7 +580,10 @@ void SequenceView::TransferSelectedNotesToKey()
 	ClearNotesSelection();
 	if (notes.empty())
 		return;
-	document->MultiChannelUpdateSoundNotes(notes);
+	if (!document->MultiChannelUpdateSoundNotes(notes)){
+		qApp->beep();
+		// don't return
+	}
 
 	// Select transferred notes
 	for (auto i=notes.begin(); i!=notes.end(); i++){
@@ -579,7 +598,7 @@ void SequenceView::TransferSelectedNotesToKey()
 	for (auto cview : soundChannels){
 		cview->update();
 	}
-	UpdateSelectionType();
+	emit SelectionChanged();
 }
 
 void SequenceView::DeleteSelectedBpmEvents()
@@ -1087,7 +1106,6 @@ void SequenceView::TimeMappingChanged()
 		for (auto event : mainWindow->GetBpmEditTool()->GetBpmEvents()){
 			this->selectedBpmEvents.insert(event.location, event);
 		}
-		UpdateSelectionType();
 		timeLine->update();
 		if (showMasterLane){
 			masterLane->update();
@@ -1171,24 +1189,6 @@ void SequenceView::BpmEventsSelectionUpdated()
 		i++;
 	}
 	mainWindow->GetBpmEditTool()->SetBpmEvents(selectedBpmEvents.values());
-}
-
-void SequenceView::UpdateSelectionType()
-{
-	if (selectedBpmEvents.isEmpty()){
-		if (selectedNotes.isEmpty()){
-			selection = SequenceEditSelection::NO_SELECTION;
-		}else{
-			if ((*selectedNotes.begin())->GetNote().lane == 0){
-				selection = SequenceEditSelection::BGM_SOUND_NOTES_SELECTION;
-			}else{
-				selection = SequenceEditSelection::KEY_SOUND_NOTES_SELECTION;
-			}
-		}
-	}else{
-		selection = SequenceEditSelection::BPM_EVENTS_SELECTION;
-	}
-	emit SelectionChanged(selection);
 }
 
 void SequenceView::OnCurrentChannelChanged(int index)
@@ -1277,34 +1277,12 @@ void SequenceView::DeleteSelectedObjects()
 {
 	if (lockCommands > 0)
 		return;
-	switch (selection){
-	case SequenceEditSelection::NO_SELECTION:
-		break;
-	case SequenceEditSelection::KEY_SOUND_NOTES_SELECTION:
-	case SequenceEditSelection::BGM_SOUND_NOTES_SELECTION:
+	if (!selectedNotes.empty()){
 		DeleteSelectedNotes();
-		break;
-	case SequenceEditSelection::BPM_EVENTS_SELECTION:
+	}else if (!selectedBpmEvents.empty()){
 		DeleteSelectedBpmEvents();
-		break;
-	}
-}
-
-void SequenceView::TransferSelectedNotes()
-{
-	if (lockCommands > 0)
-		return;
-	switch (selection){
-	case SequenceEditSelection::NO_SELECTION:
-		break;
-	case SequenceEditSelection::KEY_SOUND_NOTES_SELECTION:
-		TransferSelectedNotesToBgm();
-		break;
-	case SequenceEditSelection::BGM_SOUND_NOTES_SELECTION:
-		TransferSelectedNotesToKey();
-		break;
-	case SequenceEditSelection::BPM_EVENTS_SELECTION:
-		break;
+	}else{
+		qApp->beep();
 	}
 }
 

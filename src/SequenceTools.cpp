@@ -21,7 +21,6 @@ SequenceTools::SequenceTools(const QString &objectName, const QString &windowTit
 	setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 
 	connect(mainWindow->actionEditDelete, SIGNAL(triggered(bool)), this, SLOT(DeleteObjects()));
-	connect(mainWindow->actionEditTransfer, SIGNAL(triggered(bool)), this, SLOT(TransferObjects()));
 	mainWindow->actionEditModeEdit->setCheckable(true);
 	connect(mainWindow->actionEditModeEdit, SIGNAL(triggered(bool)), this, SLOT(EditMode()));
 	mainWindow->actionEditModeWrite->setCheckable(true);
@@ -88,16 +87,20 @@ void SequenceTools::ReplaceSequenceView(SequenceView *newSView)
 		disconnect(mainWindow->actionViewZoomIn, SIGNAL(triggered(bool)), sview, SLOT(ZoomIn()));
 		disconnect(mainWindow->actionViewZoomOut, SIGNAL(triggered(bool)), sview, SLOT(ZoomOut()));
 		disconnect(mainWindow->actionViewZoomReset, SIGNAL(triggered(bool)), sview, SLOT(ZoomReset()));
+		disconnect(mainWindow->actionEditTransferToKey, SIGNAL(triggered(bool)), sview, SLOT(TransferSelectedNotesToKey()));
+		disconnect(mainWindow->actionEditTransferToBgm, SIGNAL(triggered(bool)), sview, SLOT(TransferSelectedNotesToBgm()));
 	}
 	sview = newSView;
 	if (sview){
 		connect(sview, SIGNAL(ModeChanged(SequenceEditMode)), this, SLOT(ModeChanged(SequenceEditMode)));
 		connect(sview, SIGNAL(SnapToGridChanged(bool)), this, SLOT(SnapToGridChanged(bool)));
 		connect(sview, SIGNAL(SmallGridChanged(GridSize)), this, SLOT(SmallGridChanged(GridSize)));
-		connect(sview, SIGNAL(SelectionChanged(SequenceEditSelection)), this, SLOT(SelectionChanged(SequenceEditSelection)));
+		connect(sview, SIGNAL(SelectionChanged()), this, SLOT(SelectionChanged()));
 		connect(mainWindow->actionViewZoomIn, SIGNAL(triggered(bool)), sview, SLOT(ZoomIn()));
 		connect(mainWindow->actionViewZoomOut, SIGNAL(triggered(bool)), sview, SLOT(ZoomOut()));
 		connect(mainWindow->actionViewZoomReset, SIGNAL(triggered(bool)), sview, SLOT(ZoomReset()));
+		connect(mainWindow->actionEditTransferToKey, SIGNAL(triggered(bool)), sview, SLOT(TransferSelectedNotesToKey()));
+		connect(mainWindow->actionEditTransferToBgm, SIGNAL(triggered(bool)), sview, SLOT(TransferSelectedNotesToBgm()));
 
 		ModeChanged(sview->GetMode());
 		snapToGrid->setEnabled(true);
@@ -161,13 +164,6 @@ void SequenceTools::DeleteObjects()
 	sview->DeleteSelectedObjects();
 }
 
-void SequenceTools::TransferObjects()
-{
-	if (!sview)
-		return;
-	sview->TransferSelectedNotes();
-}
-
 void SequenceTools::ModeChanged(SequenceEditMode mode)
 {
 	switch (mode){
@@ -226,24 +222,21 @@ void SequenceTools::SmallGridChanged(GridSize grid)
 	}
 }
 
-void SequenceTools::SelectionChanged(SequenceEditSelection selection)
+void SequenceTools::SelectionChanged()
 {
-	switch (selection){
-	case SequenceEditSelection::NO_SELECTION:
-		mainWindow->actionEditDelete->setEnabled(false);
-		mainWindow->actionEditTransfer->setEnabled(false);
-		break;
-	case SequenceEditSelection::KEY_SOUND_NOTES_SELECTION:
+	if (!sview)
+		return;
+	if (sview->HasNotesSelection()){
 		mainWindow->actionEditDelete->setEnabled(true);
-		mainWindow->actionEditTransfer->setEnabled(true);
-		break;
-	case SequenceEditSelection::BGM_SOUND_NOTES_SELECTION:
-		mainWindow->actionEditDelete->setEnabled(true);
-		mainWindow->actionEditTransfer->setEnabled(true);
-		break;
-	case SequenceEditSelection::BPM_EVENTS_SELECTION:
-		mainWindow->actionEditDelete->setEnabled(true);
-		mainWindow->actionEditTransfer->setEnabled(false);
-		break;
+		mainWindow->actionEditTransferToKey->setEnabled(true);
+		mainWindow->actionEditTransferToBgm->setEnabled(true);
+	}else{
+		if (sview->HasBpmEventsSelection()){
+			mainWindow->actionEditDelete->setEnabled(true);
+		}else{
+			mainWindow->actionEditDelete->setEnabled(false);
+		}
+		mainWindow->actionEditTransferToKey->setEnabled(false);
+		mainWindow->actionEditTransferToBgm->setEnabled(false);
 	}
 }

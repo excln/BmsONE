@@ -32,7 +32,6 @@ private:
 
 private slots:
 	void DeleteObjects();
-	void TransferObjects();
 
 	void EditMode();
 	void WriteMode();
@@ -44,7 +43,7 @@ private slots:
 	void SnapToGridChanged(bool snap);
 	void DarkenNotesInInactiveChannelsChanged(bool darken);
 	void SmallGridChanged(GridSize grid);
-	void SelectionChanged(SequenceEditSelection selection);
+	void SelectionChanged();
 
 public:
 	SequenceTools(const QString &objectName, const QString &windowTitle, MainWindow *mainWindow=nullptr);

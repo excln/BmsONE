@@ -17,7 +17,8 @@ private:
 public:
 	virtual ~MultiAction(){
 		if (done){
-			for (auto i=actions.end(); i!=actions.begin() && (i--, true); ){
+			for (auto i=actions.end(); i!=actions.begin(); ){
+				i--;
 				delete *i;
 			}
 		}else{
@@ -27,7 +28,8 @@ public:
 		}
 	}
 	virtual void Undo(){
-		for (auto i=actions.end(); i!=actions.begin() && (i--, true); ){
+		for (auto i=actions.end(); i!=actions.begin(); ){
+			i--;
 			(*i)->Undo();
 		}
 		done = false;
@@ -70,6 +72,10 @@ public:
 
 	void Finish(){
 		done = true;
+	}
+
+	int Count() const{
+		return actions.count();
 	}
 };
 

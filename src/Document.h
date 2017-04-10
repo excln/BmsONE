@@ -213,7 +213,7 @@ public:
 	int FromAbsoluteTime(double destSeconds) const;
 	int GetTotalLength() const;
 	int GetTotalVisibleLength() const;
-	QList<QPair<int, int>> FindConflictingNotes(SoundNote note) const; // returns [Channel,Location]
+	QList<QPair<SoundChannel*, int>> FindConflictingNotes(SoundNote note) const; // returns [Channel,Location]
 	void InsertNewSoundChannels(const QList<QString> &soundFilePaths, int index=-1);
 	void DestroySoundChannel(int index);
 	void MoveSoundChannel(int indexBefore, int indexAfter);
@@ -231,8 +231,8 @@ public:
 	void UpdateBpmEvents(QList<BpmEvent> events);
 	void RemoveBpmEvents(QList<int> locations);
 
-	void MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel*, SoundNote> &notes);
-	void MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel*, SoundNote> &notes);
+	bool MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel*, SoundNote> &notes);
+	bool MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel*, SoundNote> &notes);
 
 	DocumentUpdateSoundNotesContext *BeginModalEditSoundNotes(const QMap<SoundChannel *, QSet<int> > &noteLocations);
 
