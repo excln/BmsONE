@@ -31,13 +31,13 @@ ChannelFindTools::ChannelFindTools(const QString &objectName, const QString &win
 
 	actionChannelFindFilterActive = new QAction(tr("Active Channels Only"), this);
 	actionChannelFindFilterActive->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::SearchSound));
-	actionChannelFindFilterActive->setShortcut(Qt::ControlModifier + Qt::Key_B);
+	actionChannelFindFilterActive->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_D);
 	SharedUIHelper::RegisterGlobalShortcut(actionChannelFindFilterActive);
 	actionChannelFindFilterActive->setCheckable(true);
 
-	actionChannelFindHideOthers = new QAction(tr("Show Found Channels Only"), this);
+	actionChannelFindHideOthers = new QAction(tr("Show Hit Channels Only"), this);
 	actionChannelFindHideOthers->setIcon(SymbolIconManager::GetIcon(SymbolIconManager::Icon::SearchHighlight));
-	actionChannelFindHideOthers->setShortcut(Qt::ControlModifier + Qt::Key_H);
+	actionChannelFindHideOthers->setShortcut(Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_F);
 	SharedUIHelper::RegisterGlobalShortcut(actionChannelFindHideOthers);
 	actionChannelFindHideOthers->setCheckable(true);
 
@@ -79,6 +79,7 @@ ChannelFindTools::ChannelFindTools(const QString &objectName, const QString &win
 	connect(keyword, SIGNAL(textChanged(QString)), this, SLOT(UpdateConditions()));
 	connect(actionChannelFindFilterActive, SIGNAL(triggered(bool)), this, SLOT(UpdateConditions()));
 	connect(actionChannelFindHideOthers, SIGNAL(triggered(bool)), this, SLOT(UpdateConditions()));
+	connect(actionChannelFindHideOthers, SIGNAL(triggered(bool)), this, SLOT(Activate()));
 
 	connect(keyword, SIGNAL(textChanged(QString)), mainWindow, SLOT(ChannelFindKeywordChanged(QString)));
 	connect(this, SIGNAL(FindNext(QString)), mainWindow, SLOT(ChannelFindNext(QString)));
@@ -111,6 +112,7 @@ void ChannelFindTools::ReplaceSequenceView(SequenceView *newSView)
 
 void ChannelFindTools::hideEvent(QHideEvent *event)
 {
+	actionChannelFindHideOthers->setChecked(false);
 	UpdateConditions();
 }
 

@@ -84,6 +84,10 @@
     </message>
     <message>
         <location filename="../ChannelFindTools.cpp" line="38"/>
+        <source>Show Hit Channels Only</source>
+        <translation>検索結果のみ表示</translation>
+    </message>
+    <message>
         <source>Show Found Channels Only</source>
         <translation>検索結果のみ表示</translation>
     </message>
@@ -1347,7 +1351,7 @@ All files (*.*)</source>
     <message>
         <location filename="../Preferences.cpp" line="137"/>
         <source>UI Font:</source>
-        <translation>UIフォント</translation>
+        <translation>UIフォント:</translation>
     </message>
 </context>
 <context>

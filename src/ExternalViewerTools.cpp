@@ -131,6 +131,7 @@ void ExternalViewerTools::Configure()
 	if (dialog->exec() == QDialog::Accepted){
 		viewer->SetConfig(dialog->GetConfig(), dialog->GetIndex());
 	}
+	delete dialog;
 }
 
 void ExternalViewerTools::SetPlayable(bool playable)
