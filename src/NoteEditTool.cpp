@@ -5,6 +5,13 @@
 #include "SequenceView.h"
 #include "SequenceViewInternal.h"
 
+namespace NoteEditToolsSettings{
+const char *SettingsGroup = "NoteEditView";
+const char *SettingsShowExtraFields = "ShowExtraFields";
+}
+using namespace NoteEditToolsSettings;
+
+
 NoteEditView::NoteEditView(MainWindow *mainWindow)
 	: ScrollableForm(mainWindow)
 	, mainWindow(mainWindow)
@@ -50,11 +57,29 @@ NoteEditView::NoteEditView(MainWindow *mainWindow)
 	connect(editExtraFields, SIGNAL(EditingFinished()), this, SLOT(ExtraFieldsEdited()));
 	connect(editExtraFields, SIGNAL(EscPressed()), this, SLOT(ExtraFieldsEscPressed()));
 
+	auto *settings = mainWindow->GetSettings();
+	settings->beginGroup(SettingsGroup);
+	{
+		bool showExtraFields = settings->value(SettingsShowExtraFields, false).toBool();
+		if (showExtraFields){
+			buttonShowExtraFields->Expand();
+		}else{
+			buttonShowExtraFields->Collapse();
+		}
+	}
+	settings->endGroup();
+
 	Update();
 }
 
 NoteEditView::~NoteEditView()
 {
+	auto *settings = mainWindow->GetSettings();
+	settings->beginGroup(SettingsGroup);
+	{
+		settings->setValue(SettingsShowExtraFields, editExtraFields->isVisibleTo(this));
+	}
+	settings->endGroup();
 }
 
 void NoteEditView::ReplaceSequenceView(SequenceView *sview)

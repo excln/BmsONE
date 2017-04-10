@@ -3,6 +3,13 @@
 #include "SymbolIconManager.h"
 #include "JsonExtension.h"
 
+namespace BpmEditToolsSettings{
+const char *SettingsGroup = "BpmEditView";
+const char *SettingsShowExtraFields = "ShowExtraFields";
+}
+using namespace BpmEditToolsSettings;
+
+
 BpmEditView::BpmEditView(MainWindow *mainWindow)
 	: ScrollableForm(mainWindow)
 	, mainWindow(mainWindow)
@@ -47,11 +54,29 @@ BpmEditView::BpmEditView(MainWindow *mainWindow)
 	connect(editExtraFields, SIGNAL(EditingFinished()), this, SLOT(ExtraFieldsEdited()));
 	connect(editExtraFields, SIGNAL(EscPressed()), this, SLOT(ExtraFieldsEscPressed()));
 
+	auto *settings = mainWindow->GetSettings();
+	settings->beginGroup(SettingsGroup);
+	{
+		bool showExtraFields = settings->value(SettingsShowExtraFields, false).toBool();
+		if (showExtraFields){
+			buttonShowExtraFields->Expand();
+		}else{
+			buttonShowExtraFields->Collapse();
+		}
+	}
+	settings->endGroup();
+
 	Update();
 }
 
 BpmEditView::~BpmEditView()
 {
+	auto *settings = mainWindow->GetSettings();
+	settings->beginGroup(SettingsGroup);
+	{
+		settings->setValue(SettingsShowExtraFields, editExtraFields->isVisibleTo(this));
+	}
+	settings->endGroup();
 }
 
 void BpmEditView::UnsetBpmEvents()
