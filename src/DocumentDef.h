@@ -76,6 +76,14 @@ struct BpmEvent : public BmsonObject
 };
 
 
+enum class UpdateNotePolicy
+{
+	Conservative = 0,
+	BestEffort,
+	ForceMove,
+};
+
+
 
 #endif // DOCUMENTDEF_H
 

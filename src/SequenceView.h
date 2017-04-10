@@ -209,6 +209,7 @@ private:
 
 	void DeleteSelectedNotes();
 	void DeleteSelectedBpmEvents();
+	void TransferSelectedNotesToLane(int lane);
 
 	void LockCommands();
 	void UnlockCommands();

@@ -78,7 +78,7 @@ private:
 private:
 	void UpdateCache();
 	void UpdateVisibleRegionsInternal();
-	EditAction *InsertNoteInternal(SoundNote note);
+	EditAction *InsertNoteInternal(SoundNote note, UpdateNotePolicy policy=UpdateNotePolicy::Conservative, QList<int> acceptableLanes=QList<int>());
 	EditAction *RemoveNoteInternal(SoundNote note);
 	void InsertNoteImpl(SoundNote note);
 	void RemoveNoteImpl(SoundNote note);

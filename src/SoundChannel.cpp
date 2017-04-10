@@ -183,15 +183,36 @@ void SoundChannel::UpdateNoteImpl(SoundNote note)
 	document->ChannelLengthChanged(this, totalLength);
 }
 
-EditAction *SoundChannel::InsertNoteInternal(SoundNote note)
+EditAction *SoundChannel::InsertNoteInternal(SoundNote note, UpdateNotePolicy policy, QList<int> acceptableLanes)
 {
+retry:
 	// check lane conflict
 	if (note.lane == 0){
 		if (notes.contains(note.location) && notes[note.location].lane == 0){
 			return nullptr;
 		}
 	}else{
-		if (!document->FindConflictingNotes(note).empty()){
+		auto conflictingNotes = document->FindConflictingNotes(note);
+		auto pred = [=](QPair<SoundChannel*, int> pair){ return pair.first != this || pair.second != note.location; };
+		if (std::any_of(conflictingNotes.begin(), conflictingNotes.end(), pred)){
+			// indeed conflicts
+			switch (policy){
+			case UpdateNotePolicy::Conservative:
+				return nullptr;
+			case UpdateNotePolicy::BestEffort:
+				if (acceptableLanes.empty())
+					return nullptr;
+				note.lane = acceptableLanes.front();
+				acceptableLanes.pop_front();
+				goto retry;
+			case UpdateNotePolicy::ForceMove:
+				// TODO: pass
+				return nullptr;
+				//
+				break;
+			}
+		}else if (!conflictingNotes.empty()){
+			// update not needed
 			return nullptr;
 		}
 	}

@@ -11,6 +11,7 @@ public:
 	EditModeContext(SequenceView *sview);
 	virtual ~EditModeContext();
 
+	virtual SequenceView::Context *KeyPress(QKeyEvent*);
 	//virtual SequenceView::Context* Enter(QEnterEvent*);
 	//virtual SequenceView::Context* Leave(QEnterEvent*);
 	virtual SequenceView::Context* PlayingPane_MouseMove(QMouseEvent*);

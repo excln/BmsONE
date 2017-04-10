@@ -14,6 +14,26 @@ SequenceView::EditModeContext::~EditModeContext()
 {
 }
 
+SequenceView::Context *SequenceView::EditModeContext::KeyPress(QKeyEvent *e)
+{
+	if (e->key() >= Qt::Key_0 && e->key() <= Qt::Key_9){
+		// assume Qt::Key_$n$ = Qt::Key_0 + $n$
+		int index = e->key() - Qt::Key_0;
+		if (index == 0){
+			sview->TransferSelectedNotesToLane(0);
+		}else{
+			auto lanes = sview->skin->GetLanes();
+			if (lanes.size() >= index){
+				sview->TransferSelectedNotesToLane(lanes[index-1].lane);
+			}else{
+				qApp->beep();
+			}
+		}
+		return this;
+	}
+	return SequenceView::Context::KeyPress(e);
+}
+
 /*
 SequenceView::Context *SequenceView::EditModeContext::Enter(QEnterEvent *)
 {

@@ -232,7 +232,8 @@ public:
 	void RemoveBpmEvents(QList<int> locations);
 
 	bool MultiChannelDeleteSoundNotes(const QMultiMap<SoundChannel*, SoundNote> &notes);
-	bool MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel*, SoundNote> &notes);
+	bool MultiChannelUpdateSoundNotes(const QMultiMap<SoundChannel*, SoundNote> &notes,
+									  UpdateNotePolicy policy = UpdateNotePolicy::Conservative, QList<int> acceptableLanes = QList<int>());
 
 	DocumentUpdateSoundNotesContext *BeginModalEditSoundNotes(const QMap<SoundChannel *, QSet<int> > &noteLocations);
 

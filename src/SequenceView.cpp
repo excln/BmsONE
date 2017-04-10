@@ -576,8 +576,6 @@ void SequenceView::TransferSelectedNotesToKey()
 	}
 	ClearBpmEventsSelection();
 	ClearNotesSelection();
-	if (notes.empty())
-		return;
 	if (!document->MultiChannelUpdateSoundNotes(notes)){
 		qApp->beep();
 		// don't return
@@ -608,6 +606,65 @@ void SequenceView::DeleteSelectedBpmEvents()
 	ClearBpmEventsSelection();
 	ClearNotesSelection();
 	document->RemoveBpmEvents(locations);
+}
+
+void SequenceView::TransferSelectedNotesToLane(int lane)
+{
+	if (lane <= 0){
+		TransferSelectedNotesToBgm();
+		return;
+	}
+	QMultiMap<SoundChannel*, SoundNote> notes;
+	for (auto nv : selectedNotes){
+		SoundNote n = nv->GetNote();
+		n.lane = lane;
+		notes.insert(nv->GetChannelView()->GetChannel(), n);
+	}
+	if (notes.empty()){
+		qApp->beep();
+		return;
+	}
+	ClearBpmEventsSelection();
+	ClearNotesSelection();
+
+	QList<int> acceptableLanes;
+	int index = -1;
+	auto laneDefs = skin->GetLanes();
+	for (int i=0; i<laneDefs.size(); i++){
+		if (laneDefs[i].lane == lane){
+			index = i;
+			break;
+		}
+	}
+	if (index >= 0){
+		for (int i=index+1; i<laneDefs.size(); i++){
+			acceptableLanes << laneDefs[i].lane;
+		}
+		for (int i=index-1; i>=0; i--){
+			acceptableLanes << laneDefs[i].lane;
+		}
+	}
+
+	if (!document->MultiChannelUpdateSoundNotes(notes, UpdateNotePolicy::BestEffort, acceptableLanes)){
+		// no notes can be updated without conflicts
+		qApp->beep();
+		document->MultiChannelUpdateSoundNotes(notes, UpdateNotePolicy::ForceMove);
+	}
+
+	// Select transferred notes
+	for (auto i=notes.begin(); i!=notes.end(); i++){
+		for (auto cview : soundChannels){
+			if (cview->GetChannel() == i.key()){
+				selectedNotes.insert(cview->GetNotes()[i.value().location]);
+				break;
+			}
+		}
+	}
+	playingPane->update();
+	for (auto cview : soundChannels){
+		cview->update();
+	}
+	emit SelectionChanged();
 }
 
 void SequenceView::LockCommands()
