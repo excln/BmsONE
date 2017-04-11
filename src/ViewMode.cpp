@@ -36,10 +36,20 @@ void ViewMode::PrepareModeLibrary()
 		ModeLibrary.insert("popn-9k", ViewModePopn9k());
 		ModeLibrary.insert("circularrhythm-single", ViewModeCircularSingle());
 		ModeLibrary.insert("circularrhythm-double", ViewModeCircularDouble());
+		ModeLibrary.insert("keyboard-24k-single", ViewModeK24kSingle());
+		ModeLibrary.insert("keyboard-24k-double", ViewModeK24kDouble());
 		ModeLibrary.insert("generic-6keys", ViewModeGenericNKeys(6));
 		ModeLibrary.insert("generic-7keys", ViewModeGenericNKeys(7));
 		//ModeLibrary.insert("plain", ViewModePlain());
 	}
+}
+
+QString ViewMode::NoteName(int number)
+{
+	static QString names[12] = {
+		"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+	};
+	return names[number % 12] + QString::number(number / 12 + 1);
 }
 
 QStringList ViewMode::ModeHints;
@@ -78,6 +88,8 @@ QList<ViewMode *> ViewMode::GetAllViewModes()
 	modes.append(ViewModePopn9k());
 	modes.append(ViewModeCircularSingle());
 	modes.append(ViewModeCircularDouble());
+	modes.append(ViewModeK24kSingle());
+	modes.append(ViewModeK24kDouble());
 	modes.append(ViewModeGenericNKeys(6));
 	modes.append(ViewModeGenericNKeys(7));
 	modes.append(ViewModePlain());
@@ -98,6 +110,8 @@ ViewMode *ViewMode::VM_Popn5k = nullptr;
 ViewMode *ViewMode::VM_Popn9k = nullptr;
 ViewMode *ViewMode::VM_CircularSingle = nullptr;
 ViewMode *ViewMode::VM_CircularDouble = nullptr;
+ViewMode *ViewMode::VM_K24kSingle = nullptr;
+ViewMode *ViewMode::VM_K24kDouble = nullptr;
 ViewMode *ViewMode::VM_Generic6Keys = nullptr;
 ViewMode *ViewMode::VM_Generic7Keys = nullptr;
 ViewMode *ViewMode::VM_Plain = nullptr;
@@ -234,6 +248,37 @@ ViewMode *ViewMode::ViewModeCircularDouble()
 	VM_CircularDouble->lanes.insert(8, LaneDef(8, tr("Right Key Blue")));
 	VM_CircularDouble->lanes.insert(9, LaneDef(9, tr("Space")));
 	return VM_CircularDouble;
+}
+
+ViewMode *ViewMode::ViewModeK24kSingle()
+{
+	if (VM_K24kSingle)
+		return VM_K24kSingle;
+	VM_K24kSingle = new ViewMode(tr("Keyboard-24k-single"), MODE_K24K_SINGLE);
+	for (int k=1; k<=24; k++){
+		VM_K24kSingle->lanes.insert(k, LaneDef(k, tr("Key") + " " + NoteName(k)));
+	}
+	VM_K24kSingle->lanes.insert(25, LaneDef(25, tr("Wheel Up")));
+	VM_K24kSingle->lanes.insert(26, LaneDef(26, tr("Wheel Down")));
+	return VM_K24kSingle;
+}
+
+ViewMode *ViewMode::ViewModeK24kDouble()
+{
+	if (VM_K24kDouble)
+		return VM_K24kDouble;
+	VM_K24kDouble = new ViewMode(tr("Keyboard-24k-double"), MODE_K24K_DOUBLE);
+	for (int i=1; i<24; i++){
+		VM_K24kDouble->lanes.insert(i+1, LaneDef(i+1, tr("P1 Key") + " " + NoteName(i)));
+	}
+	VM_K24kDouble->lanes.insert(25, LaneDef(25, tr("P1 Wheel Up")));
+	VM_K24kDouble->lanes.insert(26, LaneDef(26, tr("P1 Wheel Down")));
+	for (int i=1; i<24; i++){
+		VM_K24kDouble->lanes.insert(i+27, LaneDef(i+27, tr("P2 Key") + " " + NoteName(i)));
+	}
+	VM_K24kDouble->lanes.insert(51, LaneDef(51, tr("P2 Wheel Up")));
+	VM_K24kDouble->lanes.insert(52, LaneDef(52, tr("P2 Wheel Down")));
+	return VM_K24kDouble;
 }
 
 ViewMode *ViewMode::ViewModeGenericNKeys(int n)

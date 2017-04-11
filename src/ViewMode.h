@@ -17,6 +17,8 @@ public:
 		MODE_POPN_9K       = 0x00020901,
 		MODE_CIRC_SINGLE   = 0x00110401,
 		MODE_CIRC_DOUBLE   = 0x00110402,
+		MODE_K24K_SINGLE   = 0x00211801,
+		MODE_K24K_DOUBLE   = 0x00211802,
 		MODE_GENERIC_6KEYS = 0x01000601,
 		MODE_GENERIC_7KEYS = 0x01000701,
 		MODE_PLAIN         = 0x10000000,
@@ -55,6 +57,8 @@ private:
 	//static ViewMode *VM_Dance8;
 	static ViewMode *VM_CircularSingle;
 	static ViewMode *VM_CircularDouble;
+	static ViewMode *VM_K24kSingle;
+	static ViewMode *VM_K24kDouble;
 	static ViewMode *VM_Generic6Keys;
 	static ViewMode *VM_Generic7Keys;
 	static ViewMode *VM_Plain;
@@ -63,6 +67,8 @@ private:
 	ViewMode(QString name, Mode mode);
 	virtual ~ViewMode();
 	static void PrepareModeLibrary();
+
+	static QString NoteName(int number);
 
 public:
 	Mode GetMode() const{ return mode; }
@@ -82,6 +88,8 @@ public:
 	static ViewMode *ViewModePopn9k();
 	static ViewMode *ViewModeCircularSingle();
 	static ViewMode *ViewModeCircularDouble();
+	static ViewMode *ViewModeK24kSingle();
+	static ViewMode *ViewModeK24kDouble();
 	static ViewMode *ViewModeGenericNKeys(int n);
 	static ViewMode *ViewModePlain();
 };

@@ -43,6 +43,22 @@ SkinLibrary::SkinLibrary()
 	pnBlack = QColor(123, 123, 123);
 }
 
+void SkinLibrary::SetupLanes(Skin *skin, QList<SkinLibrary::Lane> lanes)
+{
+	skin->lanes.clear();
+	int x = lmargin;
+	for (int i=0; i<lanes.size(); i++){
+		auto lane = lanes[i];
+		if (lane.lane > 0){
+			bool bigLeft = i == 0 || lanes[i-1].lane <= 0;
+			bool bigRight = i == lanes.size()-1 || lanes[i+1].lane <= 0;
+			skin->lanes.append(LaneDef(lane.lane, lane.keyImageName, x, lane.width, lane.color, lane.noteColor, bigLeft ? cbigv : csmallv, bigRight ? cbigv : QColor(0,0,0,0)));
+		}
+		x += lane.width;
+	}
+	skin->width = x + lmargin;
+}
+
 void SkinLibrary::SetupSkin7k(Skin *skin, int scratch)
 {
 	skin->width = lmargin*2+wscratch+wwhite*4+wblack*3;
@@ -82,6 +98,9 @@ void SkinLibrary::SetupSkin7k(Skin *skin, int scratch)
 #define DEFAULT_CIRCULAR_SINGLE_ID "default-circular-single"
 #define DEFAULT_CIRCULAR_DOUBLE_ID "default-circular-double"
 #define CIRCULAR_ORDER_PROPERTY_KEY "lane-order"
+#define DEFAULT_KEYBOARD_24K_SINGLE_ID "default-keyboard-24k-single"
+#define DEFAULT_KEYBOARD_24K_DOUBLE_ID "default-keyboard-24k-double"
+#define KEYBOARD_WHEEL_KEY "wheel"
 #define DEFAULT_GENERIC_6KEYS_ID "default-generic-6keys"
 #define DEFAULT_GENERIC_7KEYS_ID "default-generic-7keys"
 #define GENERIC_NKEYS_COLOR_SCHEME_PROPERTY_KEY "color-scheme"
@@ -446,6 +465,121 @@ Skin *SkinLibrary::CreateDefaultCircularDouble(QObject *parent)
 	return skin;
 }
 
+Skin *SkinLibrary::CreateDefaultK24kSingle(QObject *parent){
+	QString defaultOrder = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_KEYBOARD_24K_SINGLE_ID, KEYBOARD_WHEEL_KEY), "l").toString();
+	Skin *skin = new Skin(DEFAULT_KEYBOARD_24K_SINGLE_ID, parent);
+	QStringList choices;
+	choices.append("l");
+	choices.append("r");
+	QStringList choiceNames;
+	choiceNames.append(tr("Left"));
+	choiceNames.append(tr("Right"));
+	SkinEnumProperty *wheelProp = new SkinEnumProperty(skin, KEYBOARD_WHEEL_KEY, tr("Wheel"), choices, choiceNames, defaultOrder);
+	wheelProp->setObjectName(KEYBOARD_WHEEL_KEY);
+	skin->properties.append(wheelProp);
+	connect(wheelProp, &SkinProperty::Changed, skin, [=](){
+		skin->lanes.clear();
+		SetupSkinK24kSingle(skin, wheelProp->GetIndexValue());
+		App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_KEYBOARD_24K_SINGLE_ID, KEYBOARD_WHEEL_KEY), wheelProp->GetChoiceValue());
+		emit skin->Changed();
+		return;
+	});
+	SetupSkinK24kSingle(skin, wheelProp->GetIndexValue());
+	return skin;
+}
+
+void SkinLibrary::SetupSkinK24kSingle(Skin *skin, int wheel)
+{
+	QList<Lane> lanes;
+	switch (wheel){
+	case 1:
+		for (int i=0; i<24; i++){
+			lanes << (IsKeyBlack(i) ? Lane(i+1, wblack, cblack, ncblack, "bkey") : Lane(i+1, wwhite, cwhite, ncwhite, "wkey"));
+		}
+		lanes << Lane(25, wscratch, cscratch, ncscratch, "wheel-up")
+			  << Lane(26, wscratch, cscratch, ncscratch, "wheel-down");
+		break;
+	case 0:
+	default:
+		lanes << Lane(25, wscratch, cscratch, ncscratch, "wheel-up")
+			  << Lane(26, wscratch, cscratch, ncscratch, "wheel-down");
+		for (int i=0; i<24; i++){
+			lanes << (IsKeyBlack(i) ? Lane(i+1, wblack, cblack, ncblack, "bkey") : Lane(i+1, wwhite, cwhite, ncwhite, "wkey"));
+		}
+		break;
+	}
+	SetupLanes(skin, lanes);
+}
+
+Skin *SkinLibrary::CreateDefaultK24kDouble(QObject *parent)
+{
+	QString defaultOrder = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_KEYBOARD_24K_DOUBLE_ID, KEYBOARD_WHEEL_KEY), "lr").toString();
+	Skin *skin = new Skin(DEFAULT_KEYBOARD_24K_DOUBLE_ID, parent);
+	QStringList choices;
+	choices.append("ll");
+	choices.append("lr");
+	choices.append("rl");
+	choices.append("rr");
+	QStringList choiceNames;
+	choiceNames.append(tr("Left/Left"));
+	choiceNames.append(tr("Left/Right"));
+	choiceNames.append(tr("Right/Left"));
+	choiceNames.append(tr("Right/Right"));
+	SkinEnumProperty *wheelProp = new SkinEnumProperty(skin, KEYBOARD_WHEEL_KEY, tr("Wheel"), choices, choiceNames, defaultOrder);
+	wheelProp->setObjectName(KEYBOARD_WHEEL_KEY);
+	skin->properties.append(wheelProp);
+	connect(wheelProp, &SkinProperty::Changed, skin, [=](){
+		skin->lanes.clear();
+		SetupSkinK24kDouble(skin, wheelProp->GetIndexValue());
+		App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_KEYBOARD_24K_DOUBLE_ID, KEYBOARD_WHEEL_KEY), wheelProp->GetChoiceValue());
+		emit skin->Changed();
+		return;
+	});
+	SetupSkinK24kDouble(skin, wheelProp->GetIndexValue());
+	return skin;
+}
+
+void SkinLibrary::SetupSkinK24kDouble(Skin *skin, int wheel)
+{
+	QList<Lane> lanes;
+	switch (wheel / 2){
+	case 1:
+		for (int i=0; i<24; i++){
+			lanes << (IsKeyBlack(i) ? Lane(i+1, wblack, cblack, ncblack, "bkey") : Lane(i+1, wwhite, cwhite, ncwhite, "wkey"));
+		}
+		lanes << Lane(25, wscratch, cscratch, ncscratch, "wheel-up")
+			  << Lane(26, wscratch, cscratch, ncscratch, "wheel-down");
+		break;
+	case 0:
+	default:
+		lanes << Lane(25, wscratch, cscratch, ncscratch, "wheel-up")
+			  << Lane(26, wscratch, cscratch, ncscratch, "wheel-down");
+		for (int i=0; i<24; i++){
+			lanes << (IsKeyBlack(i) ? Lane(i+1, wblack, cblack, ncblack, "bkey") : Lane(i+1, wwhite, cwhite, ncwhite, "wkey"));
+		}
+		break;
+	}
+	lanes << Lane(0, mmargin, QColor(), QColor(), QString());
+	switch (wheel % 2){
+	case 1:
+		for (int i=0; i<24; i++){
+			lanes << (IsKeyBlack(i) ? Lane(i+27, wblack, cblack, ncblack, "bkey") : Lane(i+27, wwhite, cwhite, ncwhite, "wkey"));
+		}
+		lanes << Lane(51, wscratch, cscratch, ncscratch, "wheel-up")
+			  << Lane(52, wscratch, cscratch, ncscratch, "wheel-down");
+		break;
+	case 0:
+	default:
+		lanes << Lane(51, wscratch, cscratch, ncscratch, "wheel-up")
+			  << Lane(52, wscratch, cscratch, ncscratch, "wheel-down");
+		for (int i=0; i<24; i++){
+			lanes << (IsKeyBlack(i) ? Lane(i+27, wblack, cblack, ncblack, "bkey") : Lane(i+27, wwhite, cwhite, ncwhite, "wkey"));
+		}
+		break;
+	}
+	SetupLanes(skin, lanes);
+}
+
 void SkinLibrary::SetupSkinGeneric6Keys(Skin *skin)
 {
 	const int n = 6;
@@ -606,6 +740,10 @@ Skin *SkinLibrary::CreateSkin(ViewMode *mode, QObject *parent)
 		return CreateDefaultCircularSingle(parent);
 	case ViewMode::MODE_CIRC_DOUBLE:
 		return CreateDefaultCircularDouble(parent);
+	case ViewMode::MODE_K24K_SINGLE:
+		return CreateDefaultK24kSingle(parent);
+	case ViewMode::MODE_K24K_DOUBLE:
+		return CreateDefaultK24kDouble(parent);
 	case ViewMode::MODE_GENERIC_6KEYS:
 		return CreateDefaultGenericNKeys(parent, 6);
 	case ViewMode::MODE_GENERIC_7KEYS:
