@@ -27,3 +27,11 @@ Makefile*
 
 *.autosave
 
+
+# Deployment scripts and output files
+
+deploy/*.bat
+deploy/*.command
+deploy/BmsONE/*
+
+
