@@ -89,7 +89,6 @@ void SkinLibrary::SetupSkin7k(Skin *skin, int scratch)
 }
 
 #define SKIN_SETTINGS_KEY "SkinSettings"
-#define PROPERTY_KEY(SKIN_ID, PROP_KEY) SKIN_SETTINGS_KEY "/" SKIN_ID "/" PROP_KEY
 #define SCRATCH_PROPERTY_KEY "scratch"
 #define DEFAULT_BEAT_5K_ID "default-beat-5k"
 #define DEFAULT_BEAT_7K_ID "default-beat-7k"
@@ -98,7 +97,6 @@ void SkinLibrary::SetupSkin7k(Skin *skin, int scratch)
 #define DEFAULT_CIRCULAR_SINGLE_ID "default-circular-single"
 #define DEFAULT_CIRCULAR_DOUBLE_ID "default-circular-double"
 #define CIRCULAR_ORDER_PROPERTY_KEY "lane-order"
-#define DEFAULT_KEYBOARD_24K_SINGLE_ID "default-keyboard-24k-single"
 #define DEFAULT_KEYBOARD_24K_DOUBLE_ID "default-keyboard-24k-double"
 #define KEYBOARD_WHEEL_KEY "wheel"
 #define DEFAULT_GENERIC_6KEYS_ID "default-generic-6keys"
@@ -106,6 +104,16 @@ void SkinLibrary::SetupSkin7k(Skin *skin, int scratch)
 #define GENERIC_NKEYS_COLOR_SCHEME_PROPERTY_KEY "color-scheme"
 #define DEFAULT_PLAIN_ID "default-plain"
 #define PLAIN_LANES_PROPERTY_KEY "lane-count"
+
+inline QString PROPERTY_KEY(QString skin_id, QString prop_key)
+{
+	return QString(SKIN_SETTINGS_KEY "/") + skin_id + "/" + prop_key;
+}
+
+inline QString DEFAULT_KEYBOARD_SINGLE_ID(int key)
+{
+	return QString("default-keyboard-%1k-single").arg(key);
+}
 
 Skin *SkinLibrary::CreateDefault7k(QObject *parent)
 {
@@ -465,9 +473,34 @@ Skin *SkinLibrary::CreateDefaultCircularDouble(QObject *parent)
 	return skin;
 }
 
-Skin *SkinLibrary::CreateDefaultK24kSingle(QObject *parent){
-	QString defaultOrder = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_KEYBOARD_24K_SINGLE_ID, KEYBOARD_WHEEL_KEY), "l").toString();
-	Skin *skin = new Skin(DEFAULT_KEYBOARD_24K_SINGLE_ID, parent);
+void SkinLibrary::SetupSkinKeyboardSingle(Skin *skin, int key, int wheel)
+{
+	QList<Lane> lanes;
+	switch (wheel){
+	case 1:
+		for (int i=0; i<key; i++){
+			lanes << (IsKeyBlack(i) ? Lane(i+1, wblack, cblack, ncblack, "bkey") : Lane(i+1, wwhite, cwhite, ncwhite, "wkey"));
+		}
+		lanes << Lane(key+1, wscratch, cscratch, ncscratch, "wheel-up")
+			  << Lane(key+2, wscratch, cscratch, ncscratch, "wheel-down");
+		break;
+	case 0:
+	default:
+		lanes << Lane(key+1, wscratch, cscratch, ncscratch, "wheel-up")
+			  << Lane(key+2, wscratch, cscratch, ncscratch, "wheel-down");
+		for (int i=0; i<key; i++){
+			lanes << (IsKeyBlack(i) ? Lane(i+1, wblack, cblack, ncblack, "bkey") : Lane(i+1, wwhite, cwhite, ncwhite, "wkey"));
+		}
+		break;
+	}
+	SetupLanes(skin, lanes);
+}
+
+Skin *SkinLibrary::CreateDefaultKeyboardSingle(QObject *parent, int key)
+{
+	QString id = DEFAULT_KEYBOARD_SINGLE_ID(key);
+	QString defaultOrder = App::Instance()->GetSettings()->value(PROPERTY_KEY(id, KEYBOARD_WHEEL_KEY), "l").toString();
+	Skin *skin = new Skin(id, parent);
 	QStringList choices;
 	choices.append("l");
 	choices.append("r");
@@ -479,36 +512,13 @@ Skin *SkinLibrary::CreateDefaultK24kSingle(QObject *parent){
 	skin->properties.append(wheelProp);
 	connect(wheelProp, &SkinProperty::Changed, skin, [=](){
 		skin->lanes.clear();
-		SetupSkinK24kSingle(skin, wheelProp->GetIndexValue());
-		App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_KEYBOARD_24K_SINGLE_ID, KEYBOARD_WHEEL_KEY), wheelProp->GetChoiceValue());
+		SetupSkinKeyboardSingle(skin, key, wheelProp->GetIndexValue());
+		App::Instance()->GetSettings()->setValue(PROPERTY_KEY(id, KEYBOARD_WHEEL_KEY), wheelProp->GetChoiceValue());
 		emit skin->Changed();
 		return;
 	});
-	SetupSkinK24kSingle(skin, wheelProp->GetIndexValue());
+	SetupSkinKeyboardSingle(skin, key, wheelProp->GetIndexValue());
 	return skin;
-}
-
-void SkinLibrary::SetupSkinK24kSingle(Skin *skin, int wheel)
-{
-	QList<Lane> lanes;
-	switch (wheel){
-	case 1:
-		for (int i=0; i<24; i++){
-			lanes << (IsKeyBlack(i) ? Lane(i+1, wblack, cblack, ncblack, "bkey") : Lane(i+1, wwhite, cwhite, ncwhite, "wkey"));
-		}
-		lanes << Lane(25, wscratch, cscratch, ncscratch, "wheel-up")
-			  << Lane(26, wscratch, cscratch, ncscratch, "wheel-down");
-		break;
-	case 0:
-	default:
-		lanes << Lane(25, wscratch, cscratch, ncscratch, "wheel-up")
-			  << Lane(26, wscratch, cscratch, ncscratch, "wheel-down");
-		for (int i=0; i<24; i++){
-			lanes << (IsKeyBlack(i) ? Lane(i+1, wblack, cblack, ncblack, "bkey") : Lane(i+1, wwhite, cwhite, ncwhite, "wkey"));
-		}
-		break;
-	}
-	SetupLanes(skin, lanes);
 }
 
 Skin *SkinLibrary::CreateDefaultK24kDouble(QObject *parent)
@@ -741,9 +751,15 @@ Skin *SkinLibrary::CreateSkin(ViewMode *mode, QObject *parent)
 	case ViewMode::MODE_CIRC_DOUBLE:
 		return CreateDefaultCircularDouble(parent);
 	case ViewMode::MODE_K24K_SINGLE:
-		return CreateDefaultK24kSingle(parent);
+		return CreateDefaultKeyboardSingle(parent, 24);
 	case ViewMode::MODE_K24K_DOUBLE:
 		return CreateDefaultK24kDouble(parent);
+	case ViewMode::MODE_K36K_SINGLE:
+		return CreateDefaultKeyboardSingle(parent, 36);
+	case ViewMode::MODE_K48K_SINGLE:
+		return CreateDefaultKeyboardSingle(parent, 48);
+	case ViewMode::MODE_K60K_SINGLE:
+		return CreateDefaultKeyboardSingle(parent, 60);
 	case ViewMode::MODE_GENERIC_6KEYS:
 		return CreateDefaultGenericNKeys(parent, 6);
 	case ViewMode::MODE_GENERIC_7KEYS:

@@ -19,13 +19,20 @@ public:
 		MODE_CIRC_DOUBLE   = 0x00110402,
 		MODE_K24K_SINGLE   = 0x00211801,
 		MODE_K24K_DOUBLE   = 0x00211802,
+		MODE_K36K_SINGLE   = 0x00212401,
+		MODE_K48K_SINGLE   = 0x00213001,
+		MODE_K60K_SINGLE   = 0x00213C01,
 		MODE_GENERIC_6KEYS = 0x01000601,
 		MODE_GENERIC_7KEYS = 0x01000701,
 		MODE_PLAIN         = 0x10000000,
 	//
-		MODE_KEY_COUNT_SHIFT   = 0x00000100,
-		MODE_GENERIC_KEYS_BASE = 0x01000001,
+		MODE_KEY_COUNT_SHIFT      = 0x00000100,
+		MODE_KEYBOARD_SINGLE_BASE = 0x00210001,
+		MODE_GENERIC_KEYS_BASE    = 0x01000001,
 	};
+	static Mode MODE_KEYBOARD_N_KEYS_SINGLE(int n){
+		return Mode(MODE_KEYBOARD_SINGLE_BASE | (n * (int)MODE_KEY_COUNT_SHIFT));
+	}
 	static Mode MODE_GENERIC_N_KEYS(int n){
 		return Mode(MODE_GENERIC_KEYS_BASE | (n * (int)MODE_KEY_COUNT_SHIFT));
 	}
@@ -59,6 +66,9 @@ private:
 	static ViewMode *VM_CircularDouble;
 	static ViewMode *VM_K24kSingle;
 	static ViewMode *VM_K24kDouble;
+	static ViewMode *VM_K36kSingle;
+	static ViewMode *VM_K48kSingle;
+	static ViewMode *VM_K60kSingle;
 	static ViewMode *VM_Generic6Keys;
 	static ViewMode *VM_Generic7Keys;
 	static ViewMode *VM_Plain;
@@ -88,7 +98,7 @@ public:
 	static ViewMode *ViewModePopn9k();
 	static ViewMode *ViewModeCircularSingle();
 	static ViewMode *ViewModeCircularDouble();
-	static ViewMode *ViewModeK24kSingle();
+	static ViewMode *ViewModeKeyboardSingle(int n);
 	static ViewMode *ViewModeK24kDouble();
 	static ViewMode *ViewModeGenericNKeys(int n);
 	static ViewMode *ViewModePlain();

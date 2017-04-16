@@ -36,8 +36,15 @@ void ViewMode::PrepareModeLibrary()
 		ModeLibrary.insert("popn-9k", ViewModePopn9k());
 		ModeLibrary.insert("circularrhythm-single", ViewModeCircularSingle());
 		ModeLibrary.insert("circularrhythm-double", ViewModeCircularDouble());
-		ModeLibrary.insert("keyboard-24k-single", ViewModeK24kSingle());
+		//ModeLibrary.insert("keyboard-24k", ViewModeKeyboardSingle(24));
+		ModeLibrary.insert("keyboard-24k-single", ViewModeKeyboardSingle(24));
 		ModeLibrary.insert("keyboard-24k-double", ViewModeK24kDouble());
+		//ModeLibrary.insert("keyboard-36k", ViewModeKeyboardSingle(36));
+		ModeLibrary.insert("keyboard-36k-single", ViewModeKeyboardSingle(36));
+		//ModeLibrary.insert("keyboard-48k", ViewModeKeyboardSingle(48));
+		ModeLibrary.insert("keyboard-48k-single", ViewModeKeyboardSingle(48));
+		//ModeLibrary.insert("keyboard-60k", ViewModeKeyboardSingle(60));
+		ModeLibrary.insert("keyboard-60k-single", ViewModeKeyboardSingle(60));
 		ModeLibrary.insert("generic-6keys", ViewModeGenericNKeys(6));
 		ModeLibrary.insert("generic-7keys", ViewModeGenericNKeys(7));
 		//ModeLibrary.insert("plain", ViewModePlain());
@@ -88,8 +95,11 @@ QList<ViewMode *> ViewMode::GetAllViewModes()
 	modes.append(ViewModePopn9k());
 	modes.append(ViewModeCircularSingle());
 	modes.append(ViewModeCircularDouble());
-	modes.append(ViewModeK24kSingle());
+	modes.append(ViewModeKeyboardSingle(24));
 	modes.append(ViewModeK24kDouble());
+	modes.append(ViewModeKeyboardSingle(36));
+	modes.append(ViewModeKeyboardSingle(48));
+	modes.append(ViewModeKeyboardSingle(60));
 	modes.append(ViewModeGenericNKeys(6));
 	modes.append(ViewModeGenericNKeys(7));
 	modes.append(ViewModePlain());
@@ -112,6 +122,9 @@ ViewMode *ViewMode::VM_CircularSingle = nullptr;
 ViewMode *ViewMode::VM_CircularDouble = nullptr;
 ViewMode *ViewMode::VM_K24kSingle = nullptr;
 ViewMode *ViewMode::VM_K24kDouble = nullptr;
+ViewMode *ViewMode::VM_K36kSingle = nullptr;
+ViewMode *ViewMode::VM_K48kSingle = nullptr;
+ViewMode *ViewMode::VM_K60kSingle = nullptr;
 ViewMode *ViewMode::VM_Generic6Keys = nullptr;
 ViewMode *ViewMode::VM_Generic7Keys = nullptr;
 ViewMode *ViewMode::VM_Plain = nullptr;
@@ -250,17 +263,33 @@ ViewMode *ViewMode::ViewModeCircularDouble()
 	return VM_CircularDouble;
 }
 
-ViewMode *ViewMode::ViewModeK24kSingle()
+ViewMode *ViewMode::ViewModeKeyboardSingle(int n)
 {
-	if (VM_K24kSingle)
-		return VM_K24kSingle;
-	VM_K24kSingle = new ViewMode(tr("Keyboard-24k-single"), MODE_K24K_SINGLE);
-	for (int k=1; k<=24; k++){
-		VM_K24kSingle->lanes.insert(k, LaneDef(k, tr("Key") + " " + NoteName(k)));
+	ViewMode *temp = nullptr;
+	ViewMode **pvm = &temp;
+	switch (n){
+	case 24:
+		pvm = &VM_K24kSingle;
+		break;
+	case 36:
+		pvm = &VM_K36kSingle;
+		break;
+	case 48:
+		pvm = &VM_K48kSingle;
+		break;
+	case 60:
+		pvm = &VM_K60kSingle;
+		break;
 	}
-	VM_K24kSingle->lanes.insert(25, LaneDef(25, tr("Wheel Up")));
-	VM_K24kSingle->lanes.insert(26, LaneDef(26, tr("Wheel Down")));
-	return VM_K24kSingle;
+	if (*pvm)
+		return *pvm;
+	*pvm = new ViewMode(tr("Keyboard-%1k-single").arg(n), MODE_KEYBOARD_N_KEYS_SINGLE(n));
+	for (int k=1; k<=n; k++){
+		(*pvm)->lanes.insert(k, LaneDef(k, tr("Key") + " " + NoteName(k)));
+	}
+	(*pvm)->lanes.insert(n+1, LaneDef(n+1, tr("Wheel Up")));
+	(*pvm)->lanes.insert(n+2, LaneDef(n+2, tr("Wheel Down")));
+	return *pvm;
 }
 
 ViewMode *ViewMode::ViewModeK24kDouble()

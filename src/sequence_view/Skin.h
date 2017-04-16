@@ -261,8 +261,8 @@ private:
 	void SetupSkinCircularDouble(Skin *skin, int order);
 	Skin *CreateDefaultCircularDouble(QObject *parent);
 
-	void SetupSkinK24kSingle(Skin *skin, int wheel);
-	Skin *CreateDefaultK24kSingle(QObject *parent);
+	void SetupSkinKeyboardSingle(Skin *skin, int key, int wheel);
+	Skin *CreateDefaultKeyboardSingle(QObject *parent, int key);
 
 	void SetupSkinK24kDouble(Skin *skin, int wheel);
 	Skin *CreateDefaultK24kDouble(QObject *parent);
