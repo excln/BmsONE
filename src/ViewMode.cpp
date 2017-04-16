@@ -10,44 +10,36 @@ ViewMode::~ViewMode()
 {
 }
 
+void ViewMode::AddViewMode(QString modeHint, ViewMode *mode)
+{
+	ModeHints.append(modeHint);
+	ModeLibrary.insert(modeHint, mode);
+}
+
 void ViewMode::PrepareModeLibrary()
 {
 	if (ModeLibrary.empty()){
-		ModeHints.append("beat-7k");
-		ModeHints.append("beat-14k");
-		ModeHints.append("beat-7k-battle");
-		ModeHints.append("beat-5k");
-		ModeHints.append("beat-10k");
-		ModeHints.append("beat-5k-battle");
-		ModeHints.append("popn-5k");
-		ModeHints.append("popn-9k");
-		ModeHints.append("circularrhythm-single");
-		ModeHints.append("circularrhythm-double");
-		ModeHints.append("generic-6keys");
-		ModeHints.append("generic-7keys");
-		//ModeHints.append("plain");
-		ModeLibrary.insert("beat-5k", ViewModeBeat5k());
-		ModeLibrary.insert("beat-7k", ViewModeBeat7k());
-		ModeLibrary.insert("beat-10k", ViewModeBeat10k());
-		ModeLibrary.insert("beat-5k-battle", ViewModeBeat10k());
-		ModeLibrary.insert("beat-14k", ViewModeBeat14k());
-		ModeLibrary.insert("beat-7k-battle", ViewModeBeat14k());
-		ModeLibrary.insert("popn-5k", ViewModePopn5k());
-		ModeLibrary.insert("popn-9k", ViewModePopn9k());
-		ModeLibrary.insert("circularrhythm-single", ViewModeCircularSingle());
-		ModeLibrary.insert("circularrhythm-double", ViewModeCircularDouble());
-		//ModeLibrary.insert("keyboard-24k", ViewModeKeyboardSingle(24));
-		ModeLibrary.insert("keyboard-24k-single", ViewModeKeyboardSingle(24));
-		ModeLibrary.insert("keyboard-24k-double", ViewModeK24kDouble());
-		//ModeLibrary.insert("keyboard-36k", ViewModeKeyboardSingle(36));
-		ModeLibrary.insert("keyboard-36k-single", ViewModeKeyboardSingle(36));
-		//ModeLibrary.insert("keyboard-48k", ViewModeKeyboardSingle(48));
-		ModeLibrary.insert("keyboard-48k-single", ViewModeKeyboardSingle(48));
-		//ModeLibrary.insert("keyboard-60k", ViewModeKeyboardSingle(60));
-		ModeLibrary.insert("keyboard-60k-single", ViewModeKeyboardSingle(60));
-		ModeLibrary.insert("generic-6keys", ViewModeGenericNKeys(6));
-		ModeLibrary.insert("generic-7keys", ViewModeGenericNKeys(7));
-		//ModeLibrary.insert("plain", ViewModePlain());
+		AddViewMode("beat-7k", ViewModeBeat7k());
+		AddViewMode("beat-14k", ViewModeBeat14k());
+		AddViewMode("beat-7k-battle", ViewModeBeat14k());
+		AddViewMode("beat-5k", ViewModeBeat5k());
+		AddViewMode("beat-10k", ViewModeBeat10k());
+		AddViewMode("beat-5k-battle", ViewModeBeat10k());
+		AddViewMode("popn-5k", ViewModePopn5k());
+		AddViewMode("popn-9k", ViewModePopn9k());
+		AddViewMode("circularrhythm-single", ViewModeCircularSingle());
+		AddViewMode("circularrhythm-double", ViewModeCircularDouble());
+		//AddViewMode("keyboard-24k", ViewModeKeyboardSingle(24));
+		AddViewMode("keyboard-24k-single", ViewModeKeyboardSingle(24));
+		AddViewMode("keyboard-24k-double", ViewModeK24kDouble());
+		//AddViewMode("keyboard-36k", ViewModeKeyboardSingle(36));
+		AddViewMode("keyboard-36k-single", ViewModeKeyboardSingle(36));
+		//AddViewMode("keyboard-48k", ViewModeKeyboardSingle(48));
+		AddViewMode("keyboard-48k-single", ViewModeKeyboardSingle(48));
+		//AddViewMode("keyboard-60k", ViewModeKeyboardSingle(60));
+		AddViewMode("keyboard-60k-single", ViewModeKeyboardSingle(60));
+		AddViewMode("generic-6keys", ViewModeGenericNKeys(6));
+		AddViewMode("generic-7keys", ViewModeGenericNKeys(7));
 	}
 }
 

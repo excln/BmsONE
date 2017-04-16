@@ -76,6 +76,7 @@ private:
 private:
 	ViewMode(QString name, Mode mode);
 	virtual ~ViewMode();
+	static void AddViewMode(QString modeHint, ViewMode *mode);
 	static void PrepareModeLibrary();
 
 	static QString NoteName(int number);
