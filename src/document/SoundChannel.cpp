@@ -6,8 +6,8 @@
 #include "MasterCache.h"
 #include <cstdlib>
 #include <cmath>
-#include "Bmson.h"
-#include "ResolutionUtil.h"
+#include "../bmson/Bmson.h"
+#include "../util/ResolutionUtil.h"
 
 
 SoundChannel::SoundChannel(Document *document)

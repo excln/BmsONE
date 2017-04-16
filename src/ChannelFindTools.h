@@ -3,9 +3,9 @@
 
 #include <QtCore>
 #include <QtWidgets>
-#include "SequenceDef.h"
-#include "SequenceViewDef.h"
-#include "QuasiModalEdit.h"
+#include "sequence_view/SequenceDef.h"
+#include "sequence_view/SequenceViewDef.h"
+#include "util/QuasiModalEdit.h"
 
 class MainWindow;
 class SequenceView;

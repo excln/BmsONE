@@ -5,9 +5,9 @@
 #include "HistoryUtil.h"
 #include "MasterCache.h"
 #include <QFile>
-#include "Bmson.h"
+#include "../bmson/Bmson.h"
 #include "EditConfig.h"
-#include "ResolutionUtil.h"
+#include "../util/ResolutionUtil.h"
 
 const double BmsConsts::MaxBpm = 1.e+6;
 const double BmsConsts::MinBpm = 1.e-6;

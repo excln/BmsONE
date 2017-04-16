@@ -1,0 +1,22 @@
+#!/bin/sh
+
+BUILDDIR=../build-bmsone-Desktop_Qt_5_7_0_clang_64bit-Release
+QTDIR=~/Qt/5.7/clang_64
+PROJDIR=..
+DEPLOYDIRNAME=BmsONE
+APPNAME=BmsONE.app
+
+rm -rf $DEPLOYDIRNAME
+mkdir $DEPLOYDIRNAME
+
+cp -R $BUILDDIR/$APPNAME ./$DEPLOYDIRNAME/$APPNAME
+$QTDIR/bin/macdeployqt $DEPLOYDIRNAME/$APPNAME
+
+CONTENTS=$DEPLOYDIRNAME/$APPNAME/Contents
+mkdir $CONTENTS/Documents
+cp $PROJDIR/docs/readme*.txt $CONTENTS/Documents
+cp $PROJDIR/docs/readme*.txt ./$DEPLOYDIRNAME
+cp -R $PROJDIR/COPYING $CONTENTS
+cp -R $PROJDIR/COPYING ./$DEPLOYDIRNAME
+
+

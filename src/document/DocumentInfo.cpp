@@ -1,7 +1,7 @@
 #include "Document.h"
 #include "History.h"
 #include "HistoryUtil.h"
-#include "Bmson.h"
+#include "../bmson/Bmson.h"
 
 QSet<QString> DocumentInfo::SupportedKeys;
 

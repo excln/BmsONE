@@ -2,7 +2,7 @@
 #define SOUNDCHANNELINTERNAL
 
 #include <QtCore>
-#include "Wave.h"
+#include "../audio/Wave.h"
 #include "DocumentDef.h"
 #include "SoundChannelDef.h"
 

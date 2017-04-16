@@ -1,6 +1,6 @@
 #include "ChannelInfoView.h"
 #include "MainWindow.h"
-#include "SymbolIconManager.h"
+#include "../util/SymbolIconManager.h"
 #include "ViewMode.h"
 
 ChannelInfoView::ChannelInfoView(MainWindow *mainWindow)

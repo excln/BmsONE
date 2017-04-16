@@ -1,7 +1,7 @@
 #include "SequenceTools.h"
 #include "MainWindow.h"
-#include "SequenceView.h"
-#include "SymbolIconManager.h"
+#include "sequence_view/SequenceView.h"
+#include "util/SymbolIconManager.h"
 
 QString SequenceTools::TextForGridSize(GridSize grid)
 {

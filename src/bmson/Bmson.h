@@ -1,8 +1,8 @@
 #ifndef BMSON_H
 #define BMSON_H
 
-#include "bmson/BmsonConvertDef.h"
-#include "bmson/Bmson100.h"
+#include "BmsonConvertDef.h"
+#include "Bmson100.h"
 #include <QtCore>
 
 using namespace Bmson100;

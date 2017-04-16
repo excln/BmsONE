@@ -1,8 +1,8 @@
 #include "Bmson.h"
-#include "bmson/Bmson021.h"
-#include "bmson/Bmson100.h"
-#include "bmson/Bmson100Convert.h"
-#include "MainWindow.h"
+#include "Bmson021.h"
+#include "Bmson100.h"
+#include "Bmson100Convert.h"
+#include "../MainWindow.h"
 
 const char* BmsonIO::VersionKey = "version";
 

@@ -7,7 +7,7 @@
 #include <string>
 #include <functional>
 #include "DocumentDef.h"
-#include "Bmson.h"
+#include "../bmson/Bmson.h"
 
 class Document;
 class DocumentInfo;

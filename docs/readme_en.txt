@@ -15,7 +15,7 @@ http://sky.geocities.jp/exclusion_bms/bmsone.html
 
 2.1 Caution
 
-If an error like ”MSVCP140.dll is missing” occurs on Windows, then please install
+If an error like "MSVCP140.dll is missing" occurs on Windows, then please install
 Visual C++ Redistributable for Visual Studio 2015 at the following URL.
 (Please choose "x86" regardless of your machine.)
 https://www.microsoft.com/en-us/download/details.aspx?id=48145

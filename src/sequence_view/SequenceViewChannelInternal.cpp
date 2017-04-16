@@ -1,8 +1,8 @@
 
 #include "SequenceViewChannelInternal.h"
 #include "SequenceView.h"
-#include "MainWindow.h"
-#include "EditConfig.h"
+#include "../MainWindow.h"
+#include "../EditConfig.h"
 
 
 SoundChannelView::EditModeContext::EditModeContext(SoundChannelView *cview)

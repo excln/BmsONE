@@ -3,8 +3,8 @@
 
 #include <QtCore>
 #include <QtWidgets>
-#include "SoundChannelDef.h"
-#include "ScalarRegion.h"
+#include "document/SoundChannelDef.h"
+#include "util/ScalarRegion.h"
 
 class SequenceView;
 class Document;

@@ -1,6 +1,6 @@
 #include "ExternalViewer.h"
-#include "Document.h"
-#include "History.h"
+#include "document/Document.h"
+#include "document/History.h"
 #include "MainWindow.h"
 
 

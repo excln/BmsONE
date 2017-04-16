@@ -3,7 +3,7 @@
 
 #include <QtCore>
 #include <QtWidgets>
-#include "ViewMode.h"
+#include "../ViewMode.h"
 
 
 

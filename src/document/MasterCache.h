@@ -4,9 +4,9 @@
 #include <QtCore>
 #include <QtConcurrent>
 #include <functional>
-#include "Wave.h"
+#include "../audio/Wave.h"
 #include "SoundChannel.h"
-#include "SignalFunction.h"
+#include "../util/SignalFunction.h"
 
 class Document;
 class SoundChannel;

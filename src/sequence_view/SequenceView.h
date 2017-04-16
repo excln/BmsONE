@@ -3,8 +3,8 @@
 
 #include <QtCore>
 #include <QtWidgets>
-#include "Document.h"
-#include "SoundChannel.h"
+#include "../document/Document.h"
+#include "../document/SoundChannel.h"
 #include "SequenceDef.h"
 #include "SequenceViewDef.h"
 #include "ViewMode.h"

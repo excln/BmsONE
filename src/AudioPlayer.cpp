@@ -1,6 +1,6 @@
 #include "AudioPlayer.h"
 #include "MainWindow.h"
-#include "SymbolIconManager.h"
+#include "util/SymbolIconManager.h"
 #include <cmath>
 
 const char* AudioPlayer::SettingsGroup = "AudioPlayer";

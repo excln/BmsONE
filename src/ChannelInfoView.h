@@ -3,9 +3,9 @@
 
 #include <QtCore>
 #include <QtWidgets>
-#include "Wave.h"
-#include "Document.h"
-#include "ScrollableForm.h"
+#include "audio/Wave.h"
+#include "document/Document.h"
+#include "util/ScrollableForm.h"
 
 
 class MainWindow;

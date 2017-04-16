@@ -1,7 +1,7 @@
 #include "BpmEditTool.h"
 #include "MainWindow.h"
-#include "SymbolIconManager.h"
-#include "JsonExtension.h"
+#include "util/SymbolIconManager.h"
+#include "util/JsonExtension.h"
 
 namespace BpmEditToolsSettings{
 const char *SettingsGroup = "BpmEditView";

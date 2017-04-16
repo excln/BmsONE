@@ -1,9 +1,9 @@
 #include "MainWindow.h"
-#include "UIDef.h"
+#include "util/UIDef.h"
 #include "AppInfo.h"
 #include <QApplication>
 #include <QMetaType>
-#include "SoundChannelDef.h"
+#include "document/SoundChannelDef.h"
 
 
 int main(int argc, char *argv[])

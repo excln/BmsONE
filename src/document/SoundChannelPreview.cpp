@@ -1,8 +1,8 @@
 #include "Document.h"
 #include "SoundChannel.h"
 #include "SoundChannelInternal.h"
-#include "SignalFunction.h"
-#include "UIDef.h"
+#include "../util/SignalFunction.h"
+#include "../util/UIDef.h"
 #include "AudioPlayer.h"
 #include "PreviewConfig.h"
 
