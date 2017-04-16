@@ -1,11 +1,11 @@
 #include "SequenceView.h"
 #include "SequenceViewInternal.h"
 #include "SequenceViewContexts.h"
-#include "MainWindow.h"
-#include "NoteEditTool.h"
-#include "BpmEditTool.h"
-#include "MasterView.h"
-#include "EditConfig.h"
+#include "../MainWindow.h"
+#include "../NoteEditTool.h"
+#include "../BpmEditTool.h"
+#include "../MasterView.h"
+#include "../EditConfig.h"
 #include <cmath>
 #include <cstdlib>
 

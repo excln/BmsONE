@@ -3,11 +3,11 @@
 
 #include <QtCore>
 #include <QtWidgets>
-#include "Document.h"
-#include "SoundChannel.h"
-#include "QuasiModalEdit.h"
-#include "ScrollableForm.h"
-#include "CollapseButton.h"
+#include "document/Document.h"
+#include "document/SoundChannel.h"
+#include "util/QuasiModalEdit.h"
+#include "util/ScrollableForm.h"
+#include "util/CollapseButton.h"
 
 class MainWindow;
 class SequenceView;

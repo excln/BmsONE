@@ -1,9 +1,9 @@
 #include "NoteEditTool.h"
 #include "MainWindow.h"
-#include "SymbolIconManager.h"
-#include "JsonExtension.h"
-#include "SequenceView.h"
-#include "SequenceViewInternal.h"
+#include "util/SymbolIconManager.h"
+#include "util/JsonExtension.h"
+#include "sequence_view/SequenceView.h"
+#include "sequence_view/SequenceViewInternal.h"
 
 namespace NoteEditToolsSettings{
 const char *SettingsGroup = "NoteEditView";

@@ -1,6 +1,6 @@
 #include "MainWindow.h"
-#include "UIDef.h"
-#include "SymbolIconManager.h"
+#include "util/UIDef.h"
+#include "util/SymbolIconManager.h"
 
 StatusBar::StatusBar(MainWindow *mainWindow)
 	: QStatusBar(mainWindow)

@@ -18,34 +18,59 @@ win32_msvc2015: QMAKE_LFLAGS_DEBUG += /NODEFAULTLIB:MSVCRT /NODEFAULTLIB:libcmt
 win32_msvc2015: QMAKE_LFLAGS_RELEASE += /NODEFAULTLIB:libcmt
 
 SOURCES += main.cpp\
-        MainWindow.cpp \
-    History.cpp \
-    SequenceView.cpp \
-    Document.cpp \
+		MainWindow.cpp \
     InfoView.cpp \
-    ChannelInfoView.cpp \
-    QuasiModalEdit.cpp \
+	ChannelInfoView.cpp \
     AudioPlayer.cpp \
     SequenceTools.cpp \
-    SoundChannel.cpp \
-    WaveData.cpp \
-    WaveStream.cpp \
-    ScrollableForm.cpp \
-    Util.cpp \
-    BpmEditTool.cpp \
-    JsonExtension.cpp \
-    SoundChannelInternal.cpp \
-	SequenceViewInternal.cpp \
-    HistoryUtil.cpp \
-	DocumentInfo.cpp \
-	QOggVorbisAdapter.cpp \
-    SymbolIconManager.cpp \
-    SequenceViewContents.cpp \
-    StatusBar.cpp \
-    SequenceViewCursor.cpp \
-    CollapseButton.cpp \
-    SequenceViewEditMode.cpp \
-    SequenceViewWriteMode.cpp \
+	BpmEditTool.cpp \
+	StatusBar.cpp \
+	PreviewConfig.cpp \
+	Preferences.cpp \
+	ViewMode.cpp \
+	MasterView.cpp \
+	EditConfig.cpp \
+	PrefEdit.cpp \
+	ChannelFindTools.cpp \
+	PrefPreview.cpp \
+	ExternalViewer.cpp \
+	ExternalViewerTools.cpp \
+	NoteEditTool.cpp \
+	MasterOutDialog.cpp \
+	sequence_view/SequenceView.cpp \
+	sequence_view/SequenceViewInternal.cpp \
+	sequence_view/SequenceViewContents.cpp \
+	sequence_view/SequenceViewCursor.cpp \
+	sequence_view/SequenceViewEditMode.cpp \
+	sequence_view/SequenceViewWriteMode.cpp \
+	sequence_view/SequenceViewPreview.cpp \
+	sequence_view/SequenceViewChannelInternal.cpp \
+	sequence_view/Skin.cpp \
+	util/ScrollableForm.cpp \
+	util/QuasiModalEdit.cpp \
+	util/CollapseButton.cpp \
+	util/JsonExtension.cpp \
+	util/Util.cpp \
+	util/SymbolIconManager.cpp \
+	util/ScalarRegion.cpp \
+	util/SignalFunction.cpp \
+	audio/QOggVorbisAdapter.cpp \
+	audio/WaveMix.cpp \
+	audio/WaveData.cpp \
+	audio/WaveStream.cpp \
+	document/History.cpp \
+	document/Document.cpp \
+	document/SoundChannel.cpp \
+	document/SoundChannelPreview.cpp \
+	document/SoundChannelInternal.cpp \
+	document/HistoryUtil.cpp \
+	document/DocumentInfo.cpp \
+	document/MasterCache.cpp \
+	bmson/Bmson021.cpp \
+	bmson/Bmson100.cpp \
+	bmson/Bmson100Convert.cpp \
+	bmson/BmsonConvertDef.cpp \
+	bmson/Bmson.cpp \
     libogg/bitwise.c \
     libogg/framing.c \
     libvorbis/analysis.c \
@@ -69,61 +94,59 @@ SOURCES += main.cpp\
     libvorbis/synthesis.c \
     libvorbis/vorbisenc.c \
     libvorbis/vorbisfile.c \
-    libvorbis/window.c \
-    SequenceViewPreview.cpp \
-    SoundChannelPreview.cpp \
-    SequenceViewChannelInternal.cpp \
-    Versioning.cpp \
-	bmson/Bmson021.cpp \
-	bmson/Bmson100.cpp \
-	bmson/Bmson100Convert.cpp \
-    Bmson.cpp \
-    bmson/BmsonConvertDef.cpp \
-    Preferences.cpp \
-    Skin.cpp \
-    ViewMode.cpp \
-    MasterCache.cpp \
-    MasterView.cpp \
-    EditConfig.cpp \
-    PrefEdit.cpp \
-    ScalarRegion.cpp \
-    ChannelFindTools.cpp \
-    SignalFunction.cpp \
-    PreviewConfig.cpp \
-    PrefPreview.cpp \
-    ExternalViewer.cpp \
-    ExternalViewerTools.cpp \
-    WaveMix.cpp \
-    NoteEditTool.cpp \
-    MasterOutDialog.cpp
+	libvorbis/window.c
 
 HEADERS  += MainWindow.h \
-    History.h \
-    SequenceView.h \
-    Document.h \
-    InfoView.h \
-    ChannelInfoView.h \
-    Wave.h \
-    QuasiModalEdit.h \
+	ChannelInfoView.h \
     AudioPlayer.h \
-    SequenceTools.h \
-    SequenceDef.h \
-    ScrollableForm.h \
-    UIDef.h \
-    BpmEditTool.h \
-    JsonExtension.h \
-    SoundChannel.h \
-    SoundChannelInternal.h \
-    DocumentDef.h \
-    SoundChannelDef.h \
-	SequenceViewInternal.h \
-	HistoryUtil.h \
-	QOggVorbisAdapter.h \
-    DocumentAux.h \
-    SymbolIconManager.h \
-    SequenceViewDef.h \
-    CollapseButton.h \
-    SequenceViewContexts.h \
+	InfoView.h \
+	SequenceTools.h \
+	Preferences.h \
+	ViewMode.h \
+	MasterView.h \
+	EditConfig.h \
+	PrefEdit.h \
+	AppInfo.h \
+	ChannelFindTools.h \
+	PreviewConfig.h \
+	PrefPreview.h \
+	ExternalViewer.h \
+	ExternalViewerTools.h \
+	NoteEditTool.h \
+	MasterOutDialog.h \
+	BpmEditTool.h \
+	sequence_view/SequenceView.h \
+	sequence_view/SequenceDef.h \
+	sequence_view/SequenceViewChannelInternal.h \
+	sequence_view/Skin.h \
+	sequence_view/SequenceViewInternal.h \
+	sequence_view/SequenceViewDef.h \
+	sequence_view/SequenceViewContexts.h \
+	util/QuasiModalEdit.h \
+	util/ScrollableForm.h \
+	util/CollapseButton.h \
+	util/SignalFunction.h \
+	util/JsonExtension.h \
+	util/UIDef.h \
+	util/ScalarRegion.h \
+	util/ResolutionUtil.h \
+	util/SymbolIconManager.h \
+	audio/Wave.h \
+	audio/QOggVorbisAdapter.h \
+	document/History.h \
+	document/Document.h \
+	document/SoundChannel.h \
+	document/SoundChannelInternal.h \
+	document/DocumentDef.h \
+	document/SoundChannelDef.h \
+	document/MasterCache.h \
+	document/HistoryUtil.h \
+	document/DocumentAux.h \
+	bmson/Bmson100.h \
+	bmson/Bmson021.h \
+	bmson/Bmson100Convert.h \
+	bmson/BmsonConvertDef.h \
+	bmson/Bmson.h \
     libvorbis/books/coupled/res_books_51.h \
     libvorbis/books/coupled/res_books_stereo.h \
     libvorbis/books/floor/floor_books.h \
@@ -146,32 +169,7 @@ HEADERS  += MainWindow.h \
     libvorbis/modes/setup_44.h \
     libvorbis/modes/setup_44p51.h \
     libvorbis/modes/setup_44u.h \
-    libvorbis/modes/setup_X.h \
-    SequenceViewChannelInternal.h \
-    Versioning.h \
-	bmson/Bmson100.h \
-	bmson/Bmson021.h \
-	bmson/Bmson100Convert.h \
-    Bmson.h \
-    bmson/BmsonConvertDef.h \
-    Preferences.h \
-    Skin.h \
-    ViewMode.h \
-    MasterCache.h \
-    MasterView.h \
-    EditConfig.h \
-    PrefEdit.h \
-    ScalarRegion.h \
-    AppInfo.h \
-    ResolutionUtil.h \
-    ChannelFindTools.h \
-    SignalFunction.h \
-    PreviewConfig.h \
-    PrefPreview.h \
-    ExternalViewer.h \
-    ExternalViewerTools.h \
-    NoteEditTool.h \
-    MasterOutDialog.h
+	libvorbis/modes/setup_X.h
 
 FORMS    +=
 

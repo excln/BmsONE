@@ -4,8 +4,8 @@
 #include <QtCore>
 #include <QtWidgets>
 #include <QtMultimedia>
-#include "Wave.h"
-#include "Document.h"
+#include "audio/Wave.h"
+#include "document/Document.h"
 
 
 class AudioPlayerInternal : public QIODevice

@@ -1,7 +1,7 @@
 #include "InfoView.h"
 #include "MainWindow.h"
-#include "JsonExtension.h"
-#include "CollapseButton.h"
+#include "../util/JsonExtension.h"
+#include "../util/CollapseButton.h"
 #include "ViewMode.h"
 
 const char* InfoView::SettingsGroup = "DocumentInfoView";

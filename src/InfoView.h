@@ -3,9 +3,9 @@
 
 #include <QtCore>
 #include <QtWidgets>
-#include "Document.h"
-#include "QuasiModalEdit.h"
-#include "ScrollableForm.h"
+#include "document/Document.h"
+#include "util/QuasiModalEdit.h"
+#include "util/ScrollableForm.h"
 
 class MainWindow;
 class CollapseButton;

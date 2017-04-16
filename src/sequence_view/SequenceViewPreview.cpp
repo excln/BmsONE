@@ -2,7 +2,7 @@
 #include "SequenceView.h"
 #include "SequenceViewContexts.h"
 #include "SequenceViewInternal.h"
-#include "SoundChannel.h"
+#include "../document/SoundChannel.h"
 #include "MainWindow.h"
 
 

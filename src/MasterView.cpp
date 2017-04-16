@@ -1,13 +1,13 @@
-#include "Document.h"
-#include "MasterCache.h"
+#include "document/Document.h"
+#include "document/MasterCache.h"
 #include "MasterView.h"
-#include "SequenceView.h"
+#include "sequence_view/SequenceView.h"
 #include "EditConfig.h"
-#include "SequenceViewInternal.h"
+#include "sequence_view/SequenceViewInternal.h"
 #include "AudioPlayer.h"
 #include "MainWindow.h"
-#include "Wave.h"
-#include "UIDef.h"
+#include "audio/Wave.h"
+#include "util/UIDef.h"
 #include <cstdlib>
 #include <cstring>
 

@@ -1,7 +1,7 @@
 #include "Bmson100Convert.h"
 #include "Bmson100.h"
 #include "Bmson021.h"
-#include "ResolutionUtil.h"
+#include "../util/ResolutionUtil.h"
 
 namespace Bmson100
 {

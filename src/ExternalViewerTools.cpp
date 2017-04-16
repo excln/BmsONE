@@ -1,8 +1,8 @@
 #include "ExternalViewer.h"
 #include "ExternalViewerTools.h"
 #include "MainWindow.h"
-#include "SymbolIconManager.h"
-#include "SequenceView.h"
+#include "util/SymbolIconManager.h"
+#include "sequence_view/SequenceView.h"
 
 ExternalViewerTools::ExternalViewerTools(const QString &objectName, const QString &windowTitle, MainWindow *mainWindow)
 	: QToolBar(windowTitle, mainWindow)

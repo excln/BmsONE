@@ -1,7 +1,7 @@
 #include "MasterOutDialog.h"
-#include "Document.h"
-#include "MasterCache.h"
-#include "UIDef.h"
+#include "document/Document.h"
+#include "document/MasterCache.h"
+#include "util/UIDef.h"
 #include "EditConfig.h"
 #include <cmath>
 

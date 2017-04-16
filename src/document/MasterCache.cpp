@@ -2,10 +2,10 @@
 #include "MasterCache.h"
 #include "Document.h"
 #include "SoundChannelInternal.h"
-#include "SignalFunction.h"
-#include "UIDef.h"
-#include "AudioPlayer.h"
-#include "PreviewConfig.h"
+#include "../util/SignalFunction.h"
+#include "../util/UIDef.h"
+#include "../AudioPlayer.h"
+#include "../PreviewConfig.h"
 
 
 MasterCache::MasterCache(Document *document)

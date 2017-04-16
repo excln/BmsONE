@@ -3,7 +3,7 @@
 #include "SequenceViewChannelInternal.h"
 #include "MainWindow.h"
 #include "BpmEditTool.h"
-#include "SymbolIconManager.h"
+#include "../util/SymbolIconManager.h"
 #include "EditConfig.h"
 #include <cmath>
 #include <cstdlib>

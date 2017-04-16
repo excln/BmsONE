@@ -2,7 +2,7 @@
 #include "SequenceView.h"
 #include "SequenceViewContexts.h"
 #include "SequenceViewInternal.h"
-#include "UIDef.h"
+#include "../util/UIDef.h"
 #include "EditConfig.h"
 
 SequenceView::EditModeContext::EditModeContext(SequenceView *sview)

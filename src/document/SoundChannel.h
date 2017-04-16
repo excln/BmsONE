@@ -2,10 +2,10 @@
 #define SOUNDCHANNEL
 
 #include <QtCore>
-#include "Wave.h"
+#include "../audio/Wave.h"
 #include "DocumentDef.h"
 #include "SoundChannelDef.h"
-#include "SignalFunction.h"
+#include "../util/SignalFunction.h"
 
 class Document;
 class MasterCache;

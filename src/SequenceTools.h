@@ -3,8 +3,8 @@
 
 #include <QtCore>
 #include <QtWidgets>
-#include "SequenceDef.h"
-#include "SequenceViewDef.h"
+#include "sequence_view/SequenceDef.h"
+#include "sequence_view/SequenceViewDef.h"
 
 class MainWindow;
 class SequenceView;

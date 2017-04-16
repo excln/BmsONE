@@ -3,7 +3,7 @@
 
 #include <QtCore>
 #include <QtWidgets>
-#include "Bmson.h"
+#include "bmson/Bmson.h"
 
 class MainWindow;
 

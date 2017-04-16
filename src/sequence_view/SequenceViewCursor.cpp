@@ -1,7 +1,7 @@
 #include "SequenceView.h"
 #include "SequenceViewInternal.h"
 #include "MainWindow.h"
-#include "SymbolIconManager.h"
+#include "../util/SymbolIconManager.h"
 #include "ViewMode.h"
 #include "EditConfig.h"
 
