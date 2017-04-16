@@ -965,6 +965,8 @@ int SequenceView::X2Lane(int x) const
 
 QSet<int> SequenceView::FineGridsInRange(qreal tBegin, qreal tEnd)
 {
+	if (!documentReady)
+		return QSet<int>();
 	const QMap<int, BarLine> &bars = document->GetBarLines();
 	const QMap<int, BarLine>::const_iterator ibar = bars.lowerBound(tBegin);
 	QSet<int> fineGridLines;
@@ -991,6 +993,8 @@ QSet<int> SequenceView::FineGridsInRange(qreal tBegin, qreal tEnd)
 
 QSet<int> SequenceView::CoarseGridsInRange(qreal tBegin, qreal tEnd)
 {
+	if (!documentReady)
+		return QSet<int>();
 	const QMap<int, BarLine> &bars = document->GetBarLines();
 	const QMap<int, BarLine>::const_iterator ibar = bars.lowerBound(tBegin);
 	QSet<int> coarseGridLines;
@@ -1017,6 +1021,8 @@ QSet<int> SequenceView::CoarseGridsInRange(qreal tBegin, qreal tEnd)
 
 QMap<int, QPair<int, BarLine>> SequenceView::BarsInRange(qreal tBegin, qreal tEnd)
 {
+	if (!documentReady)
+		return QMap<int, QPair<int, BarLine>>();
 	const QMap<int, BarLine> &bars = document->GetBarLines();
 	QMap<int, QPair<int, BarLine>> barLines;
 	int num = 0;
