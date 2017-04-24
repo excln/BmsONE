@@ -269,8 +269,8 @@ ViewMode *ViewMode::ViewModeKeyboardSingle(int n)
 	if (*pvm)
 		return *pvm;
 	*pvm = new ViewMode(tr("Keyboard %1-key (single)").arg(n), MODE_KEYBOARD_N_KEYS_SINGLE(n));
-	for (int k=1; k<=n; k++){
-		(*pvm)->lanes.insert(k, LaneDef(k, tr("Key") + " " + NoteName(k)));
+	for (int i=0; i<n; i++){
+		(*pvm)->lanes.insert(i+1, LaneDef(i, tr("Key") + " " + NoteName(i)));
 	}
 	(*pvm)->lanes.insert(n+1, LaneDef(n+1, tr("Wheel Up")));
 	(*pvm)->lanes.insert(n+2, LaneDef(n+2, tr("Wheel Down")));
@@ -282,12 +282,12 @@ ViewMode *ViewMode::ViewModeK24kDouble()
 	if (VM_K24kDouble)
 		return VM_K24kDouble;
 	VM_K24kDouble = new ViewMode(tr("Keyboard 24-key (double)"), MODE_K24K_DOUBLE);
-	for (int i=1; i<24; i++){
+	for (int i=0; i<24; i++){
 		VM_K24kDouble->lanes.insert(i+1, LaneDef(i+1, tr("P1 Key") + " " + NoteName(i)));
 	}
 	VM_K24kDouble->lanes.insert(25, LaneDef(25, tr("P1 Wheel Up")));
 	VM_K24kDouble->lanes.insert(26, LaneDef(26, tr("P1 Wheel Down")));
-	for (int i=1; i<24; i++){
+	for (int i=0; i<24; i++){
 		VM_K24kDouble->lanes.insert(i+27, LaneDef(i+27, tr("P2 Key") + " " + NoteName(i)));
 	}
 	VM_K24kDouble->lanes.insert(51, LaneDef(51, tr("P2 Wheel Up")));

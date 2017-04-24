@@ -160,25 +160,25 @@ QVariant GridSetting::headerData(int section, Qt::Orientation orientation, int r
 	case Qt::DisplayRole:
 		switch (section){
 		case 0:
-			return "Numerator";
+			return tr("Division");
 		case 1:
-			return "Denominator";
+			return tr("Length");
 		case 2:
-			return "Label";
+			return tr("Label");
 		case 3:
-			return "Aux";
+			return tr("Aux. Grid");
 		}
 		return QVariant();
 	case Qt::ToolTipRole:
 		switch (section){
 		case 0:
-			return "Numerator";
+			return tr("How many lines are drawn in a standard measure");
 		case 1:
-			return "Denominator";
+			return tr("Length of a standard measure in beats");
 		case 2:
-			return "Label";
+			return tr("Text displayed in the combo box");
 		case 3:
-			return "Aux";
+			return tr("Always show as the auxiliary grid");
 		}
 		return QVariant();
 	default:
