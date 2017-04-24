@@ -1653,6 +1653,10 @@ void SequenceView::SetSmallGrid(GridSize grid)
 		cview->UpdateWholeBackBuffer();
 		cview->update();
 	}
+	if (showMasterLane){
+		masterLane->UpdateWholeBackBuffer();
+		masterLane->update();
+	}
 	emit SmallGridChanged(fineGrid);
 }
 
@@ -1664,6 +1668,10 @@ void SequenceView::SetMediumGrid(GridSize grid)
 	for (auto cview : soundChannels){
 		cview->UpdateWholeBackBuffer();
 		cview->update();
+	}
+	if (showMasterLane){
+		masterLane->UpdateWholeBackBuffer();
+		masterLane->update();
 	}
 	emit MediumGridChanged(coarseGrid);
 }
