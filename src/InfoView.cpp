@@ -505,8 +505,8 @@ void InfoView::ResolutionClicked()
 	auto btn = new QPushButton(tr("OK"));
 	btn->setDefault(true);
 	btnLayout->addStretch(1);
-	btnLayout->addWidget(btnCancel);
 	btnLayout->addWidget(btn);
+	btnLayout->addWidget(btnCancel);
 	mainLayout->addLayout(btnLayout);
 	dialog->setLayout(mainLayout);
 	dialog->setModal(true);
