@@ -13,6 +13,14 @@ ViewMode::~ViewMode()
 void ViewMode::AddViewMode(QString modeHint, ViewMode *mode)
 {
 	ModeHints.append(modeHint);
+	if (!ViewModes.contains(mode)){
+		ViewModes.append(mode);
+	}
+	ModeLibrary.insert(modeHint, mode);
+}
+
+void ViewMode::AddHiddenViewMode(QString modeHint, ViewMode *mode)
+{
 	ModeLibrary.insert(modeHint, mode);
 }
 
@@ -29,17 +37,17 @@ void ViewMode::PrepareModeLibrary()
 		AddViewMode("popn-9k", ViewModePopn9k());
 		AddViewMode("circularrhythm-single", ViewModeCircularSingle());
 		AddViewMode("circularrhythm-double", ViewModeCircularDouble());
-		//AddViewMode("keyboard-24k", ViewModeKeyboardSingle(24));
-		AddViewMode("keyboard-24k-single", ViewModeKeyboardSingle(24));
-		AddViewMode("keyboard-24k-double", ViewModeK24kDouble());
-		//AddViewMode("keyboard-36k", ViewModeKeyboardSingle(36));
-		AddViewMode("keyboard-36k-single", ViewModeKeyboardSingle(36));
-		//AddViewMode("keyboard-48k", ViewModeKeyboardSingle(48));
-		AddViewMode("keyboard-48k-single", ViewModeKeyboardSingle(48));
-		//AddViewMode("keyboard-60k", ViewModeKeyboardSingle(60));
-		AddViewMode("keyboard-60k-single", ViewModeKeyboardSingle(60));
 		AddViewMode("generic-6keys", ViewModeGenericNKeys(6));
 		AddViewMode("generic-7keys", ViewModeGenericNKeys(7));
+		AddHiddenViewMode("keyboard-24k", ViewModeKeyboardSingle(24));
+		AddHiddenViewMode("keyboard-24k-single", ViewModeKeyboardSingle(24));
+		AddHiddenViewMode("keyboard-24k-double", ViewModeK24kDouble());
+		AddHiddenViewMode("keyboard-36k", ViewModeKeyboardSingle(36));
+		AddHiddenViewMode("keyboard-36k-single", ViewModeKeyboardSingle(36));
+		AddHiddenViewMode("keyboard-48k", ViewModeKeyboardSingle(48));
+		AddHiddenViewMode("keyboard-48k-single", ViewModeKeyboardSingle(48));
+		AddHiddenViewMode("keyboard-60k", ViewModeKeyboardSingle(60));
+		AddHiddenViewMode("keyboard-60k-single", ViewModeKeyboardSingle(60));
 	}
 }
 
@@ -52,6 +60,7 @@ QString ViewMode::NoteName(int number)
 }
 
 QStringList ViewMode::ModeHints;
+QList<ViewMode*> ViewMode::ViewModes;
 QMap<QString, ViewMode*> ViewMode::ModeLibrary;
 
 ViewMode *ViewMode::GetViewMode(QString modeHint)
@@ -78,24 +87,8 @@ ViewMode *ViewMode::GetViewModeNf(QString modeHint)
 
 QList<ViewMode *> ViewMode::GetAllViewModes()
 {
-	QList<ViewMode*> modes;
-	modes.append(ViewModeBeat7k());
-	modes.append(ViewModeBeat14k());
-	modes.append(ViewModeBeat5k());
-	modes.append(ViewModeBeat10k());
-	modes.append(ViewModePopn5k());
-	modes.append(ViewModePopn9k());
-	modes.append(ViewModeCircularSingle());
-	modes.append(ViewModeCircularDouble());
-	modes.append(ViewModeKeyboardSingle(24));
-	modes.append(ViewModeK24kDouble());
-	modes.append(ViewModeKeyboardSingle(36));
-	modes.append(ViewModeKeyboardSingle(48));
-	modes.append(ViewModeKeyboardSingle(60));
-	modes.append(ViewModeGenericNKeys(6));
-	modes.append(ViewModeGenericNKeys(7));
-	modes.append(ViewModePlain());
-	return modes;
+	PrepareModeLibrary();
+	return ViewModes;
 }
 
 QStringList ViewMode::GetAllModeHints()
@@ -275,7 +268,7 @@ ViewMode *ViewMode::ViewModeKeyboardSingle(int n)
 	}
 	if (*pvm)
 		return *pvm;
-	*pvm = new ViewMode(tr("Keyboard-%1k-single").arg(n), MODE_KEYBOARD_N_KEYS_SINGLE(n));
+	*pvm = new ViewMode(tr("Keyboard %1-key (single)").arg(n), MODE_KEYBOARD_N_KEYS_SINGLE(n));
 	for (int k=1; k<=n; k++){
 		(*pvm)->lanes.insert(k, LaneDef(k, tr("Key") + " " + NoteName(k)));
 	}
@@ -288,7 +281,7 @@ ViewMode *ViewMode::ViewModeK24kDouble()
 {
 	if (VM_K24kDouble)
 		return VM_K24kDouble;
-	VM_K24kDouble = new ViewMode(tr("Keyboard-24k-double"), MODE_K24K_DOUBLE);
+	VM_K24kDouble = new ViewMode(tr("Keyboard 24-key (double)"), MODE_K24K_DOUBLE);
 	for (int i=1; i<24; i++){
 		VM_K24kDouble->lanes.insert(i+1, LaneDef(i+1, tr("P1 Key") + " " + NoteName(i)));
 	}

@@ -52,6 +52,7 @@ private:
 	QMap<int, LaneDef> lanes;
 
 	static QStringList ModeHints;
+	static QList<ViewMode*> ViewModes;
 	static QMap<QString, ViewMode*> ModeLibrary;
 
 	static ViewMode *VM_Beat5k;
@@ -77,6 +78,7 @@ private:
 	ViewMode(QString name, Mode mode);
 	virtual ~ViewMode();
 	static void AddViewMode(QString modeHint, ViewMode *mode);
+	static void AddHiddenViewMode(QString modeHint, ViewMode *mode);
 	static void PrepareModeLibrary();
 
 	static QString NoteName(int number);
