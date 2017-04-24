@@ -227,6 +227,19 @@ private:
 	QColor pnRed;//(240, 150, 150);
 	QColor pnBlack;
 
+	struct Lane{
+		int lane;
+		qreal width;
+		QColor color;
+		QColor noteColor;
+		QString keyImageName;
+		Lane(int lane, qreal width, QColor color, QColor noteColor, QString keyImageName)
+			: lane(lane), width(width), color(color), noteColor(noteColor), keyImageName(keyImageName)
+		{
+		}
+	};
+	void SetupLanes(Skin *skin, QList<Lane> lanes);
+
 	void SetupSkin7k(Skin *skin, int scratch);
 	Skin *CreateDefault7k(QObject *parent);
 
@@ -248,12 +261,31 @@ private:
 	void SetupSkinCircularDouble(Skin *skin, int order);
 	Skin *CreateDefaultCircularDouble(QObject *parent);
 
+	void SetupSkinKeyboardSingle(Skin *skin, int key, int wheel);
+	Skin *CreateDefaultKeyboardSingle(QObject *parent, int key);
+
+	void SetupSkinK24kDouble(Skin *skin, int wheel);
+	Skin *CreateDefaultK24kDouble(QObject *parent);
+
 	void SetupSkinGeneric6Keys(Skin *skin);
 	void SetupSkinGeneric7Keys(Skin *skin);
 	Skin *CreateDefaultGenericNKeys(QObject *parent, int n);
 
 	void SetupSkinDefaultPlain(Skin *skin, int lanes);
 	Skin *CreateDefaultPlain(QObject *parent);
+
+	static bool IsKeyBlack(int noteNumber){
+		switch (noteNumber % 12){
+		case 1:
+		case 3:
+		case 6:
+		case 8:
+		case 10:
+			return true;
+		default:
+			return false;
+		}
+	}
 
 public:
 	Skin *CreateSkin(ViewMode *mode, QObject *parent=nullptr);

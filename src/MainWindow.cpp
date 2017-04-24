@@ -940,8 +940,15 @@ void MainWindow::ClearMasterCache()
 
 void MainWindow::SetViewMode(ViewMode *mode)
 {
+	if (viewModeActionMap.contains(mode)){
+		viewModeActionMap[mode]->setChecked(true);
+	}else{
+		// hidden view mode?
+		if (viewModeActionMap.contains(viewMode)){
+			viewModeActionMap[viewMode]->setChecked(false);
+		}
+	}
 	viewMode = mode;
-	viewModeActionMap[viewMode]->setChecked(true);
 	emit ViewModeChanged(mode);
 }
 

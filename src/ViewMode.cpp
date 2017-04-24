@@ -10,39 +10,57 @@ ViewMode::~ViewMode()
 {
 }
 
+void ViewMode::AddViewMode(QString modeHint, ViewMode *mode)
+{
+	ModeHints.append(modeHint);
+	if (!ViewModes.contains(mode)){
+		ViewModes.append(mode);
+	}
+	ModeLibrary.insert(modeHint, mode);
+}
+
+void ViewMode::AddHiddenViewMode(QString modeHint, ViewMode *mode)
+{
+	ModeLibrary.insert(modeHint, mode);
+}
+
 void ViewMode::PrepareModeLibrary()
 {
 	if (ModeLibrary.empty()){
-		ModeHints.append("beat-7k");
-		ModeHints.append("beat-14k");
-		ModeHints.append("beat-7k-battle");
-		ModeHints.append("beat-5k");
-		ModeHints.append("beat-10k");
-		ModeHints.append("beat-5k-battle");
-		ModeHints.append("popn-5k");
-		ModeHints.append("popn-9k");
-		ModeHints.append("circularrhythm-single");
-		ModeHints.append("circularrhythm-double");
-		ModeHints.append("generic-6keys");
-		ModeHints.append("generic-7keys");
-		//ModeHints.append("plain");
-		ModeLibrary.insert("beat-5k", ViewModeBeat5k());
-		ModeLibrary.insert("beat-7k", ViewModeBeat7k());
-		ModeLibrary.insert("beat-10k", ViewModeBeat10k());
-		ModeLibrary.insert("beat-5k-battle", ViewModeBeat10k());
-		ModeLibrary.insert("beat-14k", ViewModeBeat14k());
-		ModeLibrary.insert("beat-7k-battle", ViewModeBeat14k());
-		ModeLibrary.insert("popn-5k", ViewModePopn5k());
-		ModeLibrary.insert("popn-9k", ViewModePopn9k());
-		ModeLibrary.insert("circularrhythm-single", ViewModeCircularSingle());
-		ModeLibrary.insert("circularrhythm-double", ViewModeCircularDouble());
-		ModeLibrary.insert("generic-6keys", ViewModeGenericNKeys(6));
-		ModeLibrary.insert("generic-7keys", ViewModeGenericNKeys(7));
-		//ModeLibrary.insert("plain", ViewModePlain());
+		AddViewMode("beat-7k", ViewModeBeat7k());
+		AddViewMode("beat-14k", ViewModeBeat14k());
+		AddViewMode("beat-7k-battle", ViewModeBeat14k());
+		AddViewMode("beat-5k", ViewModeBeat5k());
+		AddViewMode("beat-10k", ViewModeBeat10k());
+		AddViewMode("beat-5k-battle", ViewModeBeat10k());
+		AddViewMode("popn-5k", ViewModePopn5k());
+		AddViewMode("popn-9k", ViewModePopn9k());
+		AddViewMode("circularrhythm-single", ViewModeCircularSingle());
+		AddViewMode("circularrhythm-double", ViewModeCircularDouble());
+		AddViewMode("generic-6keys", ViewModeGenericNKeys(6));
+		AddViewMode("generic-7keys", ViewModeGenericNKeys(7));
+		AddHiddenViewMode("keyboard-24k", ViewModeKeyboardSingle(24));
+		AddHiddenViewMode("keyboard-24k-single", ViewModeKeyboardSingle(24));
+		AddHiddenViewMode("keyboard-24k-double", ViewModeK24kDouble());
+		AddHiddenViewMode("keyboard-36k", ViewModeKeyboardSingle(36));
+		AddHiddenViewMode("keyboard-36k-single", ViewModeKeyboardSingle(36));
+		AddHiddenViewMode("keyboard-48k", ViewModeKeyboardSingle(48));
+		AddHiddenViewMode("keyboard-48k-single", ViewModeKeyboardSingle(48));
+		AddHiddenViewMode("keyboard-60k", ViewModeKeyboardSingle(60));
+		AddHiddenViewMode("keyboard-60k-single", ViewModeKeyboardSingle(60));
 	}
 }
 
+QString ViewMode::NoteName(int number)
+{
+	static QString names[12] = {
+		"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+	};
+	return names[number % 12] + QString::number(number / 12 + 1);
+}
+
 QStringList ViewMode::ModeHints;
+QList<ViewMode*> ViewMode::ViewModes;
 QMap<QString, ViewMode*> ViewMode::ModeLibrary;
 
 ViewMode *ViewMode::GetViewMode(QString modeHint)
@@ -69,19 +87,8 @@ ViewMode *ViewMode::GetViewModeNf(QString modeHint)
 
 QList<ViewMode *> ViewMode::GetAllViewModes()
 {
-	QList<ViewMode*> modes;
-	modes.append(ViewModeBeat7k());
-	modes.append(ViewModeBeat14k());
-	modes.append(ViewModeBeat5k());
-	modes.append(ViewModeBeat10k());
-	modes.append(ViewModePopn5k());
-	modes.append(ViewModePopn9k());
-	modes.append(ViewModeCircularSingle());
-	modes.append(ViewModeCircularDouble());
-	modes.append(ViewModeGenericNKeys(6));
-	modes.append(ViewModeGenericNKeys(7));
-	modes.append(ViewModePlain());
-	return modes;
+	PrepareModeLibrary();
+	return ViewModes;
 }
 
 QStringList ViewMode::GetAllModeHints()
@@ -98,6 +105,11 @@ ViewMode *ViewMode::VM_Popn5k = nullptr;
 ViewMode *ViewMode::VM_Popn9k = nullptr;
 ViewMode *ViewMode::VM_CircularSingle = nullptr;
 ViewMode *ViewMode::VM_CircularDouble = nullptr;
+ViewMode *ViewMode::VM_K24kSingle = nullptr;
+ViewMode *ViewMode::VM_K24kDouble = nullptr;
+ViewMode *ViewMode::VM_K36kSingle = nullptr;
+ViewMode *ViewMode::VM_K48kSingle = nullptr;
+ViewMode *ViewMode::VM_K60kSingle = nullptr;
 ViewMode *ViewMode::VM_Generic6Keys = nullptr;
 ViewMode *ViewMode::VM_Generic7Keys = nullptr;
 ViewMode *ViewMode::VM_Plain = nullptr;
@@ -234,6 +246,53 @@ ViewMode *ViewMode::ViewModeCircularDouble()
 	VM_CircularDouble->lanes.insert(8, LaneDef(8, tr("Right Key Blue")));
 	VM_CircularDouble->lanes.insert(9, LaneDef(9, tr("Space")));
 	return VM_CircularDouble;
+}
+
+ViewMode *ViewMode::ViewModeKeyboardSingle(int n)
+{
+	ViewMode *temp = nullptr;
+	ViewMode **pvm = &temp;
+	switch (n){
+	case 24:
+		pvm = &VM_K24kSingle;
+		break;
+	case 36:
+		pvm = &VM_K36kSingle;
+		break;
+	case 48:
+		pvm = &VM_K48kSingle;
+		break;
+	case 60:
+		pvm = &VM_K60kSingle;
+		break;
+	}
+	if (*pvm)
+		return *pvm;
+	*pvm = new ViewMode(tr("Keyboard %1-key (single)").arg(n), MODE_KEYBOARD_N_KEYS_SINGLE(n));
+	for (int k=1; k<=n; k++){
+		(*pvm)->lanes.insert(k, LaneDef(k, tr("Key") + " " + NoteName(k)));
+	}
+	(*pvm)->lanes.insert(n+1, LaneDef(n+1, tr("Wheel Up")));
+	(*pvm)->lanes.insert(n+2, LaneDef(n+2, tr("Wheel Down")));
+	return *pvm;
+}
+
+ViewMode *ViewMode::ViewModeK24kDouble()
+{
+	if (VM_K24kDouble)
+		return VM_K24kDouble;
+	VM_K24kDouble = new ViewMode(tr("Keyboard 24-key (double)"), MODE_K24K_DOUBLE);
+	for (int i=1; i<24; i++){
+		VM_K24kDouble->lanes.insert(i+1, LaneDef(i+1, tr("P1 Key") + " " + NoteName(i)));
+	}
+	VM_K24kDouble->lanes.insert(25, LaneDef(25, tr("P1 Wheel Up")));
+	VM_K24kDouble->lanes.insert(26, LaneDef(26, tr("P1 Wheel Down")));
+	for (int i=1; i<24; i++){
+		VM_K24kDouble->lanes.insert(i+27, LaneDef(i+27, tr("P2 Key") + " " + NoteName(i)));
+	}
+	VM_K24kDouble->lanes.insert(51, LaneDef(51, tr("P2 Wheel Up")));
+	VM_K24kDouble->lanes.insert(52, LaneDef(52, tr("P2 Wheel Down")));
+	return VM_K24kDouble;
 }
 
 ViewMode *ViewMode::ViewModeGenericNKeys(int n)
