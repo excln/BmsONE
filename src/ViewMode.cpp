@@ -39,9 +39,9 @@ void ViewMode::PrepareModeLibrary()
 		AddViewMode("circularrhythm-double", ViewModeCircularDouble());
 		AddViewMode("generic-6keys", ViewModeGenericNKeys(6));
 		AddViewMode("generic-7keys", ViewModeGenericNKeys(7));
-		AddHiddenViewMode("keyboard-24k", ViewModeKeyboardSingle(24));
+		AddViewMode("keyboard-24k", ViewModeKeyboardSingle(24));
 		AddHiddenViewMode("keyboard-24k-single", ViewModeKeyboardSingle(24));
-		AddHiddenViewMode("keyboard-24k-double", ViewModeK24kDouble());
+		AddViewMode("keyboard-24k-double", ViewModeK24kDouble());
 		AddHiddenViewMode("keyboard-36k", ViewModeKeyboardSingle(36));
 		AddHiddenViewMode("keyboard-36k-single", ViewModeKeyboardSingle(36));
 		AddHiddenViewMode("keyboard-48k", ViewModeKeyboardSingle(48));
