@@ -131,6 +131,7 @@ HEADERS  += MainWindow.h \
 	util/ScalarRegion.h \
 	util/ResolutionUtil.h \
 	util/SymbolIconManager.h \
+	util/Counter.h \
 	audio/Wave.h \
 	audio/QOggVorbisAdapter.h \
 	document/History.h \

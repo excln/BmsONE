@@ -69,7 +69,7 @@ they are added automatically every four beats and can move or become permanent
 when another bar line is inserted or removed manually.
 
 To edit BPM events, click on the lane next to measures bar.
-After placing or selecting a BPM event, a small tool bar to input BPM appears.
+After placing or selecting a BPM event, a small window to input BPM appears.
 
 BGA data and most extra data cannot be edited, but they will not be lost by this application.
 Only extra data in BMSInfo can be edited by writing fragments of JSON directly as follows:

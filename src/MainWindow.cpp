@@ -608,6 +608,11 @@ SequenceView *MainWindow::GetActiveSequenceView() const
 void MainWindow::SetSelectedObjectsView(QWidget *view)
 {
 	selectedObjectsDockWidget->setWidget(view);
+	if (view != nullptr){
+		selectedObjectsDockWidget->show();
+		selectedObjectsDockWidget->activateWindow();
+		selectedObjectsDockWidget->raise();
+	}
 }
 
 void MainWindow::UnsetSelectedObjectsView(QWidget *view)

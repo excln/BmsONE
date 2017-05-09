@@ -1,0 +1,3 @@
+*.h linguist-language=C++
+src/libogg/* linguist-vendored
+src/libvorbis/* linguist-vendored

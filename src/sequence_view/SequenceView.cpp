@@ -1469,14 +1469,18 @@ void SequenceView::TimeMappingChanged()
 {
 	if (documentReady){
 		resolution = document->GetInfo()->GetResolution();
+
+		// remove BPM events not existing from selection
 		auto allBpmEvents = document->GetBpmEvents();
-		for (auto i=selectedBpmEvents.begin(); i!=selectedBpmEvents.end(); i++){
+		for (auto i=selectedBpmEvents.begin(); i!=selectedBpmEvents.end(); ){
 			if (allBpmEvents.contains(i.key())){
 				*i = allBpmEvents[i.key()];
+				i++;
 			}else{
 				i = selectedBpmEvents.erase(i);
 			}
 		}
+
 		mainWindow->GetBpmEditTool()->SetBpmEvents(selectedBpmEvents.values());
 		timeLine->update();
 		if (showMasterLane){
@@ -1649,6 +1653,10 @@ void SequenceView::SetSmallGrid(GridSize grid)
 		cview->UpdateWholeBackBuffer();
 		cview->update();
 	}
+	if (showMasterLane){
+		masterLane->UpdateWholeBackBuffer();
+		masterLane->update();
+	}
 	emit SmallGridChanged(fineGrid);
 }
 
@@ -1660,6 +1668,10 @@ void SequenceView::SetMediumGrid(GridSize grid)
 	for (auto cview : soundChannels){
 		cview->UpdateWholeBackBuffer();
 		cview->update();
+	}
+	if (showMasterLane){
+		masterLane->UpdateWholeBackBuffer();
+		masterLane->update();
 	}
 	emit MediumGridChanged(coarseGrid);
 }
