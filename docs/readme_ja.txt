@@ -118,7 +118,7 @@ BmsONE の作者である exclusion はこのソフトを使用して生じた�
 
 [Windows]
 Windows 10 Pro
-Desktop Qt 5.7.0 MSVC2015 OpenGL 32bit
+Desktop Qt 5.7.1 MSVC2015 OpenGL 32bit/64bit
 
 [Mac OS X]
 Mac OS X 10.10.5
