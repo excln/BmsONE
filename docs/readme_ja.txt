@@ -22,7 +22,6 @@ Windows版で「MSVCP140.dll が見つかりません」というようなエラ
 https://www.microsoft.com/ja-JP/download/details.aspx?id=48145
 
 このソフトは開発途上のため、機能が不十分であったり、不安定な動作をすることがあります。
-Mac版は特に頻繁にクラッシュすることがあるので気を付けてください。
 bmson 制作時にはこまめにセーブすることをお勧めします。
 また、編集する bmson ファイル（念のため音声ファイルも）はバックアップを取っておきましょう。
 
@@ -113,7 +112,6 @@ BmsONE の作者である exclusion はこのソフトを使用して生じた�
 異なる版の Qt と差し替えて利用しても構いません。ビルド設定の情報は次項を参照してください。
 
 不明な点がございましたらご連絡ください。
-希望があればソースコードの提供も検討します。
 
 
 4. 開発環境
@@ -137,8 +135,10 @@ Twitter: @excln
 E-mail:  exclusion_bms@yahoo.co.jp
 Web:     http://sky.geocities.jp/exclusion_bms/
 
-また、動作報告や要望等についてはTwitterの #bmsone ハッシュタグでもお待ちしております。
-bmson フォーマットに関する話題は #bmson ハッシュタグにお願いします。
+GitHubのソースコードリポジトリ: https://github.com/excln/BmsONE
+バグ報告などについてはこちらのIssuesに投げていただけるとありがたいです。（日本語でも可）
+ご自身での修正が可能な場合、リポジトリをForkして修正し、
+Pull Requestを作成していただいても構いません。
 
 
 6. 参考リンク
@@ -159,8 +159,23 @@ bmson specs (flicknote様)
   https://docs.google.com/document/d/1gQKPWApeL03aO09-II7slxTeuvm3HO_FmY1D4chRvOQ/edit
   DAWの音声書き出しからエディタの使い方まで、bmson制作の一連の流れについて解説されています。（英語）
 
+BmsONE 101 - The Basics (ドルフィン様)
+  https://docs.google.com/document/d/178FvK-rVAcc-ZK5ls6gnMmaIphFmwF78JWIL8kRiGXA/edit#
+  BmsONEの使い方についての解説があります。（英語）
+
 
 7. 履歴
+
+2017年05月11日 beta 0.2.0
+  - GitHubにソースコードを公開した。
+  - Windowsでも64bit版の提供を開始した。
+  - 特にMac版で譜面スクロール時に頻繁にクラッシュするバグを修正した。
+  - ファイル名のパストラバーサル検出に関する挙動を修正した。
+  - 書込モードで右クリックによりノートを削除するとクラッシュするバグ問題を修正した。
+  - 譜面スクロール時のパフォーマンスを改善した。
+  - 波形表示が更新されない場合がある問題を改善した。
+  - BPMイベントなどを挿入しても「選択オブジェクト」ウィンドウが表示されない場合があるのを修正した。
+  - BPMイベントの挿入をアンドゥするとクラッシュする場合があるバグを修正した。
 
 2017年02月12日 beta 0.1.5
   - bmson 1.0.0の仕様のうち、「情報」ウィンドウで未対応だったタイトル画像(title_image)とプレビュー音(preview_music)を編集できるようにした。

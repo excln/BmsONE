@@ -20,8 +20,7 @@ Visual C++ Redistributable for Visual Studio 2015 at the following URL.
 (Please choose "x86" regardless of your machine.)
 https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
-This software is under development, so the current version lacks some features
-and often goes wrong (particularly on Mac).
+This software is under development, so the current version lacks some features and often goes wrong.
 Be sure to make backups and save files frequently.
 
 Note that "Ctrl key" below means Command key (⌘) on Mac.
@@ -102,7 +101,7 @@ This software uses Qt under LGPL license. Dlls (for Windows), Frameworks and Plu
 come from Qt, so you can use the software while replacing them with those of other versions.
 See the next section for build information.
 
-Contact me for questions. I will consider supplying source codes if you want.
+Contact me for questions.
 
 
 4. Development Environment
@@ -126,8 +125,9 @@ Twitter: @excln
 E-mail:  exclusion_bms@yahoo.co.jp
 Web:     http://sky.geocities.jp/exclusion_bms/
 
-Bug reports and proposals are also welcome on Twitter hash tag #bmsone.
-Please tweet with #bmson tag for general topics on bmson format.
+Source code repository: https://github.com/excln/BmsONE
+Bug reports and proposals are welcome via Issues.
+Feel free to fork this repository to resolve problems and create pull requests.
 
 
 6. Links
@@ -148,8 +148,23 @@ bmson specs by flicknote
   https://docs.google.com/document/d/1gQKPWApeL03aO09-II7slxTeuvm3HO_FmY1D4chRvOQ/edit
   How to create bmson, including key sounds creation with DAWs and editing with bmson editors. (English)
 
+BmsONE 101 - The Basics by ドルフィン
+  https://docs.google.com/document/d/178FvK-rVAcc-ZK5ls6gnMmaIphFmwF78JWIL8kRiGXA/edit#
+  How to use BmsONE. (English)
+
 
 7. History
+
+May 11 2017 beta 0.2.0
+  - Made the source code public on GitHub.
+  - Began to supply 64bit versions on Windows.
+  - Fixed crashes when scrolling the chart in Sequence View particularly on Mac.
+  - Modified path traversal detection behavior.
+  - Fixed crashes when right-clicking on a note to delete it in Write Mode.
+  - Improved performance of chart scrolls.
+  - Partly fixed a bug that waveform display is sometimes not refreshed.
+  - Fixed a bug that "Selected Objects" window does not appear when you insert a BPM event.
+  - Fixed a bug that undoing insertion of a BPM event may cause a crash.
 
 Feb 12 2017 beta 0.1.5
   - You can edit "title_image" and "preview_music" in the Information window, which are in bmson 1.0.0 spec.
