@@ -139,7 +139,25 @@ void DocumentInfo::LoadBms(const Bms::Bms &bms)
 	titleImage = bms.backBmp;
 	banner = bms.banner;
 	// previewMusic =
-	// resolution = ...
+
+	// 最後のオブジェの位置がint型に十分収まるように解像度の上限を求める
+	qreal totalLength = Bms::BmsUtil::GetTotalLength(bms);
+	qDebug() << "total length:" << totalLength;
+	int maxResolution = INT_MAX / totalLength / 2;
+	qDebug() << "max resolution by total length:" << maxResolution;
+
+	// 曲の長さによる解像度の制約が弱い場合も、常識的な範囲内に収まるように制限を加える (設定で変更できるべき)
+	maxResolution = std::min(10000, maxResolution);
+
+	bool shrink;
+	resolution = Bms::BmsUtil::GetResolution(bms, maxResolution, &shrink);
+	qDebug() << "required resolution:" << resolution << " shrink:" << shrink;
+	// 必要解像度が低い場合、基準解像度の240と同等以上になるように引き上げる (素因数の優先順位は適当) // 240 = 16 * 3 * 5
+	static QList<int> referenceResolutionFactors = QList<int>() << 2 << 4 << 8 << 8*3 << 16*3 << 16*3*5;
+	for (int i=0; i<referenceResolutionFactors.length() && resolution < 240; i++){
+		resolution = Bms::Math::LCM(resolution, referenceResolutionFactors[i]);
+	}
+	qDebug() << "final resolution:" << resolution;
 }
 
 QJsonValue DocumentInfo::SaveBmson()

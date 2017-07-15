@@ -105,24 +105,6 @@ static int ZZtoInt(const QString &xx){
 	return high * 36 + low;
 }
 
-// a > b
-static int GCD(int a, int b){
-	if (b == 0)
-		return a;
-	return GCD(b, a % b);
-}
-
-// 最小公倍数(オーバーフロー時などは-1)
-static int LCM(int a, int b){
-	if (a == 0 || b == 0)
-		return -1;
-	int d = a > b ? GCD(a, b) : GCD(b, a);
-	int m = a / d * b;
-	if (m / b != a / d)
-		return -1;
-	return m;
-}
-
 void Bms::BmsReader::InitCommandHandlers()
 {
 	using std::placeholders::_1;
@@ -239,7 +221,7 @@ void Bms::BmsReader::LoadMain()
 
 void Bms::BmsReader::LoadComplete()
 {
-	bms.total = tmpCommands.contains("TOTAL") ? tmpCommands["TOTAL"].toReal() : BmsUtil::GetTotalNotes(bms) + 200;
+	bms.total = tmpCommands.contains("TOTAL") ? tmpCommands["TOTAL"].toReal() : BmsUtil::GetTotalPlayableNotes(bms) + 200;
 
 	// TODO: verify BMS data
 	progress = 1.0f;
@@ -251,12 +233,24 @@ void Bms::BmsReader::OnChannelCommand(int section, int channel, QString content)
 	if (channel == 2){
 		// 小節の長さ
 		// contentは単一の値(実数)
-		qreal length = ToReal(content, 0.0);
-		if (length <= 0){
-			Warning(tr("Wrong section length: ") + content);
-			return;
+		// TODO: 以下の周辺情報を参考にして有理数近似したほうがよい (場合によってはキャッシュ使用不可)
+		//   * ユーザーに確認と修正を求める
+		//   * string の段階で有効桁数を求め許容誤差に利用
+		//   * その小節の分解能 (例: 17/16小節なら分解能17や34などが出やすい)
+		//   * BMSON変換時に必要になる分解能ができるだけ単純になるように (小節の分解能を考慮しつつ曲全体で調整)
+		if (rationalCache.contains(content)){
+			bms.sections[section].length = rationalCache[content];
+		}else{
+			bool ok;
+			Rational length = Math::ToRational(content, &ok);
+			if (!ok || length <= Rational(0)){
+				Warning(tr("Wrong section length: ") + content);
+				return;
+			}
+			Info(tr("Section length %1 -> %2 ( %3 / %4)").arg(content).arg((double)length).arg(length.numerator).arg(length.denominator));
+			bms.sections[section].length = length;
+			rationalCache.insert(content, length);
 		}
-		bms.sections[section].length = length;
 	}else{
 		// contentはオブジェ列
 		if (content.length() % 2 == 1){
@@ -281,7 +275,7 @@ void Bms::BmsReader::OnChannelCommand(int section, int channel, QString content)
 			// 一般のオブジェ(上書きあり)
 			if (bms.sections[section].objects.contains(channel)){
 				Sequence &sequence = bms.sections[section].objects[channel];
-				int l = LCM(sequence.resolution, newObjects.length());
+				int l = Math::LCM(sequence.resolution, newObjects.length());
 
 				// intの範囲を超えた場合は制限する(不具合が起こる可能性もあり)
 				if (l < 0){
@@ -405,12 +399,57 @@ void Bms::BmsReader::HandleENDRANDOM(QString value)
 	}
 }
 
+void Bms::BmsReader::Info(QString message)
+{
+	log << tr("Info: ") << message;
+	qInfo() << message;
+}
+
 void Bms::BmsReader::Warning(QString message)
 {
 	log << tr("Warning: ") << message;
 	qWarning() << message;
 }
 
+void Bms::BmsReader::MathTest()
+{
+	// 有理数近似のテスト
+	auto test = [](QString s){
+		bool ok;
+		Rational r = Math::ToRational(s, &ok);
+		qDebug() << s << (double)r << r.numerator << "/" << r.denominator;
+	};
+	qDebug() << "-------------------";
+	test("1.0");
+	test("1.1");
+	test("1.2");
+	test("1.45");
+	test("1.6");
+	test("1.3333333");
+	test("0.75");
+	test("0.7");
+	test("0.6666667");
+	test("0.142857");;
+	test("0.333333");;
+	test("0.25");;
+	test("0.133333");
+	test("0.03125");
+	test("0.000244140625");
+	test("0.001");
+	test("0.0001");
+	test("0.00001");
+	test("0.000001");
+	test("0.0000001");
+	test("0.00000001");
+	test("0.3");
+	test("0.33");
+	test("0.333");
+	test("0.3333");
+	test("0.33333");
+	test("0.333333");
+	test("0.3333333");
+	qDebug() << "-------------------";
+}
 
 
 
@@ -436,8 +475,8 @@ Bms::Bms::Bms()
 
 
 Bms::Section::Section()
+	: length(1)
 {
-	length = 1.0;
 }
 
 Bms::Sequence::Sequence()
@@ -454,3 +493,5 @@ Bms::Sequence::Sequence(const QVector<int> &objs)
 		}
 	}
 }
+
+

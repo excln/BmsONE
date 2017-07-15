@@ -8,6 +8,36 @@
 namespace Bms
 {
 
+struct Rational
+{
+	int numerator;
+	int denominator;
+
+	Rational(int numerator=0, int denominator=1);
+	bool operator ==(const Rational &other) const;
+	bool operator <(const Rational &other) const;
+	bool operator <=(const Rational &other) const;
+	operator float() const;
+	operator double() const;
+	Rational operator +(const Rational &other) const;
+	Rational operator -(const Rational &other) const;
+	Rational operator *(const Rational &other) const;
+	Rational operator /(const Rational &other) const;
+	Rational normalized() const;
+};
+
+class Math
+{
+public:
+	static int GCD_(int a, int b); // a > b
+	static int GCD(int a, int b);
+	static int LCM(int a, int b); // オーバーフロー時などは-1を返す
+
+	static Rational ToRational(double a);
+	static Rational ToRational(float a);
+	static Rational ToRational(QString s, bool *ok=nullptr);
+};
+
 enum Mode
 {
 	MODE_5K,
@@ -29,7 +59,7 @@ struct Sequence
 
 struct Section
 {
-	qreal length;
+	Rational length;
 	QList<Sequence> bgmObjects;
 	QMap<int, Sequence> objects;
 
@@ -95,6 +125,8 @@ private:
 
 	QMap<QString, QVariant> tmpCommands;
 
+	QMap<QString, Rational> rationalCache;
+
 	// control state
 	bool skipping;
 	QStack<bool> skippingStack;
@@ -120,7 +152,10 @@ private:
 	void HandleENDIF(QString value);
 	void HandleENDRANDOM(QString value);
 
+	void Info(QString message);
 	void Warning(QString message);
+
+	void MathTest();
 
 public:
 	BmsReader(QString path, QObject *parent=nullptr);
@@ -137,8 +172,13 @@ public:
 class BmsUtil
 {
 public:
-	static int GetTotalNotes(const Bms &bms);
-	static int GetRequiredResolution(const Bms &bms);
+	static int GetTotalPlayableNotes(const Bms &bms);
+
+	// 必要な1拍(4分音符, 長さ1.0の小節の1/4)あたりの解像度を計算する
+	static int GetResolution(const Bms &bms, int maxResolution, bool *shrink=nullptr);
+
+	// BMSの全長を拍数(4分音符, 長さ1.0の小節の1/4)単位で求める (オブジェ位置の表現のオーバーフロー検出に用いる)
+	static qreal GetTotalLength(const Bms &bms);
 };
 
 
