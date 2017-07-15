@@ -71,6 +71,7 @@ SOURCES += main.cpp\
 	bmson/Bmson100Convert.cpp \
 	bmson/BmsonConvertDef.cpp \
 	bmson/Bmson.cpp \
+	bms/Bms.cpp \
     libogg/bitwise.c \
     libogg/framing.c \
     libvorbis/analysis.c \
@@ -148,6 +149,7 @@ HEADERS  += MainWindow.h \
 	bmson/Bmson100Convert.h \
 	bmson/BmsonConvertDef.h \
 	bmson/Bmson.h \
+	bms/Bms.h \
     libvorbis/books/coupled/res_books_51.h \
     libvorbis/books/coupled/res_books_stereo.h \
     libvorbis/books/floor/floor_books.h \

@@ -18,7 +18,9 @@ class SoundLoader;
 class EditHistory;
 class EditAction;
 class MasterCache;
-
+namespace Bms{
+	struct Bms;
+}
 
 class DocumentInfo : public QObject, public BmsonObject
 {
@@ -74,6 +76,7 @@ public:
 	virtual ~DocumentInfo();
 	void Initialize(); // for initialization
 	void LoadBmson(QJsonValue json); // for initialization
+	void LoadBms(const Bms::Bms &bms); // for initialization
 
 	QJsonValue SaveBmson();
 
@@ -203,6 +206,7 @@ public:
 	virtual ~Document();
 	void Initialize(); // for initialization
 	void LoadFile(QString filePath); // for initialization
+	void LoadBms(const Bms::Bms &bms); // for initialization
 
 	EditHistory *GetHistory(){ return history; }
 	MasterCache *GetMaster(){ return master; }

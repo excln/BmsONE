@@ -2,6 +2,7 @@
 #include "History.h"
 #include "HistoryUtil.h"
 #include "../bmson/Bmson.h"
+#include "../bms/Bms.h"
 
 QSet<QString> DocumentInfo::SupportedKeys;
 
@@ -83,6 +84,16 @@ void DocumentInfo::LoadBmson(QJsonValue json)
 	titleImage = bmsonFields[Bmson::BmsInfo::TitleImageKey].toString();
 	banner = bmsonFields[Bmson::BmsInfo::BannerKey].toString();
 	previewMusic = bmsonFields[Bmson::BmsInfo::PreviewMusicKey].toString();
+}
+
+void DocumentInfo::LoadBms(const Bms::Bms &bms)
+{
+	Initialize();
+	title = bms.title;
+	// subtitle = bms.subtitle; // サブタイトル抽出はどこで行う?
+	genre = bms.genre;
+	artist = bms.artist;
+	subartists.append(bms.subartist); // 自動で複数に?
 }
 
 QJsonValue DocumentInfo::SaveBmson()

@@ -8,6 +8,7 @@
 #include "../bmson/Bmson.h"
 #include "EditConfig.h"
 #include "../util/ResolutionUtil.h"
+#include "../bms/Bms.h"
 
 const double BmsConsts::MaxBpm = 1.e+6;
 const double BmsConsts::MinBpm = 1.e-6;
@@ -114,6 +115,25 @@ void Document::LoadFile(QString filePath)
 	history->SetReservedAction(outputVersion != savedVersion);
 
 	emit FilePathChanged();
+}
+
+void Document::LoadBms(const Bms::Bms &bms)
+{
+	directory = QFileInfo(bms.path).absoluteDir();
+
+	bmsonFields = BmsonIO::InitialBmson();
+	actualLength = 0;
+	totalLength = 0;
+	barLines.insert(0, BarLine(0, 0));
+
+	// read bms
+	info.LoadBms(bms);
+
+	UpdateTotalLength();
+	ReconstructMasterCache();
+
+	savedVersion = BmsonIO::NativeVersion;
+	history->MarkAbsolutelyDirty();
 }
 
 // This function may modify document, but the change is not recorded in undo buffer

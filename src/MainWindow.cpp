@@ -15,6 +15,8 @@
 #include "ExternalViewerTools.h"
 #include "EditConfig.h"
 #include "MasterOutDialog.h"
+#include "bmson/Bmson.h"
+#include "bms/Bms.h"
 
 
 const char* MainWindow::SettingsGroup = "MainWindow";
@@ -509,23 +511,16 @@ void MainWindow::FileOpen()
 	if (!EnsureClosingFile())
 		return;
 	QString filters = tr("bmson files (*.bmson)"
-						 ";;" "old bms files (*.bms *.bme *.bml *.pms)"
+						 ";;" "legacy bms files (*.bms *.bme *.bml *.pms)"
 						 ";;" "all files (*.*)");
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open"), QString(), filters, 0);
 	if (fileName.isEmpty())
 		return;
-	try{
-		Document *newEditor = new Document(this);
-		newEditor->LoadFile(fileName);
-		ReplaceDocument(newEditor);
-	}catch(QString message){
-		QMessageBox *msgbox = new QMessageBox(
-					QMessageBox::Warning,
-					tr("Error"),
-					message,
-					QMessageBox::Ok,
-					this);
-		msgbox->show();
+	QString ext = QFileInfo(fileName).suffix().toLower();
+	if (BmsIO::IsBmsFileExtension(ext)){
+		OpenBms(fileName);
+	}else{
+		OpenBmson(fileName);
 	}
 }
 
@@ -535,18 +530,11 @@ void MainWindow::FileOpen(QString path)
 		return;
 	if (!EnsureClosingFile())
 		return;
-	try{
-		Document *newEditor = new Document(this);
-		newEditor->LoadFile(path);
-		ReplaceDocument(newEditor);
-	}catch(QString message){
-		QMessageBox *msgbox = new QMessageBox(
-					QMessageBox::Warning,
-					tr("Error"),
-					message,
-					QMessageBox::Ok,
-					this);
-		msgbox->show();
+	QString ext = QFileInfo(path).suffix().toLower();
+	if (BmsIO::IsBmsFileExtension(ext)){
+		OpenBms(path);
+	}else{
+		OpenBmson(path);
 	}
 }
 
@@ -1034,9 +1022,10 @@ bool MainWindow::EnsureClosingFile()
 
 bool MainWindow::IsBmsFileExtension(const QString &ext)
 {
-	if (ext == "bmson"){
+	if (BmsonIO::IsBmsonFileExtension(ext))
 		return true;
-	}
+	if (BmsIO::IsBmsFileExtension(ext))
+		return true;
 	return false;
 }
 
@@ -1121,6 +1110,46 @@ void MainWindow::OpenFiles(QStringList filePaths)
 					this);
 		msgbox->show();
 	}
+}
+
+void MainWindow::OpenBmson(QString path)
+{
+	try{
+		Document *newEditor = new Document(this);
+		newEditor->LoadFile(path);
+		ReplaceDocument(newEditor);
+	}catch(QString message){
+		QMessageBox *msgbox = new QMessageBox(
+					QMessageBox::Warning,
+					tr("Error"),
+					message,
+					QMessageBox::Ok,
+					this);
+		msgbox->show();
+	}
+}
+
+void MainWindow::OpenBms(QString path)
+{
+	Bms::BmsReader *reader = BmsIO::LoadBms(path);
+	while (reader->GetStatus() != Bms::BmsReader::STATUS_COMPLETE){
+		if (reader->GetStatus() == Bms::BmsReader::STATUS_ERROR){
+			QMessageBox *msgbox = new QMessageBox(
+						QMessageBox::Warning,
+						tr("Error"),
+						tr("Failed to import legacy BMS."),
+						QMessageBox::Ok,
+						this);
+			msgbox->exec();
+			delete reader;
+			return;
+		}
+		reader->Load();
+	}
+	auto newEditor = new Document(this);
+	newEditor->LoadBms(reader->GetBms());
+	ReplaceDocument(newEditor);
+	delete reader;
 }
 
 bool MainWindow::WarningFileTraversals(QStringList filePaths)

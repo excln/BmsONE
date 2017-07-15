@@ -63,6 +63,8 @@ public:
 	static QString GetSaveJsonFormatString();
 	static QJsonDocument::JsonFormat GetSaveJsonFormatOfString(QString format);
 
+	static bool IsBmsonFileExtension(QString ext);
+
 signals:
 	void SaveFormatChanged(BmsonIO::BmsonVersion format);
 

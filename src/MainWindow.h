@@ -258,6 +258,8 @@ public:
 	void UnsetSelectedObjectsView(QWidget *view);
 
 	void OpenFiles(QStringList filePaths);
+	void OpenBmson(QString path);
+	void OpenBms(QString path);
 
 	bool WarningFileTraversals(QStringList filePaths);
 };

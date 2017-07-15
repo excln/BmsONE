@@ -207,6 +207,11 @@ QJsonDocument::JsonFormat BmsonIO::GetSaveJsonFormatOfString(QString format)
 	}
 }
 
+bool BmsonIO::IsBmsonFileExtension(QString ext)
+{
+	return ext == "bmson";
+}
+
 QJsonDocument::JsonFormat BmsonIO::GetSaveJsonFormat()
 {
 	return GetSaveJsonFormatOfString(GetSaveJsonFormatString());
