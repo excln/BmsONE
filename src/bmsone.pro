@@ -72,6 +72,7 @@ SOURCES += main.cpp\
 	bmson/BmsonConvertDef.cpp \
 	bmson/Bmson.cpp \
 	bms/Bms.cpp \
+	bms/BmsUtil.cpp \
     libogg/bitwise.c \
     libogg/framing.c \
     libvorbis/analysis.c \

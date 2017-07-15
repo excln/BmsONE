@@ -8,26 +8,64 @@
 namespace Bms
 {
 
-struct Note
+enum Mode
 {
+	MODE_5K,
+	MODE_7K,
+	MODE_10K,
+	MODE_14K,
+	MODE_PMS_9K,
+	MODE_PMS_5K
+};
 
+struct Sequence
+{
+	int resolution;
+	QMap<int, int> objects;
+
+	Sequence();
+	explicit Sequence(const QVector<int> &objs);
+};
+
+struct Section
+{
+	qreal length;
+	QList<Sequence> bgmObjects;
+	QMap<int, Sequence> objects;
+
+	Section();
 };
 
 struct Bms
 {
 	QString path;
-	QMap<QString, QString> headerCommands;
 
-	// recognized commands
+	Mode mode;
+
 	QString title;
+	QString subtitle;
 	QString genre;
 	QString artist;
 	QString subartist;
+	QString stageFile;
+	QString banner;
+	QString backBmp;
 	int judgeRank;
 	qreal total;
+	qreal volWav;
 	qreal bpm;
 	int level;
+	int difficulty;
 	int lnobj;
+
+	QVector<qreal> bpmDefs;
+	QVector<qreal> stopDefs;
+	QVector<QString> wavDefs;
+	QVector<QString> bmpDefs;
+
+	QVector<Section> sections;
+
+	Bms();
 };
 
 
@@ -51,14 +89,36 @@ private:
 	QTextStream log;
 	qint64 fileSize;
 	std::function<Status(QVariant)> cont;
+	QMap<QString, std::function<void(QString)>> controlCommandHandlers;
 	QMap<QString, std::function<void(QString)>> headerCommandHandlers;
+	QMap<QString, std::function<void(int,QString)>> headerZZDefCommandHandlers;
 
-	void InitHeaderCommandHandlers();
+	QMap<QString, QVariant> tmpCommands;
+
+	// control state
+	bool skipping;
+	QStack<bool> skippingStack;
+	QStack<int> randoms;
+	QList<int> ifLabels;
+
+	void InitCommandHandlers();
 
 	void LoadMain();
 	void LoadComplete();
-	void OnHeaderCommand(QString command, QString value);
-	void OnChannelCommand(int section, int channel, QList<int> objects);
+	void OnChannelCommand(int section, int channel, QString content);
+
+	void HandleWAVxx(int def, QString value);
+	void HandleBMPxx(int def, QString value);
+	void HandleBPMxx(int def, QString value);
+	void HandleSTOPxx(int def, QString value);
+
+	void HandleRANDOM(QString value);
+	void HandleSETRANDOM(QString value);
+	void HandleIF(QString value);
+	void HandleELSEIF(QString value);
+	void HandleELSE(QString value);
+	void HandleENDIF(QString value);
+	void HandleENDRANDOM(QString value);
 
 	void Warning(QString message);
 
@@ -73,7 +133,16 @@ public:
 	const Bms &GetBms(){ return bms; }
 };
 
-}
+
+class BmsUtil
+{
+public:
+	static int GetTotalNotes(const Bms &bms);
+	static int GetRequiredResolution(const Bms &bms);
+};
+
+
+}	// namespace Bms
 
 
 
@@ -96,6 +165,8 @@ public:
 	static Bms::BmsReader *LoadBms(QString path);
 
 };
+
+
 
 
 

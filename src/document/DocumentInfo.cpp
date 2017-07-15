@@ -90,10 +90,56 @@ void DocumentInfo::LoadBms(const Bms::Bms &bms)
 {
 	Initialize();
 	title = bms.title;
-	// subtitle = bms.subtitle; // サブタイトル抽出はどこで行う?
+	subtitle = bms.subtitle;
 	genre = bms.genre;
 	artist = bms.artist;
-	subartists.append(bms.subartist); // 自動で複数に?
+	subartists.append(bms.subartist);
+	switch (bms.mode){
+	case Bms::MODE_5K:
+		modeHint = "beat-5k";
+		break;
+	case Bms::MODE_7K:
+		modeHint = "beat-7k";
+		break;
+	case Bms::MODE_10K:
+		modeHint = "beat-10k";
+		break;
+	case Bms::MODE_14K:
+		modeHint = "beat-14k";
+		break;
+	case Bms::MODE_PMS_9K:
+		modeHint = "popn-9k";
+		break;
+	case Bms::MODE_PMS_5K:
+		modeHint = "popn-5k";
+		break;
+	}
+	switch (bms.judgeRank){
+	case 0:
+		judgeRank = 40.0;
+		break;
+	case 1:
+		judgeRank = 60.0;
+		break;
+	case 2:
+		judgeRank = 80.0;
+		break;
+	case 3:
+		judgeRank = 100.0;
+		break;
+	case 4:
+		judgeRank = 120.0;
+		break;
+	}
+	// total =
+	initBpm = bms.bpm;
+	level = bms.level;
+	// backImage =
+	eyecatchImage = bms.stageFile;
+	titleImage = bms.backBmp;
+	banner = bms.banner;
+	// previewMusic =
+	// resolution = ...
 }
 
 QJsonValue DocumentInfo::SaveBmson()
