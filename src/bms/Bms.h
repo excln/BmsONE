@@ -156,6 +156,7 @@ private:
 	void HandleELSE(QString value);
 	void HandleENDIF(QString value);
 	void HandleENDRANDOM(QString value);
+	bool SkipsOutside();
 
 	void Info(QString message);
 	void Warning(QString message);

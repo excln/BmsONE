@@ -322,7 +322,7 @@ void Bms::BmsReader::HandleRANDOM(QString value)
 {
 	skippingStack.push(skipping);
 	randoms.push(1);
-	skipping = true;
+	skipping = SkipsOutside();
 }
 
 void Bms::BmsReader::HandleSETRANDOM(QString value)
@@ -333,7 +333,7 @@ void Bms::BmsReader::HandleSETRANDOM(QString value)
 		Warning(tr("Wrong \"SETRANDOM\" argument: ") + value);
 	}
 	randoms.push(num);
-	skipping = true;
+	skipping = SkipsOutside();
 }
 
 void Bms::BmsReader::HandleIF(QString value)
@@ -347,7 +347,7 @@ void Bms::BmsReader::HandleIF(QString value)
 		Warning(tr("\"IF\" without random value."));
 		skipping = true;
 	}else{
-		skipping = randoms.top() == cond;
+		skipping = randoms.top() != cond;
 	}
 	ifLabels.clear();
 	ifLabels.append(cond);
@@ -385,7 +385,7 @@ void Bms::BmsReader::HandleELSE(QString value)
 
 void Bms::BmsReader::HandleENDIF(QString value)
 {
-	skipping = true;
+	skipping = SkipsOutside();
 	ifLabels.clear();
 }
 
@@ -397,6 +397,13 @@ void Bms::BmsReader::HandleENDRANDOM(QString value)
 	if (!skippingStack.isEmpty()){
 		skipping = skippingStack.pop();
 	}
+}
+
+bool Bms::BmsReader::SkipsOutside()
+{
+	// RANDOMより内側でIFブロックより外側の部分をスキップするかどうか
+	// 設定により変更
+	return false;
 }
 
 void Bms::BmsReader::Info(QString message)
