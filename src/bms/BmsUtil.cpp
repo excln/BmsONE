@@ -1,5 +1,6 @@
 #include "Bms.h"
 #include "../document/SoundChannel.h"
+#include "../document/DocumentDef.h"
 #include <cstdlib>
 
 
@@ -409,6 +410,77 @@ QVector<QMap<int, SoundNote> > Bms::BmsUtil::GetNotesOfBmson(const Bms &bms, Mod
 		pos += sectionLength;
 	}
 	return notes;
+}
+
+QMap<int, BgaEvent> Bms::BmsUtil::GetBgaEvents(const Bms &bms, int resolution)
+{
+	QMap<int, BgaEvent> events;
+	int pos = 0;
+	for (int i=0; i<bms.sections.length(); i++){
+		int sectionLength = GetSectionLengthInBmson(resolution, bms.sections[i]);
+		if (bms.sections[i].objects.contains(4)){
+			const Sequence &sequence = bms.sections[i].objects[4];
+			for (auto obj=sequence.objects.begin(); obj!=sequence.objects.end(); obj++){
+				if (obj.value() > 0){
+					int relativePos = GetPositionInSectionInBmson(resolution, bms.sections[i], sequence, obj.key());
+					events.insert(pos+relativePos, BgaEvent(pos+relativePos, obj.value()));
+				}
+			}
+		}
+		pos += sectionLength;
+	}
+	return events;
+}
+
+QMap<int, BgaEvent> Bms::BmsUtil::GetLayerEvents(const Bms &bms, int resolution)
+{
+	QMap<int, BgaEvent> events;
+	int pos = 0;
+	for (int i=0; i<bms.sections.length(); i++){
+		int sectionLength = GetSectionLengthInBmson(resolution, bms.sections[i]);
+		if (bms.sections[i].objects.contains(7)){
+			const Sequence &sequence = bms.sections[i].objects[7];
+			for (auto obj=sequence.objects.begin(); obj!=sequence.objects.end(); obj++){
+				if (obj.value() > 0){
+					int relativePos = GetPositionInSectionInBmson(resolution, bms.sections[i], sequence, obj.key());
+					events.insert(pos+relativePos, BgaEvent(pos+relativePos, obj.value()));
+				}
+			}
+		}
+		pos += sectionLength;
+	}
+	return events;
+}
+
+QMap<int, BgaEvent> Bms::BmsUtil::GetMissEvents(const Bms &bms, int resolution)
+{
+	QMap<int, BgaEvent> events;
+	int pos = 0;
+	for (int i=0; i<bms.sections.length(); i++){
+		int sectionLength = GetSectionLengthInBmson(resolution, bms.sections[i]);
+		if (bms.sections[i].objects.contains(6)){
+			const Sequence &sequence = bms.sections[i].objects[6];
+			for (auto obj=sequence.objects.begin(); obj!=sequence.objects.end(); obj++){
+				if (obj.value() > 0){
+					int relativePos = GetPositionInSectionInBmson(resolution, bms.sections[i], sequence, obj.key());
+					events.insert(pos+relativePos, BgaEvent(pos+relativePos, obj.value()));
+				}
+			}
+		}
+		pos += sectionLength;
+	}
+
+	// #BMP00 をデフォルトミス画像とする
+	if (!events.contains(0) && !bms.bmpDefs[0].isEmpty()){
+		events.insert(0, BgaEvent(0, 0));
+	}
+	return events;
+}
+
+int Bms::BmsUtil::GetStopDurationInBmson(int resolution, qreal value)
+{
+	// valueは4/4拍子における1小節の1/192の単位 (つまり1拍の1/48)
+	return std::round(resolution * value / 48);
 }
 
 

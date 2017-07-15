@@ -170,6 +170,8 @@ void Document::LoadBms(const Bms::Bms &bms)
 		}
 	}
 	{
+		QMap<int, StopEvent> stopEvents;
+
 		// STOPイベント
 		int pos = 0;
 		for (int i=0; i<bms.sections.length(); i++){
@@ -180,13 +182,52 @@ void Document::LoadBms(const Bms::Bms &bms)
 				for (auto obj=sequence.objects.begin(); obj!=sequence.objects.end(); obj++){
 					int relativePos = Bms::BmsUtil::GetPositionInSectionInBmson(info.GetResolution(), bms.sections[i], sequence, obj.key());
 					if (bms.stopDefs[obj.value()] > 0.0){
-					//	stopEvents.insert(pos+relativePos, StopEvent(pos+relativePos, bms.stopDefs[obj.value()]));
-						qWarning() << "STOP events are not supported yet!";
+						stopEvents.insert(pos+relativePos, StopEvent(pos+relativePos, Bms::BmsUtil::GetStopDurationInBmson(info.GetResolution(), bms.stopDefs[obj.value()])));
 					}
 				}
 			}
 			pos += sectionLength;
 		}
+
+		QJsonArray jsonEvents;
+		for (auto ev : stopEvents){
+			jsonEvents.append(ev.AsJson());
+		}
+		bmsonFields[Bmson::Bms::StopEventsKey] = jsonEvents;
+	}
+	{
+		Bga bga;
+
+		// BGAイベント
+		bga.bgaEvents = Bms::BmsUtil::GetBgaEvents(bms, info.GetResolution());
+		bga.layerEvents = Bms::BmsUtil::GetLayerEvents(bms, info.GetResolution());
+		bga.missEvents = Bms::BmsUtil::GetMissEvents(bms, info.GetResolution());
+
+		QVector<bool> bmpUsed(bms.bmpDefs.length());
+		for (auto ev : bga.bgaEvents){
+			if (ev.id < bmpUsed.length()){
+				bmpUsed[ev.id] = true;
+			}
+		}
+		for (auto ev : bga.layerEvents){
+			if (ev.id < bmpUsed.length()){
+				bmpUsed[ev.id] = true;
+			}
+		}
+		for (auto ev : bga.missEvents){
+			if (ev.id < bmpUsed.length()){
+				bmpUsed[ev.id] = true;
+			}
+		}
+
+		// BGAヘッダ
+		for (int i=0; i<bms.bmpDefs.length(); i++){
+			if (bmpUsed[i] || !bms.bmpDefs[i].isEmpty()){
+				bga.headers.insert(i, BgaHeader(i, bms.bmpDefs[i]));
+			}
+		}
+
+		bmsonFields[Bmson::Bms::BgaKey] = bga.AsJson();
 	}
 
 	QVector<QMap<int, SoundNote>> notes = Bms::BmsUtil::GetNotesOfBmson(bms, bms.mode, info.GetResolution());
@@ -1146,6 +1187,54 @@ QJsonObject BpmEvent::AsJson() const
 }
 
 bool BpmEvent::operator ==(const BpmEvent &r) const
+{
+	return AsJson() == r.AsJson();
+}
+
+StopEvent::StopEvent(const QJsonValue &json)
+	: BmsonObject(json)
+{
+	location = bmsonFields[Bmson::StopEvent::LocationKey].toInt();
+	value = bmsonFields[Bmson::StopEvent::DurationKey].toDouble();
+}
+
+QJsonValue StopEvent::SaveBmson()
+{
+	bmsonFields[Bmson::StopEvent::LocationKey] = location;
+	bmsonFields[Bmson::StopEvent::DurationKey] = value;
+	return bmsonFields;
+}
+
+QMap<QString, QJsonValue> StopEvent::GetExtraFields() const
+{
+	QMap<QString, QJsonValue> fields;
+	for (QJsonObject::const_iterator i=bmsonFields.begin(); i!=bmsonFields.end(); i++){
+		if (i.key() != Bmson::StopEvent::LocationKey && i.key() != Bmson::StopEvent::DurationKey){
+			fields.insert(i.key(), i.value());
+		}
+	}
+	return fields;
+}
+
+void StopEvent::SetExtraFields(const QMap<QString, QJsonValue> &fields)
+{
+	bmsonFields = QJsonObject();
+	for (auto i=fields.begin(); i!=fields.end(); i++){
+		if (i.key() != Bmson::StopEvent::LocationKey && i.key() != Bmson::StopEvent::DurationKey){
+			bmsonFields[i.key()] = i.value();
+		}
+	}
+}
+
+QJsonObject StopEvent::AsJson() const
+{
+	QJsonObject obj = bmsonFields;
+	obj[Bmson::StopEvent::LocationKey] = location;
+	obj[Bmson::StopEvent::DurationKey] = value;
+	return obj;
+}
+
+bool StopEvent::operator ==(const StopEvent &r) const
 {
 	return AsJson() == r.AsJson();
 }

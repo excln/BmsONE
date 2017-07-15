@@ -79,6 +79,78 @@ struct BpmEvent : public BmsonObject
 };
 
 
+struct StopEvent : public BmsonObject
+{
+	int location;
+	qreal value;
+
+	StopEvent(){}
+	StopEvent(int location, qreal value) : location(location), value(value){}
+
+	StopEvent(const QJsonValue &json);
+	QJsonValue SaveBmson();
+	QMap<QString, QJsonValue> GetExtraFields() const;
+	void SetExtraFields(const QMap<QString, QJsonValue> &fields);
+
+	QJsonObject AsJson() const;
+	bool operator ==(const StopEvent &r) const;
+};
+
+
+struct BgaHeader : public BmsonObject
+{
+	int id;
+	QString name;
+
+	BgaHeader(){}
+	BgaHeader(int id, QString name) : id(id), name(name){}
+
+	BgaHeader(const QJsonValue &json);
+	QJsonValue SaveBmson();
+	QMap<QString, QJsonValue> GetExtraFields() const;
+	void SetExtraFields(const QMap<QString, QJsonValue> &fields);
+
+	QJsonObject AsJson() const;
+	bool operator ==(const BgaHeader &r) const;
+};
+
+
+struct BgaEvent : public BmsonObject
+{
+	int location;
+	int id;
+
+	BgaEvent(){}
+	BgaEvent(int location, int id) : location(location), id(id){}
+
+	BgaEvent(const QJsonValue &json);
+	QJsonValue SaveBmson();
+	QMap<QString, QJsonValue> GetExtraFields() const;
+	void SetExtraFields(const QMap<QString, QJsonValue> &fields);
+
+	QJsonObject AsJson() const;
+	bool operator ==(const BgaEvent &r) const;
+};
+
+
+struct Bga : public BmsonObject
+{
+	QMap<int, BgaHeader> headers;
+	QMap<int, BgaEvent> bgaEvents;
+	QMap<int, BgaEvent> layerEvents;
+	QMap<int, BgaEvent> missEvents;
+
+	Bga(){}
+
+	Bga(const QJsonValue &json);
+	QJsonValue SaveBmson();
+	QMap<QString, QJsonValue> GetExtraFields() const;
+	void SetExtraFields(const QMap<QString, QJsonValue> &fields);
+
+	QJsonObject AsJson() const;
+};
+
+
 enum class UpdateNotePolicy
 {
 	Conservative = 0,

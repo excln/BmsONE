@@ -96,7 +96,8 @@ SOURCES += main.cpp\
     libvorbis/synthesis.c \
     libvorbis/vorbisenc.c \
     libvorbis/vorbisfile.c \
-	libvorbis/window.c
+	libvorbis/window.c \
+    document/Bga.cpp
 
 HEADERS  += MainWindow.h \
 	ChannelInfoView.h \

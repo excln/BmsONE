@@ -6,6 +6,7 @@
 
 
 struct SoundNote;
+struct BgaEvent;
 
 
 namespace Bms
@@ -201,6 +202,14 @@ public:
 
 	// 指定されたモードに基づいてBMSON形式のノーツを取得する
 	static QVector<QMap<int, SoundNote> > GetNotesOfBmson(const Bms &bms, Mode mode, int resolution);
+
+	// BMSON形式のBGAイベントを取得する
+	static QMap<int, BgaEvent> GetBgaEvents(const Bms &bms, int resolution);
+	static QMap<int, BgaEvent> GetLayerEvents(const Bms &bms, int resolution);
+	static QMap<int, BgaEvent> GetMissEvents(const Bms &bms, int resolution);
+
+	// BMSON形式でのSTOPイベントの長さを求める
+	static int GetStopDurationInBmson(int resolution, qreal value);
 
 	// 必要な1拍(4分音符, 長さ1.0の小節の1/4)あたりの解像度を計算する
 	static int GetResolution(const Bms &bms, int maxResolution, bool *shrink=nullptr);
