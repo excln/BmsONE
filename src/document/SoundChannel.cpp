@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cmath>
 #include "../bmson/Bmson.h"
+#include "../bms/Bms.h"
 #include "../util/ResolutionUtil.h"
 
 
@@ -34,10 +35,7 @@ void SoundChannel::LoadSound(const QString &filePath)
 	//adjustment = 0.;
 
 	resource->UpdateWaveData(filePath);
-	waveSummary = resource->GetWaveSummary();
-	emit WaveSummaryUpdated();
-	UpdateCache();
-	document->ChannelLengthChanged(this, totalLength);
+	AfterInitialization();
 }
 
 void SoundChannel::LoadBmson(const QJsonValue &json)
@@ -56,8 +54,27 @@ void SoundChannel::LoadBmson(const QJsonValue &json)
 	}else{
 		totalLength = notes.last().location + notes.last().length;
 	}
-
 	resource->UpdateWaveData(document->GetAbsolutePath(fileName));
+	AfterInitialization();
+}
+
+void SoundChannel::InitializeWithNotes(const QString &name, const QMap<int, SoundNote> &notes)
+{
+	fileName = name;
+	this->notes = notes;
+
+	// temporary length (exact totalLength is calculated in UpdateCache() when whole sound data is available)
+	if (notes.empty()){
+		totalLength = 0;
+	}else{
+		totalLength = notes.last().location + notes.last().length;
+	}
+	resource->UpdateWaveData(document->GetAbsolutePath(fileName));
+	AfterInitialization();
+}
+
+void SoundChannel::AfterInitialization()
+{
 	waveSummary = resource->GetWaveSummary();
 	emit WaveSummaryUpdated();
 	UpdateCache();

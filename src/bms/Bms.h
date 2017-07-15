@@ -5,6 +5,9 @@
 #include <functional>
 
 
+struct SoundNote;
+
+
 namespace Bms
 {
 
@@ -80,6 +83,7 @@ struct Bms
 	QString stageFile;
 	QString banner;
 	QString backBmp;
+	int player;
 	int judgeRank;
 	qreal total;
 	qreal volWav;
@@ -172,7 +176,31 @@ public:
 class BmsUtil
 {
 public:
-	static int GetTotalPlayableNotes(const Bms &bms);
+
+	static int ZtoInt(QChar c);
+	static int ZZtoInt(const QString &xx);
+	static QChar IntToZ(int num);
+	static QString IntToZZ(int num);
+	static constexpr int ZtoInt(char c);
+	static constexpr int ZZtoInt(const char *xx);
+
+	static int FFNUMtoZZNUM(int ff);
+	static int ZZNUMtoFFNUM(int zz);
+
+	// モードを推測する
+	static Mode GetMode(const Bms &bms, QList<int> *errorChannels=nullptr);
+
+	// 指定されたモードに基づいてチャンネルオフセットからBMSON形式のレーンへの対応表を取得する
+	static QMap<int, int> GetLaneMapToBmson(Mode mode);
+
+	// BMSON形式での小節の長さを求める
+	static int GetSectionLengthInBmson(int resolution, const Section &section);
+
+	// BMSON形式でのオブジェクトの小節中での位置を求める
+	static int GetPositionInSectionInBmson(int resolution, const Section &section, const Sequence &sequence, int index);
+
+	// 指定されたモードに基づいてBMSON形式のノーツを取得する
+	static QVector<QMap<int, SoundNote> > GetNotesOfBmson(const Bms &bms, Mode mode, int resolution);
 
 	// 必要な1拍(4分音符, 長さ1.0の小節の1/4)あたりの解像度を計算する
 	static int GetResolution(const Bms &bms, int maxResolution, bool *shrink=nullptr);

@@ -14,6 +14,9 @@ class SoundChannel;
 class SoundChannelResourceManager;
 class EditAction;
 class Smoother;
+namespace Bms{
+	struct Bms;
+}
 
 
 struct SoundNote : public BmsonObject
@@ -104,6 +107,7 @@ private:
 	int totalLength;
 
 private:
+	void AfterInitialization();
 	void UpdateCache();
 	void UpdateVisibleRegionsInternal();
 	EditAction *InsertNoteInternal(SoundNote note, bool notifyByDocument=true, UpdateNotePolicy policy=UpdateNotePolicy::Conservative, QList<int> acceptableLanes=QList<int>());
@@ -127,6 +131,7 @@ public:
 	virtual ~SoundChannel();
 	void LoadSound(const QString &filePath); // for initialization
 	void LoadBmson(const QJsonValue &json); // for initialization
+	void InitializeWithNotes(const QString &name, const QMap<int, SoundNote> &notes); // for initialization
 
 	QJsonValue SaveBmson();
 

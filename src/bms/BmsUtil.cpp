@@ -1,5 +1,6 @@
 #include "Bms.h"
-
+#include "../document/SoundChannel.h"
+#include <cstdlib>
 
 
 Bms::Rational::Rational(int numerator, int denominator)
@@ -123,13 +124,291 @@ Bms::Rational Bms::Math::ToRational(QString s, bool *ok)
 
 
 
+int Bms::BmsUtil::ZtoInt(QChar c){
+	return ZtoInt(c.toLatin1());
+}
 
+constexpr int Bms::BmsUtil::ZtoInt(char d){
+	return d >= '0' && d <= '9' ? d - '0' : (d >= 'A' && d <= 'Z' ? d - 'A' + 10 : -1);
+}
 
+int Bms::BmsUtil::ZZtoInt(const QString &xx){
+	if (xx.length() < 2)
+		return -1;
+	int high = ZtoInt(xx[0]);
+	int low  = ZtoInt(xx[1]);
+	if (high < 0 || low < 0)
+		return -1;
+	return high * 36 + low;
+}
 
-
-int Bms::BmsUtil::GetTotalPlayableNotes(const Bms &bms)
+QChar Bms::BmsUtil::IntToZ(int num)
 {
-	return 999;
+	return num < 10 ? '0' + num : 'A' + num - 10;
+}
+
+QString Bms::BmsUtil::IntToZZ(int num)
+{
+	if (num < 0 || num >= 36*36)
+		return QString();
+	int high = num / 36;
+	int low = num % 36;
+	return QString(IntToZ(high)) + IntToZ(low);
+}
+
+constexpr int Bms::BmsUtil::ZZtoInt(const char *xx)
+{
+	return ZtoInt(xx[0]) * 36 + ZtoInt(xx[1]);
+}
+
+int Bms::BmsUtil::FFNUMtoZZNUM(int ff)
+{
+	int high = ff / 16;
+	int low = ff % 16;
+	return high * 36 + low;
+}
+
+int Bms::BmsUtil::ZZNUMtoFFNUM(int zz)
+{
+	int high = zz / 36;
+	int low = zz % 36;
+	if (high >= 16 || low >= 16)
+		return -1;
+	return high * 16 + low;
+}
+
+
+
+Bms::Mode Bms::BmsUtil::GetMode(const Bms &bms, QList<int> *errorChannels)
+{
+	QVector<bool> playChannelUsed(36 * 2, false); // a1 ~ bZ ((a,b) = (1,2), (3,4), (5,6), (D,E))
+	for (int i=0; i<bms.sections.length(); i++){
+		for (auto ch=bms.sections[i].objects.begin(); ch!=bms.sections[i].objects.end(); ch++){
+			if (ch.key() >= ZZtoInt("11") && ch.key() <= ZZtoInt("2Z")){
+				playChannelUsed[ch.key() - ZZtoInt("10")] = true;
+			}else if (ch.key() >= ZZtoInt("31") && ch.key() <= ZZtoInt("4Z")){
+				playChannelUsed[ch.key() - ZZtoInt("30")] = true;
+			}else if (ch.key() >= ZZtoInt("51") && ch.key() <= ZZtoInt("6Z")){
+				playChannelUsed[ch.key() - ZZtoInt("50")] = true;
+			}else if (ch.key() >= ZZtoInt("D1") && ch.key() <= ZZtoInt("EZ")){
+				playChannelUsed[ch.key() - ZZtoInt("D0")] = true;
+			}
+		}
+	}
+	auto validateOnly = [playChannelUsed](QSet<int> channels, QList<int> *errorChannels=nullptr){
+		bool ok = true;;
+		for (int i=0; i<72; i++){
+			if (playChannelUsed[i] && !channels.contains(i)){
+				if (errorChannels) *errorChannels << i;
+				ok = false;
+			}
+		}
+		return ok;
+	};
+	auto unused = [playChannelUsed](QSet<int> channels){
+		for (auto c : channels){
+			if (playChannelUsed[c])
+				return false;
+		}
+		return true;
+	};
+	if (QFileInfo(bms.path).suffix().toLower() == "pms"){
+		if (unused({1, 2,  40, 41})){
+			validateOnly({3, 4, 5, 38, 39}, errorChannels);
+			return MODE_PMS_5K;
+		}else{
+			validateOnly({1, 2, 3, 4, 5, 38, 39, 40, 41}, errorChannels);
+			return MODE_PMS_9K;
+		}
+	}else{
+		bool player1 = bms.player == 1;
+		if (player1){
+			// 2Player譜面の #PLAYER 指定を間違えている場合に対応
+			for (int i=36; i<72; i++){
+				if (playChannelUsed[i]){
+					player1 = false;
+					break;
+				}
+			}
+		}
+		if (player1){
+			if (unused({8,9})){
+				validateOnly({6, 1, 2, 3, 4, 5,  7}, errorChannels);
+				return MODE_5K;
+			}else{
+				validateOnly({6, 1, 2, 3, 4, 5, 8, 9, 7}, errorChannels);
+				return MODE_7K;
+			}
+		}else{
+			if (unused({8, 9,  36+8, 36+9})){
+				validateOnly({6, 1, 2, 3, 4, 5,  7,    36+7, 36+1, 36+2, 36+3, 36+4, 36+5,  36+6}, errorChannels);
+				return MODE_10K;
+			}else{
+				validateOnly({6, 1, 2, 3, 4, 5, 8, 9, 7,    36+7, 36+1, 36+2, 36+3, 36+4, 36+5, 36+8, 36+9, 36+6}, errorChannels);
+				return MODE_14K;
+			}
+		}
+	}
+}
+
+QMap<int, int> Bms::BmsUtil::GetLaneMapToBmson(Mode mode)
+{
+	QMap<int, int> laneMap;
+	switch (mode){
+	case MODE_5K:
+		for (int i=1; i<=5; i++){
+			laneMap.insert(i, i);
+		}
+		laneMap.insert(6, 8);
+		break;
+	case MODE_7K:
+		for (int i=1; i<=5; i++){
+			laneMap.insert(i, i);
+		}
+		laneMap.insert(6, 8);
+		laneMap.insert(8, 6);
+		laneMap.insert(9, 7);
+		break;
+	case MODE_10K:
+		for (int i=1; i<=5; i++){
+			laneMap.insert(i, i);
+			laneMap.insert(36+i, 8+i);
+		}
+		laneMap.insert(6, 8);
+		laneMap.insert(36+6, 8+8);
+		break;
+	case MODE_14K:
+		for (int i=1; i<=5; i++){
+			laneMap.insert(i, i);
+			laneMap.insert(36+i, 8+i);
+		}
+		laneMap.insert(6, 8);
+		laneMap.insert(8, 6);
+		laneMap.insert(9, 7);
+		laneMap.insert(36+6, 8+8);
+		laneMap.insert(36+8, 8+6);
+		laneMap.insert(36+9, 8+7);
+		break;
+	case MODE_PMS_9K:
+		for (int i=1; i<=5; i++){
+			laneMap.insert(i, i);
+		}
+		laneMap.insert(36+2, 6);
+		laneMap.insert(36+3, 7);
+		laneMap.insert(36+4, 8);
+		laneMap.insert(36+5, 9);
+		break;
+	case MODE_PMS_5K:
+		laneMap.insert(3, 1);
+		laneMap.insert(4, 2);
+		laneMap.insert(5, 3);
+		laneMap.insert(36+2, 4);
+		laneMap.insert(36+3, 5);
+		break;
+	}
+	return laneMap;
+}
+
+int Bms::BmsUtil::GetSectionLengthInBmson(int resolution, const Section &section)
+{
+	return std::round(double(section.length * Rational(4 * resolution)));
+}
+
+int Bms::BmsUtil::GetPositionInSectionInBmson(int resolution, const Section &section, const Sequence &sequence, int index)
+{
+	return std::round(double(Rational(4 * resolution * index, sequence.resolution) * section.length));
+}
+
+struct LanePlayingState
+{
+	int location;
+	int wav;
+
+	LanePlayingState() : location(0), wav(0){}
+	LanePlayingState(int l, int w) : location(l), wav(w){}
+};
+
+QVector<QMap<int, SoundNote> > Bms::BmsUtil::GetNotesOfBmson(const Bms &bms, Mode mode, int resolution)
+{
+	QMap<int, int> laneMap = GetLaneMapToBmson(mode);
+	QVector<QMap<int, SoundNote>> notes(bms.wavDefs.length());
+	QMap<int, LanePlayingState> laneStatesNormal;
+	QMap<int, LanePlayingState> laneStatesLong;
+	int pos = 0;
+	for (int i=0; i<bms.sections.length(); i++){
+		int sectionLength = GetSectionLengthInBmson(resolution, bms.sections[i]);
+
+		// BGM
+		for (const auto &sequence : bms.sections[i].bgmObjects){
+			for (auto obj=sequence.objects.begin(); obj!=sequence.objects.end(); obj++){
+				if (obj.value() < 0 && obj.value() >= notes.length())
+					continue;
+				int relativePos = GetPositionInSectionInBmson(resolution, bms.sections[i], sequence, obj.key());
+				notes[obj.value()].insert(pos + relativePos, SoundNote(pos+relativePos, 0, 0, 0));
+			}
+		}
+
+		for (auto ch=bms.sections[i].objects.begin(); ch!=bms.sections[i].objects.end(); ch++){
+			const Sequence &sequence = ch.value();
+			if (ch.key() >= ZZtoInt("11") && ch.key() <= ZZtoInt("2Z")){
+				// Normal objects
+				int offset = ch.key() - ZZtoInt("10");
+				if (!laneMap.contains(offset))
+					continue;
+				for (auto obj=sequence.objects.begin(); obj!=sequence.objects.end(); obj++){
+					int relativePos = GetPositionInSectionInBmson(resolution, bms.sections[i], sequence, obj.key());
+					if (obj.value() == bms.lnobj){
+						// LNOBJ
+						if (laneStatesNormal.contains(laneMap[offset])){
+							SoundNote note = notes[laneStatesNormal[laneMap[offset]].wav][laneStatesNormal[laneMap[offset]].location];
+							note.length = pos + relativePos - note.location;
+							notes[laneStatesNormal[laneMap[offset]].wav].insert(note.location, note);
+							laneStatesNormal.remove(laneMap[offset]);
+						}else{
+							// 無視
+						}
+					}else{
+						// 通常ノート
+						if (obj.value() < 0 && obj.value() >= notes.length())
+							continue;
+						notes[obj.value()].insert(pos + relativePos, SoundNote(pos+relativePos, laneMap[offset], 0, 0));
+						laneStatesNormal.insert(laneMap[offset], LanePlayingState(pos+relativePos, obj.value()));
+					}
+				}
+			}else if (ch.key() >= ZZtoInt("31") && ch.key() <= ZZtoInt("4Z")){
+				// Invisible objects
+				//int offset = ch.key() - ZZtoInt("30");
+			}else if (ch.key() >= ZZtoInt("51") && ch.key() <= ZZtoInt("6Z")){
+				// Long notes (processed as LNTYPE 1 (RDM))
+				int offset = ch.key() - ZZtoInt("50");
+				if (!laneMap.contains(offset))
+					continue;
+				for (auto obj=sequence.objects.begin(); obj!=sequence.objects.end(); obj++){
+					if (obj.value() < 0 && obj.value() >= notes.length())
+						continue;
+					int relativePos = GetPositionInSectionInBmson(resolution, bms.sections[i], sequence, obj.key());
+
+					if (laneStatesLong.contains(laneMap[offset])){
+						// 終点 (始点とWAVが異なる obj.value() != laneStatesLong[laneMap[offset]].wav 場合は始点を優先する)
+						SoundNote note = notes[laneStatesLong[laneMap[offset]].wav][laneStatesLong[laneMap[offset]].location];
+						note.length = pos + relativePos - note.location;
+						notes[laneStatesLong[laneMap[offset]].wav].insert(note.location, note);
+						laneStatesLong.remove(laneMap[offset]);
+					}else{
+						// 始点
+						notes[obj.value()].insert(pos + relativePos, SoundNote(pos+relativePos, laneMap[offset], 0, 0));
+						laneStatesLong.insert(laneMap[offset], LanePlayingState(pos+relativePos, obj.value()));
+					}
+				}
+			}else if (ch.key() >= ZZtoInt("D1") && ch.key() <= ZZtoInt("EZ")){
+				// Landmines
+				//int offset = ch.key() - ZZtoInt("D0");
+			}
+		}
+
+		pos += sectionLength;
+	}
+	return notes;
 }
 
 

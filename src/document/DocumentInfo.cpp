@@ -93,7 +93,9 @@ void DocumentInfo::LoadBms(const Bms::Bms &bms)
 	subtitle = bms.subtitle;
 	genre = bms.genre;
 	artist = bms.artist;
-	subartists.append(bms.subartist);
+	if (!bms.subartist.isEmpty()){
+		subartists.append(bms.subartist);
+	}
 	switch (bms.mode){
 	case Bms::MODE_5K:
 		modeHint = "beat-5k";

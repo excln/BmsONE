@@ -90,21 +90,6 @@ static qreal ToReal(const QString &s, qreal defaultValue){
 	return value;
 }
 
-static int ZtoInt(QChar c){
-	int d = c.toLatin1();
-	return d >= '0' && d <= '9' ? d - '0' : (d >= 'A' && d <= 'Z' ? d - 'A' + 10 : -1);
-}
-
-static int ZZtoInt(const QString &xx){
-	if (xx.length() < 2)
-		return -1;
-	int high = ZtoInt(xx[0]);
-	int low  = ZtoInt(xx[1]);
-	if (high < 0 || low < 0)
-		return -1;
-	return high * 36 + low;
-}
-
 void Bms::BmsReader::InitCommandHandlers()
 {
 	using std::placeholders::_1;
@@ -125,7 +110,7 @@ void Bms::BmsReader::InitCommandHandlers()
 	headerCommandHandlers.insert(QString("BANNER"), [this](QString value){ bms.banner = value; });
 	headerCommandHandlers.insert(QString("BACKBMP"), [this](QString value){ bms.backBmp = value; });
 
-	headerCommandHandlers.insert(QString("PLAYER"), [this](QString value){ /* ignored */ });
+	headerCommandHandlers.insert(QString("PLAYER"), [this](QString value){ bms.player = ToInt(value, bms.player); });
 	headerCommandHandlers.insert(QString("RANK"), [this](QString value){ bms.judgeRank = ToInt(value, bms.judgeRank); });
 	headerCommandHandlers.insert(QString("TOTAL"), [this](QString value){ tmpCommands.insert("TOTAL", ToReal(value, 0.0)); });
 	headerCommandHandlers.insert(QString("VOLWAV"), [this](QString value){ bms.volWav = ToReal(value, bms.volWav); });
@@ -133,7 +118,7 @@ void Bms::BmsReader::InitCommandHandlers()
 	headerCommandHandlers.insert(QString("DIFFICULTY"), [this](QString value){ bms.difficulty = ToInt(value, bms.difficulty); });
 	headerCommandHandlers.insert(QString("BPM"), [this](QString value){ bms.bpm = ToReal(value, bms.bpm); });
 	headerCommandHandlers.insert(QString("LNTYPE"), [this](QString value){ /* ignored */ });
-	headerCommandHandlers.insert(QString("LNOBJ"), [this](QString value){ bms.lnobj = ToInt(value, bms.lnobj); });
+	headerCommandHandlers.insert(QString("LNOBJ"), [this](QString value){ int n = BmsUtil::ZZtoInt(value); if (n >= 0) bms.lnobj = n; });
 
 	headerZZDefCommandHandlers.insert(QString("BPM"), [this](int def, QString value){
 		bms.bpmDefs[def] = ToReal(value, 120.0);
@@ -182,7 +167,7 @@ void Bms::BmsReader::LoadMain()
 				return;
 			}
 			int section = ToInt(line.mid(1, 3), -1);
-			int channel = ToInt(line.mid(4, 2), -1);
+			int channel = BmsUtil::ZZtoInt(line.mid(4, 2));
 			QString content = line.mid(delimiter+1).trimmed();
 			if (section < 0 || channel < 0 || content.isEmpty()){
 				Warning(tr("Wrong channel command line: ") + line);
@@ -208,7 +193,7 @@ void Bms::BmsReader::LoadMain()
 			}
 			QString defCommandName = command.mid(0, std::max(0, command.length() - 2));
 			if (headerZZDefCommandHandlers.contains(defCommandName)){
-				int num = ZZtoInt(command.mid(command.length()-2, 2));
+				int num = BmsUtil::ZZtoInt(command.mid(command.length()-2, 2));
 				if (num >= 0){
 					headerZZDefCommandHandlers[defCommandName](num, value);
 					return;
@@ -221,9 +206,24 @@ void Bms::BmsReader::LoadMain()
 
 void Bms::BmsReader::LoadComplete()
 {
-	bms.total = tmpCommands.contains("TOTAL") ? tmpCommands["TOTAL"].toReal() : BmsUtil::GetTotalPlayableNotes(bms) + 200;
+	// その他の情報を補充する
 
-	// TODO: verify BMS data
+	// オブジェ配置などからゲームモードを決定する
+	QList<int> errorChannels;
+	bms.mode = BmsUtil::GetMode(bms, &errorChannels);
+	if (!errorChannels.empty()){
+		QString s;
+		for (auto ch : errorChannels)
+			s += BmsUtil::IntToZZ(ch) + " ";
+		Warning(tr("Mode may be wrong. Error channels: ") + s);
+	}
+
+	// TOTAL省略時の値はノート数を考慮するのが面倒なので適当に設定する
+	bms.total = tmpCommands.contains("TOTAL") ? tmpCommands["TOTAL"].toReal() : 300;
+
+	// TODO:
+	//   * サブタイトルの自動抽出
+
 	progress = 1.0f;
 	status = STATUS_COMPLETE;
 }
@@ -262,7 +262,7 @@ void Bms::BmsReader::OnChannelCommand(int section, int channel, QString content)
 		QVector<int> newObjects;
 		newObjects.resize(content.length() / 2);
 		for (int i=0; i<newObjects.size(); i++){
-			newObjects[i] = ZZtoInt(content.mid(i*2, 2));
+			newObjects[i] = BmsUtil::ZZtoInt(content.mid(i*2, 2));
 			if (newObjects[i] < 0){
 				Warning(tr("Wrong content in channel command line: ") + content);
 				return;
@@ -457,6 +457,7 @@ void Bms::BmsReader::MathTest()
 Bms::Bms::Bms()
 {
 	mode = MODE_7K;
+	player = 1;
 	judgeRank = 2;
 	volWav = 100.0;
 	bpm = 120.0;
