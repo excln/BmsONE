@@ -36,8 +36,12 @@ Bms::BmsReader *BmsIO::LoadBms(QString path)
 
 const char *Bms::BmsReaderConfig::AskTextEncodingKey = "BmsReader/AskTextEncoding";
 const char *Bms::BmsReaderConfig::AskRandomValuesKey = "BmsReader/AskRandomValues";
+const char *Bms::BmsReaderConfig::AskGameModeKey = "BmsReader/AskGameMode";
 const char *Bms::BmsReaderConfig::DefaultTextEncodingKey = "BmsReader/DefaultTextEncoding";
 const char *Bms::BmsReaderConfig::UseRandomValuesKey = "BmsReader/UseRandomValues";
+const char *Bms::BmsReaderConfig::TrustPlayerCommandKey = "BmsReader/TrustPlayerCommand";
+const char *Bms::BmsReaderConfig::IgnoreExtensionKey = "BmsReader/IgnoreExtension";
+const char *Bms::BmsReaderConfig::PreferExModesKey = "BmsReader/PreferExModes";
 const char *Bms::BmsReaderConfig::MinimumResolutionKey = "BmsReader/MinimumResolution";
 const char *Bms::BmsReaderConfig::MaximumResolutionKey = "BmsReader/MaximumResolution";
 const char *Bms::BmsReaderConfig::SkipBetweenRandomAndIfKey = "BmsReader/SkipBetweenRandomAndIf";
@@ -49,8 +53,12 @@ void Bms::BmsReaderConfig::Load()
 	QSettings *settings = App::Instance()->GetSettings();
 	askTextEncoding = settings->value(AskTextEncodingKey, true).toBool();
 	askRandomValues = settings->value(AskRandomValuesKey, true).toBool();
+	askGameMode = settings->value(AskGameModeKey, true).toBool();
 	defaultTextEncoding = settings->value(DefaultTextEncodingKey, QString("")).toString();
 	useRandomValues = settings->value(UseRandomValuesKey, false).toBool();
+	trustPlayerCommand = settings->value(TrustPlayerCommandKey, false).toBool();
+	ignoreExtension = settings->value(IgnoreExtensionKey, false).toBool();
+	preferExModes = settings->value(PreferExModesKey, false).toBool();
 	minimumResolution = settings->value(MinimumResolutionKey, 240).toInt();
 	maximumResolution = settings->value(MaximumResolutionKey, 10000).toInt();
 	skipBetweenRandomAndIf = settings->value(SkipBetweenRandomAndIfKey, false).toBool();
@@ -61,8 +69,12 @@ void Bms::BmsReaderConfig::Save()
 	QSettings *settings = App::Instance()->GetSettings();
 	settings->setValue(AskTextEncodingKey, askTextEncoding);
 	settings->setValue(AskRandomValuesKey, askRandomValues);
+	settings->setValue(AskGameModeKey, askGameMode);
 	settings->setValue(DefaultTextEncodingKey, defaultTextEncoding);
 	settings->setValue(UseRandomValuesKey, useRandomValues);
+	settings->setValue(TrustPlayerCommandKey, trustPlayerCommand);
+	settings->setValue(IgnoreExtensionKey, ignoreExtension);
+	settings->setValue(PreferExModesKey, preferExModes);
 	settings->setValue(MinimumResolutionKey, minimumResolution);
 	settings->setValue(MaximumResolutionKey, maximumResolution);
 	settings->setValue(SkipBetweenRandomAndIfKey, skipBetweenRandomAndIf);
@@ -247,12 +259,12 @@ void Bms::BmsReader::LoadMain()
 		return status;
 	};
 	if (in.atEnd()){
-		LoadComplete();
+		LoadEOF();
 		return;
 	}
 	QString line = in.readLine();
 	if (line.isNull()){
-		LoadComplete();
+		LoadEOF();
 		return;
 	}
 	currentLine++;
@@ -308,22 +320,42 @@ void Bms::BmsReader::LoadMain()
 	}
 }
 
-void Bms::BmsReader::LoadComplete()
+void Bms::BmsReader::LoadEOF()
 {
+	// ファイル終端に到達
 	// その他の情報を補充する
 
-	// オブジェ配置などからゲームモードを決定する
-	QList<int> errorChannels;
-	bms.mode = BmsUtil::GetMode(bms, &errorChannels);
+	// オブジェ配置などからゲームモードを推測する
+	selection = (int)BmsUtil::GetMode(bms, config, &errorChannelsMap);
+	status = STATUS_ASK;
+	question = QUESTION_GAME_MODE;
+
+	cont = [this](QVariant arg){
+		DetermineMode((Mode)arg.toInt());
+		bms.mode = (Mode)arg.toInt();
+		return status;
+	};
+
+	if (!config.askGameMode){
+		status = cont(selection);
+	}
+}
+
+void Bms::BmsReader::DetermineMode(Mode mode)
+{
+	bms.mode = errorChannelsMap.contains(mode) ? mode : (Mode)selection.toInt();
+	auto errorChannels = errorChannelsMap[bms.mode];
 	if (!errorChannels.empty()){
 		QString s;
 		for (auto ch : errorChannels)
 			s += " " + BmsUtil::IntToZZ(ch);
-		Warning(tr("The inferred mode may be wrong. Error channels:") + s);
-	}else{
-		Info("The mode was successfully inferred.");
+		Warning(tr("The selected mode may be wrong. Error channels:") + s);
 	}
+	LoadComplete();
+}
 
+void Bms::BmsReader::LoadComplete()
+{
 	// TOTAL省略時の値はノート数を考慮するのが面倒なので適当に設定する
 	bms.total = tmpCommands.contains("TOTAL") ? tmpCommands["TOTAL"].toReal() : 300;
 

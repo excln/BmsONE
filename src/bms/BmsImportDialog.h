@@ -26,6 +26,7 @@ private:
 	void ResetInteractArea(const QString &message);
 	void AskTextEncoding();
 	void AskRandomValue();
+	void AskGameMode();
 
 private slots:
 	void OnClickNext();

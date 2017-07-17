@@ -85,7 +85,6 @@ void BmsImportDialog::AskTextEncoding()
 {
 	ClearInteractArea();
 	QMap<QString, QString> encodingPreviewMap = reader.GenerateEncodingPreviewMap();
-	QString defaultEncoding = reader.GetDefaultValue().toString();
 
 	auto *label = new QLabel(tr("Select text encoding:"));
 
@@ -100,7 +99,7 @@ void BmsImportDialog::AskTextEncoding()
 		});
 		view->setLineWrapMode(QPlainTextEdit::NoWrap);
 
-		select->setChecked(i.key() == defaultEncoding);
+		select->setChecked(i.key() == input.toString());
 
 		view->setReadOnly(true);
 		entryLayout->addWidget(select);
@@ -118,7 +117,6 @@ void BmsImportDialog::AskTextEncoding()
 void BmsImportDialog::AskRandomValue()
 {
 	ClearInteractArea();
-	input = reader.GetDefaultValue().toInt();
 	int randomMax = reader.GetRandomMax();
 
 	auto *label = new QLabel(tr("Select random value:"));
@@ -171,6 +169,37 @@ void BmsImportDialog::AskRandomValue()
 	interactArea->setLayout(layout);
 }
 
+void BmsImportDialog::AskGameMode()
+{
+	ClearInteractArea();
+	QMap<Bms::Mode, QList<int>> errorChannelsMap = reader.GetErrorChannelsMap();
+
+	auto *label = new QLabel(tr("Select game mode:"));
+
+	auto *previewsLayout = new QHBoxLayout();
+	for (auto i=errorChannelsMap.begin(); i!=errorChannelsMap.end(); i++){
+		Bms::Mode mode = i.key();
+		auto *entryLayout = new QVBoxLayout();
+		auto *select = new QRadioButton(Bms::BmsUtil::LongNameOfMode(mode));
+		auto *view = new QLabel(i.value().empty() ? tr("O") : tr("!"));
+		connect(select, &QRadioButton::clicked, [mode,this](){
+			input = (int)mode;
+		});
+
+		select->setChecked(i.key() == (Bms::Mode)input.toInt());
+
+		entryLayout->addWidget(select);
+		entryLayout->addWidget(view, 1, Qt::AlignCenter);
+		previewsLayout->addLayout(entryLayout, 1);
+	}
+
+	auto *layout = new QVBoxLayout();
+	layout->addWidget(label);
+	layout->addLayout(previewsLayout, 1);
+	layout->setMargin(0);
+	interactArea->setLayout(layout);
+}
+
 void BmsImportDialog::OnClickNext()
 {
 	ResetInteractArea(tr("Loading BMS..."));
@@ -206,6 +235,9 @@ void BmsImportDialog::Next()
 				break;
 			case Bms::BmsReader::QUESTION_RANDOM_VALUE:
 				AskRandomValue();
+				break;
+			case Bms::BmsReader::QUESTION_GAME_MODE:
+				AskGameMode();
 				break;
 			case Bms::BmsReader::NO_QUESTION:
 			default:

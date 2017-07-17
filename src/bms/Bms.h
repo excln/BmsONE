@@ -109,8 +109,12 @@ struct BmsReaderConfig
 private:
 	static const char *AskTextEncodingKey;
 	static const char *AskRandomValuesKey;
+	static const char *AskGameModeKey;
 	static const char *DefaultTextEncodingKey;
 	static const char *UseRandomValuesKey;
+	static const char *TrustPlayerCommandKey;
+	static const char *IgnoreExtensionKey;
+	static const char *PreferExModesKey;
 	static const char *MinimumResolutionKey;
 	static const char *MaximumResolutionKey;
 	static const char *SkipBetweenRandomAndIfKey;
@@ -118,9 +122,13 @@ private:
 public:
 	bool askTextEncoding;
 	bool askRandomValues;
+	bool askGameMode;
 
 	QString defaultTextEncoding;
 	bool useRandomValues;
+	bool trustPlayerCommand;
+	bool ignoreExtension;
+	bool preferExModes;
 
 	int minimumResolution;
 	int maximumResolution;
@@ -146,7 +154,8 @@ public:
 	enum Question{
 		NO_QUESTION,
 		QUESTION_TEXT_ENCODING,
-		QUESTION_RANDOM_VALUE
+		QUESTION_RANDOM_VALUE,
+		QUESTION_GAME_MODE
 	};
 
 private:
@@ -167,7 +176,9 @@ private:
 
 	Question question;
 	QVariant selection;
+
 	int randomMax;
+	QMap<Mode, QList<int>> errorChannelsMap;
 
 	QMap<QString, QVariant> tmpCommands;
 
@@ -183,6 +194,8 @@ private:
 	void InitCommandHandlers();
 
 	void LoadMain();
+	void LoadEOF();
+	void DetermineMode(Mode mode);
 	void LoadComplete();
 	void OnChannelCommand(int section, int channel, QString content);
 
@@ -220,6 +233,7 @@ public:
 	QVariant GetDefaultValue() const;
 	QMap<QString, QString> GenerateEncodingPreviewMap();
 	int GetRandomMax() const;
+	QMap<Mode, QList<int>> GetErrorChannelsMap() const{ return errorChannelsMap; }
 };
 
 
@@ -237,8 +251,11 @@ public:
 	static int FFNUMtoZZNUM(int ff);
 	static int ZZNUMtoFFNUM(int zz);
 
+	// モードの名前
+	static QString LongNameOfMode(Mode mode);
+
 	// モードを推測する
-	static Mode GetMode(const Bms &bms, QList<int> *errorChannels=nullptr);
+	static Mode GetMode(const Bms &bms, const BmsReaderConfig &config, QMap<Mode, QList<int> > *errorChannelsMap=nullptr);
 
 	// 指定されたモードに基づいてチャンネルオフセットからBMSON形式のレーンへの対応表を取得する
 	static QMap<int, int> GetLaneMapToBmson(Mode mode);

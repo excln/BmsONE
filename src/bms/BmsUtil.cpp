@@ -180,7 +180,26 @@ int Bms::BmsUtil::ZZNUMtoFFNUM(int zz)
 
 
 
-Bms::Mode Bms::BmsUtil::GetMode(const Bms &bms, QList<int> *errorChannels)
+QString Bms::BmsUtil::LongNameOfMode(Mode mode)
+{
+	switch (mode){
+	case MODE_5K:
+		return "5key (BMS)";
+	case MODE_7K:
+		return "7key (BMS)";
+	case MODE_10K:
+		return "10key (BMS)";
+	case MODE_14K:
+		return "14key (BMS)";
+	case MODE_PMS_9K:
+		return "9key (PMS)";
+	case MODE_PMS_5K:
+		return "5key (PMS)";
+	}
+	return "";
+}
+
+Bms::Mode Bms::BmsUtil::GetMode(const Bms &bms, const BmsReaderConfig &config, QMap<Mode, QList<int>> *errorChannelsMap)
 {
 	QVector<bool> playChannelUsed(36 * 2, false); // a1 ~ bZ ((a,b) = (1,2), (3,4), (5,6), (D,E))
 	for (int i=0; i<bms.sections.length(); i++){
@@ -196,13 +215,17 @@ Bms::Mode Bms::BmsUtil::GetMode(const Bms &bms, QList<int> *errorChannels)
 			}
 		}
 	}
-	auto validateOnly = [playChannelUsed](QSet<int> channels, QList<int> *errorChannels=nullptr){
+	auto validate = [playChannelUsed,errorChannelsMap](Mode mode, QSet<int> channels){
 		bool ok = true;;
+		QList<int> errorChannels;
 		for (int i=0; i<72; i++){
 			if (playChannelUsed[i] && !channels.contains(i)){
-				if (errorChannels) *errorChannels << i;
+				errorChannels << i;
 				ok = false;
 			}
+		}
+		if (errorChannelsMap){
+			errorChannelsMap->insert(mode, errorChannels);
 		}
 		return ok;
 	};
@@ -213,17 +236,23 @@ Bms::Mode Bms::BmsUtil::GetMode(const Bms &bms, QList<int> *errorChannels)
 		}
 		return true;
 	};
-	if (QFileInfo(bms.path).suffix().toLower() == "pms"){
-		if (unused({1, 2,  40, 41})){
-			validateOnly({3, 4, 5, 38, 39}, errorChannels);
+
+	validate(MODE_5K, {6, 1, 2, 3, 4, 5,  7});
+	validate(MODE_7K, {6, 1, 2, 3, 4, 5, 8, 9, 7});
+	validate(MODE_10K, {6, 1, 2, 3, 4, 5,  7,    36+7, 36+1, 36+2, 36+3, 36+4, 36+5,  36+6});
+	validate(MODE_14K, {6, 1, 2, 3, 4, 5, 8, 9, 7,    36+7, 36+1, 36+2, 36+3, 36+4, 36+5, 36+8, 36+9, 36+6});
+	validate(MODE_PMS_5K, {3, 4, 5, 38, 39});
+	validate(MODE_PMS_9K, {1, 2, 3, 4, 5, 38, 39, 40, 41});
+
+	if (!config.ignoreExtension && QFileInfo(bms.path).suffix().toLower() == "pms"){
+		if (!config.preferExModes && unused({1, 2,  40, 41})){
 			return MODE_PMS_5K;
 		}else{
-			validateOnly({1, 2, 3, 4, 5, 38, 39, 40, 41}, errorChannels);
 			return MODE_PMS_9K;
 		}
 	}else{
 		bool player1 = bms.player == 1;
-		if (player1){
+		if (!config.trustPlayerCommand && player1){
 			// 2Player譜面の #PLAYER 指定を間違えている場合に対応
 			for (int i=36; i<72; i++){
 				if (playChannelUsed[i]){
@@ -233,19 +262,15 @@ Bms::Mode Bms::BmsUtil::GetMode(const Bms &bms, QList<int> *errorChannels)
 			}
 		}
 		if (player1){
-			if (unused({8,9})){
-				validateOnly({6, 1, 2, 3, 4, 5,  7}, errorChannels);
+			if (!config.preferExModes && unused({8,9})){
 				return MODE_5K;
 			}else{
-				validateOnly({6, 1, 2, 3, 4, 5, 8, 9, 7}, errorChannels);
 				return MODE_7K;
 			}
 		}else{
-			if (unused({8, 9,  36+8, 36+9})){
-				validateOnly({6, 1, 2, 3, 4, 5,  7,    36+7, 36+1, 36+2, 36+3, 36+4, 36+5,  36+6}, errorChannels);
+			if (!config.preferExModes && unused({8, 9,  36+8, 36+9})){
 				return MODE_10K;
 			}else{
-				validateOnly({6, 1, 2, 3, 4, 5, 8, 9, 7,    36+7, 36+1, 36+2, 36+3, 36+4, 36+5, 36+8, 36+9, 36+6}, errorChannels);
 				return MODE_14K;
 			}
 		}
@@ -354,26 +379,27 @@ QVector<QMap<int, SoundNote> > Bms::BmsUtil::GetNotesOfBmson(const Bms &bms, Mod
 			if (ch.key() >= ZZtoInt("11") && ch.key() <= ZZtoInt("2Z")){
 				// Normal objects
 				int offset = ch.key() - ZZtoInt("10");
-				if (!laneMap.contains(offset))
-					continue;
+				int lane = laneMap.contains(offset) ? laneMap[offset] : 0;
 				for (auto obj=sequence.objects.begin(); obj!=sequence.objects.end(); obj++){
 					int relativePos = GetPositionInSectionInBmson(resolution, bms.sections[i], sequence, obj.key());
 					if (obj.value() == bms.lnobj){
 						// LNOBJ
-						if (laneStatesNormal.contains(laneMap[offset])){
-							SoundNote note = notes[laneStatesNormal[laneMap[offset]].wav][laneStatesNormal[laneMap[offset]].location];
+						if (lane != 0 && laneStatesNormal.contains(lane)){
+							SoundNote note = notes[laneStatesNormal[lane].wav][laneStatesNormal[lane].location];
 							note.length = pos + relativePos - note.location;
-							notes[laneStatesNormal[laneMap[offset]].wav].insert(note.location, note);
-							laneStatesNormal.remove(laneMap[offset]);
+							notes[laneStatesNormal[lane].wav].insert(note.location, note);
+							laneStatesNormal.remove(lane);
 						}else{
-							// 無視
+							// 終点のみの場合やモードに反するレーンの場合は無視
 						}
 					}else{
 						// 通常ノート
 						if (obj.value() < 0 && obj.value() >= notes.length())
 							continue;
-						notes[obj.value()].insert(pos + relativePos, SoundNote(pos+relativePos, laneMap[offset], 0, 0));
-						laneStatesNormal.insert(laneMap[offset], LanePlayingState(pos+relativePos, obj.value()));
+						notes[obj.value()].insert(pos + relativePos, SoundNote(pos+relativePos, lane, 0, 0));
+						if (lane != 0){
+							laneStatesNormal.insert(lane, LanePlayingState(pos+relativePos, obj.value()));
+						}
 					}
 				}
 			}else if (ch.key() >= ZZtoInt("31") && ch.key() <= ZZtoInt("4Z")){
@@ -382,23 +408,27 @@ QVector<QMap<int, SoundNote> > Bms::BmsUtil::GetNotesOfBmson(const Bms &bms, Mod
 			}else if (ch.key() >= ZZtoInt("51") && ch.key() <= ZZtoInt("6Z")){
 				// Long notes (processed as LNTYPE 1 (RDM))
 				int offset = ch.key() - ZZtoInt("50");
-				if (!laneMap.contains(offset))
-					continue;
+				int lane = laneMap.contains(offset) ? laneMap[offset] : 0;
 				for (auto obj=sequence.objects.begin(); obj!=sequence.objects.end(); obj++){
 					if (obj.value() < 0 && obj.value() >= notes.length())
 						continue;
 					int relativePos = GetPositionInSectionInBmson(resolution, bms.sections[i], sequence, obj.key());
 
-					if (laneStatesLong.contains(laneMap[offset])){
-						// 終点 (始点とWAVが異なる obj.value() != laneStatesLong[laneMap[offset]].wav 場合は始点を優先する)
-						SoundNote note = notes[laneStatesLong[laneMap[offset]].wav][laneStatesLong[laneMap[offset]].location];
+					if (lane != 0 && laneStatesLong.contains(lane)){
+						// 終点 (始点とWAVが異なる obj.value() != laneStatesLong[lane].wav 場合は始点を優先する)
+						SoundNote note = notes[laneStatesLong[lane].wav][laneStatesLong[lane].location];
 						note.length = pos + relativePos - note.location;
-						notes[laneStatesLong[laneMap[offset]].wav].insert(note.location, note);
-						laneStatesLong.remove(laneMap[offset]);
-					}else{
+						notes[laneStatesLong[lane].wav].insert(note.location, note);
+						laneStatesLong.remove(lane);
+					}else if (lane != 0){
 						// 始点
-						notes[obj.value()].insert(pos + relativePos, SoundNote(pos+relativePos, laneMap[offset], 0, 0));
-						laneStatesLong.insert(laneMap[offset], LanePlayingState(pos+relativePos, obj.value()));
+						notes[obj.value()].insert(pos + relativePos, SoundNote(pos+relativePos, lane, 0, 0));
+						laneStatesLong.insert(lane, LanePlayingState(pos+relativePos, obj.value()));
+					}else{
+						// BGMレーンの通常ノートに強制変換
+						notes[obj.value()].insert(pos + relativePos, SoundNote(pos+relativePos, 0, 0, 0));
+						// LNOBJによる終点とは決して対応しない
+						//laneStatesNormal.insert(lane, LanePlayingState(pos+relativePos, obj.value()));
 					}
 				}
 			}else if (ch.key() >= ZZtoInt("D1") && ch.key() <= ZZtoInt("EZ")){

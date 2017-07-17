@@ -13,9 +13,13 @@ class PrefBmsPage : public QWidget
 private:
 	QCheckBox *askTextEncoding;
 	QCheckBox *askRandomValues;
+	QCheckBox *askGameMode;
 
 	QComboBox *defaultTextEncoding;
 	QCheckBox *useRandomValues;
+	QCheckBox *trustPlayerCommand;
+	QCheckBox *ignoreExtension;
+	QCheckBox *preferExModes;
 
 	QLineEdit *minResolution;
 	QLineEdit *maxResolution;
