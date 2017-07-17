@@ -45,9 +45,9 @@ private slots:
 
 private:
 	void Export();
-	void ProcessSoftClip(QDataStream &dout, QTextStream &logStream);
-	void ProcessHardClip(QDataStream &dout, QTextStream &logStream);
-	void ProcessNormalize(QDataStream &dout, QTextStream &logStream);
+	void ProcessSoftClip(QDataStream &dout);
+	void ProcessHardClip(QDataStream &dout);
+	void ProcessNormalize(QDataStream &dout);
 };
 
 #endif // MASTEROUTDIALOG_H

@@ -181,20 +181,10 @@ static float saturate(float t, float x)
 void MasterOutDialog::Export()
 {
 	log->clear();
-	QString logContent;
-	QTextStream logStream(&logContent);
-	auto Log = [&](QString s){
-		logStream << s;
-		log->setText(logContent);
-	};
-	auto LogLn = [&](QString s){
-		logStream << s << "\n";
-		log->setText(logContent);
-	};
 
 	QFile file(editFile->text());
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)){
-		LogLn(tr("Cannot open file."));
+		log->append(tr("Cannot open file."));
 		return;
 	}
 	QDataStream dout(&file);
@@ -237,19 +227,18 @@ void MasterOutDialog::Export()
 
 	switch (clipMethod->currentIndex()){
 	case 0:
-		ProcessSoftClip(dout, logStream);
+		ProcessSoftClip(dout);
 		break;
 	case 1:
-		ProcessHardClip(dout, logStream);
+		ProcessHardClip(dout);
 		break;
 	case 2:
-		ProcessNormalize(dout, logStream);
+		ProcessNormalize(dout);
 		break;
 	default:
-		ProcessSoftClip(dout, logStream);
+		ProcessSoftClip(dout);
 		break;
 	}
-	log->setText(logContent);
 
 	dataSize = (tailData = file.pos()) - offsetData;
 	riffSize = (tailRiff = file.pos()) - offsetRiff;
@@ -259,14 +248,11 @@ void MasterOutDialog::Export()
 	dout.writeRawData((const char*)&riffSize, 4);
 	file.seek(tailRiff);
 	file.close();
-	LogLn(tr("Export complete."));
+	log->append(tr("Export complete."));
 }
 
-void MasterOutDialog::ProcessSoftClip(QDataStream &dout, QTextStream &logStream)
+void MasterOutDialog::ProcessSoftClip(QDataStream &dout)
 {
-	auto LogLn = [&](QString s){
-		logStream << s << "\n";
-	};
 	const qreal dbGain = qreal(sliderGain->value() - SliderGainSteps/2) * 10.0 / (SliderGainSteps/2);
 	const float gain = std::pow(10, dbGain/20);
 	Rms rms(0.f, 0.f);
@@ -295,9 +281,9 @@ void MasterOutDialog::ProcessSoftClip(QDataStream &dout, QTextStream &logStream)
 			peakSat.R = ssr;
 	}
 	if (samples == 0){
-		LogLn(tr("No sample was given."));
+		log->append(tr("No sample was given."));
 	}else{
-		LogLn(tr("Wrote %1 samples.").arg(samples));
+		log->append(tr("Wrote %1 samples.").arg(samples));
 		rms.L /= samples;
 		rms.R /= samples;
 		rmsSat.L /= samples;
@@ -310,27 +296,24 @@ void MasterOutDialog::ProcessSoftClip(QDataStream &dout, QTextStream &logStream)
 		rmsSat.R = std::sqrt(rmsSat.R);
 		peakSat.L = std::sqrt(peakSat.L);
 		peakSat.R = std::sqrt(peakSat.R);
-		LogLn("--------");
-		LogLn(tr("Original"));
-		LogLn(tr("  Peak: %1dB, %2dB").arg(std::log10(peak.L/gain)*20, 3, 'f', 2).arg(std::log10(peak.R/gain)*20, 3, 'f', 2));
-		LogLn(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L/gain)*20, 3, 'f', 2).arg(std::log10(rms.R/gain)*20, 3, 'f', 2));
-		LogLn("--------");
-		LogLn(tr("After volume gain %1dB").arg(dbGain, 4, 'f', 2));
-		LogLn(tr("  Peak: %1dB, %2dB").arg(std::log10(peak.L)*20, 3, 'f', 2).arg(std::log10(peak.R)*20, 3, 'f', 2));
-		LogLn(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L)*20, 3, 'f', 2).arg(std::log10(rms.R)*20, 3, 'f', 2));
-		LogLn("--------");
-		LogLn(tr("After soft clipping"));
-		LogLn(tr("  Peak: %1dB, %2dB").arg(std::log10(peakSat.L)*20, 3, 'f', 2).arg(std::log10(peakSat.R)*20, 3, 'f', 2));
-		LogLn(tr("  RMS: %1dB, %2dB").arg(std::log10(rmsSat.L)*20, 3, 'f', 2).arg(std::log10(rmsSat.R)*20, 3, 'f', 2));
-		LogLn("--------");
+		log->append("--------");
+		log->append(tr("Original"));
+		log->append(tr("  Peak: %1dB, %2dB").arg(std::log10(peak.L/gain)*20, 3, 'f', 2).arg(std::log10(peak.R/gain)*20, 3, 'f', 2));
+		log->append(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L/gain)*20, 3, 'f', 2).arg(std::log10(rms.R/gain)*20, 3, 'f', 2));
+		log->append("--------");
+		log->append(tr("After volume gain %1dB").arg(dbGain, 4, 'f', 2));
+		log->append(tr("  Peak: %1dB, %2dB").arg(std::log10(peak.L)*20, 3, 'f', 2).arg(std::log10(peak.R)*20, 3, 'f', 2));
+		log->append(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L)*20, 3, 'f', 2).arg(std::log10(rms.R)*20, 3, 'f', 2));
+		log->append("--------");
+		log->append(tr("After soft clipping"));
+		log->append(tr("  Peak: %1dB, %2dB").arg(std::log10(peakSat.L)*20, 3, 'f', 2).arg(std::log10(peakSat.R)*20, 3, 'f', 2));
+		log->append(tr("  RMS: %1dB, %2dB").arg(std::log10(rmsSat.L)*20, 3, 'f', 2).arg(std::log10(rmsSat.R)*20, 3, 'f', 2));
+		log->append("--------");
 	}
 }
 
-void MasterOutDialog::ProcessHardClip(QDataStream &dout, QTextStream &logStream)
+void MasterOutDialog::ProcessHardClip(QDataStream &dout)
 {
-	auto LogLn = [&](QString s){
-		logStream << s << "\n";
-	};
 	const qreal dbGain = qreal(sliderGain->value() - SliderGainSteps/2) * 10.0 / (SliderGainSteps/2);
 	const float gain = std::pow(10, dbGain/20);
 	Rms rms(0.f, 0.f);
@@ -360,9 +343,9 @@ void MasterOutDialog::ProcessHardClip(QDataStream &dout, QTextStream &logStream)
 			peakSat.R = ssr;
 	}
 	if (samples == 0){
-		LogLn(tr("No sample was given."));
+		log->append(tr("No sample was given."));
 	}else{
-		LogLn(tr("Wrote %1 samples.").arg(samples));
+		log->append(tr("Wrote %1 samples.").arg(samples));
 		rms.L /= samples;
 		rms.R /= samples;
 		rmsSat.L /= samples;
@@ -375,27 +358,24 @@ void MasterOutDialog::ProcessHardClip(QDataStream &dout, QTextStream &logStream)
 		rmsSat.R = std::sqrt(rmsSat.R);
 		peakSat.L = std::sqrt(peakSat.L);
 		peakSat.R = std::sqrt(peakSat.R);
-		LogLn("--------");
-		LogLn(tr("Original"));
-		LogLn(tr("  Peak: %1dB, %2dB").arg(std::log10(peak.L/gain)*20, 3, 'f', 2).arg(std::log10(peak.R/gain)*20, 3, 'f', 2));
-		LogLn(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L/gain)*20, 3, 'f', 2).arg(std::log10(rms.R/gain)*20, 3, 'f', 2));
-		LogLn("--------");
-		LogLn(tr("After volume gain %1dB").arg(dbGain, 4, 'f', 2));
-		LogLn(tr("  Peak: %1dB, %2dB").arg(std::log10(peak.L)*20, 3, 'f', 2).arg(std::log10(peak.R)*20, 3, 'f', 2));
-		LogLn(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L)*20, 3, 'f', 2).arg(std::log10(rms.R)*20, 3, 'f', 2));
-		LogLn("--------");
-		LogLn(tr("After hard clipping"));
-		LogLn(tr("  Peak: %1dB, %2dB").arg(std::log10(peakSat.L)*20, 3, 'f', 2).arg(std::log10(peakSat.R)*20, 3, 'f', 2));
-		LogLn(tr("  RMS: %1dB, %2dB").arg(std::log10(rmsSat.L)*20, 3, 'f', 2).arg(std::log10(rmsSat.R)*20, 3, 'f', 2));
-		LogLn("--------");
+		log->append("--------");
+		log->append(tr("Original"));
+		log->append(tr("  Peak: %1dB, %2dB").arg(std::log10(peak.L/gain)*20, 3, 'f', 2).arg(std::log10(peak.R/gain)*20, 3, 'f', 2));
+		log->append(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L/gain)*20, 3, 'f', 2).arg(std::log10(rms.R/gain)*20, 3, 'f', 2));
+		log->append("--------");
+		log->append(tr("After volume gain %1dB").arg(dbGain, 4, 'f', 2));
+		log->append(tr("  Peak: %1dB, %2dB").arg(std::log10(peak.L)*20, 3, 'f', 2).arg(std::log10(peak.R)*20, 3, 'f', 2));
+		log->append(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L)*20, 3, 'f', 2).arg(std::log10(rms.R)*20, 3, 'f', 2));
+		log->append("--------");
+		log->append(tr("After hard clipping"));
+		log->append(tr("  Peak: %1dB, %2dB").arg(std::log10(peakSat.L)*20, 3, 'f', 2).arg(std::log10(peakSat.R)*20, 3, 'f', 2));
+		log->append(tr("  RMS: %1dB, %2dB").arg(std::log10(rmsSat.L)*20, 3, 'f', 2).arg(std::log10(rmsSat.R)*20, 3, 'f', 2));
+		log->append("--------");
 	}
 }
 
-void MasterOutDialog::ProcessNormalize(QDataStream &dout, QTextStream &logStream)
+void MasterOutDialog::ProcessNormalize(QDataStream &dout)
 {
-	auto LogLn = [&](QString s){
-		logStream << s << "\n";
-	};
 	const qreal dbGain = qreal(sliderGain->value() - SliderGainSteps/2) * 10.0 / (SliderGainSteps/2);
 	const float gain = std::pow(10, dbGain/20);
 	Rms peakOrg(0.f, 0.f);
@@ -428,28 +408,28 @@ void MasterOutDialog::ProcessNormalize(QDataStream &dout, QTextStream &logStream
 			peakSat.R = ssr;
 	}
 	if (samples == 0){
-		LogLn(tr("No sample was given."));
+		log->append(tr("No sample was given."));
 	}else{
-		LogLn(tr("Wrote %1 samples.").arg(samples));
+		log->append(tr("Wrote %1 samples.").arg(samples));
 		rms.L /= samples;
 		rms.R /= samples;
 		rms.L = std::sqrt(rms.L);
 		rms.R = std::sqrt(rms.R);
 		peakSat.L = std::sqrt(peakSat.L);
 		peakSat.R = std::sqrt(peakSat.R);
-		LogLn("--------");
-		LogLn(tr("Original"));
-		LogLn(tr("  Peak: %1dB, %2dB").arg(std::log10(peakOrg.L)*20, 3, 'f', 2).arg(std::log10(peakOrg.R)*20, 3, 'f', 2));
-		LogLn(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L/gainWithNorm)*20, 3, 'f', 2).arg(std::log10(rms.R/gain)*20, 3, 'f', 2));
-		LogLn("--------");
-		LogLn(tr("After volume gain %1dB").arg(dbGain, 4, 'f', 2));
-		LogLn(tr("  Peak: %1dB, %2dB").arg(std::log10(peakOrg.L*gain)*20, 3, 'f', 2).arg(std::log10(peakOrg.R*gain)*20, 3, 'f', 2));
-		LogLn(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L/gainWithNorm*gain)*20, 3, 'f', 2).arg(std::log10(rms.R/gainWithNorm*gain)*20, 3, 'f', 2));
-		LogLn("--------");
-		LogLn(tr("After normalization"));
-		LogLn(tr("  Peak: %1dB, %2dB").arg(std::log10(peakSat.L)*20, 3, 'f', 2).arg(std::log10(peakSat.R)*20, 3, 'f', 2));
-		LogLn(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L)*20, 3, 'f', 2).arg(std::log10(rms.R)*20, 3, 'f', 2));
-		LogLn("--------");
+		log->append("--------");
+		log->append(tr("Original"));
+		log->append(tr("  Peak: %1dB, %2dB").arg(std::log10(peakOrg.L)*20, 3, 'f', 2).arg(std::log10(peakOrg.R)*20, 3, 'f', 2));
+		log->append(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L/gainWithNorm)*20, 3, 'f', 2).arg(std::log10(rms.R/gain)*20, 3, 'f', 2));
+		log->append("--------");
+		log->append(tr("After volume gain %1dB").arg(dbGain, 4, 'f', 2));
+		log->append(tr("  Peak: %1dB, %2dB").arg(std::log10(peakOrg.L*gain)*20, 3, 'f', 2).arg(std::log10(peakOrg.R*gain)*20, 3, 'f', 2));
+		log->append(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L/gainWithNorm*gain)*20, 3, 'f', 2).arg(std::log10(rms.R/gainWithNorm*gain)*20, 3, 'f', 2));
+		log->append("--------");
+		log->append(tr("After normalization"));
+		log->append(tr("  Peak: %1dB, %2dB").arg(std::log10(peakSat.L)*20, 3, 'f', 2).arg(std::log10(peakSat.R)*20, 3, 'f', 2));
+		log->append(tr("  RMS: %1dB, %2dB").arg(std::log10(rms.L)*20, 3, 'f', 2).arg(std::log10(rms.R)*20, 3, 'f', 2));
+		log->append("--------");
 	}
 }
 
