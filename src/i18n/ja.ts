@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="ja_JP">
+<TS version="2.0" language="ja_JP">
 <context>
     <name>AudioPlayer</name>
     <message>
@@ -25,6 +25,186 @@
         <location filename="../AudioPlayer.cpp" line="453"/>
         <source>Output Level Meter</source>
         <translation>出力レベルメーター</translation>
+    </message>
+</context>
+<context>
+    <name>Bms::BmsReader</name>
+    <message>
+        <location filename="../bms/Bms.cpp" line="282"/>
+        <location filename="../bms/Bms.cpp" line="289"/>
+        <source>Wrong channel command line: </source>
+        <translation>誤ったコマンド行です: </translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="318"/>
+        <source>Unrecognized command: </source>
+        <translation>コマンドを認識できません: </translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="352"/>
+        <source>The selected mode may be wrong. Error channels:</source>
+        <translation>選択されたモードは間違っている可能性があります。エラーチャンネル:</translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="367"/>
+        <source>BMS import completed.</source>
+        <translation>BMSインポートが完了しました。</translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="386"/>
+        <source>Wrong section length: </source>
+        <translation>誤った小節長です: </translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="389"/>
+        <source>Section length %1 -&gt; %2 ( %3 / %4)</source>
+        <translation>小節長 %1 → %2 (%3 / %4)</translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="396"/>
+        <location filename="../bms/Bms.cpp" line="406"/>
+        <source>Wrong content in channel command line: </source>
+        <translation>コマンド行の内容に問題があります: </translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="422"/>
+        <source>Resolution overflow occurred at section #%1.</source>
+        <translation>小節 #%1 で解像度のオーバーフローが発生しました。</translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="465"/>
+        <source>Wrong &quot;RANDOM&quot; argument: </source>
+        <translation>#RANDOM命令の引数が間違っています: </translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="481"/>
+        <source>RANDOM value: %1</source>
+        <translation>RANDOM値: %1</translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="500"/>
+        <source>Wrong &quot;SETRANDOM&quot; argument: </source>
+        <translation>#SETRANDOM命令の引数が間違っています: </translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="511"/>
+        <source>Wrong &quot;IF&quot; argument: </source>
+        <translation>#IF命令の引数が間違っています: </translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="514"/>
+        <source>&quot;IF&quot; without random value.</source>
+        <translation>#RANDOM命令の外側に#IF命令があります。</translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="528"/>
+        <source>Wrong &quot;ELSEIF&quot; argument: </source>
+        <translation>#ELSEIF命令の引数が間違っています: </translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="531"/>
+        <source>&quot;ELSEIF&quot; without random value.</source>
+        <translation>#RANDOM命令の外側に#ELSEIF命令があります。</translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="544"/>
+        <source>&quot;ELSE&quot; without random value.</source>
+        <translation>#RANDOM命令の外側に#ELSE命令があります。</translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="571"/>
+        <source>Info: </source>
+        <translation>情報: </translation>
+    </message>
+    <message>
+        <location filename="../bms/Bms.cpp" line="577"/>
+        <source>Warning: </source>
+        <translation>警告: </translation>
+    </message>
+</context>
+<context>
+    <name>BmsImportDialog</name>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="10"/>
+        <source>BMS Import</source>
+        <translation>BMSインポート</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="17"/>
+        <source>Next</source>
+        <translation>次へ</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="21"/>
+        <source>Cancel</source>
+        <translation>キャンセル</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="23"/>
+        <source>Skip Questions</source>
+        <translation>質問をスキップする</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="57"/>
+        <location filename="../bms/BmsImportDialog.cpp" line="205"/>
+        <location filename="../bms/BmsImportDialog.cpp" line="244"/>
+        <source>Loading BMS...</source>
+        <translation>BMSをロードしています...</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="89"/>
+        <source>Select text encoding:</source>
+        <translation>テキストエンコーディングを選択してください:</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="95"/>
+        <source>(default)</source>
+        <translation>(デフォルト)</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="122"/>
+        <source>Select random value:</source>
+        <translation>RANDOM値を選択してください:</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="124"/>
+        <source>Random</source>
+        <translation>乱数を使う</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="177"/>
+        <source>Select game mode:</source>
+        <translation>ゲームモードを選択してください:</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="184"/>
+        <source>O</source>
+        <translation>○</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="184"/>
+        <source>!</source>
+        <translation>!</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="250"/>
+        <source>Succeeded to import BMS.</source>
+        <translation>BMSインポートに成功しました。</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="253"/>
+        <source>Finish</source>
+        <translation>完了</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="258"/>
+        <source>Failed to import BMS.</source>
+        <translation>BMSインポートに失敗しました。</translation>
+    </message>
+    <message>
+        <location filename="../bms/BmsImportDialog.cpp" line="259"/>
+        <source>Close</source>
+        <translation>閉じる</translation>
     </message>
 </context>
 <context>
@@ -89,7 +269,7 @@
     </message>
     <message>
         <source>Show Found Channels Only</source>
-        <translation type="vanished">検索結果のみ表示</translation>
+        <translation>検索結果のみ表示</translation>
     </message>
     <message>
         <location filename="../ChannelFindTools.cpp" line="44"/>
@@ -111,15 +291,15 @@
     <name>ChannelInfoView</name>
     <message>
         <source>Sound File:</source>
-        <translation type="vanished">音声ファイル:</translation>
+        <translation>音声ファイル:</translation>
     </message>
     <message>
         <source>Format:</source>
-        <translation type="vanished">形式:</translation>
+        <translation>形式:</translation>
     </message>
     <message>
         <source>Length:</source>
-        <translation type="vanished">長さ:</translation>
+        <translation>長さ:</translation>
     </message>
     <message>
         <location filename="../ChannelInfoView.cpp" line="29"/>
@@ -143,7 +323,7 @@
     </message>
     <message>
         <source>Loading...</source>
-        <translation type="vanished">読み込み中...</translation>
+        <translation>読み込み中...</translation>
     </message>
     <message>
         <location filename="../ChannelInfoView.cpp" line="258"/>
@@ -160,7 +340,7 @@
     <name>Document</name>
     <message>
         <location filename="../document/Document.cpp" line="69"/>
-        <location filename="../document/Document.cpp" line="212"/>
+        <location filename="../document/Document.cpp" line="327"/>
         <source>Failed to open file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
     </message>
@@ -172,64 +352,64 @@
         <translation>不正な形式のファイルです。</translation>
     </message>
     <message>
-        <location filename="../document/Document.cpp" line="219"/>
+        <location filename="../document/Document.cpp" line="334"/>
         <source>Failed to convert bmson format:</source>
         <translation>BMSON フォーマットの変換に失敗しました:</translation>
     </message>
     <message>
-        <location filename="../document/Document.cpp" line="446"/>
+        <location filename="../document/Document.cpp" line="561"/>
         <source>move sound channel</source>
         <translation>音声チャンネル移動</translation>
     </message>
     <message>
-        <location filename="../document/Document.cpp" line="516"/>
+        <location filename="../document/Document.cpp" line="631"/>
         <source>add bar line</source>
         <translation>小節線追加</translation>
     </message>
     <message>
-        <location filename="../document/Document.cpp" line="531"/>
+        <location filename="../document/Document.cpp" line="646"/>
         <source>remove bar line</source>
         <translation>小節線削除</translation>
     </message>
     <message>
-        <location filename="../document/Document.cpp" line="550"/>
+        <location filename="../document/Document.cpp" line="665"/>
         <source>update BPM event</source>
         <translation>小節線更新</translation>
     </message>
     <message>
-        <location filename="../document/Document.cpp" line="561"/>
+        <location filename="../document/Document.cpp" line="676"/>
         <source>add BPM event</source>
         <translation>BPMイベント追加</translation>
     </message>
     <message>
-        <location filename="../document/Document.cpp" line="581"/>
-        <location filename="../document/Document.cpp" line="646"/>
+        <location filename="../document/Document.cpp" line="696"/>
+        <location filename="../document/Document.cpp" line="761"/>
         <source>remove BPM event</source>
         <translation>BPMイベント削除</translation>
     </message>
     <message>
-        <location filename="../document/Document.cpp" line="603"/>
+        <location filename="../document/Document.cpp" line="718"/>
         <source>update BPM events</source>
         <translation>BPMイベント更新</translation>
     </message>
     <message>
-        <location filename="../document/Document.cpp" line="636"/>
+        <location filename="../document/Document.cpp" line="751"/>
         <source>remove BPM events</source>
         <translation>BPMイベント削除</translation>
     </message>
     <message>
-        <location filename="../document/Document.cpp" line="668"/>
+        <location filename="../document/Document.cpp" line="783"/>
         <source>delete sound notes</source>
         <translation>音声ノート削除</translation>
     </message>
     <message>
-        <location filename="../document/Document.cpp" line="705"/>
-        <location filename="../document/Document.cpp" line="962"/>
+        <location filename="../document/Document.cpp" line="820"/>
+        <location filename="../document/Document.cpp" line="1077"/>
         <source>update sound notes</source>
         <translation>音声ノート変更</translation>
     </message>
     <message>
-        <location filename="../document/Document.cpp" line="798"/>
+        <location filename="../document/Document.cpp" line="913"/>
         <source>convert resolution</source>
         <translation>分解能変換</translation>
     </message>
@@ -237,87 +417,87 @@
 <context>
     <name>DocumentInfo</name>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="122"/>
+        <location filename="../document/DocumentInfo.cpp" line="215"/>
         <source>edit title</source>
         <translation>タイトル</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="135"/>
+        <location filename="../document/DocumentInfo.cpp" line="228"/>
         <source>edit subtitle</source>
         <translation>サブタイトル</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="147"/>
+        <location filename="../document/DocumentInfo.cpp" line="240"/>
         <source>edit genre</source>
         <translation>ジャンル</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="159"/>
+        <location filename="../document/DocumentInfo.cpp" line="252"/>
         <source>edit artist</source>
         <translation>アーティスト</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="176"/>
+        <location filename="../document/DocumentInfo.cpp" line="269"/>
         <source>edit subartists</source>
         <translation>サブアーティスト</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="192"/>
+        <location filename="../document/DocumentInfo.cpp" line="285"/>
         <source>edit chart name</source>
         <translation>譜面名</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="208"/>
+        <location filename="../document/DocumentInfo.cpp" line="301"/>
         <source>edit mode hint</source>
         <translation>モード</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="220"/>
+        <location filename="../document/DocumentInfo.cpp" line="313"/>
         <source>edit judge rank</source>
         <translation>判定ランク</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="232"/>
+        <location filename="../document/DocumentInfo.cpp" line="325"/>
         <source>edit total</source>
         <translation>トータル値</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="250"/>
+        <location filename="../document/DocumentInfo.cpp" line="343"/>
         <source>edit initial BPM</source>
         <translation>初期BPM</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="262"/>
+        <location filename="../document/DocumentInfo.cpp" line="355"/>
         <source>edit level</source>
         <translation>レベル</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="278"/>
+        <location filename="../document/DocumentInfo.cpp" line="371"/>
         <source>edit back image</source>
         <translation>背景画像</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="294"/>
+        <location filename="../document/DocumentInfo.cpp" line="387"/>
         <source>edit eyecatch image</source>
         <translation>アイキャッチ画像</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="310"/>
+        <location filename="../document/DocumentInfo.cpp" line="403"/>
         <source>edit title image</source>
         <translation>タイトル画像</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="326"/>
+        <location filename="../document/DocumentInfo.cpp" line="419"/>
         <source>edit banner</source>
         <translation>バナー</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="342"/>
+        <location filename="../document/DocumentInfo.cpp" line="435"/>
         <source>edit preview music</source>
         <translation>プレビュー音</translation>
     </message>
     <message>
-        <location filename="../document/DocumentInfo.cpp" line="396"/>
+        <location filename="../document/DocumentInfo.cpp" line="489"/>
         <source>edit extra fields</source>
         <translation>拡張情報</translation>
     </message>
@@ -414,7 +594,7 @@
     </message>
     <message>
         <source>Defined variables:</source>
-        <translation type="vanished">定義済み変数:</translation>
+        <translation>定義済み変数:</translation>
     </message>
     <message>
         <location filename="../ExternalViewerTools.cpp" line="240"/>
@@ -498,7 +678,7 @@ All files (*.*)</source>
     </message>
     <message>
         <source>Configure</source>
-        <translation type="vanished">設定</translation>
+        <translation>設定</translation>
     </message>
 </context>
 <context>
@@ -706,51 +886,51 @@ All files (*.*)</source>
     </message>
     <message>
         <source>The title of the song.</source>
-        <translation type="vanished">曲のタイトルです。</translation>
+        <translation>曲のタイトルです。</translation>
     </message>
     <message>
         <source>The subtitle of the song.</source>
-        <translation type="vanished">曲のサブタイトルです。</translation>
+        <translation>曲のサブタイトルです。</translation>
     </message>
     <message>
         <source>The genre of the song.</source>
-        <translation type="vanished">曲のジャンルです。</translation>
+        <translation>曲のジャンルです。</translation>
     </message>
     <message>
         <source>The primary artist.</source>
-        <translation type="vanished">代表のアーティストです。</translation>
+        <translation>代表のアーティストです。</translation>
     </message>
     <message>
         <source>The other artists. Example:</source>
-        <translation type="vanished">他のアーティストです。例:</translation>
+        <translation>他のアーティストです。例:</translation>
     </message>
     <message>
         <source>The chart name of this bmson file.</source>
-        <translation type="vanished">このbmsonファイルの譜面名です。</translation>
+        <translation>このbmsonファイルの譜面名です。</translation>
     </message>
     <message>
         <source>The game mode in which this chart should be played.</source>
-        <translation type="vanished">この譜面がどのゲームモードでプレイされるかを指定します。</translation>
+        <translation>この譜面がどのゲームモードでプレイされるかを指定します。</translation>
     </message>
     <message>
         <source>The number of pulses per beat (one quarter note in a 4/4 measure). Every note will located at some pulse number.</source>
-        <translation type="vanished">1拍(4/4拍子における4分音符)の分解能を指定します。</translation>
+        <translation>1拍(4/4拍子における4分音符)の分解能を指定します。</translation>
     </message>
     <message>
         <source>The width of judgment window. Default value is 100. Larger values are looser.</source>
-        <translation type="vanished">判定の幅を指定します。プレイヤーによって自動的に計算される標準値を100として相対的に指定します。大きいほど緩くなります。</translation>
+        <translation>判定の幅を指定します。プレイヤーによって自動的に計算される標準値を100として相対的に指定します。大きいほど緩くなります。</translation>
     </message>
     <message>
         <source>The tempo at the start of the song.</source>
-        <translation type="vanished">曲開始時のテンポを指定します。</translation>
+        <translation>曲開始時のテンポを指定します。</translation>
     </message>
     <message>
         <source>The relative amount of gauge increase. Default value is 100. Larger values are easier.</source>
-        <translation type="vanished">ゲージの増加量を指定します。プレイヤーによって自動的に計算される標準値を100として相対的に指定します。大きいほど簡単になります。</translation>
+        <translation>ゲージの増加量を指定します。プレイヤーによって自動的に計算される標準値を100として相対的に指定します。大きいほど簡単になります。</translation>
     </message>
     <message>
         <source>The level of this chart. It should not be negative number.</source>
-        <translation type="vanished">譜面のレベルを指定します。負の数は指定できません。</translation>
+        <translation>譜面のレベルを指定します。負の数は指定できません。</translation>
     </message>
     <message>
         <location filename="../InfoView.cpp" line="101"/>
@@ -774,7 +954,7 @@ All files (*.*)</source>
     </message>
     <message>
         <source>The name of an audio file that previews the song.</source>
-        <translation type="vanished">プレビュー用の音声ファイル名を指定します。</translation>
+        <translation>プレビュー用の音声ファイル名を指定します。</translation>
     </message>
     <message>
         <location filename="../InfoView.cpp" line="106"/>
@@ -788,7 +968,7 @@ All files (*.*)</source>
     </message>
     <message>
         <source>Old resolution:</source>
-        <translation type="vanished">古い分解能:</translation>
+        <translation>古い分解能:</translation>
     </message>
     <message>
         <location filename="../InfoView.cpp" line="501"/>
@@ -832,434 +1012,432 @@ All files (*.*)</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../MainWindow.cpp" line="49"/>
+        <location filename="../MainWindow.cpp" line="50"/>
         <source>New</source>
         <translation>新規作成</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="55"/>
+        <location filename="../MainWindow.cpp" line="56"/>
         <source>Open...</source>
         <translation>開く...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="61"/>
-        <location filename="../MainWindow.cpp" line="982"/>
+        <location filename="../MainWindow.cpp" line="62"/>
+        <location filename="../MainWindow.cpp" line="983"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="67"/>
+        <location filename="../MainWindow.cpp" line="68"/>
         <source>Save As...</source>
         <translation>名前を付けて保存...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="72"/>
+        <location filename="../MainWindow.cpp" line="73"/>
         <source>Export WAV...</source>
         <translation>WAVエクスポート...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="77"/>
+        <location filename="../MainWindow.cpp" line="78"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="84"/>
-        <location filename="../MainWindow.cpp" line="770"/>
+        <location filename="../MainWindow.cpp" line="85"/>
+        <location filename="../MainWindow.cpp" line="771"/>
         <source>Undo</source>
         <translation>元に戻す</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="90"/>
-        <location filename="../MainWindow.cpp" line="777"/>
+        <location filename="../MainWindow.cpp" line="91"/>
+        <location filename="../MainWindow.cpp" line="778"/>
         <source>Redo</source>
         <translation>やり直し</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="96"/>
+        <location filename="../MainWindow.cpp" line="97"/>
         <source>Cut</source>
         <translation>切り取り</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="101"/>
+        <location filename="../MainWindow.cpp" line="102"/>
         <source>Copy</source>
         <translation>コピー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="106"/>
+        <location filename="../MainWindow.cpp" line="107"/>
         <source>Paste</source>
         <translation>貼り付け</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="111"/>
+        <location filename="../MainWindow.cpp" line="112"/>
         <source>Select All</source>
         <translation>すべて選択</translation>
     </message>
     <message>
         <source>Switch Key/BGM</source>
-        <translation type="vanished">キー/BGMの切り替え</translation>
+        <translation>キー/BGMの切り替え</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="135"/>
+        <location filename="../MainWindow.cpp" line="136"/>
         <source>Edit Mode</source>
         <translation>編集モード</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="139"/>
+        <location filename="../MainWindow.cpp" line="140"/>
         <source>Write Mode</source>
         <translation>書込モード</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="143"/>
+        <location filename="../MainWindow.cpp" line="144"/>
         <source>Interactive Mode</source>
         <translation>インタラクティブモード</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="147"/>
+        <location filename="../MainWindow.cpp" line="148"/>
         <source>Lock Note Creation</source>
         <translation>ノート作成をロック</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="151"/>
+        <location filename="../MainWindow.cpp" line="152"/>
         <source>Lock Note Deletion</source>
         <translation>ノート削除をロック</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="155"/>
+        <location filename="../MainWindow.cpp" line="156"/>
         <source>Lock Vertical Move</source>
         <translation>縦方向の移動をロック</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="159"/>
+        <location filename="../MainWindow.cpp" line="160"/>
         <source>Play</source>
         <translation>再生</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="163"/>
+        <location filename="../MainWindow.cpp" line="164"/>
         <source>Clear Master Cache</source>
         <translation>マスターキャッシュをクリア</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="167"/>
+        <location filename="../MainWindow.cpp" line="168"/>
         <source>Preferences...</source>
         <translation>環境設定...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="173"/>
+        <location filename="../MainWindow.cpp" line="174"/>
         <source>Toggle Full Screen</source>
         <translation>フルスクリーン切り替え</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="178"/>
+        <location filename="../MainWindow.cpp" line="179"/>
         <source>Snap to Grid</source>
         <translation>グリッドにスナップ</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="182"/>
+        <location filename="../MainWindow.cpp" line="183"/>
         <source>Darken Notes in Inactive Channels</source>
         <translation>非アクティブなチャンネルのノーツを暗くする</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="186"/>
+        <location filename="../MainWindow.cpp" line="187"/>
         <source>Zoom In</source>
         <translation>拡大</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="190"/>
+        <location filename="../MainWindow.cpp" line="191"/>
         <source>Zoom Out</source>
         <translation>縮小</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="194"/>
+        <location filename="../MainWindow.cpp" line="195"/>
         <source>Reset</source>
         <comment>Zoom</comment>
         <translation>リセット</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="198"/>
+        <location filename="../MainWindow.cpp" line="199"/>
         <source>Add...</source>
         <translation>追加...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="203"/>
+        <location filename="../MainWindow.cpp" line="204"/>
         <source>Select Previous</source>
         <translation>前を選択</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="208"/>
+        <location filename="../MainWindow.cpp" line="209"/>
         <source>Select Next</source>
         <translation>次を選択</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="213"/>
+        <location filename="../MainWindow.cpp" line="214"/>
         <source>Move Left</source>
         <translation>左に移動</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="218"/>
+        <location filename="../MainWindow.cpp" line="219"/>
         <source>Move Right</source>
         <translation>右に移動</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="306"/>
+        <location filename="../MainWindow.cpp" line="307"/>
         <source>Sound Channel Lanes Display</source>
         <translation>音声チャンネルのレーン表示</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="325"/>
-        <location filename="../MainWindow.cpp" line="387"/>
+        <location filename="../MainWindow.cpp" line="326"/>
+        <location filename="../MainWindow.cpp" line="388"/>
         <source>Preview</source>
         <translation>プレビュー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="513"/>
+        <location filename="../MainWindow.cpp" line="514"/>
         <source>bmson files (*.bmson);;legacy bms files (*.bms *.bme *.bml *.pms);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;旧BMSファイル (*.bms *.bme *.bml *.pms);;すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1140"/>
         <source>Failed to import legacy BMS.</source>
         <translation>旧BMSの読み込みに失敗しました。</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1167"/>
+        <location filename="../MainWindow.cpp" line="1163"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1168"/>
+        <location filename="../MainWindow.cpp" line="1164"/>
         <source>The following files are not in the current bmson directory. Are you sure to add these files?</source>
         <translation>以下のファイルは現在のbmsonディレクトリの中にありません。追加してもよろしいですか?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="116"/>
-        <location filename="../MainWindow.cpp" line="223"/>
+        <location filename="../MainWindow.cpp" line="117"/>
+        <location filename="../MainWindow.cpp" line="224"/>
         <source>Delete</source>
         <translation>削除</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="121"/>
+        <location filename="../MainWindow.cpp" line="122"/>
         <source>Move to Key Lanes</source>
         <translation>キーレーンに移動</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="126"/>
+        <location filename="../MainWindow.cpp" line="127"/>
         <source>Move to BGM Lanes</source>
         <translation>BGMレーンに移動</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="227"/>
+        <location filename="../MainWindow.cpp" line="228"/>
         <source>Select File...</source>
         <translation>ファイル選択...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="231"/>
+        <location filename="../MainWindow.cpp" line="232"/>
         <source>Preview Source Sound</source>
         <translation>ソースをプレビュー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="236"/>
+        <location filename="../MainWindow.cpp" line="237"/>
         <source>About BmsONE...</source>
         <translation>BmsONE について...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="242"/>
+        <location filename="../MainWindow.cpp" line="243"/>
         <source>About Qt...</source>
         <translation>Qt について...</translation>
     </message>
     <message>
         <source>External Viewer</source>
-        <translation type="vanished">外部ビューワ</translation>
+        <translation>外部ビューワ</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="393"/>
+        <location filename="../MainWindow.cpp" line="394"/>
         <source>Find Channels</source>
         <translation>チャンネル検索</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="744"/>
+        <location filename="../MainWindow.cpp" line="745"/>
         <source>About BmsONE</source>
         <translation>BmsONE について</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="247"/>
-        <location filename="../MainWindow.cpp" line="356"/>
+        <location filename="../MainWindow.cpp" line="248"/>
+        <location filename="../MainWindow.cpp" line="357"/>
         <source>File</source>
         <translation>ファイル</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="131"/>
+        <location filename="../MainWindow.cpp" line="132"/>
         <source>Separate Layered Notes</source>
         <translation>レイヤーノーツを分離</translation>
     </message>
     <message>
         <source>Find...</source>
-        <translation type="vanished">検索...</translation>
+        <translation>検索...</translation>
     </message>
     <message>
         <source>Find Next</source>
-        <translation type="vanished">次を検索</translation>
+        <translation>次を検索</translation>
     </message>
     <message>
         <source>Find Previous</source>
-        <translation type="vanished">前を検索</translation>
+        <translation>前を検索</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="240"/>
+        <location filename="../MainWindow.cpp" line="241"/>
         <source>Qt...</source>
         <translation>Qt について...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="259"/>
-        <location filename="../MainWindow.cpp" line="366"/>
+        <location filename="../MainWindow.cpp" line="260"/>
+        <location filename="../MainWindow.cpp" line="367"/>
         <source>Edit</source>
         <translation>編集</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="291"/>
+        <location filename="../MainWindow.cpp" line="292"/>
         <source>View</source>
         <translation>表示</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="292"/>
+        <location filename="../MainWindow.cpp" line="293"/>
         <source>Views</source>
         <translation>ビュー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="294"/>
+        <location filename="../MainWindow.cpp" line="295"/>
         <source>Toolbars</source>
         <translation>ツールバー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="297"/>
+        <location filename="../MainWindow.cpp" line="298"/>
         <source>View Mode</source>
         <translation>表示モード</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="301"/>
+        <location filename="../MainWindow.cpp" line="302"/>
         <source>Zoom</source>
         <translation>ズーム</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="310"/>
-        <location filename="../MainWindow.cpp" line="414"/>
+        <location filename="../MainWindow.cpp" line="311"/>
+        <location filename="../MainWindow.cpp" line="415"/>
         <source>Channel</source>
         <translation>チャンネル</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="315"/>
+        <location filename="../MainWindow.cpp" line="316"/>
         <source>Find</source>
         <translation>検索</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="327"/>
+        <location filename="../MainWindow.cpp" line="328"/>
         <source>Help</source>
         <translation>ヘルプ</translation>
     </message>
     <message>
         <source>About Qt</source>
-        <translation type="vanished">Qt について</translation>
+        <translation>Qt について</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="348"/>
+        <location filename="../MainWindow.cpp" line="349"/>
         <source>Status Bar</source>
         <translation>ステータスバー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="375"/>
+        <location filename="../MainWindow.cpp" line="376"/>
         <source>Sequence Tools</source>
         <translation>シーケンスツール</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="381"/>
+        <location filename="../MainWindow.cpp" line="382"/>
         <source>Sound Output</source>
         <translation>音声出力</translation>
     </message>
     <message>
         <source>Channel Find Tools</source>
-        <translation type="vanished">チャンネル検索ツール</translation>
+        <translation>チャンネル検索ツール</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="407"/>
+        <location filename="../MainWindow.cpp" line="408"/>
         <source>Info</source>
         <translation>情報</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="422"/>
+        <location filename="../MainWindow.cpp" line="423"/>
         <source>Selected Objects</source>
         <translation>選択オブジェクト</translation>
     </message>
     <message>
         <source>bmson files (*.bmson);;old bms files (*.bms *.bme *.bml *.pms);;all files (*.*)</source>
-        <translation type="vanished">BMSONファイル (*.bmson);;旧BMSファイル (*.bms *.bme *.bml *.pms);;すべてのファイル (*.*)</translation>
+        <translation>BMSONファイル (*.bmson);;旧BMSファイル (*.bms *.bme *.bml *.pms);;すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="516"/>
+        <location filename="../MainWindow.cpp" line="517"/>
         <source>Open</source>
         <translation>開く</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="560"/>
-        <location filename="../MainWindow.cpp" line="993"/>
-        <location filename="../MainWindow.cpp" line="1107"/>
-        <location filename="../MainWindow.cpp" line="1124"/>
-        <location filename="../MainWindow.cpp" line="1139"/>
+        <location filename="../MainWindow.cpp" line="561"/>
+        <location filename="../MainWindow.cpp" line="994"/>
+        <location filename="../MainWindow.cpp" line="1112"/>
+        <location filename="../MainWindow.cpp" line="1129"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="550"/>
-        <location filename="../MainWindow.cpp" line="979"/>
+        <location filename="../MainWindow.cpp" line="551"/>
+        <location filename="../MainWindow.cpp" line="980"/>
         <source>bmson files (*.bmson);;all files (*.*)</source>
         <translation>BMSONファイル (*.bmson);;すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="553"/>
+        <location filename="../MainWindow.cpp" line="554"/>
         <source>Save As</source>
         <translation>名前を付けて保存</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="561"/>
-        <location filename="../MainWindow.cpp" line="994"/>
+        <location filename="../MainWindow.cpp" line="562"/>
+        <location filename="../MainWindow.cpp" line="995"/>
         <source>Failed to save file.</source>
         <translation>ファイルオープンに失敗しました。</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="647"/>
+        <location filename="../MainWindow.cpp" line="648"/>
         <source>sound files (*.wav *.ogg);;all files (*.*)</source>
         <translation>音声ファイル (*.wav *.ogg);;すべてのファイル (*.*)</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="650"/>
+        <location filename="../MainWindow.cpp" line="651"/>
         <source>Select Sound Files</source>
         <translation>音声ファイル選択</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="751"/>
+        <location filename="../MainWindow.cpp" line="752"/>
         <source>untitled</source>
         <translation>無題</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="767"/>
+        <location filename="../MainWindow.cpp" line="768"/>
         <source>Undo - </source>
         <translation>元に戻す - </translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="774"/>
+        <location filename="../MainWindow.cpp" line="775"/>
         <source>Redo - </source>
         <translation>やり直し - </translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1008"/>
+        <location filename="../MainWindow.cpp" line="1009"/>
         <source>Confirmation</source>
         <translation>確認</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1009"/>
+        <location filename="../MainWindow.cpp" line="1010"/>
         <source>Save changes before closing?</source>
         <translation>変更を保存しますか?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1108"/>
+        <location filename="../MainWindow.cpp" line="1113"/>
         <source>Unknown File Type</source>
         <translation>ファイルの種類が不明です</translation>
     </message>
@@ -1337,81 +1515,81 @@ All files (*.*)</source>
         <translation>名前を付けて保存</translation>
     </message>
     <message>
-        <location filename="../MasterOutDialog.cpp" line="197"/>
+        <location filename="../MasterOutDialog.cpp" line="187"/>
         <source>Cannot open file.</source>
         <translation>ファイルを開けません。</translation>
     </message>
     <message>
-        <location filename="../MasterOutDialog.cpp" line="262"/>
+        <location filename="../MasterOutDialog.cpp" line="251"/>
         <source>Export complete.</source>
         <translation>エクスポート完了しました。</translation>
     </message>
     <message>
-        <location filename="../MasterOutDialog.cpp" line="298"/>
-        <location filename="../MasterOutDialog.cpp" line="363"/>
-        <location filename="../MasterOutDialog.cpp" line="431"/>
+        <location filename="../MasterOutDialog.cpp" line="284"/>
+        <location filename="../MasterOutDialog.cpp" line="346"/>
+        <location filename="../MasterOutDialog.cpp" line="411"/>
         <source>No sample was given.</source>
         <translation>音声データがありません。</translation>
     </message>
     <message>
-        <location filename="../MasterOutDialog.cpp" line="300"/>
-        <location filename="../MasterOutDialog.cpp" line="365"/>
-        <location filename="../MasterOutDialog.cpp" line="433"/>
+        <location filename="../MasterOutDialog.cpp" line="286"/>
+        <location filename="../MasterOutDialog.cpp" line="348"/>
+        <location filename="../MasterOutDialog.cpp" line="413"/>
         <source>Wrote %1 samples.</source>
         <translation>%1個のサンプルを書き出しました。</translation>
     </message>
     <message>
-        <location filename="../MasterOutDialog.cpp" line="314"/>
-        <location filename="../MasterOutDialog.cpp" line="379"/>
-        <location filename="../MasterOutDialog.cpp" line="441"/>
+        <location filename="../MasterOutDialog.cpp" line="300"/>
+        <location filename="../MasterOutDialog.cpp" line="362"/>
+        <location filename="../MasterOutDialog.cpp" line="421"/>
         <source>Original</source>
         <translation>オリジナル</translation>
     </message>
     <message>
-        <location filename="../MasterOutDialog.cpp" line="315"/>
-        <location filename="../MasterOutDialog.cpp" line="319"/>
-        <location filename="../MasterOutDialog.cpp" line="323"/>
-        <location filename="../MasterOutDialog.cpp" line="380"/>
-        <location filename="../MasterOutDialog.cpp" line="384"/>
-        <location filename="../MasterOutDialog.cpp" line="388"/>
-        <location filename="../MasterOutDialog.cpp" line="442"/>
-        <location filename="../MasterOutDialog.cpp" line="446"/>
-        <location filename="../MasterOutDialog.cpp" line="450"/>
+        <location filename="../MasterOutDialog.cpp" line="301"/>
+        <location filename="../MasterOutDialog.cpp" line="305"/>
+        <location filename="../MasterOutDialog.cpp" line="309"/>
+        <location filename="../MasterOutDialog.cpp" line="363"/>
+        <location filename="../MasterOutDialog.cpp" line="367"/>
+        <location filename="../MasterOutDialog.cpp" line="371"/>
+        <location filename="../MasterOutDialog.cpp" line="422"/>
+        <location filename="../MasterOutDialog.cpp" line="426"/>
+        <location filename="../MasterOutDialog.cpp" line="430"/>
         <source>  Peak: %1dB, %2dB</source>
         <translation>  ピーク: %1dB, %2dB</translation>
     </message>
     <message>
-        <location filename="../MasterOutDialog.cpp" line="316"/>
-        <location filename="../MasterOutDialog.cpp" line="320"/>
-        <location filename="../MasterOutDialog.cpp" line="324"/>
-        <location filename="../MasterOutDialog.cpp" line="381"/>
-        <location filename="../MasterOutDialog.cpp" line="385"/>
-        <location filename="../MasterOutDialog.cpp" line="389"/>
-        <location filename="../MasterOutDialog.cpp" line="443"/>
-        <location filename="../MasterOutDialog.cpp" line="447"/>
-        <location filename="../MasterOutDialog.cpp" line="451"/>
+        <location filename="../MasterOutDialog.cpp" line="302"/>
+        <location filename="../MasterOutDialog.cpp" line="306"/>
+        <location filename="../MasterOutDialog.cpp" line="310"/>
+        <location filename="../MasterOutDialog.cpp" line="364"/>
+        <location filename="../MasterOutDialog.cpp" line="368"/>
+        <location filename="../MasterOutDialog.cpp" line="372"/>
+        <location filename="../MasterOutDialog.cpp" line="423"/>
+        <location filename="../MasterOutDialog.cpp" line="427"/>
+        <location filename="../MasterOutDialog.cpp" line="431"/>
         <source>  RMS: %1dB, %2dB</source>
         <translation>  RMS: %1dB, %2dB</translation>
     </message>
     <message>
-        <location filename="../MasterOutDialog.cpp" line="318"/>
-        <location filename="../MasterOutDialog.cpp" line="383"/>
-        <location filename="../MasterOutDialog.cpp" line="445"/>
+        <location filename="../MasterOutDialog.cpp" line="304"/>
+        <location filename="../MasterOutDialog.cpp" line="366"/>
+        <location filename="../MasterOutDialog.cpp" line="425"/>
         <source>After volume gain %1dB</source>
         <translation>音量ゲイン後 (%1dB)</translation>
     </message>
     <message>
-        <location filename="../MasterOutDialog.cpp" line="322"/>
+        <location filename="../MasterOutDialog.cpp" line="308"/>
         <source>After soft clipping</source>
         <translation>ソフトクリッピング後</translation>
     </message>
     <message>
-        <location filename="../MasterOutDialog.cpp" line="387"/>
+        <location filename="../MasterOutDialog.cpp" line="370"/>
         <source>After hard clipping</source>
         <translation>ハードクリッピング後</translation>
     </message>
     <message>
-        <location filename="../MasterOutDialog.cpp" line="449"/>
+        <location filename="../MasterOutDialog.cpp" line="429"/>
         <source>After normalization</source>
         <translation>ノーマライズ後</translation>
     </message>
@@ -1450,14 +1628,92 @@ All files (*.*)</source>
     </message>
 </context>
 <context>
+    <name>PrefBmsPage</name>
+    <message>
+        <location filename="../PrefBms.cpp" line="10"/>
+        <source>Default</source>
+        <translation>デフォルト</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="11"/>
+        <source>Ask</source>
+        <translation>確認</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="13"/>
+        <source>Text Encoding:</source>
+        <translation>テキストエンコーディング:</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="16"/>
+        <source>#RANDOM Command:</source>
+        <translation>#RANDOM命令:</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="17"/>
+        <source>Generate random values</source>
+        <translation>乱数を生成する</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="19"/>
+        <source>Game Mode:</source>
+        <translation>ゲームモード:</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="23"/>
+        <source>Trust #PLAYER command</source>
+        <translation>#PLAYER命令を信用する</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="24"/>
+        <source>Ignore file extension</source>
+        <translation>ファイル拡張子を無視する</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="25"/>
+        <source>Prefer 7/14/9key to 5/10/5key.</source>
+        <translation>5/10/5keyよりも7/14/9keyを優先する</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="32"/>
+        <source>Miscellaneous</source>
+        <translation>その他</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="35"/>
+        <source>Skip commands between #RANDOM and #IF</source>
+        <translation>#RANDOMと#IFの間にあるコマンドをスキップする</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="41"/>
+        <source>Conversion to Bmson</source>
+        <translation>Bmsonへの変換</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="44"/>
+        <source>Minimum resolution</source>
+        <translation>最小分解能</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="45"/>
+        <source>Maximum resolution</source>
+        <translation>最大分解能</translation>
+    </message>
+    <message>
+        <location filename="../PrefBms.cpp" line="53"/>
+        <source>(default)</source>
+        <translation>(デフォルト)</translation>
+    </message>
+</context>
+<context>
     <name>PrefEditPage</name>
     <message>
         <source>Enable Master Channel</source>
-        <translation type="vanished">マスターチャンネルを有効にする</translation>
+        <translation>マスターチャンネルを有効にする</translation>
     </message>
     <message>
         <source>Master Channel enables some useful features, but it consumes lots of resources and make loading files slower.</source>
-        <translation type="vanished">マスターチャンネルを有効にすると、いくつかの有用な機能を利用できます。ただし、ファイルの読み込みが遅くなります。</translation>
+        <translation>マスターチャンネルを有効にすると、いくつかの有用な機能を利用できます。ただし、ファイルの読み込みが遅くなります。</translation>
     </message>
     <message>
         <location filename="../PrefEdit.cpp" line="11"/>
@@ -1516,72 +1772,72 @@ All files (*.*)</source>
     </message>
     <message>
         <source>Hit Test of Clicks:</source>
-        <translation type="vanished">クリックの当たり判定:</translation>
+        <translation>クリックの当たり判定:</translation>
     </message>
     <message>
         <source>Snapped to grid (if available)</source>
-        <translation type="vanished">グリッドにスナップ（可能な場合）</translation>
+        <translation>グリッドにスナップ（可能な場合）</translation>
     </message>
     <message>
         <source>Cursor Line Display:</source>
-        <translation type="vanished">カーソル線の表示:</translation>
+        <translation>カーソル線の表示:</translation>
     </message>
     <message>
         <source>Not snapped</source>
-        <translation type="vanished">スナップしない</translation>
+        <translation>スナップしない</translation>
     </message>
     <message>
         <source>Always</source>
-        <translation type="vanished">常に表示</translation>
+        <translation>常に表示</translation>
     </message>
     <message>
         <source>Only when Shift key is pressed</source>
-        <translation type="vanished">Shiftキー押下時のみ</translation>
+        <translation>Shiftキー押下時のみ</translation>
     </message>
     <message>
         <source>Mini Map Opacity</source>
-        <translation type="vanished">ミニマップの不透明度</translation>
+        <translation>ミニマップの不透明度</translation>
     </message>
 </context>
 <context>
     <name>PrefGeneralPage</name>
     <message>
-        <location filename="../Preferences.cpp" line="110"/>
+        <location filename="../Preferences.cpp" line="121"/>
         <source>(Requires restart)</source>
         <translation>(再起動が必要)</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="111"/>
+        <location filename="../Preferences.cpp" line="122"/>
         <source>Language:</source>
         <translation>言語:</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="112"/>
+        <location filename="../Preferences.cpp" line="123"/>
         <source>Select a language used in this application. After selecting one, restart BmsONE.</source>
         <translation>このアプリケーションで使用される言語を選択します。選択後、アプリケーションを再起動してください。</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="121"/>
+        <location filename="../Preferences.cpp" line="132"/>
         <source>Save Format:</source>
         <translation>保存フォーマット:</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="122"/>
+        <location filename="../Preferences.cpp" line="133"/>
         <source>&lt;p&gt;Select a version of BMSON format to save files in.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Default&lt;/b&gt; (recommended): the most suitable version for current BmsONE.&lt;/p&gt;</source>
         <translation>&lt;p&gt;保存する際の BMSON フォーマットのバージョンを選択します。&lt;/p&gt;&lt;p&gt;&lt;b&gt;Default&lt;/b&gt; (推奨): 現在のBmsONEに最も適したバージョンが選択されます。&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="130"/>
+        <location filename="../Preferences.cpp" line="141"/>
         <source>Save JSON Format:</source>
         <translation>JSON保存フォーマット:</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="136"/>
+        <location filename="../Preferences.cpp" line="147"/>
         <source>Reset</source>
         <translation>リセット</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="139"/>
+        <location filename="../Preferences.cpp" line="150"/>
         <source>UI Font:</source>
         <translation>UIフォント:</translation>
     </message>
@@ -1625,7 +1881,7 @@ All files (*.*)</source>
     </message>
     <message>
         <source>Max duration of preview of notes:</source>
-        <translation type="vanished">ノーツのプレビュー時の最大の長さ:</translation>
+        <translation>ノーツのプレビュー時の最大の長さ:</translation>
     </message>
     <message>
         <location filename="../PrefPreview.cpp" line="84"/>
@@ -1636,47 +1892,52 @@ All files (*.*)</source>
 <context>
     <name>Preferences</name>
     <message>
-        <location filename="../Preferences.cpp" line="12"/>
+        <location filename="../Preferences.cpp" line="13"/>
         <source>Preferences</source>
         <translation>環境設定</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="33"/>
+        <location filename="../Preferences.cpp" line="34"/>
         <source>General</source>
         <translation>全般</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="41"/>
+        <location filename="../Preferences.cpp" line="42"/>
         <source>Edit</source>
         <translation>編集</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="49"/>
+        <location filename="../Preferences.cpp" line="50"/>
         <source>Preview</source>
         <translation>プレビュー</translation>
     </message>
     <message>
+        <location filename="../Preferences.cpp" line="58"/>
+        <source>BMS Import</source>
+        <translation>BMSインポート</translation>
+    </message>
+    <message>
         <source>(Requires restart)</source>
-        <translation type="vanished">(再起動が必要)</translation>
+        <translation>(再起動が必要)</translation>
     </message>
     <message>
         <source>Language:</source>
-        <translation type="vanished">言語:</translation>
+        <translation>言語:</translation>
     </message>
     <message>
         <source>Select a language used in this application. After selecting one, restart BmsONE.</source>
-        <translation type="vanished">このアプリケーションで使用される言語を選択します。選択後、アプリケーションを再起動してください。</translation>
+        <translation>このアプリケーションで使用される言語を選択します。選択後、アプリケーションを再起動してください。</translation>
     </message>
     <message>
         <source>Save Format:</source>
-        <translation type="vanished">保存フォーマット:</translation>
+        <translation>保存フォーマット:</translation>
     </message>
     <message>
         <source>&lt;p&gt;Select a version of BMSON format to save files in.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Default&lt;/b&gt; (recommended): the most suitable version for current BmsONE.&lt;/p&gt;</source>
-        <translation type="vanished">&lt;p&gt;保存する際の BMSON フォーマットのバージョンを選択します。&lt;/p&gt;&lt;p&gt;&lt;b&gt;Default&lt;/b&gt; (推奨): 現在のBmsONEに最も適したバージョンが選択されます。&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;保存する際の BMSON フォーマットのバージョンを選択します。&lt;/p&gt;&lt;p&gt;&lt;b&gt;Default&lt;/b&gt; (推奨): 現在のBmsONEに最も適したバージョンが選択されます。&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../Preferences.cpp" line="14"/>
+        <location filename="../Preferences.cpp" line="15"/>
         <source>Close</source>
         <translation>閉じる</translation>
     </message>
@@ -1779,7 +2040,7 @@ All files (*.*)</source>
     <name>SelectedObjectView</name>
     <message>
         <source>Selected Objects</source>
-        <translation type="vanished">選択オブジェクト</translation>
+        <translation>選択オブジェクト</translation>
     </message>
 </context>
 <context>
@@ -1867,35 +2128,35 @@ All files (*.*)</source>
     </message>
     <message>
         <source>Key 1P 1</source>
-        <translation type="vanished">キー 1P 1</translation>
+        <translation>キー 1P 1</translation>
     </message>
     <message>
         <source>Key 1P 2</source>
-        <translation type="vanished">キー 1P 2</translation>
+        <translation>キー 1P 2</translation>
     </message>
     <message>
         <source>Key 1P 3</source>
-        <translation type="vanished">キー 1P 3</translation>
+        <translation>キー 1P 3</translation>
     </message>
     <message>
         <source>Key 1P 4</source>
-        <translation type="vanished">キー 1P 4</translation>
+        <translation>キー 1P 4</translation>
     </message>
     <message>
         <source>Key 1P 5</source>
-        <translation type="vanished">キー 1P 5</translation>
+        <translation>キー 1P 5</translation>
     </message>
     <message>
         <source>Key 1P 6</source>
-        <translation type="vanished">キー 1P 6</translation>
+        <translation>キー 1P 6</translation>
     </message>
     <message>
         <source>Key 1P 7</source>
-        <translation type="vanished">キー 1P 7</translation>
+        <translation>キー 1P 7</translation>
     </message>
     <message>
         <source>Key 1P S</source>
-        <translation type="vanished">キー 1P S</translation>
+        <translation>キー 1P S</translation>
     </message>
     <message>
         <location filename="../sequence_view/SequenceViewCursor.cpp" line="82"/>
@@ -2057,22 +2318,22 @@ All files (*.*)</source>
 <context>
     <name>SoundChannel</name>
     <message>
-        <location filename="../document/SoundChannel.cpp" line="95"/>
+        <location filename="../document/SoundChannel.cpp" line="112"/>
         <source>select sound channel source file</source>
         <translation>音声チャンネルのソースファイル選択</translation>
     </message>
     <message>
-        <location filename="../document/SoundChannel.cpp" line="229"/>
+        <location filename="../document/SoundChannel.cpp" line="246"/>
         <source>modify sound note</source>
         <translation>音声ノート変更</translation>
     </message>
     <message>
-        <location filename="../document/SoundChannel.cpp" line="244"/>
+        <location filename="../document/SoundChannel.cpp" line="261"/>
         <source>add sound note</source>
         <translation>音声ノート追加</translation>
     </message>
     <message>
-        <location filename="../document/SoundChannel.cpp" line="267"/>
+        <location filename="../document/SoundChannel.cpp" line="284"/>
         <source>remove sound note</source>
         <translation>音声ノート削除</translation>
     </message>
@@ -2133,7 +2394,7 @@ All files (*.*)</source>
     <name>ViewMode</name>
     <message>
         <source>Beat 5k</source>
-        <translation type="vanished">Beat 5k</translation>
+        <translation>Beat 5k</translation>
     </message>
     <message>
         <location filename="../ViewMode.cpp" line="122"/>
@@ -2183,7 +2444,7 @@ All files (*.*)</source>
     </message>
     <message>
         <source>Beat 7k</source>
-        <translation type="vanished">Beat 7k</translation>
+        <translation>Beat 7k</translation>
     </message>
     <message>
         <location filename="../ViewMode.cpp" line="141"/>
@@ -2199,7 +2460,7 @@ All files (*.*)</source>
     </message>
     <message>
         <source>Beat 10k</source>
-        <translation type="vanished">Beat 10k</translation>
+        <translation>Beat 10k</translation>
     </message>
     <message>
         <location filename="../ViewMode.cpp" line="121"/>
@@ -2456,7 +2717,7 @@ All files (*.*)</source>
     </message>
     <message>
         <source>Beat 14k</source>
-        <translation type="vanished">Beat 14k</translation>
+        <translation>Beat 14k</translation>
     </message>
     <message>
         <location filename="../ViewMode.cpp" line="177"/>
@@ -2480,11 +2741,11 @@ All files (*.*)</source>
     </message>
     <message>
         <source>Popn 5k</source>
-        <translation type="vanished">Popn 5k</translation>
+        <translation>Popn 5k</translation>
     </message>
     <message>
         <source>Popn 9k</source>
-        <translation type="vanished">Popn 9k</translation>
+        <translation>Popn 9k</translation>
     </message>
     <message>
         <location filename="../ViewMode.cpp" line="216"/>
