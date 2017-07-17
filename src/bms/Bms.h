@@ -122,7 +122,8 @@ private:
 	Bms bms;
 	QString log_data;
 	QTextStream log;
-	qint64 fileSize;
+	qint64 lineCount;
+	qint64 currentLine;
 	std::function<Status(QVariant)> cont;
 	QMap<QString, std::function<void(QString)>> controlCommandHandlers;
 	QMap<QString, std::function<void(QString)>> headerCommandHandlers;

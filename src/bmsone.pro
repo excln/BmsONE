@@ -65,14 +65,16 @@ SOURCES += main.cpp\
 	document/SoundChannelInternal.cpp \
 	document/HistoryUtil.cpp \
 	document/DocumentInfo.cpp \
-	document/MasterCache.cpp \
+    document/MasterCache.cpp \
+    document/Bga.cpp \
 	bmson/Bmson021.cpp \
 	bmson/Bmson100.cpp \
 	bmson/Bmson100Convert.cpp \
 	bmson/BmsonConvertDef.cpp \
 	bmson/Bmson.cpp \
 	bms/Bms.cpp \
-	bms/BmsUtil.cpp \
+    bms/BmsUtil.cpp \
+    bms/BmsImportDialog.cpp \
     libogg/bitwise.c \
     libogg/framing.c \
     libvorbis/analysis.c \
@@ -96,8 +98,7 @@ SOURCES += main.cpp\
     libvorbis/synthesis.c \
     libvorbis/vorbisenc.c \
     libvorbis/vorbisfile.c \
-	libvorbis/window.c \
-    document/Bga.cpp
+    libvorbis/window.c
 
 HEADERS  += MainWindow.h \
 	ChannelInfoView.h \
@@ -151,7 +152,8 @@ HEADERS  += MainWindow.h \
 	bmson/Bmson100Convert.h \
 	bmson/BmsonConvertDef.h \
 	bmson/Bmson.h \
-	bms/Bms.h \
+    bms/Bms.h \
+    bms/BmsImportDialog.h \
     libvorbis/books/coupled/res_books_51.h \
     libvorbis/books/coupled/res_books_stereo.h \
     libvorbis/books/floor/floor_books.h \
@@ -174,7 +176,7 @@ HEADERS  += MainWindow.h \
     libvorbis/modes/setup_44.h \
     libvorbis/modes/setup_44p51.h \
     libvorbis/modes/setup_44u.h \
-	libvorbis/modes/setup_X.h
+    libvorbis/modes/setup_X.h
 
 FORMS    +=
 

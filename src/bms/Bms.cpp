@@ -42,12 +42,18 @@ Bms::BmsReader::BmsReader(QString path, QObject *parent)
 	, status(STATUS_CONTINUE)
 	, log_data()
 	, log(&log_data)
+	, currentLine(0)
 {
 	bms.path = path;
 	if (file.open(QFile::ReadOnly | QFile::Text)){
-		fileSize = file.size();
 		in.setDevice(&file);
 		in.setCodec(QTextCodec::codecForLocale());
+		lineCount = 0;
+		while (!in.atEnd()){
+			in.readLine();
+			lineCount++;
+		}
+		in.seek(0);
 
 		skipping = false;
 
@@ -142,9 +148,6 @@ void Bms::BmsReader::LoadMain()
 		LoadMain();
 		return status;
 	};
-	progress = (float)file.pos() / (float)fileSize;
-	status = STATUS_CONTINUE;
-
 	if (in.atEnd()){
 		LoadComplete();
 		return;
@@ -154,6 +157,9 @@ void Bms::BmsReader::LoadMain()
 		LoadComplete();
 		return;
 	}
+	currentLine++;
+	progress = (float)currentLine / (float)lineCount;
+	status = STATUS_CONTINUE;
 	line = line.trimmed();
 	if (line.isEmpty() || line[0] != '#'){
 		// skip
@@ -214,8 +220,10 @@ void Bms::BmsReader::LoadComplete()
 	if (!errorChannels.empty()){
 		QString s;
 		for (auto ch : errorChannels)
-			s += BmsUtil::IntToZZ(ch) + " ";
-		Warning(tr("Mode may be wrong. Error channels: ") + s);
+			s += " " + BmsUtil::IntToZZ(ch);
+		Warning(tr("The inferred mode may be wrong. Error channels:") + s);
+	}else{
+		Info("The mode was successfully inferred.");
 	}
 
 	// TOTAL省略時の値はノート数を考慮するのが面倒なので適当に設定する
@@ -226,6 +234,7 @@ void Bms::BmsReader::LoadComplete()
 
 	progress = 1.0f;
 	status = STATUS_COMPLETE;
+	Info(tr("BMS import completed."));
 }
 
 void Bms::BmsReader::OnChannelCommand(int section, int channel, QString content)
@@ -280,7 +289,7 @@ void Bms::BmsReader::OnChannelCommand(int section, int channel, QString content)
 				// intの範囲を超えた場合は制限する(不具合が起こる可能性もあり)
 				if (l < 0){
 					l = sequence.resolution;
-					Warning(tr("Resolution overflow occurred at section %1.").arg(section));
+					Warning(tr("Resolution overflow occurred at section #%1.").arg(section));
 				}
 
 				if (sequence.resolution != l){
@@ -408,14 +417,14 @@ bool Bms::BmsReader::SkipsOutside()
 
 void Bms::BmsReader::Info(QString message)
 {
-	log << tr("Info: ") << message;
-	qInfo() << message;
+	log << tr("Info: ") << message << "\n";
+	qInfo().noquote() << message;
 }
 
 void Bms::BmsReader::Warning(QString message)
 {
-	log << tr("Warning: ") << message;
-	qWarning() << message;
+	log << tr("Warning: ") << message << "\n";
+	qWarning().noquote() << message;
 }
 
 void Bms::BmsReader::MathTest()

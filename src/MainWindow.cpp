@@ -17,6 +17,7 @@
 #include "MasterOutDialog.h"
 #include "bmson/Bmson.h"
 #include "bms/Bms.h"
+#include "bms/BmsImportDialog.h"
 
 
 const char* MainWindow::SettingsGroup = "MainWindow";
@@ -1020,7 +1021,7 @@ bool MainWindow::EnsureClosingFile()
 	}
 }
 
-bool MainWindow::IsBmsFileExtension(const QString &ext)
+bool MainWindow::IsSourceFileExtension(const QString &ext)
 {
 	if (BmsonIO::IsBmsonFileExtension(ext))
 		return true;
@@ -1088,7 +1089,9 @@ void MainWindow::dropEvent(QDropEvent *event)
 		for (auto url : mimeData->urls()){
 			filePaths.append(url.toLocalFile());
 		}
-		OpenFiles(filePaths);
+		QTimer::singleShot(10, [=](){
+			OpenFiles(filePaths);
+		});
 		event->setDropAction(Qt::CopyAction);
 		event->accept();
 	}
@@ -1097,10 +1100,12 @@ void MainWindow::dropEvent(QDropEvent *event)
 void MainWindow::OpenFiles(QStringList filePaths)
 {
 	QString ext = QFileInfo(filePaths[0]).suffix().toLower();
-	if (IsBmsFileExtension(ext)){
-		QMetaObject::invokeMethod(this, "FileOpen", Qt::QueuedConnection, Q_ARG(QString, filePaths[0]));
+	if (IsSourceFileExtension(ext)){
+		//QMetaObject::invokeMethod(this, "FileOpen", Qt::QueuedConnection, Q_ARG(QString, filePaths[0]));
+		FileOpen(filePaths[0]);
 	}else if (IsSoundFileExtension(ext)){
-		QMetaObject::invokeMethod(this, "ChannelsNew", Qt::QueuedConnection, Q_ARG(QList<QString>, filePaths));
+		//QMetaObject::invokeMethod(this, "ChannelsNew", Qt::QueuedConnection, Q_ARG(QList<QString>, filePaths));
+		ChannelsNew(filePaths);
 	}else{
 		QMessageBox *msgbox = new QMessageBox(
 					QMessageBox::Warning,
@@ -1132,23 +1137,14 @@ void MainWindow::OpenBmson(QString path)
 void MainWindow::OpenBms(QString path)
 {
 	Bms::BmsReader *reader = BmsIO::LoadBms(path);
-	while (reader->GetStatus() != Bms::BmsReader::STATUS_COMPLETE){
-		if (reader->GetStatus() == Bms::BmsReader::STATUS_ERROR){
-			QMessageBox *msgbox = new QMessageBox(
-						QMessageBox::Warning,
-						tr("Error"),
-						tr("Failed to import legacy BMS."),
-						QMessageBox::Ok,
-						this);
-			msgbox->exec();
-			delete reader;
-			return;
-		}
-		reader->Load();
+	BmsImportDialog *dialog = new BmsImportDialog(this, *reader);
+	dialog->exec();
+	if (dialog->result() == QDialog::Accepted && dialog->IsSucceeded()){
+		auto newEditor = new Document(this);
+		newEditor->LoadBms(reader->GetBms());
+		ReplaceDocument(newEditor);
 	}
-	auto newEditor = new Document(this);
-	newEditor->LoadBms(reader->GetBms());
-	ReplaceDocument(newEditor);
+	delete dialog;
 	delete reader;
 }
 

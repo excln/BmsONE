@@ -176,7 +176,7 @@ private:
 	void ReplaceDocument(Document *newDocument);
 	bool Save();
 	bool EnsureClosingFile();
-	static bool IsBmsFileExtension(const QString &ext);
+	static bool IsSourceFileExtension(const QString &ext);
 	static bool IsSoundFileExtension(const QString &ext);
 
 private slots:
