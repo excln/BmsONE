@@ -1,5 +1,6 @@
 
 #include "Bms.h"
+#include "../MainWindow.h"
 #include <cstdlib>
 
 BmsIO *BmsIO::instance = nullptr;
@@ -33,10 +34,45 @@ Bms::BmsReader *BmsIO::LoadBms(QString path)
 
 
 
+const char *Bms::BmsReaderConfig::AskTextEncodingKey = "BmsReader/AskTextEncoding";
+const char *Bms::BmsReaderConfig::AskRandomValuesKey = "BmsReader/AskRandomValues";
+const char *Bms::BmsReaderConfig::DefaultTextEncodingKey = "BmsReader/DefaultTextEncoding";
+const char *Bms::BmsReaderConfig::UseRandomValuesKey = "BmsReader/UseRandomValues";
+const char *Bms::BmsReaderConfig::MinimumResolutionKey = "BmsReader/MinimumResolution";
+const char *Bms::BmsReaderConfig::MaximumResolutionKey = "BmsReader/MaximumResolution";
+const char *Bms::BmsReaderConfig::SkipBetweenRandomAndIfKey = "BmsReader/SkipBetweenRandomAndIf";
+
+QList<QString> Bms::BmsReaderConfig::AvailableCodecs = {QString(""), QString("Shift-JIS"), QString("UTF-8")};
+
+void Bms::BmsReaderConfig::Load()
+{
+	QSettings *settings = App::Instance()->GetSettings();
+	askTextEncoding = settings->value(AskTextEncodingKey, true).toBool();
+	askRandomValues = settings->value(AskRandomValuesKey, true).toBool();
+	defaultTextEncoding = settings->value(DefaultTextEncodingKey, QString("")).toString();
+	useRandomValues = settings->value(UseRandomValuesKey, false).toBool();
+	minimumResolution = settings->value(MinimumResolutionKey, 240).toInt();
+	maximumResolution = settings->value(MaximumResolutionKey, 10000).toInt();
+	skipBetweenRandomAndIf = settings->value(SkipBetweenRandomAndIfKey, false).toBool();
+}
+
+void Bms::BmsReaderConfig::Save()
+{
+	QSettings *settings = App::Instance()->GetSettings();
+	settings->setValue(AskTextEncodingKey, askTextEncoding);
+	settings->setValue(AskRandomValuesKey, askRandomValues);
+	settings->setValue(DefaultTextEncodingKey, defaultTextEncoding);
+	settings->setValue(UseRandomValuesKey, useRandomValues);
+	settings->setValue(MinimumResolutionKey, minimumResolution);
+	settings->setValue(MaximumResolutionKey, maximumResolution);
+	settings->setValue(SkipBetweenRandomAndIfKey, skipBetweenRandomAndIf);
+}
+
 
 
 Bms::BmsReader::BmsReader(QString path, QObject *parent)
 	: QObject(parent)
+	, config()
 	, file(path)
 	, progress(0.0f)
 	, status(STATUS_CONTINUE)
@@ -46,17 +82,24 @@ Bms::BmsReader::BmsReader(QString path, QObject *parent)
 	, question(NO_QUESTION)
 	, randomMax(1)
 {
+	std::srand(std::time(nullptr));
+	config.Load();
 	bms.path = path;
 	if (file.open(QFile::ReadOnly | QFile::Text)){
 		in.setDevice(&file);
 
 		status = STATUS_ASK;
 		question = QUESTION_TEXT_ENCODING;
-		selection = QString("");
+		selection = BmsReaderConfig::AvailableCodecs.contains(config.defaultTextEncoding)
+				? config.defaultTextEncoding
+				: QString("");
 		cont = [this](QVariant arg){
 			StartWithCodec(arg.toString());
 			return status;
 		};
+		if (!config.askTextEncoding){
+			cont(selection);
+		}
 	}else{
 		status = STATUS_ERROR;
 	}
@@ -92,8 +135,7 @@ QVariant Bms::BmsReader::GetDefaultValue() const
 QMap<QString, QString> Bms::BmsReader::GenerateEncodingPreviewMap()
 {
 	QMap<QString, QString> map;
-	QList<QString> codecs({"", "Shift-JIS", "UTF-8"});
-	for (auto codec : codecs){
+	for (auto codec : BmsReaderConfig::AvailableCodecs){
 		in.seek(0);
 		if (codec.isEmpty()){
 			in.setCodec(QTextCodec::codecForLocale());
@@ -394,20 +436,28 @@ void Bms::BmsReader::HandleRANDOM(QString value)
 
 	status = STATUS_ASK;
 	question = QUESTION_RANDOM_VALUE;
-	selection = 0;
+	selection = config.useRandomValues ? 0 : 1;
 
 	cont = [this](QVariant arg){
 		int v = arg.toInt();
-		if (v <= 0 || v > randomMax){
+
+		// 一時的に設定を上書きする (複数のRANDOMを同様に処理できるようにするため)
+		config.useRandomValues = v <= 0 || v > randomMax;
+		if (config.useRandomValues){
 			v = 1 + std::rand() / (RAND_MAX / randomMax);
 		}
+		Info(tr("RANDOM value: %1").arg(v));
 		skippingStack.push(skipping);
 		randoms.push(v);
-		skipping = SkipsOutside();
+		skipping = config.skipBetweenRandomAndIf;
 
 		LoadMain();
 		return status;
 	};
+
+	if (!config.askRandomValues){
+		status = cont(selection);
+	}
 }
 
 void Bms::BmsReader::HandleSETRANDOM(QString value)
@@ -418,7 +468,7 @@ void Bms::BmsReader::HandleSETRANDOM(QString value)
 		Warning(tr("Wrong \"SETRANDOM\" argument: ") + value);
 	}
 	randoms.push(num);
-	skipping = SkipsOutside();
+	skipping = config.skipBetweenRandomAndIf;
 }
 
 void Bms::BmsReader::HandleIF(QString value)
@@ -470,7 +520,7 @@ void Bms::BmsReader::HandleELSE(QString value)
 
 void Bms::BmsReader::HandleENDIF(QString value)
 {
-	skipping = SkipsOutside();
+	skipping = config.skipBetweenRandomAndIf;
 	ifLabels.clear();
 }
 
@@ -482,13 +532,6 @@ void Bms::BmsReader::HandleENDRANDOM(QString value)
 	if (!skippingStack.isEmpty()){
 		skipping = skippingStack.pop();
 	}
-}
-
-bool Bms::BmsReader::SkipsOutside()
-{
-	// RANDOMより内側でIFブロックより外側の部分をスキップするかどうか
-	// 設定により変更
-	return false;
 }
 
 void Bms::BmsReader::Info(QString message)

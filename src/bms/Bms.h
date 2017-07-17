@@ -104,6 +104,35 @@ struct Bms
 };
 
 
+struct BmsReaderConfig
+{
+private:
+	static const char *AskTextEncodingKey;
+	static const char *AskRandomValuesKey;
+	static const char *DefaultTextEncodingKey;
+	static const char *UseRandomValuesKey;
+	static const char *MinimumResolutionKey;
+	static const char *MaximumResolutionKey;
+	static const char *SkipBetweenRandomAndIfKey;
+
+public:
+	bool askTextEncoding;
+	bool askRandomValues;
+
+	QString defaultTextEncoding;
+	bool useRandomValues;
+
+	int minimumResolution;
+	int maximumResolution;
+	bool skipBetweenRandomAndIf;
+
+	void Load();
+	void Save();
+
+	static QList<QString> AvailableCodecs;
+};
+
+
 class BmsReader : public QObject
 {
 public:
@@ -121,6 +150,7 @@ public:
 	};
 
 private:
+	BmsReaderConfig config;
 	QFile file;
 	QTextStream in;
 	Status status;
@@ -168,10 +198,11 @@ private:
 	void HandleELSE(QString value);
 	void HandleENDIF(QString value);
 	void HandleENDRANDOM(QString value);
-	bool SkipsOutside();
 
 	void Info(QString message);
 	void Warning(QString message);
+
+	QList<QString> availableCodecs;
 
 	void MathTest();
 

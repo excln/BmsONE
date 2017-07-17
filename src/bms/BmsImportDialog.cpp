@@ -85,6 +85,7 @@ void BmsImportDialog::AskTextEncoding()
 {
 	ClearInteractArea();
 	QMap<QString, QString> encodingPreviewMap = reader.GenerateEncodingPreviewMap();
+	QString defaultEncoding = reader.GetDefaultValue().toString();
 
 	auto *label = new QLabel(tr("Select text encoding:"));
 
@@ -99,7 +100,7 @@ void BmsImportDialog::AskTextEncoding()
 		});
 		view->setLineWrapMode(QPlainTextEdit::NoWrap);
 
-		select->setChecked(i.key().isEmpty());
+		select->setChecked(i.key() == defaultEncoding);
 
 		view->setReadOnly(true);
 		entryLayout->addWidget(select);
@@ -187,7 +188,7 @@ void BmsImportDialog::Next()
 	progressBar->setValue(std::round(reader.GetProgress() * 100));
 	QString logText = reader.Log().readAll();
 	if (!logText.isEmpty()){
-		log->setPlainText(log->toPlainText() + logText);
+		log->append(logText);
 	}
 	switch (reader.GetStatus()){
 	case Bms::BmsReader::STATUS_CONTINUE:

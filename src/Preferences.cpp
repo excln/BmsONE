@@ -2,6 +2,7 @@
 #include "MainWindow.h"
 #include "PrefEdit.h"
 #include "PrefPreview.h"
+#include "PrefBms.h"
 
 
 Preferences::Preferences(MainWindow *mainWindow)
@@ -49,6 +50,14 @@ Preferences::Preferences(MainWindow *mainWindow)
 	previewItem->setText(tr("Preview"));
 	previewItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
+	// BMS
+	bmsPage = new PrefBmsPage(this);
+	pages->addWidget(bmsPage);
+	auto bmsItem = new QListWidgetItem(list);
+	bmsItem->setIcon(QIcon(":/images/config/general.png"));
+	bmsItem->setText(tr("BMS Import"));
+	bmsItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
 	list->setCurrentRow(0);
 
 	auto bodyLayout = new QHBoxLayout();
@@ -73,6 +82,7 @@ void Preferences::showEvent(QShowEvent *event)
 	generalPage->load();
 	editPage->load();
 	previewPage->load();
+	bmsPage->load();
 	QDialog::showEvent(event);
 }
 
@@ -81,6 +91,7 @@ void Preferences::hideEvent(QHideEvent *event)
 	generalPage->store();
 	editPage->store();
 	previewPage->store();
+	bmsPage->store();
 	QDialog::hideEvent(event);
 }
 

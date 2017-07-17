@@ -36,7 +36,8 @@ SOURCES += main.cpp\
 	ExternalViewer.cpp \
 	ExternalViewerTools.cpp \
 	NoteEditTool.cpp \
-	MasterOutDialog.cpp \
+    MasterOutDialog.cpp \
+    PrefBms.cpp \
 	sequence_view/SequenceView.cpp \
 	sequence_view/SequenceViewInternal.cpp \
 	sequence_view/SequenceViewContents.cpp \
@@ -118,7 +119,8 @@ HEADERS  += MainWindow.h \
 	ExternalViewerTools.h \
 	NoteEditTool.h \
 	MasterOutDialog.h \
-	BpmEditTool.h \
+    BpmEditTool.h \
+    PrefBms.h \
 	sequence_view/SequenceView.h \
 	sequence_view/SequenceDef.h \
 	sequence_view/SequenceViewChannelInternal.h \
