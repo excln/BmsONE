@@ -14,10 +14,21 @@ private:
 
 	QPushButton *okButton;
 	QPushButton *cancelButton;
+	QCheckBox *checkSkip;
 	QProgressBar *progressBar;
+	QWidget *interactArea;
 	QTextEdit *log;
 
+	QVariant input;
+
+private:
+	void ClearInteractArea();
+	void ResetInteractArea(const QString &message);
+	void AskTextEncoding();
+	void AskRandomValue();
+
 private slots:
+	void OnClickNext();
 	void Next();
 
 public:

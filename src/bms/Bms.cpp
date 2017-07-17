@@ -1,6 +1,6 @@
 
 #include "Bms.h"
-
+#include <cstdlib>
 
 BmsIO *BmsIO::instance = nullptr;
 
@@ -43,25 +43,20 @@ Bms::BmsReader::BmsReader(QString path, QObject *parent)
 	, log_data()
 	, log(&log_data)
 	, currentLine(0)
+	, question(NO_QUESTION)
+	, randomMax(1)
 {
 	bms.path = path;
 	if (file.open(QFile::ReadOnly | QFile::Text)){
 		in.setDevice(&file);
-		in.setCodec(QTextCodec::codecForLocale());
-		lineCount = 0;
-		while (!in.atEnd()){
-			in.readLine();
-			lineCount++;
-		}
-		in.seek(0);
 
-		skipping = false;
-
+		status = STATUS_ASK;
+		question = QUESTION_TEXT_ENCODING;
+		selection = QString("");
 		cont = [this](QVariant arg){
-			LoadMain();
+			StartWithCodec(arg.toString());
 			return status;
 		};
-		InitCommandHandlers();
 	}else{
 		status = STATUS_ERROR;
 	}
@@ -80,6 +75,43 @@ Bms::BmsReader::Status Bms::BmsReader::Load(QVariant arg)
 	}
 }
 
+Bms::BmsReader::Question Bms::BmsReader::GetQuestion() const
+{
+	if (status != STATUS_ASK)
+		return NO_QUESTION;
+	return question;
+}
+
+QVariant Bms::BmsReader::GetDefaultValue() const
+{
+	if (status != STATUS_ASK)
+		return QVariant();
+	return selection;
+}
+
+QMap<QString, QString> Bms::BmsReader::GenerateEncodingPreviewMap()
+{
+	QMap<QString, QString> map;
+	QList<QString> codecs({"", "Shift-JIS", "UTF-8"});
+	for (auto codec : codecs){
+		in.seek(0);
+		if (codec.isEmpty()){
+			in.setCodec(QTextCodec::codecForLocale());
+		}else{
+			in.setCodec(QTextCodec::codecForName(codec.toLatin1()));
+		}
+		QString preview = in.read(1000);
+		map.insert(codec, preview + "...");
+	}
+	in.seek(0);
+	return map;
+}
+
+int Bms::BmsReader::GetRandomMax() const
+{
+	return randomMax;
+}
+
 static int ToInt(const QString &s, int defaultValue){
 	bool ok;
 	int value = s.toInt(&ok);
@@ -94,6 +126,30 @@ static qreal ToReal(const QString &s, qreal defaultValue){
 	if (!ok)
 		return defaultValue;
 	return value;
+}
+
+void Bms::BmsReader::StartWithCodec(QString codec)
+{
+	if (codec.isNull() || codec.isEmpty()){
+		in.setCodec(QTextCodec::codecForLocale());
+	}else{
+		in.setCodec(QTextCodec::codecForName(codec.toLatin1()));
+	}
+	lineCount = 0;
+	while (!in.atEnd()){
+		in.readLine();
+		lineCount++;
+	}
+	in.seek(0);
+
+	skipping = false;
+
+	cont = [this](QVariant arg){
+		LoadMain();
+		return status;
+	};
+	InitCommandHandlers();
+	status = STATUS_CONTINUE;
 }
 
 void Bms::BmsReader::InitCommandHandlers()
@@ -329,16 +385,36 @@ void Bms::BmsReader::OnChannelCommand(int section, int channel, QString content)
 
 void Bms::BmsReader::HandleRANDOM(QString value)
 {
-	skippingStack.push(skipping);
-	randoms.push(1);
-	skipping = SkipsOutside();
+	bool ok;
+	randomMax = value.toInt(&ok);
+	if (!ok || randomMax <= 0){
+		Warning(tr("Wrong \"RANDOM\" argument: ") + value);
+		randomMax = 1;
+	}
+
+	status = STATUS_ASK;
+	question = QUESTION_RANDOM_VALUE;
+	selection = 0;
+
+	cont = [this](QVariant arg){
+		int v = arg.toInt();
+		if (v <= 0 || v > randomMax){
+			v = 1 + std::rand() / (RAND_MAX / randomMax);
+		}
+		skippingStack.push(skipping);
+		randoms.push(v);
+		skipping = SkipsOutside();
+
+		LoadMain();
+		return status;
+	};
 }
 
 void Bms::BmsReader::HandleSETRANDOM(QString value)
 {
 	bool ok;
 	int num = value.toInt(&ok);
-	if (!ok){
+	if (!ok || num <= 0){
 		Warning(tr("Wrong \"SETRANDOM\" argument: ") + value);
 	}
 	randoms.push(num);

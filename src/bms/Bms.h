@@ -114,6 +114,12 @@ public:
 		STATUS_ERROR
 	};
 
+	enum Question{
+		NO_QUESTION,
+		QUESTION_TEXT_ENCODING,
+		QUESTION_RANDOM_VALUE
+	};
+
 private:
 	QFile file;
 	QTextStream in;
@@ -129,6 +135,10 @@ private:
 	QMap<QString, std::function<void(QString)>> headerCommandHandlers;
 	QMap<QString, std::function<void(int,QString)>> headerZZDefCommandHandlers;
 
+	Question question;
+	QVariant selection;
+	int randomMax;
+
 	QMap<QString, QVariant> tmpCommands;
 
 	QMap<QString, Rational> rationalCache;
@@ -139,6 +149,7 @@ private:
 	QStack<int> randoms;
 	QList<int> ifLabels;
 
+	void StartWithCodec(QString codec);
 	void InitCommandHandlers();
 
 	void LoadMain();
@@ -173,6 +184,11 @@ public:
 	float GetProgress() const{ return progress; }
 	QTextStream &Log(){ return log; }
 	const Bms &GetBms(){ return bms; }
+
+	Question GetQuestion() const;
+	QVariant GetDefaultValue() const;
+	QMap<QString, QString> GenerateEncodingPreviewMap();
+	int GetRandomMax() const;
 };
 
 
