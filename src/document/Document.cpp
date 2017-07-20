@@ -8,6 +8,7 @@
 #include "../bmson/Bmson.h"
 #include "EditConfig.h"
 #include "../util/ResolutionUtil.h"
+#include "../bms/Bms.h"
 
 const double BmsConsts::MaxBpm = 1.e+6;
 const double BmsConsts::MinBpm = 1.e-6;
@@ -114,6 +115,138 @@ void Document::LoadFile(QString filePath)
 	history->SetReservedAction(outputVersion != savedVersion);
 
 	emit FilePathChanged();
+}
+
+void Document::LoadBms(const Bms::Bms &bms)
+{
+	directory = QFileInfo(bms.path).absoluteDir();
+
+	bmsonFields = BmsonIO::InitialBmson();
+	actualLength = 0;
+	totalLength = 0;
+
+	// read bms
+
+	info.LoadBms(bms);
+
+	{
+		// 小節線
+		const int lastObjPos = Bms::BmsUtil::GetTotalLength(bms) * info.GetResolution();
+		int pos = 0;
+		barLines.insert(0, BarLine(0, 0));
+		for (int i=0; i<bms.sections.length() && pos<=lastObjPos; i++){
+			int sectionLength = Bms::BmsUtil::GetSectionLengthInBmson(info.GetResolution(), bms.sections[i]);
+			pos += sectionLength;
+			barLines.insert(pos, BarLine(pos, 0));
+		}
+	}
+	{
+		// BPMイベント
+		int pos = 0;
+		for (int i=0; i<bms.sections.length(); i++){
+			int sectionLength = Bms::BmsUtil::GetSectionLengthInBmson(info.GetResolution(), bms.sections[i]);
+			// チャンネル03: BPM (オブジェ番号のFF解釈が整数BPM値)
+			if (bms.sections[i].objects.contains(3)){
+				const Bms::Sequence &sequence = bms.sections[i].objects[3];
+				for (auto obj=sequence.objects.begin(); obj!=sequence.objects.end(); obj++){
+					int relativePos = Bms::BmsUtil::GetPositionInSectionInBmson(info.GetResolution(), bms.sections[i], sequence, obj.key());
+					int ffnum = Bms::BmsUtil::ZZNUMtoFFNUM(obj.value());
+					if (ffnum > 0){
+						bpmEvents.insert(pos+relativePos, BpmEvent(pos+relativePos, (qreal)ffnum));
+					}
+				}
+			}
+			// チャンネル08: 拡張BPM (BPM定義を参照, 存在しない場合は無視)
+			if (bms.sections[i].objects.contains(8)){
+				const Bms::Sequence &sequence = bms.sections[i].objects[8];
+				for (auto obj=sequence.objects.begin(); obj!=sequence.objects.end(); obj++){
+					int relativePos = Bms::BmsUtil::GetPositionInSectionInBmson(info.GetResolution(), bms.sections[i], sequence, obj.key());
+					if (bms.bpmDefs[obj.value()] > 0.0){
+						bpmEvents.insert(pos+relativePos, BpmEvent(pos+relativePos, bms.bpmDefs[obj.value()]));
+					}
+				}
+			}
+			pos += sectionLength;
+		}
+	}
+	{
+		QMap<int, StopEvent> stopEvents;
+
+		// STOPイベント
+		int pos = 0;
+		for (int i=0; i<bms.sections.length(); i++){
+			int sectionLength = Bms::BmsUtil::GetSectionLengthInBmson(info.GetResolution(), bms.sections[i]);
+			// チャンネル09: STOP (STOP定義を参照, 存在しない場合は無視)
+			if (bms.sections[i].objects.contains(9)){
+				const Bms::Sequence &sequence = bms.sections[i].objects[9];
+				for (auto obj=sequence.objects.begin(); obj!=sequence.objects.end(); obj++){
+					int relativePos = Bms::BmsUtil::GetPositionInSectionInBmson(info.GetResolution(), bms.sections[i], sequence, obj.key());
+					if (bms.stopDefs[obj.value()] > 0.0){
+						stopEvents.insert(pos+relativePos, StopEvent(pos+relativePos, Bms::BmsUtil::GetStopDurationInBmson(info.GetResolution(), bms.stopDefs[obj.value()])));
+					}
+				}
+			}
+			pos += sectionLength;
+		}
+
+		QJsonArray jsonEvents;
+		for (auto ev : stopEvents){
+			jsonEvents.append(ev.AsJson());
+		}
+		bmsonFields[Bmson::Bms::StopEventsKey] = jsonEvents;
+	}
+	{
+		Bga bga;
+
+		// BGAイベント
+		bga.bgaEvents = Bms::BmsUtil::GetBgaEvents(bms, info.GetResolution());
+		bga.layerEvents = Bms::BmsUtil::GetLayerEvents(bms, info.GetResolution());
+		bga.missEvents = Bms::BmsUtil::GetMissEvents(bms, info.GetResolution());
+
+		QVector<bool> bmpUsed(bms.bmpDefs.length());
+		for (auto ev : bga.bgaEvents){
+			if (ev.id < bmpUsed.length()){
+				bmpUsed[ev.id] = true;
+			}
+		}
+		for (auto ev : bga.layerEvents){
+			if (ev.id < bmpUsed.length()){
+				bmpUsed[ev.id] = true;
+			}
+		}
+		for (auto ev : bga.missEvents){
+			if (ev.id < bmpUsed.length()){
+				bmpUsed[ev.id] = true;
+			}
+		}
+
+		// BGAヘッダ
+		for (int i=0; i<bms.bmpDefs.length(); i++){
+			if (bmpUsed[i] || !bms.bmpDefs[i].isEmpty()){
+				bga.headers.insert(i, BgaHeader(i, bms.bmpDefs[i]));
+			}
+		}
+
+		bmsonFields[Bmson::Bms::BgaKey] = bga.AsJson();
+	}
+
+	QVector<QMap<int, SoundNote>> notes = Bms::BmsUtil::GetNotesOfBmson(bms, bms.mode, info.GetResolution());
+
+	for (int i=0; i<bms.wavDefs.length(); i++){
+		const QString &name = bms.wavDefs[i];
+		if (name.isEmpty() && notes[i].empty())
+			continue;
+		auto *channel = new SoundChannel(this);
+		channel->InitializeWithNotes(name, notes[i]);
+		soundChannelLength.insert(channel, channel->GetLength());
+		soundChannels.push_back(channel);
+	}
+
+	UpdateTotalLength();
+	ReconstructMasterCache();
+
+	savedVersion = BmsonIO::NativeVersion;
+	history->MarkAbsolutelyDirty();
 }
 
 // This function may modify document, but the change is not recorded in undo buffer
@@ -1054,6 +1187,54 @@ QJsonObject BpmEvent::AsJson() const
 }
 
 bool BpmEvent::operator ==(const BpmEvent &r) const
+{
+	return AsJson() == r.AsJson();
+}
+
+StopEvent::StopEvent(const QJsonValue &json)
+	: BmsonObject(json)
+{
+	location = bmsonFields[Bmson::StopEvent::LocationKey].toInt();
+	value = bmsonFields[Bmson::StopEvent::DurationKey].toDouble();
+}
+
+QJsonValue StopEvent::SaveBmson()
+{
+	bmsonFields[Bmson::StopEvent::LocationKey] = location;
+	bmsonFields[Bmson::StopEvent::DurationKey] = value;
+	return bmsonFields;
+}
+
+QMap<QString, QJsonValue> StopEvent::GetExtraFields() const
+{
+	QMap<QString, QJsonValue> fields;
+	for (QJsonObject::const_iterator i=bmsonFields.begin(); i!=bmsonFields.end(); i++){
+		if (i.key() != Bmson::StopEvent::LocationKey && i.key() != Bmson::StopEvent::DurationKey){
+			fields.insert(i.key(), i.value());
+		}
+	}
+	return fields;
+}
+
+void StopEvent::SetExtraFields(const QMap<QString, QJsonValue> &fields)
+{
+	bmsonFields = QJsonObject();
+	for (auto i=fields.begin(); i!=fields.end(); i++){
+		if (i.key() != Bmson::StopEvent::LocationKey && i.key() != Bmson::StopEvent::DurationKey){
+			bmsonFields[i.key()] = i.value();
+		}
+	}
+}
+
+QJsonObject StopEvent::AsJson() const
+{
+	QJsonObject obj = bmsonFields;
+	obj[Bmson::StopEvent::LocationKey] = location;
+	obj[Bmson::StopEvent::DurationKey] = value;
+	return obj;
+}
+
+bool StopEvent::operator ==(const StopEvent &r) const
 {
 	return AsJson() == r.AsJson();
 }

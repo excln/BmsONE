@@ -9,7 +9,7 @@ class MainWindow;
 
 class PrefEditPage;
 class PrefPreviewPage;
-
+class PrefBmsPage;
 
 class PrefGeneralPage : public QWidget
 {
@@ -56,6 +56,7 @@ private:
 	PrefGeneralPage *generalPage;
 	PrefEditPage *editPage;
 	PrefPreviewPage *previewPage;
+	PrefBmsPage *bmsPage;
 
 	virtual void showEvent(QShowEvent *event);
 	virtual void hideEvent(QHideEvent *event);

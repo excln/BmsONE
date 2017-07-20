@@ -15,6 +15,9 @@
 #include "ExternalViewerTools.h"
 #include "EditConfig.h"
 #include "MasterOutDialog.h"
+#include "bmson/Bmson.h"
+#include "bms/Bms.h"
+#include "bms/BmsImportDialog.h"
 
 
 const char* MainWindow::SettingsGroup = "MainWindow";
@@ -509,23 +512,16 @@ void MainWindow::FileOpen()
 	if (!EnsureClosingFile())
 		return;
 	QString filters = tr("bmson files (*.bmson)"
-						 ";;" "old bms files (*.bms *.bme *.bml *.pms)"
+						 ";;" "legacy bms files (*.bms *.bme *.bml *.pms)"
 						 ";;" "all files (*.*)");
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open"), QString(), filters, 0);
 	if (fileName.isEmpty())
 		return;
-	try{
-		Document *newEditor = new Document(this);
-		newEditor->LoadFile(fileName);
-		ReplaceDocument(newEditor);
-	}catch(QString message){
-		QMessageBox *msgbox = new QMessageBox(
-					QMessageBox::Warning,
-					tr("Error"),
-					message,
-					QMessageBox::Ok,
-					this);
-		msgbox->show();
+	QString ext = QFileInfo(fileName).suffix().toLower();
+	if (BmsIO::IsBmsFileExtension(ext)){
+		OpenBms(fileName);
+	}else{
+		OpenBmson(fileName);
 	}
 }
 
@@ -535,18 +531,11 @@ void MainWindow::FileOpen(QString path)
 		return;
 	if (!EnsureClosingFile())
 		return;
-	try{
-		Document *newEditor = new Document(this);
-		newEditor->LoadFile(path);
-		ReplaceDocument(newEditor);
-	}catch(QString message){
-		QMessageBox *msgbox = new QMessageBox(
-					QMessageBox::Warning,
-					tr("Error"),
-					message,
-					QMessageBox::Ok,
-					this);
-		msgbox->show();
+	QString ext = QFileInfo(path).suffix().toLower();
+	if (BmsIO::IsBmsFileExtension(ext)){
+		OpenBms(path);
+	}else{
+		OpenBmson(path);
 	}
 }
 
@@ -1032,11 +1021,12 @@ bool MainWindow::EnsureClosingFile()
 	}
 }
 
-bool MainWindow::IsBmsFileExtension(const QString &ext)
+bool MainWindow::IsSourceFileExtension(const QString &ext)
 {
-	if (ext == "bmson"){
+	if (BmsonIO::IsBmsonFileExtension(ext))
 		return true;
-	}
+	if (BmsIO::IsBmsFileExtension(ext))
+		return true;
 	return false;
 }
 
@@ -1099,7 +1089,9 @@ void MainWindow::dropEvent(QDropEvent *event)
 		for (auto url : mimeData->urls()){
 			filePaths.append(url.toLocalFile());
 		}
-		OpenFiles(filePaths);
+		QTimer::singleShot(10, [=](){
+			OpenFiles(filePaths);
+		});
 		event->setDropAction(Qt::CopyAction);
 		event->accept();
 	}
@@ -1108,10 +1100,12 @@ void MainWindow::dropEvent(QDropEvent *event)
 void MainWindow::OpenFiles(QStringList filePaths)
 {
 	QString ext = QFileInfo(filePaths[0]).suffix().toLower();
-	if (IsBmsFileExtension(ext)){
-		QMetaObject::invokeMethod(this, "FileOpen", Qt::QueuedConnection, Q_ARG(QString, filePaths[0]));
+	if (IsSourceFileExtension(ext)){
+		//QMetaObject::invokeMethod(this, "FileOpen", Qt::QueuedConnection, Q_ARG(QString, filePaths[0]));
+		FileOpen(filePaths[0]);
 	}else if (IsSoundFileExtension(ext)){
-		QMetaObject::invokeMethod(this, "ChannelsNew", Qt::QueuedConnection, Q_ARG(QList<QString>, filePaths));
+		//QMetaObject::invokeMethod(this, "ChannelsNew", Qt::QueuedConnection, Q_ARG(QList<QString>, filePaths));
+		ChannelsNew(filePaths);
 	}else{
 		QMessageBox *msgbox = new QMessageBox(
 					QMessageBox::Warning,
@@ -1121,6 +1115,37 @@ void MainWindow::OpenFiles(QStringList filePaths)
 					this);
 		msgbox->show();
 	}
+}
+
+void MainWindow::OpenBmson(QString path)
+{
+	try{
+		Document *newEditor = new Document(this);
+		newEditor->LoadFile(path);
+		ReplaceDocument(newEditor);
+	}catch(QString message){
+		QMessageBox *msgbox = new QMessageBox(
+					QMessageBox::Warning,
+					tr("Error"),
+					message,
+					QMessageBox::Ok,
+					this);
+		msgbox->show();
+	}
+}
+
+void MainWindow::OpenBms(QString path)
+{
+	Bms::BmsReader *reader = BmsIO::LoadBms(path);
+	BmsImportDialog *dialog = new BmsImportDialog(this, *reader);
+	dialog->exec();
+	if (dialog->result() == QDialog::Accepted && dialog->IsSucceeded()){
+		auto newEditor = new Document(this);
+		newEditor->LoadBms(reader->GetBms());
+		ReplaceDocument(newEditor);
+	}
+	delete dialog;
+	delete reader;
 }
 
 bool MainWindow::WarningFileTraversals(QStringList filePaths)

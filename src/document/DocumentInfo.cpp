@@ -2,6 +2,7 @@
 #include "History.h"
 #include "HistoryUtil.h"
 #include "../bmson/Bmson.h"
+#include "../bms/Bms.h"
 
 QSet<QString> DocumentInfo::SupportedKeys;
 
@@ -83,6 +84,98 @@ void DocumentInfo::LoadBmson(QJsonValue json)
 	titleImage = bmsonFields[Bmson::BmsInfo::TitleImageKey].toString();
 	banner = bmsonFields[Bmson::BmsInfo::BannerKey].toString();
 	previewMusic = bmsonFields[Bmson::BmsInfo::PreviewMusicKey].toString();
+}
+
+void DocumentInfo::LoadBms(const Bms::Bms &bms)
+{
+	Initialize();
+	title = bms.title;
+	subtitle = bms.subtitle;
+	genre = bms.genre;
+	artist = bms.artist;
+	if (!bms.subartist.isEmpty()){
+		subartists.append(bms.subartist);
+	}
+	switch (bms.mode){
+	case Bms::MODE_5K:
+		modeHint = "beat-5k";
+		break;
+	case Bms::MODE_7K:
+		modeHint = "beat-7k";
+		break;
+	case Bms::MODE_10K:
+		modeHint = "beat-10k";
+		break;
+	case Bms::MODE_14K:
+		modeHint = "beat-14k";
+		break;
+	case Bms::MODE_PMS_9K:
+		modeHint = "popn-9k";
+		break;
+	case Bms::MODE_PMS_5K:
+		modeHint = "popn-5k";
+		break;
+	}
+	switch (bms.judgeRank){
+	case 0:
+		judgeRank = 40.0;
+		break;
+	case 1:
+		judgeRank = 60.0;
+		break;
+	case 2:
+		judgeRank = 80.0;
+		break;
+	case 3:
+		judgeRank = 100.0;
+		break;
+	case 4:
+		judgeRank = 120.0;
+		break;
+	}
+	// total =
+	initBpm = bms.bpm;
+	level = bms.level;
+	// backImage =
+	eyecatchImage = bms.stageFile;
+	titleImage = bms.backBmp;
+	banner = bms.banner;
+	// previewMusic =
+
+	Bms::BmsReaderConfig bmsConfig;
+	bmsConfig.Load();
+
+	// 最後のオブジェの位置がint型に十分収まるように解像度の上限を求める
+	qreal totalLength = Bms::BmsUtil::GetTotalLength(bms);
+	qDebug() << "total length:" << totalLength;
+	int maxResolution = INT_MAX / totalLength / 2;
+	qDebug() << "max resolution by total length:" << maxResolution;
+
+	// 曲の長さによる解像度の制約が弱い場合も、常識的な範囲内に収まるように制限を加える (設定で変更できるべき)
+	maxResolution = std::min(bmsConfig.maximumResolution, maxResolution);
+
+	bool shrink;
+	resolution = Bms::BmsUtil::GetResolution(bms, maxResolution, &shrink);
+	qDebug() << "required resolution:" << resolution << " shrink:" << shrink;
+	// 必要解像度が低い場合、最低解像度と同等以上になるように引き上げる (素因数の優先順位は適当) // 240 = 16 * 3 * 5
+	static QList<int> referenceResolutionFactors = {
+		2,	// 2
+		2,	// 4
+		2,	// 8
+		3,	// 24
+		2,	// 48
+		5,	// 240
+		2,	// 480
+		2,	// 960
+		3,	// 2880
+		7,	// 20160
+		2,	// 40320
+	};
+	for (int i=0, r=1; i<referenceResolutionFactors.length() && resolution < bmsConfig.minimumResolution; i++){
+		r *= referenceResolutionFactors[i];
+		resolution = Bms::Math::LCM(resolution, r);
+	}
+	qDebug() << "final resolution:" << resolution;
 }
 
 QJsonValue DocumentInfo::SaveBmson()
