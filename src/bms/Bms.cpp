@@ -2,6 +2,7 @@
 #include "Bms.h"
 #include "../MainWindow.h"
 #include <cstdlib>
+#include <ctime>
 
 BmsIO *BmsIO::instance = nullptr;
 
