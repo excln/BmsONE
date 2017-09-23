@@ -108,11 +108,11 @@ Contact me for questions.
 
 [Windows]
 Windows 10 Pro
-Desktop Qt 5.7.1 MSVC2015 OpenGL 32bit/64bit
+Desktop Qt 5.9.1 MSVC2015 OpenGL 32bit/64bit
 
 [Mac OS X]
 Mac OS X 10.10.5
-Desktop Qt 5.7.0 clang 64bit
+Desktop Qt 5.9.0 clang 64bit
 
 [Common]
 Using Xiph.org's libogg 1.3.2 and libvorbis 1.3.5.
@@ -155,7 +155,7 @@ BmsONE 101 - The Basics by ドルフィン
 
 7. History
 
-May 11 2017 beta 0.2.0
+Sep 23 beta 0.2.1
   - Made the source code public on GitHub.
   - Began to supply 64bit versions on Windows.
   - Fixed crashes when scrolling the chart in Sequence View particularly on Mac.
@@ -165,6 +165,10 @@ May 11 2017 beta 0.2.0
   - Partly fixed a bug that waveform display is sometimes not refreshed.
   - Fixed a bug that "Selected Objects" window does not appear when you insert a BPM event.
   - Fixed a bug that undoing insertion of a BPM event may cause a crash.
+  - Implemented grid setting.
+  - 24bit or 32bit WAV files are now supported.
+  - Implemented BMS importing.
+  - Implemented keyboard (24keys, etc.) mode.
 
 Feb 12 2017 beta 0.1.5
   - You can edit "title_image" and "preview_music" in the Information window, which are in bmson 1.0.0 spec.

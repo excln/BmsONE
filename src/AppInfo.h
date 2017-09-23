@@ -4,8 +4,8 @@
 #include <QtCore>
 
 #define APP_NAME "BmsONE"
-#define APP_VERSION_STRING "beta 0.2.0"
-#define APP_URL "http://sky.geocities.jp/exclusion_bms/"
+#define APP_VERSION_STRING "beta 0.2.1"
+#define APP_URL "https://github.com/excln/BmsONE"
 #define ORGANIZATION_NAME "ExclusionBms"
 
 #ifdef Q_OS_WIN64

@@ -118,11 +118,11 @@ BmsONE の作者である exclusion はこのソフトを使用して生じた�
 
 [Windows]
 Windows 10 Pro
-Desktop Qt 5.7.1 MSVC2015 OpenGL 32bit/64bit
+Desktop Qt 5.9.1 MSVC2015 OpenGL 32bit/64bit
 
 [Mac OS X]
 Mac OS X 10.10.5
-Desktop Qt 5.7.0 clang 64bit
+Desktop Qt 5.9.0 clang 64bit
 
 [共通]
 Xiph.org 様の libogg 1.3.2、libvorbis 1.3.5 を使用しています。
@@ -166,7 +166,7 @@ BmsONE 101 - The Basics (ドルフィン様)
 
 7. 履歴
 
-2017年05月11日 beta 0.2.0
+2017年09月23日 beta 0.2.1
   - GitHubにソースコードを公開した。
   - Windowsでも64bit版の提供を開始した。
   - 特にMac版で譜面スクロール時に頻繁にクラッシュするバグを修正した。
@@ -176,6 +176,10 @@ BmsONE 101 - The Basics (ドルフィン様)
   - 波形表示が更新されない場合がある問題を改善した。
   - BPMイベントなどを挿入しても「選択オブジェクト」ウィンドウが表示されない場合があるのを修正した。
   - BPMイベントの挿入をアンドゥするとクラッシュする場合があるバグを修正した。
+  - グリッド設定機能を実装した。
+  - 24bit・32bitのWAVファイルに対応した。
+  - BMSファイルのインポート機能を実装した。
+  - キーボードモード（24keyなど）に対応した。
 
 2017年02月12日 beta 0.1.5
   - bmson 1.0.0の仕様のうち、「情報」ウィンドウで未対応だったタイトル画像(title_image)とプレビュー音(preview_music)を編集できるようにした。

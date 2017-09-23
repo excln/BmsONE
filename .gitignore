@@ -32,6 +32,6 @@ Makefile*
 
 deploy/*.bat
 deploy/*.command
-deploy/BmsONE/*
+deploy/*/
 
 
