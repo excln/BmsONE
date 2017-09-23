@@ -17,7 +17,7 @@ http://sky.geocities.jp/exclusion_bms/bmsone.html
 
 If an error like "MSVCP140.dll is missing" occurs on Windows, then please install
 Visual C++ Redistributable for Visual Studio 2015 at the following URL.
-(Please choose "x86" regardless of your machine.)
+(Please choose "x86" or "x64" matching the version of BmsONE.)
 https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 This software is under development, so the current version lacks some features and often goes wrong.
