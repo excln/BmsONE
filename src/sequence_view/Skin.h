@@ -207,13 +207,18 @@ private:
 	static const int wwhite = 24;
 	static const int wblack = 24;
 	QColor cscratch;//(60, 26, 26);
+    QColor cgreen;//(17, 51, 17);
 	QColor cwhite;//(51, 51, 51);
 	QColor cblack;//(26, 26, 60);
+
 	QColor cbigv;//(180, 180, 180);
 	QColor csmallv;//(90, 90, 90);
+
 	QColor ncwhite;//(210, 210, 210);
 	QColor ncblack;//(150, 150, 240);
 	QColor ncscratch;//(240, 150, 150);
+    QColor ncgreen;//(123, 210, 123);
+
 	QColor pcWhite;//(51, 51, 51);
 	QColor pcYellow;//(51, 51, 17);
 	QColor pcGreen;//(17, 51, 17);
@@ -239,6 +244,18 @@ private:
 		}
 	};
 	void SetupLanes(Skin *skin, QList<Lane> lanes);
+
+    void SetupSkinEZ5k(Skin *skin, int scratch);
+    Skin *CreateDefaultEZ5k(QObject *parent);
+
+    void SetupSkinEZ7k(Skin *skin, int scratch);
+    Skin *CreateDefaultEZ7k(QObject *parent);
+
+    void SetupSkinEZ10k(Skin *skin);
+    Skin *CreateDefaultEZ10k(QObject *parent);
+
+    void SetupSkinEZ14k(Skin *skin);
+    Skin *CreateDefaultEZ14k(QObject *parent);
 
 	void SetupSkin7k(Skin *skin, int scratch);
 	Skin *CreateDefault7k(QObject *parent);

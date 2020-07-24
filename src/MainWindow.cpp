@@ -34,7 +34,7 @@ MainWindow::MainWindow(QSettings *settings)
 	: QMainWindow()
 	, settings(settings)
 	, document(nullptr)
-	, viewMode(ViewMode::ViewModeBeat7k())
+    , viewMode(ViewMode::ViewModeEZ5k())
 	, currentChannel(-1)
 	, closing(false)
 {
