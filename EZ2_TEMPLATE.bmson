@@ -1,0 +1,44 @@
+{
+    "bpm_events": [
+    ],
+    "info": {
+        "artist": "",
+        "back_image": "",
+        "banner_image": "",
+        "chart_name": "",
+        "eyecatch_image": "",
+        "genre": "",
+        "init_bpm": 120,
+        "judge_rank": 100,
+        "judgement_deltas": {
+            "COOL": 18,
+            "GOOD": 40,
+            "KOOL": 6,
+            "MISS": 56
+        },
+        "level": 1,
+        "life_deltas": {
+            "COOL": 0.2,
+            "GOOD": 0.1,
+            "FAIL": -3.5,
+            "MISS": -1.5
+        },
+        "mode_hint": "ez2-5k",
+        "preview_music": "",
+        "resolution": 240,
+        "subartists": [
+        ],
+        "subtitle": "",
+        "title": "",
+        "title_image": "",
+        "total": 100
+    },
+    "lines": [
+        {
+            "y": 0
+        }
+    ],
+    "sound_channels": [
+    ],
+    "version": "1.0.0"
+}
