@@ -1,0 +1,46 @@
+Soft limits:
+
+	judgement_deltas:
+		KOOL = 4 to 7
+		COOL = 15 to 30
+		GOOD = 40 to 60
+		MISS = 50 to 70
+
+	life_deltas:
+		COOL = 0.2 to 0.3
+		GOOD = 0.1 to 0.2
+		MISS = -1.X to -2.0
+		FAIL = -3.X to -5.0
+
+---------------------------
+
+Examples:
+
+	judgement_deltas:
+
+		KOOL = 5 to 7
+		COOL = 18
+		GOOD = 40
+		MISS = 56
+		---------
+		KOOL = 7
+		COOL = 30
+		GOOD = 50
+		MISS = 70 to 80
+		
+	life_deltas:
+
+		COOL = 0.2
+		GOOD = 0.1
+		MISS = -2.0
+		FAIL = -5.0
+		---------
+		COOL = 0.2
+		GOOD = 0.1
+		MISS = -1.5
+		FAIL = -3.5
+		---------
+		COOL = 0.3
+		GOOD = 0.2
+		MISS = -1.5
+		FAIL = -4.5
