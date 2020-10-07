@@ -245,6 +245,9 @@ private:
 	};
 	void SetupLanes(Skin *skin, QList<Lane> lanes);
 
+    void SetupSkinEZ5kOnly(Skin *skin, int player);
+    Skin *CreateDefaultEZ5kOnly(QObject *parent);
+
     void SetupSkinEZ5k(Skin *skin, int player);
     Skin *CreateDefaultEZ5k(QObject *parent);
 
@@ -256,6 +259,9 @@ private:
 
     void SetupSkinEZ14k(Skin *skin, int player);
     Skin *CreateDefaultEZ14k(QObject *parent);
+
+    void SetupSkinEZAndromeda(Skin *skin, int player);
+    Skin *CreateDefaultEZAndromeda(QObject *parent);
 
 	void SetupSkin7k(Skin *skin, int scratch);
 	Skin *CreateDefault7k(QObject *parent);

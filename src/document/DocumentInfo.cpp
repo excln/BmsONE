@@ -44,7 +44,7 @@ void DocumentInfo::Initialize()
 	artist = QString();
 	subartists.clear();
 	chartName = QString();
-	modeHint = "beat-7k";
+    modeHint = "ez2-5k";
 	resolution = DefaultResolution;
 	judgeRank = 100.;
 	total = 100.;

@@ -9,10 +9,12 @@ class ViewMode : public QObject
 
 public:
     enum Mode{
+        MODE_EZ_5K_ONLY  = 0x00020000,
         MODE_EZ_5K       = 0x00020500,
         MODE_EZ_7K       = 0x00020700,
         MODE_EZ_10K      = 0x00021000,
         MODE_EZ_14K      = 0x00021400,
+        MODE_EZ_ANDROMEDA= 0x00021402,
         MODE_PLAIN         = 0x10000000,
         MODE_BEAT_5K       = 0x00010501,
         MODE_BEAT_7K       = 0x00010701,
@@ -59,10 +61,12 @@ private:
 	static QList<ViewMode*> ViewModes;
 	static QMap<QString, ViewMode*> ModeLibrary;
 
+        static ViewMode *VM_EZ5kOnly;
         static ViewMode *VM_EZ5k;
         static ViewMode *VM_EZ7k;
         static ViewMode *VM_EZ10k;
         static ViewMode *VM_EZ14k;
+        static ViewMode *VM_EZAndromeda;
         static ViewMode *VM_Beat5k;
         static ViewMode *VM_Beat7k;
         static ViewMode *VM_Beat10k;
@@ -101,10 +105,12 @@ public:
 	static QList<ViewMode*> GetAllViewModes();
 	static QStringList GetAllModeHints();
 
+        static ViewMode *ViewModeEZ5kOnly();
         static ViewMode *ViewModeEZ5k();
         static ViewMode *ViewModeEZ7k();
         static ViewMode *ViewModeEZ10k();
         static ViewMode *ViewModeEZ14k();
+        static ViewMode *ViewModeEZAndromeda();
         static ViewMode *ViewModeBeat5k();
         static ViewMode *ViewModeBeat7k();
         static ViewMode *ViewModeBeat10k();

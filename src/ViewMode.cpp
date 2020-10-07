@@ -27,10 +27,12 @@ void ViewMode::AddHiddenViewMode(QString modeHint, ViewMode *mode)
 void ViewMode::PrepareModeLibrary()
 {
 	if (ModeLibrary.empty()){
+        AddViewMode("ez2-5k-only", ViewModeEZ5kOnly());
         AddViewMode("ez2-5k", ViewModeEZ5k());
         AddViewMode("ez2-7k", ViewModeEZ7k());
         AddViewMode("ez2-10k", ViewModeEZ10k());
         AddViewMode("ez2-14k", ViewModeEZ14k());
+        AddViewMode("ez2-andromeda", ViewModeEZAndromeda());
         AddViewMode("beat-7k", ViewModeBeat7k());
         AddViewMode("beat-14k", ViewModeBeat14k());
         AddViewMode("beat-7k-battle", ViewModeBeat14k());
@@ -73,7 +75,7 @@ ViewMode *ViewMode::GetViewMode(QString modeHint)
 	if (ModeLibrary.contains(modeHint)){
 		return ModeLibrary[modeHint];
 	}else if (modeHint.isEmpty()){
-        return ViewModeEZ7k();
+        return ViewModeEZ5k();
 	}else{
 		return ViewModePlain();
 	}
@@ -101,10 +103,12 @@ QStringList ViewMode::GetAllModeHints()
 	return ModeHints;
 }
 
+ViewMode *ViewMode::VM_EZ5kOnly = nullptr;
 ViewMode *ViewMode::VM_EZ5k = nullptr;
 ViewMode *ViewMode::VM_EZ7k = nullptr;
 ViewMode *ViewMode::VM_EZ10k = nullptr;
 ViewMode *ViewMode::VM_EZ14k = nullptr;
+ViewMode *ViewMode::VM_EZAndromeda = nullptr;
 ViewMode *ViewMode::VM_Beat5k = nullptr;
 ViewMode *ViewMode::VM_Beat7k = nullptr;
 ViewMode *ViewMode::VM_Beat10k = nullptr;
@@ -122,18 +126,31 @@ ViewMode *ViewMode::VM_Generic6Keys = nullptr;
 ViewMode *ViewMode::VM_Generic7Keys = nullptr;
 ViewMode *ViewMode::VM_Plain = nullptr;
 
+ViewMode *ViewMode::ViewModeEZ5kOnly()
+{
+    if (VM_EZ5kOnly)
+        return VM_EZ5kOnly;
+    VM_EZ5kOnly = new ViewMode(tr("EZ2 5K ONLY"), MODE_EZ_5K_ONLY);
+    VM_EZ5kOnly->lanes.insert(11, LaneDef(11, tr("Key 1")));
+    VM_EZ5kOnly->lanes.insert(12, LaneDef(12, tr("Key 2")));
+    VM_EZ5kOnly->lanes.insert(13, LaneDef(13, tr("Key 3")));
+    VM_EZ5kOnly->lanes.insert(14, LaneDef(14, tr("Key 4")));
+    VM_EZ5kOnly->lanes.insert(15, LaneDef(15, tr("Key 5")));
+    return VM_EZ5kOnly;
+}
+
 ViewMode *ViewMode::ViewModeEZ5k()
 {
     if (VM_EZ5k)
         return VM_EZ5k;
     VM_EZ5k = new ViewMode(tr("EZ2 5K"), MODE_EZ_5K);
-    VM_EZ5k->lanes.insert(1, LaneDef(1, tr("Key 1")));
-    VM_EZ5k->lanes.insert(2, LaneDef(2, tr("Key 2")));
-    VM_EZ5k->lanes.insert(3, LaneDef(3, tr("Key 3")));
-    VM_EZ5k->lanes.insert(4, LaneDef(4, tr("Key 4")));
-    VM_EZ5k->lanes.insert(5, LaneDef(5, tr("Key 5")));
-    VM_EZ5k->lanes.insert(6, LaneDef(6, tr("Pedal")));
-    VM_EZ5k->lanes.insert(8, LaneDef(8, tr("Scratch")));
+    VM_EZ5k->lanes.insert(1, LaneDef(1, tr("Scratch")));
+    VM_EZ5k->lanes.insert(11, LaneDef(11, tr("Key 1")));
+    VM_EZ5k->lanes.insert(12, LaneDef(12, tr("Key 2")));
+    VM_EZ5k->lanes.insert(13, LaneDef(13, tr("Key 3")));
+    VM_EZ5k->lanes.insert(14, LaneDef(14, tr("Key 4")));
+    VM_EZ5k->lanes.insert(15, LaneDef(15, tr("Key 5")));
+    VM_EZ5k->lanes.insert(10, LaneDef(10, tr("Pedal")));
     return VM_EZ5k;
 }
 
@@ -142,15 +159,15 @@ ViewMode *ViewMode::ViewModeEZ7k()
     if (VM_EZ7k)
         return VM_EZ7k;
     VM_EZ7k = new ViewMode(tr("EZ2 7K"), MODE_EZ_7K);
-    VM_EZ7k->lanes.insert(1, LaneDef(1, tr("Key 1")));
-    VM_EZ7k->lanes.insert(2, LaneDef(2, tr("Key 2")));
-    VM_EZ7k->lanes.insert(3, LaneDef(3, tr("Key 3")));
-    VM_EZ7k->lanes.insert(4, LaneDef(4, tr("Key 4")));
-    VM_EZ7k->lanes.insert(5, LaneDef(5, tr("Key 5")));
-    VM_EZ7k->lanes.insert(6, LaneDef(6, tr("Pedal")));
-    VM_EZ7k->lanes.insert(8, LaneDef(8, tr("Scratch")));
-    VM_EZ7k->lanes.insert(21, LaneDef(21, tr("Effector 1")));
-    VM_EZ7k->lanes.insert(22, LaneDef(22, tr("Effector 2")));
+    VM_EZ7k->lanes.insert(1, LaneDef(1, tr("Scratch")));
+    VM_EZ7k->lanes.insert(11, LaneDef(11, tr("Key 1")));
+    VM_EZ7k->lanes.insert(12, LaneDef(12, tr("Key 2")));
+    VM_EZ7k->lanes.insert(13, LaneDef(13, tr("Key 3")));
+    VM_EZ7k->lanes.insert(14, LaneDef(14, tr("Key 4")));
+    VM_EZ7k->lanes.insert(15, LaneDef(15, tr("Key 5")));
+    VM_EZ7k->lanes.insert(10, LaneDef(10, tr("Pedal")));
+    VM_EZ7k->lanes.insert(31, LaneDef(31, tr("Effector 1")));
+    VM_EZ7k->lanes.insert(32, LaneDef(32, tr("Effector 2")));
     return VM_EZ7k;
 }
 
@@ -159,19 +176,19 @@ ViewMode *ViewMode::ViewModeEZ10k()
     if (VM_EZ10k)
         return VM_EZ10k;
     VM_EZ10k = new ViewMode(tr("EZ2 10K"), MODE_EZ_10K);
-    VM_EZ10k->lanes.insert(1, LaneDef(1, tr("Key 1")));
-    VM_EZ10k->lanes.insert(2, LaneDef(2, tr("Key 2")));
-    VM_EZ10k->lanes.insert(3, LaneDef(3, tr("Key 3")));
-    VM_EZ10k->lanes.insert(4, LaneDef(4, tr("Key 4")));
-    VM_EZ10k->lanes.insert(5, LaneDef(5, tr("Key 5")));
-    VM_EZ10k->lanes.insert(6, LaneDef(6, tr("Pedal")));
-    VM_EZ10k->lanes.insert(8, LaneDef(8, tr("Scratch P1")));
-    VM_EZ10k->lanes.insert(9, LaneDef(9, tr("Key 6")));
-    VM_EZ10k->lanes.insert(10, LaneDef(10, tr("Key 7")));
-    VM_EZ10k->lanes.insert(11, LaneDef(11, tr("Key 8")));
-    VM_EZ10k->lanes.insert(12, LaneDef(12, tr("Key 9")));
-    VM_EZ10k->lanes.insert(13, LaneDef(13, tr("Key 10")));
-    VM_EZ10k->lanes.insert(16, LaneDef(16, tr("Scratch P2")));
+    VM_EZ10k->lanes.insert(1, LaneDef(1, tr("Scratch P1")));
+    VM_EZ10k->lanes.insert(11, LaneDef(11, tr("Key 1")));
+    VM_EZ10k->lanes.insert(12, LaneDef(12, tr("Key 2")));
+    VM_EZ10k->lanes.insert(13, LaneDef(13, tr("Key 3")));
+    VM_EZ10k->lanes.insert(14, LaneDef(14, tr("Key 4")));
+    VM_EZ10k->lanes.insert(15, LaneDef(15, tr("Key 5")));
+    VM_EZ10k->lanes.insert(10, LaneDef(10, tr("Pedal")));
+    VM_EZ10k->lanes.insert(21, LaneDef(21, tr("Key 6")));
+    VM_EZ10k->lanes.insert(22, LaneDef(22, tr("Key 7")));
+    VM_EZ10k->lanes.insert(23, LaneDef(23, tr("Key 8")));
+    VM_EZ10k->lanes.insert(24, LaneDef(24, tr("Key 9")));
+    VM_EZ10k->lanes.insert(25, LaneDef(25, tr("Key 10")));
+    VM_EZ10k->lanes.insert(2, LaneDef(2, tr("Scratch P2")));
     return VM_EZ10k;
 }
 
@@ -180,23 +197,49 @@ ViewMode *ViewMode::ViewModeEZ14k()
     if (VM_EZ14k)
         return VM_EZ14k;
     VM_EZ14k = new ViewMode(tr("EZ2 14K"), MODE_EZ_14K);
-    VM_EZ14k->lanes.insert(1, LaneDef(1, tr("Key 1")));
-    VM_EZ14k->lanes.insert(2, LaneDef(2, tr("Key 2")));
-    VM_EZ14k->lanes.insert(3, LaneDef(3, tr("Key 3")));
-    VM_EZ14k->lanes.insert(4, LaneDef(4, tr("Key 4")));
-    VM_EZ14k->lanes.insert(5, LaneDef(5, tr("Key 5")));
-    VM_EZ14k->lanes.insert(8, LaneDef(8, tr("Scratch P1")));
-    VM_EZ14k->lanes.insert(21, LaneDef(21, tr("Effector 1")));
-    VM_EZ14k->lanes.insert(22, LaneDef(22, tr("Effector 2")));
-    VM_EZ14k->lanes.insert(23, LaneDef(23, tr("Effector 3")));
-    VM_EZ14k->lanes.insert(24, LaneDef(24, tr("Effector 4")));
-    VM_EZ14k->lanes.insert(9, LaneDef(9, tr("Key 6")));
-    VM_EZ14k->lanes.insert(10, LaneDef(10, tr("Key 7")));
-    VM_EZ14k->lanes.insert(11, LaneDef(11, tr("Key 8")));
-    VM_EZ14k->lanes.insert(12, LaneDef(12, tr("Key 9")));
-    VM_EZ14k->lanes.insert(13, LaneDef(13, tr("Key 10")));
-    VM_EZ14k->lanes.insert(16, LaneDef(16, tr("Scratch P2")));
+    VM_EZ14k->lanes.insert(1, LaneDef(1, tr("Scratch P1")));
+    VM_EZ14k->lanes.insert(11, LaneDef(11, tr("Key 1")));
+    VM_EZ14k->lanes.insert(12, LaneDef(12, tr("Key 2")));
+    VM_EZ14k->lanes.insert(13, LaneDef(13, tr("Key 3")));
+    VM_EZ14k->lanes.insert(14, LaneDef(14, tr("Key 4")));
+    VM_EZ14k->lanes.insert(15, LaneDef(15, tr("Key 5")));
+    VM_EZ14k->lanes.insert(31, LaneDef(31, tr("Effector 1")));
+    VM_EZ14k->lanes.insert(32, LaneDef(32, tr("Effector 2")));
+    VM_EZ14k->lanes.insert(33, LaneDef(33, tr("Effector 3")));
+    VM_EZ14k->lanes.insert(34, LaneDef(34, tr("Effector 4")));
+    VM_EZ14k->lanes.insert(21, LaneDef(21, tr("Key 6")));
+    VM_EZ14k->lanes.insert(22, LaneDef(22, tr("Key 7")));
+    VM_EZ14k->lanes.insert(23, LaneDef(23, tr("Key 8")));
+    VM_EZ14k->lanes.insert(24, LaneDef(24, tr("Key 9")));
+    VM_EZ14k->lanes.insert(25, LaneDef(25, tr("Key 10")));
+    VM_EZ14k->lanes.insert(2, LaneDef(2, tr("Scratch P2")));
     return VM_EZ14k;
+}
+
+ViewMode *ViewMode::ViewModeEZAndromeda()
+{
+    if (VM_EZAndromeda)
+        return VM_EZAndromeda;
+    VM_EZAndromeda = new ViewMode(tr("EZ2 ANDROMEDA"), MODE_EZ_ANDROMEDA);
+    VM_EZAndromeda->lanes.insert(1, LaneDef(1, tr("Scratch P1")));
+    VM_EZAndromeda->lanes.insert(11, LaneDef(11, tr("Key 1")));
+    VM_EZAndromeda->lanes.insert(12, LaneDef(12, tr("Key 2")));
+    VM_EZAndromeda->lanes.insert(13, LaneDef(13, tr("Key 3")));
+    VM_EZAndromeda->lanes.insert(14, LaneDef(14, tr("Key 4")));
+    VM_EZAndromeda->lanes.insert(15, LaneDef(15, tr("Key 5")));
+    VM_EZAndromeda->lanes.insert(10, LaneDef(10, tr("Pedal 1")));
+    VM_EZAndromeda->lanes.insert(31, LaneDef(31, tr("Effector 1")));
+    VM_EZAndromeda->lanes.insert(32, LaneDef(32, tr("Effector 2")));
+    VM_EZAndromeda->lanes.insert(33, LaneDef(33, tr("Effector 3")));
+    VM_EZAndromeda->lanes.insert(34, LaneDef(34, tr("Effector 4")));
+    VM_EZAndromeda->lanes.insert(20, LaneDef(20, tr("Pedal 2")));
+    VM_EZAndromeda->lanes.insert(21, LaneDef(21, tr("Key 6")));
+    VM_EZAndromeda->lanes.insert(22, LaneDef(22, tr("Key 7")));
+    VM_EZAndromeda->lanes.insert(23, LaneDef(23, tr("Key 8")));
+    VM_EZAndromeda->lanes.insert(24, LaneDef(24, tr("Key 9")));
+    VM_EZAndromeda->lanes.insert(25, LaneDef(25, tr("Key 10")));
+    VM_EZAndromeda->lanes.insert(2, LaneDef(2, tr("Scratch P2")));
+    return VM_EZAndromeda;
 }
 
 ViewMode *ViewMode::ViewModeBeat5k()
