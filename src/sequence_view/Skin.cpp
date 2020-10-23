@@ -22,13 +22,18 @@ SkinProperty *Skin::GetProperty(QString name) const
 SkinLibrary::SkinLibrary()
 {
 	cscratch = QColor(60, 26, 26);
+    cgreen = QColor(17, 51, 17);
 	cwhite = QColor(51, 51, 51);
 	cblack = QColor(26, 26, 60);
+
 	cbigv = QColor(180, 180, 180);
 	csmallv = QColor(90, 90, 90);
+
 	ncwhite = QColor(210, 210, 210);
 	ncblack = QColor(150, 150, 240);
 	ncscratch = QColor(240, 150, 150);
+    ncgreen = QColor(123, 210, 123);
+
 	pcWhite = QColor(51, 51, 51);
 	pcYellow = QColor(51, 51, 17);
 	pcGreen = QColor(17, 51, 17);
@@ -90,6 +95,14 @@ void SkinLibrary::SetupSkin7k(Skin *skin, int scratch)
 
 #define SKIN_SETTINGS_KEY "SkinSettings"
 #define SCRATCH_PROPERTY_KEY "scratch"
+
+#define DEFAULT_EZ_5K_ONLY_ID "default-ez-5k-only"
+#define DEFAULT_EZ_5K_ID "default-ez-5k"
+#define DEFAULT_EZ_7K_ID "default-ez-7k"
+#define DEFAULT_EZ_10K_ID "default-ez-10k"
+#define DEFAULT_EZ_14K_ID "default-ez-14k"
+#define DEFAULT_EZ_ANDROMEDA_ID "default-ez-andromeda"
+
 #define DEFAULT_BEAT_5K_ID "default-beat-5k"
 #define DEFAULT_BEAT_7K_ID "default-beat-7k"
 #define DEFAULT_BEAT_10K_ID "default-beat-10k"
@@ -113,6 +126,358 @@ inline QString PROPERTY_KEY(QString skin_id, QString prop_key)
 inline QString DEFAULT_KEYBOARD_SINGLE_ID(int key)
 {
 	return QString("default-keyboard-%1k-single").arg(key);
+}
+
+void SkinLibrary::SetupSkinEZ5kOnly(Skin *skin, int player)
+{
+    skin->width = lmargin*2+wwhite*3+wblack*2;
+    skin->lanes.clear();
+    switch (player){
+    case 0:
+        skin->lanes.append(LaneDef(11, "wkey", lmargin+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(12, "bkey", lmargin+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(13, "wkey", lmargin+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(14, "bkey", lmargin+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(15, "wkey", lmargin+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        break;
+    case 1:
+        skin->lanes.append(LaneDef(15, "wkey", lmargin+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(14, "bkey", lmargin+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(13, "wkey", lmargin+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(12, "bkey", lmargin+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(11, "wkey", lmargin+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        break;
+    }
+}
+
+Skin *SkinLibrary::CreateDefaultEZ5kOnly(QObject *parent)
+{
+    QString defaultScratch = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_EZ_5K_ONLY_ID, SCRATCH_PROPERTY_KEY), "l").toString();
+    Skin *skin = new Skin(DEFAULT_EZ_5K_ONLY_ID, parent);
+    QStringList choices;
+    choices.append("l");
+    choices.append("r");
+    QStringList choiceNames;
+    choiceNames.append(tr("Player 1"));
+    choiceNames.append(tr("Player 2"));
+    SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, SCRATCH_PROPERTY_KEY, tr("Scratch"), choices, choiceNames, defaultScratch);
+    scratchPosition->setObjectName(SCRATCH_PROPERTY_KEY);
+    skin->properties.append(scratchPosition);
+    connect(scratchPosition, &SkinProperty::Changed, skin, [=](){
+        skin->lanes.clear();
+        SetupSkinEZ5kOnly(skin, scratchPosition->GetIndexValue());
+        App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_EZ_5K_ONLY_ID, SCRATCH_PROPERTY_KEY), scratchPosition->GetChoiceValue());
+        emit skin->Changed();
+        return;
+    });
+    SetupSkinEZ5kOnly(skin, scratchPosition->GetIndexValue());
+    return skin;
+}
+
+void SkinLibrary::SetupSkinEZ5k(Skin *skin, int player)
+{
+    skin->width = lmargin*2+wscratch*2+wwhite*3+wblack*2;
+    skin->lanes.clear();
+    switch (player){
+    case 0:
+        skin->lanes.append(LaneDef(1, "scratch", lmargin, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(11, "wkey", lmargin+wscratch+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(12, "bkey", lmargin+wscratch+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(13, "wkey", lmargin+wscratch+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(14, "bkey", lmargin+wscratch+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(15, "wkey", lmargin+wscratch+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(10, "pedal", lmargin+wscratch+wwhite*3+wblack*2, wscratch, cgreen, ncgreen, cbigv, csmallv));
+        break;
+    case 1:
+        skin->lanes.append(LaneDef(10, "pedal", lmargin, wscratch, cgreen, ncgreen, csmallv, cbigv));
+        skin->lanes.append(LaneDef(15, "wkey", lmargin+wscratch+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(14, "bkey", lmargin+wscratch+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(13, "wkey", lmargin+wscratch+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(12, "bkey", lmargin+wscratch+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(11, "wkey", lmargin+wscratch+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(1, "scratch", lmargin+wscratch+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        break;
+    }
+}
+
+Skin *SkinLibrary::CreateDefaultEZ5k(QObject *parent)
+{
+    QString defaultScratch = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_EZ_5K_ID, SCRATCH_PROPERTY_KEY), "l").toString();
+    Skin *skin = new Skin(DEFAULT_EZ_5K_ID, parent);
+    QStringList choices;
+    choices.append("l");
+    choices.append("r");
+    QStringList choiceNames;
+    choiceNames.append(tr("Player 1"));
+    choiceNames.append(tr("Player 2"));
+    SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, SCRATCH_PROPERTY_KEY, tr("Scratch"), choices, choiceNames, defaultScratch);
+    scratchPosition->setObjectName(SCRATCH_PROPERTY_KEY);
+    skin->properties.append(scratchPosition);
+    connect(scratchPosition, &SkinProperty::Changed, skin, [=](){
+        skin->lanes.clear();
+        SetupSkinEZ5k(skin, scratchPosition->GetIndexValue());
+        App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_EZ_5K_ID, SCRATCH_PROPERTY_KEY), scratchPosition->GetChoiceValue());
+        emit skin->Changed();
+        return;
+    });
+    SetupSkinEZ5k(skin, scratchPosition->GetIndexValue());
+    return skin;
+}
+
+void SkinLibrary::SetupSkinEZ7k(Skin *skin, int player)
+{
+    skin->width = lmargin*2+wscratch*4+wwhite*3+wblack*2;
+    skin->lanes.clear();
+    switch (player){
+    case 0:
+        skin->lanes.append(LaneDef(1, "scratch", lmargin, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(11, "wkey", lmargin+wscratch+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(12, "bkey", lmargin+wscratch+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(13, "wkey", lmargin+wscratch+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(14, "bkey", lmargin+wscratch+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(15, "wkey", lmargin+wscratch+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(10, "pedal", lmargin+wscratch+wwhite*3+wblack*2, wscratch, cgreen, ncgreen, cbigv, cbigv));
+        skin->lanes.append(LaneDef(31, "effector 1", lmargin+wscratch*2+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        skin->lanes.append(LaneDef(32, "effector 2", lmargin+wscratch*3+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, csmallv));
+        break;
+    case 1:
+        skin->lanes.append(LaneDef(32, "effector 3", lmargin, wscratch, cscratch, ncscratch, csmallv, csmallv));
+        skin->lanes.append(LaneDef(31, "effector 4", lmargin+wscratch, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(10, "pedal", lmargin+wscratch*2, wscratch, cgreen, ncgreen, cbigv, cbigv));
+        skin->lanes.append(LaneDef(15, "wkey", lmargin+wscratch*3+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(14, "bkey", lmargin+wscratch*3+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(13, "wkey", lmargin+wscratch*3+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(12, "bkey", lmargin+wscratch*3+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(11, "wkey", lmargin+wscratch*3+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(1, "scratch", lmargin+wscratch*3+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        break;
+    }
+}
+
+Skin *SkinLibrary::CreateDefaultEZ7k(QObject *parent)
+{
+    QString defaultScratch = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_EZ_7K_ID, SCRATCH_PROPERTY_KEY), "l").toString();
+    Skin *skin = new Skin(DEFAULT_EZ_7K_ID, parent);
+    QStringList choices;
+    choices.append("l");
+    choices.append("r");
+    QStringList choiceNames;
+    choiceNames.append(tr("Player 1"));
+    choiceNames.append(tr("Player 2"));
+    SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, SCRATCH_PROPERTY_KEY, tr("Scratch"), choices, choiceNames, defaultScratch);
+    scratchPosition->setObjectName(SCRATCH_PROPERTY_KEY);
+    skin->properties.append(scratchPosition);
+    connect(scratchPosition, &SkinProperty::Changed, skin, [=](){
+        skin->lanes.clear();
+        SetupSkinEZ7k(skin, scratchPosition->GetIndexValue());
+        App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_EZ_7K_ID, SCRATCH_PROPERTY_KEY), scratchPosition->GetChoiceValue());
+        emit skin->Changed();
+        return;
+    });
+    SetupSkinEZ7k(skin, scratchPosition->GetIndexValue());
+    return skin;
+}
+
+void SkinLibrary::SetupSkinEZ10k(Skin *skin, int player)
+{
+    skin->width = lmargin*2+wscratch*3+wwhite*6+wblack*4;
+    skin->lanes.clear();
+    switch (player){
+    case 0:
+        skin->lanes.append(LaneDef(1, "scratch", lmargin, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(11, "wkey", lmargin+wscratch+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(12, "bkey", lmargin+wscratch+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(13, "wkey", lmargin+wscratch+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(14, "bkey", lmargin+wscratch+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(15, "wkey", lmargin+wscratch+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(10, "pedal", lmargin+wscratch+wwhite*3+wblack*2, wscratch, cgreen, ncgreen, cbigv, cbigv));
+        skin->lanes.append(LaneDef(21, "wkey", lmargin+wscratch*2+wwhite*3+wblack*2, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(22, "bkey", lmargin+wscratch*2+wwhite*4+wblack*2, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(23, "wkey", lmargin+wscratch*2+wwhite*4+wblack*3, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(24, "bkey", lmargin+wscratch*2+wwhite*5+wblack*3, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(25, "wkey", lmargin+wscratch*2+wwhite*5+wblack*4, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(2, "scratch", lmargin+wscratch*2+wwhite*6+wblack*4, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        break;
+    case 1:
+        skin->lanes.append(LaneDef(2, "scratch", lmargin, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(25, "wkey", lmargin+wscratch+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(24, "bkey", lmargin+wscratch+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(23, "wkey", lmargin+wscratch+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(22, "bkey", lmargin+wscratch+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(21, "wkey", lmargin+wscratch+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(10, "pedal", lmargin+wscratch+wwhite*3+wblack*2, wscratch, cgreen, ncgreen, cbigv, cbigv));
+        skin->lanes.append(LaneDef(15, "wkey", lmargin+wscratch*2+wwhite*3+wblack*2, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(14, "bkey", lmargin+wscratch*2+wwhite*4+wblack*2, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(13, "wkey", lmargin+wscratch*2+wwhite*4+wblack*3, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(12, "bkey", lmargin+wscratch*2+wwhite*5+wblack*3, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(11, "wkey", lmargin+wscratch*2+wwhite*5+wblack*4, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(1, "scratch", lmargin+wscratch*2+wwhite*6+wblack*4, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        break;
+    }
+}
+
+Skin *SkinLibrary::CreateDefaultEZ10k(QObject *parent)
+{
+    QString defaultScratch = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_EZ_10K_ID, SCRATCH_PROPERTY_KEY), "l").toString();
+    Skin *skin = new Skin(DEFAULT_EZ_10K_ID, parent);
+    QStringList choices;
+    choices.append("l");
+    choices.append("r");
+    QStringList choiceNames;
+    choiceNames.append(tr("Player 1"));
+    choiceNames.append(tr("Player 2"));
+    SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, SCRATCH_PROPERTY_KEY, tr("Scratch"), choices, choiceNames, defaultScratch);
+    scratchPosition->setObjectName(SCRATCH_PROPERTY_KEY);
+    skin->properties.append(scratchPosition);
+    connect(scratchPosition, &SkinProperty::Changed, skin, [=](){
+        skin->lanes.clear();
+        SetupSkinEZ10k(skin, scratchPosition->GetIndexValue());
+        App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_EZ_10K_ID, SCRATCH_PROPERTY_KEY), scratchPosition->GetChoiceValue());
+        emit skin->Changed();
+        return;
+    });
+    SetupSkinEZ10k(skin, scratchPosition->GetIndexValue());
+    return skin;
+}
+
+void SkinLibrary::SetupSkinEZ14k(Skin *skin, int player)
+{
+    skin->width = lmargin*2+wscratch*6+wwhite*6+wblack*4;
+    skin->lanes.clear();
+    switch (player){
+    case 0:
+        skin->lanes.append(LaneDef(1, "scratch", lmargin, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(11, "wkey", lmargin+wscratch+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(12, "bkey", lmargin+wscratch+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(13, "wkey", lmargin+wscratch+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(14, "bkey", lmargin+wscratch+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(15, "wkey", lmargin+wscratch+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(31, "effector 1", lmargin+wscratch+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        skin->lanes.append(LaneDef(32, "effector 2", lmargin+wscratch*2+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, csmallv));
+        skin->lanes.append(LaneDef(33, "effector 3", lmargin+wscratch*3+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, csmallv));
+        skin->lanes.append(LaneDef(34, "effector 4", lmargin+wscratch*4+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(21, "wkey", lmargin+wscratch*5+wwhite*3+wblack*2, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(22, "bkey", lmargin+wscratch*5+wwhite*4+wblack*2, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(23, "wkey", lmargin+wscratch*5+wwhite*4+wblack*3, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(24, "bkey", lmargin+wscratch*5+wwhite*5+wblack*3, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(25, "wkey", lmargin+wscratch*5+wwhite*5+wblack*4, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(2, "scratch", lmargin+wscratch*5+wwhite*6+wblack*4, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        break;
+    case 1:
+        skin->lanes.append(LaneDef(2, "scratch", lmargin, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(25, "wkey", lmargin+wscratch+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(24, "bkey", lmargin+wscratch+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(23, "wkey", lmargin+wscratch+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(22, "bkey", lmargin+wscratch+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(21, "wkey", lmargin+wscratch+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(34, "effector 1", lmargin+wscratch+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        skin->lanes.append(LaneDef(33, "effector 2", lmargin+wscratch*2+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, csmallv));
+        skin->lanes.append(LaneDef(32, "effector 3", lmargin+wscratch*3+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, csmallv));
+        skin->lanes.append(LaneDef(31, "effector 4", lmargin+wscratch*4+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(15, "wkey", lmargin+wscratch*5+wwhite*3+wblack*2, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(14, "bkey", lmargin+wscratch*5+wwhite*4+wblack*2, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(13, "wkey", lmargin+wscratch*5+wwhite*4+wblack*3, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(12, "bkey", lmargin+wscratch*5+wwhite*5+wblack*3, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(11, "wkey", lmargin+wscratch*5+wwhite*5+wblack*4, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(1, "scratch", lmargin+wscratch*5+wwhite*6+wblack*4, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        break;
+    }
+}
+
+Skin *SkinLibrary::CreateDefaultEZ14k(QObject *parent)
+{
+    QString defaultScratch = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_EZ_14K_ID, SCRATCH_PROPERTY_KEY), "l").toString();
+    Skin *skin = new Skin(DEFAULT_EZ_14K_ID, parent);
+    QStringList choices;
+    choices.append("l");
+    choices.append("r");
+    QStringList choiceNames;
+    choiceNames.append(tr("Player 1"));
+    choiceNames.append(tr("Player 2"));
+    SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, SCRATCH_PROPERTY_KEY, tr("Scratch"), choices, choiceNames, defaultScratch);
+    scratchPosition->setObjectName(SCRATCH_PROPERTY_KEY);
+    skin->properties.append(scratchPosition);
+    connect(scratchPosition, &SkinProperty::Changed, skin, [=](){
+        skin->lanes.clear();
+        SetupSkinEZ14k(skin, scratchPosition->GetIndexValue());
+        App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_EZ_14K_ID, SCRATCH_PROPERTY_KEY), scratchPosition->GetChoiceValue());
+        emit skin->Changed();
+        return;
+    });
+    SetupSkinEZ14k(skin, scratchPosition->GetIndexValue());
+    return skin;
+}
+
+void SkinLibrary::SetupSkinEZAndromeda(Skin *skin, int player)
+{
+    skin->width = lmargin*2+wscratch*8+wwhite*6+wblack*4;
+    skin->lanes.clear();
+    switch (player){
+    case 0:
+        skin->lanes.append(LaneDef(1, "scratch", lmargin, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(11, "wkey", lmargin+wscratch+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(12, "bkey", lmargin+wscratch+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(13, "wkey", lmargin+wscratch+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(14, "bkey", lmargin+wscratch+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(15, "wkey", lmargin+wscratch+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(10, "pedal 1", lmargin+wscratch+wwhite*3+wblack*2, wscratch, cgreen, ncgreen, cbigv, cbigv));
+        skin->lanes.append(LaneDef(31, "effector 1", lmargin+wscratch*2+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        skin->lanes.append(LaneDef(32, "effector 2", lmargin+wscratch*3+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, csmallv));
+        skin->lanes.append(LaneDef(33, "effector 3", lmargin+wscratch*4+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, csmallv));
+        skin->lanes.append(LaneDef(34, "effector 4", lmargin+wscratch*5+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(20, "pedal 2", lmargin+wscratch*6+wwhite*3+wblack*2, wscratch, cgreen, ncgreen, cbigv, cbigv));
+        skin->lanes.append(LaneDef(21, "wkey", lmargin+wscratch*7+wwhite*3+wblack*2, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(22, "bkey", lmargin+wscratch*7+wwhite*4+wblack*2, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(23, "wkey", lmargin+wscratch*7+wwhite*4+wblack*3, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(24, "bkey", lmargin+wscratch*7+wwhite*5+wblack*3, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(25, "wkey", lmargin+wscratch*7+wwhite*5+wblack*4, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(2, "scratch", lmargin+wscratch*7+wwhite*6+wblack*4, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        break;
+    case 1:
+        skin->lanes.append(LaneDef(2, "scratch", lmargin, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(25, "wkey", lmargin+wscratch+wwhite*0+wblack*0, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(24, "bkey", lmargin+wscratch+wwhite*1+wblack*0, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(23, "wkey", lmargin+wscratch+wwhite*1+wblack*1, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(22, "bkey", lmargin+wscratch+wwhite*2+wblack*1, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(21, "wkey", lmargin+wscratch+wwhite*2+wblack*2, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(20, "pedal 1", lmargin+wscratch+wwhite*3+wblack*2, wscratch, cgreen, ncgreen, cbigv, cbigv));
+        skin->lanes.append(LaneDef(34, "effector 1", lmargin+wscratch*2+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        skin->lanes.append(LaneDef(33, "effector 2", lmargin+wscratch*3+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, csmallv));
+        skin->lanes.append(LaneDef(32, "effector 3", lmargin+wscratch*4+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, csmallv));
+        skin->lanes.append(LaneDef(31, "effector 4", lmargin+wscratch*5+wwhite*3+wblack*2, wscratch, cscratch, ncscratch, csmallv, cbigv));
+        skin->lanes.append(LaneDef(10, "pedal 2", lmargin+wscratch*6+wwhite*3+wblack*2, wscratch, cgreen, ncgreen, cbigv, cbigv));
+        skin->lanes.append(LaneDef(15, "wkey", lmargin+wscratch*7+wwhite*3+wblack*2, wwhite, cwhite, ncwhite, cbigv, csmallv));
+        skin->lanes.append(LaneDef(14, "bkey", lmargin+wscratch*7+wwhite*4+wblack*2, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(13, "wkey", lmargin+wscratch*7+wwhite*4+wblack*3, wwhite, cwhite, ncwhite, csmallv, csmallv));
+        skin->lanes.append(LaneDef(12, "bkey", lmargin+wscratch*7+wwhite*5+wblack*3, wblack, cblack, ncblack, csmallv, csmallv));
+        skin->lanes.append(LaneDef(11, "wkey", lmargin+wscratch*7+wwhite*5+wblack*4, wwhite, cwhite, ncwhite, csmallv, cbigv));
+        skin->lanes.append(LaneDef(1, "scratch", lmargin+wscratch*7+wwhite*6+wblack*4, wscratch, cscratch, ncscratch, cbigv, csmallv));
+        break;
+    }
+}
+
+Skin *SkinLibrary::CreateDefaultEZAndromeda(QObject *parent)
+{
+    QString defaultScratch = App::Instance()->GetSettings()->value(PROPERTY_KEY(DEFAULT_EZ_ANDROMEDA_ID, SCRATCH_PROPERTY_KEY), "l").toString();
+    Skin *skin = new Skin(DEFAULT_EZ_ANDROMEDA_ID, parent);
+    QStringList choices;
+    choices.append("l");
+    choices.append("r");
+    QStringList choiceNames;
+    choiceNames.append(tr("Player 1"));
+    choiceNames.append(tr("Player 2"));
+    SkinEnumProperty *scratchPosition = new SkinEnumProperty(skin, SCRATCH_PROPERTY_KEY, tr("Scratch"), choices, choiceNames, defaultScratch);
+    scratchPosition->setObjectName(SCRATCH_PROPERTY_KEY);
+    skin->properties.append(scratchPosition);
+    connect(scratchPosition, &SkinProperty::Changed, skin, [=](){
+        skin->lanes.clear();
+        SetupSkinEZAndromeda(skin, scratchPosition->GetIndexValue());
+        App::Instance()->GetSettings()->setValue(PROPERTY_KEY(DEFAULT_EZ_ANDROMEDA_ID, SCRATCH_PROPERTY_KEY), scratchPosition->GetChoiceValue());
+        emit skin->Changed();
+        return;
+    });
+    SetupSkinEZAndromeda(skin, scratchPosition->GetIndexValue());
+    return skin;
 }
 
 Skin *SkinLibrary::CreateDefault7k(QObject *parent)
@@ -734,6 +1099,18 @@ Skin *SkinLibrary::CreateDefaultPlain(QObject *parent)
 Skin *SkinLibrary::CreateSkin(ViewMode *mode, QObject *parent)
 {
 	switch (mode->GetMode()){
+    case ViewMode::MODE_EZ_5K_ONLY:
+        return CreateDefaultEZ5kOnly(parent);
+    case ViewMode::MODE_EZ_5K:
+        return CreateDefaultEZ5k(parent);
+    case ViewMode::MODE_EZ_7K:
+        return CreateDefaultEZ7k(parent);
+    case ViewMode::MODE_EZ_10K:
+        return CreateDefaultEZ10k(parent);
+    case ViewMode::MODE_EZ_14K:
+        return CreateDefaultEZ14k(parent);
+    case ViewMode::MODE_EZ_ANDROMEDA:
+        return CreateDefaultEZAndromeda(parent);
 	case ViewMode::MODE_BEAT_7K:
 		return CreateDefault7k(parent);
 	case ViewMode::MODE_BEAT_5K:
@@ -742,8 +1119,8 @@ Skin *SkinLibrary::CreateSkin(ViewMode *mode, QObject *parent)
 		return CreateDefault10k(parent);
 	case ViewMode::MODE_BEAT_14K:
 		return CreateDefault14k(parent);
-	case ViewMode::MODE_POPN_5K:
-		return CreateDefaultPop5k(parent);
+    case ViewMode::MODE_POPN_5K:
+        return CreateDefaultPop5k(parent);
 	case ViewMode::MODE_POPN_9K:
 		return CreateDefaultPop9k(parent);
 	case ViewMode::MODE_CIRC_SINGLE:
@@ -767,7 +1144,7 @@ Skin *SkinLibrary::CreateSkin(ViewMode *mode, QObject *parent)
 	case ViewMode::MODE_PLAIN:
 		return CreateDefaultPlain(parent);
 	default:
-		return CreateDefault7k(parent);
+        return CreateDefaultEZ5k(parent);
 	}
 }
 
